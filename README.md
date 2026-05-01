@@ -120,8 +120,9 @@ them.
 
 ## Build
 
-Runtime dependencies: `gtk4`, `libadwaita`, `tailscale`.
-Build dependencies: `rust`, `cargo`.
+Runtime dependencies: `gtk4`, `libadwaita`, `tailscale`, `openssl`.
+Build dependencies: `rust`, `cargo`, `pkgconf`, `openssl` (for the
+`native-tls` backend used to talk to the panel HTTPS API).
 
 ```bash
 cargo build --release
