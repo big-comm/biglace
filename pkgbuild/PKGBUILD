@@ -7,10 +7,13 @@ depends=(
     'gtk4'
     'libadwaita'
     'gettext'
+    'openssl'
 )
 makedepends=(
     'rust'
     'cargo'
+    'openssl'
+    'pkgconf'
 )
 pkgver=$(date +%y.%m.%d)
 pkgrel=$(date +%H%M)
