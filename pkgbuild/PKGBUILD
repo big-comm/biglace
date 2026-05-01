@@ -1,17 +1,20 @@
-# Maintainer: Tales A. Mendonça <talesam@gmail.com>
+# Maintainer: BigCommunity <contato@biglinux.com.br>
 
-pkgname=pkgbuild-template-translate
-pkgdesc="Package template for BigCommunity"
-# Uncomment and edit the following lines as needed
-#depends=('')
-#makedepends=('')
-#optdepends=('')
-#conflicts=('')
-#provides=('')
-#replaces=('')
+pkgname=biglace
+pkgdesc="Mesh VPN client with a graphical interface for Headscale/Tailscale"
+depends=(
+    'tailscale'
+    'gtk4'
+    'libadwaita'
+    'gettext'
+)
+makedepends=(
+    'rust'
+    'cargo'
+)
 pkgver=$(date +%y.%m.%d)
 pkgrel=$(date +%H%M)
-arch=('any')
+arch=('x86_64' 'aarch64')
 license=('MIT')
 url="https://github.com/big-comm/${pkgname}"
 source=("git+${url}.git")
@@ -26,20 +29,14 @@ fi
 
 prepare() {
     cd "${srcdir}/${pkgname}"
-    # Add any preparation steps here, if needed
-    # For example: patch -p1 < "${srcdir}/patch-file.patch"
+    export RUSTUP_TOOLCHAIN=stable
+    cargo fetch --locked 2>/dev/null || cargo fetch
 }
 
 build() {
     cd "${srcdir}/${pkgname}"
-    # Add build steps here, if needed
-    # For example: make
-}
-
-check() {
-    cd "${srcdir}/${pkgname}"
-    # Add check/test steps here, if needed
-    # For example: make check
+    export RUSTUP_TOOLCHAIN=stable
+    cargo build --release --locked 2>/dev/null || cargo build --release
 }
 
 package() {
@@ -52,7 +49,7 @@ package() {
         srcdir="${srcdir}/${pkgname}"
     fi
 
-    # Install files
+    # Install files (mirrors of /usr, /etc, /opt living in the repo)
     local dirs=("usr" "etc" "opt")
     for dir in "${dirs[@]}"; do
         if [ -d "${srcdir}/${dir}" ]; then
@@ -60,13 +57,19 @@ package() {
         fi
     done
 
+    # Rust binary
+    install -Dm755 "${srcdir}/target/release/${pkgname}" \
+        "${pkgdir}/usr/bin/${pkgname}"
+
     # Install license file if present
-    if [ -f "LICENSE" ]; then
-        install -Dm644 LICENSE "${pkgdir}/usr/share/licenses/${pkgname}/LICENSE"
+    if [ -f "${srcdir}/LICENSE" ]; then
+        install -Dm644 "${srcdir}/LICENSE" \
+            "${pkgdir}/usr/share/licenses/${pkgname}/LICENSE"
     fi
 
     # Install documentation if present
-    if [ -f "README.md" ]; then
-        install -Dm644 README.md "${pkgdir}/usr/share/doc/${pkgname}/README.md"
+    if [ -f "${srcdir}/README.md" ]; then
+        install -Dm644 "${srcdir}/README.md" \
+            "${pkgdir}/usr/share/doc/${pkgname}/README.md"
     fi
 }
