@@ -336,6 +336,10 @@ fn try_connect(server: &str, authkey: &str, hostname: &str) -> Result<()> {
     if !authkey.is_empty() {
         a_arg = format!("--authkey={authkey}");
         args.push(&a_arg);
+        // Required when switching to a login-server that differs from the
+        // one cached locally — without this, tailscale aborts with
+        // "can't change --login-server without --force-reauth".
+        args.push("--force-reauth");
     }
     if !hostname.is_empty() {
         h_arg = format!("--hostname={hostname}");
