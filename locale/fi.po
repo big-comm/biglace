@@ -12,73 +12,61 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 
-#: src/window.rs
+#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/mod.rs:441
 msgid "Disconnect"
 msgstr "Katkaise yhteys"
 
-#: src/window.rs
-msgid "Refresh list"
-msgstr "Päivitä lista"
-
-#: src/window.rs
+#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/content.rs:44
 msgid "Main menu"
 msgstr "Päävalikko"
 
-#: src/window.rs
+#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/dialogs.rs:57
+#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/mod.rs:114
 msgid "Sign in with panel account"
 msgstr "Kirjaudu sisään paneelitilillä"
 
-#: src/window.rs
+#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/mod.rs:115
 msgid "Make this user the tailscale operator"
 msgstr "Tee tästä käyttäjästä tailscale-operaattori"
 
-#: src/window.rs
+#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/mod.rs:116
 msgid "About BigLace"
 msgstr "Tietoja BigLacesta"
 
-#: src/window.rs
+#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/dialogs.rs:41
 msgid "Tailscale operator"
 msgstr "Tailscale-operaattori"
 
-#: src/window.rs
+#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/dialogs.rs:36
 msgid "Done. You will no longer need a password to connect or disconnect."
 msgstr ""
 "Valmis. Et enää tarvitse salasanaa yhdistämiseen tai yhteyden "
 "katkaisemiseen."
 
-#: src/window.rs
+#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/dialogs.rs:37
+#, rust-format
 msgid "Failed: {error}"
 msgstr "Epäonnistui: {error}"
 
-#: src/window.rs
+#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/dialogs.rs:44
 msgid "OK"
 msgstr "OK"
 
-#: src/window.rs
+#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/dialogs.rs:200
+#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/mod.rs:352
+#, rust-format
 msgid "Error: {error}"
 msgstr "Virhe: {error}"
 
-#: src/window.rs
-msgid "Files"
-msgstr "Tiedostot"
-
-#: src/window.rs
-msgid "Terminal"
-msgstr "Pääte"
-
-#: src/window.rs
-msgid "Copied!"
-msgstr "Kopioitu!"
-
-#: src/window.rs
+#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/dialogs.rs:28
 msgid "Mesh VPN client for BigScale/Headscale."
 msgstr "Mesh VPN -asiakasohjelma BigScale/Headscale-palvelulle."
 
-#: src/window.rs
+#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/dialogs.rs:68
 msgid "Panel credentials"
 msgstr "Paneelin tunnistetiedot"
 
-#: src/window.rs
+#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/dialogs.rs:70
 msgid ""
 "Use your BigScale panel username and password to generate a key "
 "automatically."
@@ -86,159 +74,325 @@ msgstr ""
 "Käytä BigScale-paneelin käyttäjätunnustasi ja salasanaasi avaimen "
 "automaattiseen luomiseen."
 
-#: src/window.rs
+#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/dialogs.rs:75
 msgid "Panel URL"
 msgstr "Paneelin URL-osoite"
 
-#: src/window.rs
+#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/dialogs.rs:78
 msgid "Username"
 msgstr "Käyttäjätunnus"
 
-#: src/window.rs
+#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/dialogs.rs:79
 msgid "Password"
 msgstr "Salasana"
 
-#: src/window.rs
+#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/dialogs.rs:80
 msgid "Network user identifier"
 msgstr "Verkon käyttäjätunniste"
 
-#: src/window.rs
+#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/dialogs.rs:111
 msgid "Cancel"
 msgstr "Peruuta"
 
-#: src/window.rs
+#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/dialogs.rs:113
+#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/sidebar.rs:56
+#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/mod.rs:419
 msgid "Sign in"
 msgstr "Kirjaudu sisään"
 
-#: src/window.rs
+#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/dialogs.rs:152
 msgid "Fill in URL, username and password."
 msgstr "Täytä URL-osoite, käyttäjätunnus ja salasana."
 
-#: src/window.rs
-msgid "Key generated successfully."
-msgstr "Avain luotu onnistuneesti."
-
-#: src/window.rs
-msgid "Service not found"
-msgstr "Palvelua ei löydy"
-
-#: src/window.rs
-msgid ""
-"The tailscaled service is not running.\n"
-"Click below to start it."
-msgstr ""
-"Tailscaled-palvelu ei ole käynnissä.\n"
-"Napsauta alla käynnistääksesi se."
-
-#: src/window.rs
+#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/content.rs:122
 msgid "Start service"
 msgstr "Käynnistä palvelu"
 
-#: src/window.rs
-msgid "Server"
-msgstr "Palvelin"
-
-#: src/window.rs
-msgid "Address of your BigScale/Headscale server."
-msgstr "BigScale/Headscale-palvelimesi osoite."
-
-#: src/window.rs
+#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/sidebar.rs:74
 msgid "Server URL"
 msgstr "Palvelimen URL-osoite"
 
-#: src/window.rs
-msgid "Your identity on the network"
-msgstr "Henkilöllisyytesi verkossa"
-
-#: src/window.rs
-msgid ""
-"Personal key generated for you in the BigScale panel (\"New key\" in Users)."
-" Each person uses their own — this is not the server's key."
-msgstr ""
-"BigScale-paneelissa sinulle luotu henkilökohtainen avain (\"Uusi avain\" "
-"kohdassa Käyttäjät). Jokainen käyttää omaansa – tämä ei ole palvelimen "
-"avain."
-
-#: src/window.rs
-msgid "Pre-auth key (yours)"
-msgstr "Esivaltuutusavain (sinun)"
-
-#: src/window.rs
+#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/content.rs:169
 msgid "This device"
 msgstr "Tämä laite"
 
-#: src/window.rs
-msgid "Name shown to other devices on the network."
-msgstr "Nimi, joka näkyy muille verkon laitteille."
-
-#: src/window.rs
+#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/sidebar.rs:109
 msgid "Device name"
 msgstr "Laitteen nimi"
 
-#: src/window.rs
-msgid "Options"
-msgstr "Asetukset"
-
-#: src/window.rs
-msgid "Connect automatically on startup"
-msgstr "Yhdistä automaattisesti käynnistyksen yhteydessä"
-
-#: src/window.rs
+#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/sidebar.rs:134
+#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/mod.rs:451
+#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/mod.rs:456
 msgid "Connect"
 msgstr "Yhdistä"
 
-#: src/window.rs
-msgid "Please wait..."
-msgstr "Odota hetki..."
-
-#: src/window.rs
-msgid "Connected to the network"
-msgstr "Yhdistetty verkkoon"
-
-#: src/window.rs
-msgid "Your IP address"
-msgstr "IP-osoitteesi"
-
-#: src/window.rs
+#. ── Devices on the network ──
+#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/content.rs:186
 msgid "Devices on the network"
 msgstr "Verkon laitteet"
 
-#: src/window.rs
-msgid "No other devices found."
-msgstr "Muita laitteita ei löytynyt."
-
-#: src/window.rs
-msgid "Copy"
-msgstr "Kopioi"
-
-#: src/tailscale.rs
+#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/tailscale.rs:204
 msgid "Failed to run tailscale"
 msgstr "Tailscalen suoritus epäonnistui"
 
-#: src/tailscale.rs
+#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/tailscale.rs:224
+#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/tailscale.rs:257
+#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/tailscale.rs:320
 msgid "Failed to connect — check the server URL and key."
 msgstr ""
 "Yhteyden muodostaminen epäonnistui — tarkista palvelimen URL-osoite ja "
 "avain."
 
-#: src/tailscale.rs
+#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/tailscale.rs:245
 msgid "Failed to run pkexec tailscale"
 msgstr "pkexec tailscalen suoritus epäonnistui"
 
-#: src/tailscale.rs
+#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/tailscale.rs:364
 msgid "Could not determine the current user."
 msgstr "Nykyistä käyttäjää ei voitu määrittää."
 
-#: src/tailscale.rs
+#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/tailscale.rs:370
 msgid "Failed to run pkexec tailscale set"
 msgstr "pkexec tailscale set -komennon suoritus epäonnistui"
 
-#: src/tailscale.rs
+#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/tailscale.rs:372
 msgid "Failed to set tailscale operator."
 msgstr "Tailscale-operaattorin asettaminen epäonnistui."
 
-msgid "The pre-auth key was rejected by the server. Generate a new key in the BigScale panel and try again."
-msgstr "Palvelin hylkäsi esitodennusavaimen. Luo uusi avain BigScale-paneelissa ja yritä uudelleen."
+#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/tailscale.rs:313
+msgid ""
+"The pre-auth key was rejected by the server. Generate a new key in the "
+"BigScale panel and try again."
+msgstr ""
+"Palvelin hylkäsi esitodennusavaimen. Luo uusi avain BigScale-paneelissa ja "
+"yritä uudelleen."
 
+#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/tailscale.rs:316
+#, rust-format
 msgid "Login rejected by server: {detail}"
 msgstr "Palvelin hylkäsi sisäänkirjautumisen: {detail}"
+
+#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/mod.rs:431
+msgid "Switch account"
+msgstr "Vaihda tiliä"
+
+#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/sidebar.rs:66
+msgid "Use a pre-auth key"
+msgstr "Käytä ennakkoon todennusavainta"
+
+#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/sidebar.rs:67
+msgid "Paste the key your administrator sent you"
+msgstr "Liitä järjestelmänvalvojan lähettämä avain"
+
+#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/sidebar.rs:91
+msgid "Apply manual setup"
+msgstr "Ota käyttöön manuaalinen asetus"
+
+#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/sidebar.rs:93
+msgid "Save"
+msgstr "Tallenna"
+
+#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/sidebar.rs:96
+msgid "Save the server and key above"
+msgstr "Tallenna yllä oleva palvelin ja avain"
+
+#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/sidebar.rs:117
+msgid "Connect automatically"
+msgstr "Yhdistä automaattisesti"
+
+#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/sidebar.rs:118
+msgid "Join the network when BigLace starts"
+msgstr "Liity verkkoon, kun BigLace käynnistyy"
+
+#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/mod.rs:418
+msgid "Sign in or paste a pre-auth key"
+msgstr "Kirjaudu sisään tai liitä ennakkoon todennusavain"
+
+#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/sidebar.rs:59
+msgid "Sign in with your BigScale panel account"
+msgstr "Kirjaudu sisään BigScale-paneelitililläsi"
+
+#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/mod.rs:425
+msgid "Server not set"
+msgstr "Palvelinta ei ole asetettu"
+
+#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/mod.rs:181
+msgid "Setup saved"
+msgstr "Asetukset tallennettu"
+
+#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/mod.rs:237
+msgid "Sign in or paste a pre-auth key first."
+msgstr "Kirjaudu ensin sisään tai liitä ennakkoon todennusavain."
+
+#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/content.rs:62
+msgid "Sign in to connect"
+msgstr "Kirjaudu sisään yhdistääksesi"
+
+#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/content.rs:63
+msgid "Use the panel on the left to sign in or paste a pre-auth key."
+msgstr ""
+"Käytä vasemmanpuoleista paneelia kirjautuaksesi sisään tai liittääksesi "
+"ennakkoon todennusavaimen."
+
+#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/content.rs:71
+msgid "Not connected"
+msgstr "Ei yhteyttä"
+
+#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/content.rs:72
+msgid "Press Connect on the left to join the network."
+msgstr "Paina vasemmalla olevaa Yhdistä-painiketta liittyäksesi verkkoon."
+
+#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/content.rs:146
+#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/mod.rs:399
+#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/mod.rs:446
+msgid "Connecting…"
+msgstr "Yhdistetään…"
+
+#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/content.rs:195
+msgid "No other devices on the network yet."
+msgstr "Verkossa ei ole vielä muita laitteita."
+
+#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/content.rs:179
+#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/peer_row.rs:52
+msgid "Copy IP address"
+msgstr "Kopioi IP-osoite"
+
+#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/peer_row.rs:60
+#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/mod.rs:300
+msgid "IP address copied"
+msgstr "IP-osoite kopioitu"
+
+#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/peer_row.rs:74
+msgid "Open files (SFTP)"
+msgstr "Avaa tiedostot (SFTP)"
+
+#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/peer_row.rs:84
+msgid "Open terminal (SSH)"
+msgstr "Avaa pääte (SSH)"
+
+#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/peer_row.rs:15
+#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/peer_row.rs:16
+msgid "offline"
+msgstr "offline"
+
+#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/mod.rs:396
+msgid "Service stopped"
+msgstr "Palvelu pysäytetty"
+
+#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/content.rs:37
+#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/mod.rs:398
+msgid "Disconnected"
+msgstr "Yhteys katkaistu"
+
+#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/mod.rs:343
+#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/mod.rs:400
+msgid "Connected"
+msgstr "Yhdistetty"
+
+#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/mod.rs:113
+msgid "Refresh"
+msgstr "Päivitä"
+
+#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/dialogs.rs:192
+msgid "Signed in. Press Connect to join the network."
+msgstr "Kirjautunut sisään. Paina Yhdistä liittyäksesi verkkoon."
+
+#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/mod.rs:483
+msgid "no other devices"
+msgstr "ei muita laitteita"
+
+#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/mod.rs:485
+#, rust-format
+msgid "{online} online"
+msgstr "{online} verkossa"
+
+#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/mod.rs:487
+#, rust-format
+msgid "{online} online · {offline} offline"
+msgstr "{online} verkossa · {offline} offline"
+
+#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/content.rs:116
+msgid "The tailscale service is not running"
+msgstr "Tailscale-palvelu ei ole käynnissä"
+
+#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/content.rs:118
+msgid "BigLace needs the tailscaled background service to manage the network."
+msgstr "BigLace tarvitsee tailscaled-taustapalvelun verkon hallintaan."
+
+#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/sidebar.rs:83
+msgid "Pre-auth key"
+msgstr "Esivaltuutusavain"
+
+#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/mod.rs:397
+#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/mod.rs:417
+msgid "Not signed in"
+msgstr "Ei kirjauduttu sisään"
+
+#~ msgid "Refresh list"
+#~ msgstr "Päivitä lista"
+
+#~ msgid "Files"
+#~ msgstr "Tiedostot"
+
+#~ msgid "Terminal"
+#~ msgstr "Pääte"
+
+#~ msgid "Copied!"
+#~ msgstr "Kopioitu!"
+
+#~ msgid "Key generated successfully."
+#~ msgstr "Avain luotu onnistuneesti."
+
+#~ msgid "Service not found"
+#~ msgstr "Palvelua ei löydy"
+
+#~ msgid ""
+#~ "The tailscaled service is not running.\n"
+#~ "Click below to start it."
+#~ msgstr ""
+#~ "Tailscaled-palvelu ei ole käynnissä.\n"
+#~ "Napsauta alla käynnistääksesi se."
+
+#~ msgid "Server"
+#~ msgstr "Palvelin"
+
+#~ msgid "Address of your BigScale/Headscale server."
+#~ msgstr "BigScale/Headscale-palvelimesi osoite."
+
+#~ msgid "Your identity on the network"
+#~ msgstr "Henkilöllisyytesi verkossa"
+
+#~ msgid ""
+#~ "Personal key generated for you in the BigScale panel (\"New key\" in Users)."
+#~ " Each person uses their own — this is not the server's key."
+#~ msgstr ""
+#~ "BigScale-paneelissa sinulle luotu henkilökohtainen avain (\"Uusi avain\" "
+#~ "kohdassa Käyttäjät). Jokainen käyttää omaansa – tämä ei ole palvelimen "
+#~ "avain."
+
+#~ msgid "Pre-auth key (yours)"
+#~ msgstr "Esivaltuutusavain (sinun)"
+
+#~ msgid "Name shown to other devices on the network."
+#~ msgstr "Nimi, joka näkyy muille verkon laitteille."
+
+#~ msgid "Options"
+#~ msgstr "Asetukset"
+
+#~ msgid "Connect automatically on startup"
+#~ msgstr "Yhdistä automaattisesti käynnistyksen yhteydessä"
+
+#~ msgid "Please wait..."
+#~ msgstr "Odota hetki..."
+
+#~ msgid "Connected to the network"
+#~ msgstr "Yhdistetty verkkoon"
+
+#~ msgid "Your IP address"
+#~ msgstr "IP-osoitteesi"
+
+#~ msgid "No other devices found."
+#~ msgstr "Muita laitteita ei löytynyt."
+
+#~ msgid "Copy"
+#~ msgstr "Kopioi"

@@ -57,6 +57,7 @@ pub struct Peer {
     pub ip:       String,
     pub dns_name: String,
     pub online:   bool,
+    pub os:       String,
 }
 
 // ─── Tailscale JSON structs ───────────────────────────────────────────────────
@@ -81,6 +82,8 @@ struct TsNode {
     ips: Option<Vec<String>>,
     #[serde(rename = "Online")]
     online: Option<bool>,
+    #[serde(rename = "OS")]
+    os: Option<String>,
 }
 
 // ─── Detection ───────────────────────────────────────────────────────────────
@@ -178,6 +181,7 @@ pub fn get_peers() -> Vec<Peer> {
             ip:       n.ips.as_ref().and_then(|v| v.first().cloned()).unwrap_or_default(),
             dns_name: n.dns_name.map(|d| d.trim_end_matches('.').to_string()).unwrap_or_default(),
             online:   n.online.unwrap_or(false),
+            os:       n.os.unwrap_or_default(),
         })
         .collect();
 
