@@ -12,71 +12,59 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 
-#: src/window.rs
+#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/mod.rs:441
 msgid "Disconnect"
 msgstr "Odpojiť"
 
-#: src/window.rs
-msgid "Refresh list"
-msgstr "Obnoviť zoznam"
-
-#: src/window.rs
+#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/content.rs:44
 msgid "Main menu"
 msgstr "Hlavné menu"
 
-#: src/window.rs
+#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/dialogs.rs:57
+#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/mod.rs:114
 msgid "Sign in with panel account"
 msgstr "Prihlásiť sa pomocou účtu panelu"
 
-#: src/window.rs
+#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/mod.rs:115
 msgid "Make this user the tailscale operator"
 msgstr "Nastaviť tohto používateľa ako operátora Tailscale"
 
-#: src/window.rs
+#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/mod.rs:116
 msgid "About BigLace"
 msgstr "O aplikácii BigLace"
 
-#: src/window.rs
+#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/dialogs.rs:41
 msgid "Tailscale operator"
 msgstr "Operátor Tailscale"
 
-#: src/window.rs
+#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/dialogs.rs:36
 msgid "Done. You will no longer need a password to connect or disconnect."
 msgstr "Hotovo. Na pripojenie alebo odpojenie už nebudete potrebovať heslo."
 
-#: src/window.rs
+#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/dialogs.rs:37
+#, rust-format
 msgid "Failed: {error}"
 msgstr "Zlyhalo: {error}"
 
-#: src/window.rs
+#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/dialogs.rs:44
 msgid "OK"
 msgstr "OK"
 
-#: src/window.rs
+#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/dialogs.rs:200
+#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/mod.rs:352
+#, rust-format
 msgid "Error: {error}"
 msgstr "Chyba: {error}"
 
-#: src/window.rs
-msgid "Files"
-msgstr "Súbory"
-
-#: src/window.rs
-msgid "Terminal"
-msgstr "Terminál"
-
-#: src/window.rs
-msgid "Copied!"
-msgstr "Skopírované!"
-
-#: src/window.rs
+#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/dialogs.rs:28
 msgid "Mesh VPN client for BigScale/Headscale."
 msgstr "VPN klient pre mesh siete BigScale/Headscale."
 
-#: src/window.rs
+#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/dialogs.rs:68
 msgid "Panel credentials"
 msgstr "Prihlasovacie údaje panela"
 
-#: src/window.rs
+#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/dialogs.rs:70
 msgid ""
 "Use your BigScale panel username and password to generate a key "
 "automatically."
@@ -84,156 +72,322 @@ msgstr ""
 "Použite svoje používateľské meno a heslo z BigScale panela na automatické "
 "vygenerovanie kľúča."
 
-#: src/window.rs
+#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/dialogs.rs:75
 msgid "Panel URL"
 msgstr "URL panela"
 
-#: src/window.rs
+#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/dialogs.rs:78
 msgid "Username"
 msgstr "Používateľské meno"
 
-#: src/window.rs
+#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/dialogs.rs:79
 msgid "Password"
 msgstr "Heslo"
 
-#: src/window.rs
+#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/dialogs.rs:80
 msgid "Network user identifier"
 msgstr "Identifikátor sieťového používateľa"
 
-#: src/window.rs
+#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/dialogs.rs:111
 msgid "Cancel"
 msgstr "Zrušiť"
 
-#: src/window.rs
+#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/dialogs.rs:113
+#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/sidebar.rs:56
+#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/mod.rs:419
 msgid "Sign in"
 msgstr "Prihlásiť sa"
 
-#: src/window.rs
+#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/dialogs.rs:152
 msgid "Fill in URL, username and password."
 msgstr "Vyplňte URL, používateľské meno a heslo."
 
-#: src/window.rs
-msgid "Key generated successfully."
-msgstr "Kľúč bol úspešne vygenerovaný."
-
-#: src/window.rs
-msgid "Service not found"
-msgstr "Služba sa nenašla"
-
-#: src/window.rs
-msgid ""
-"The tailscaled service is not running.\n"
-"Click below to start it."
-msgstr ""
-"Služba tailscaled nie je spustená.\n"
-"Kliknutím nižšie ju spustíte."
-
-#: src/window.rs
+#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/content.rs:122
 msgid "Start service"
 msgstr "Spustiť službu"
 
-#: src/window.rs
-msgid "Server"
-msgstr "Server"
-
-#: src/window.rs
-msgid "Address of your BigScale/Headscale server."
-msgstr "Adresa vášho BigScale/Headscale servera."
-
-#: src/window.rs
+#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/sidebar.rs:74
 msgid "Server URL"
 msgstr "URL servera"
 
-#: src/window.rs
-msgid "Your identity on the network"
-msgstr "Vaša identita v sieti"
-
-#: src/window.rs
-msgid ""
-"Personal key generated for you in the BigScale panel (\"New key\" in Users)."
-" Each person uses their own — this is not the server's key."
-msgstr ""
-"Osobný kľúč vygenerovaný pre vás v paneli BigScale (\"Nový kľúč\" v sekcii "
-"Používatelia). Každá osoba používa svoj vlastný – toto nie je kľúč servera."
-
-#: src/window.rs
-msgid "Pre-auth key (yours)"
-msgstr "Pred-autentifikačný kľúč (váš)"
-
-#: src/window.rs
+#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/content.rs:169
 msgid "This device"
 msgstr "Toto zariadenie"
 
-#: src/window.rs
-msgid "Name shown to other devices on the network."
-msgstr "Názov zobrazený ostatným zariadeniam v sieti."
-
-#: src/window.rs
+#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/sidebar.rs:109
 msgid "Device name"
 msgstr "Názov zariadenia"
 
-#: src/window.rs
-msgid "Options"
-msgstr "Možnosti"
-
-#: src/window.rs
-msgid "Connect automatically on startup"
-msgstr "Automaticky sa pripojiť pri spustení"
-
-#: src/window.rs
+#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/sidebar.rs:134
+#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/mod.rs:451
+#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/mod.rs:456
 msgid "Connect"
 msgstr "Pripojiť"
 
-#: src/window.rs
-msgid "Please wait..."
-msgstr "Čakajte prosím..."
-
-#: src/window.rs
-msgid "Connected to the network"
-msgstr "Pripojené k sieti"
-
-#: src/window.rs
-msgid "Your IP address"
-msgstr "Vaša IP adresa"
-
-#: src/window.rs
+#. ── Devices on the network ──
+#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/content.rs:186
 msgid "Devices on the network"
 msgstr "Zariadenia v sieti"
 
-#: src/window.rs
-msgid "No other devices found."
-msgstr "Neboli nájdené žiadne iné zariadenia."
-
-#: src/window.rs
-msgid "Copy"
-msgstr "Kopírovať"
-
-#: src/tailscale.rs
+#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/tailscale.rs:204
 msgid "Failed to run tailscale"
 msgstr "Nepodarilo sa spustiť tailscale"
 
-#: src/tailscale.rs
+#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/tailscale.rs:224
+#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/tailscale.rs:257
+#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/tailscale.rs:320
 msgid "Failed to connect — check the server URL and key."
 msgstr "Nepodarilo sa pripojiť – skontrolujte URL servera a kľúč."
 
-#: src/tailscale.rs
+#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/tailscale.rs:245
 msgid "Failed to run pkexec tailscale"
 msgstr "Nepodarilo sa spustiť pkexec tailscale"
 
-#: src/tailscale.rs
+#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/tailscale.rs:364
 msgid "Could not determine the current user."
 msgstr "Nepodarilo sa určiť aktuálneho používateľa."
 
-#: src/tailscale.rs
+#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/tailscale.rs:370
 msgid "Failed to run pkexec tailscale set"
 msgstr "Nepodarilo sa spustiť pkexec tailscale set"
 
-#: src/tailscale.rs
+#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/tailscale.rs:372
 msgid "Failed to set tailscale operator."
 msgstr "Nepodarilo sa nastaviť operátora tailscale."
 
-msgid "The pre-auth key was rejected by the server. Generate a new key in the BigScale panel and try again."
-msgstr "Predautorizačný kľúč bol serverom zamietnutý. Vygenerujte nový kľúč v paneli BigScale a skúste to znova."
+#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/tailscale.rs:313
+msgid ""
+"The pre-auth key was rejected by the server. Generate a new key in the "
+"BigScale panel and try again."
+msgstr ""
+"Predautorizačný kľúč bol serverom zamietnutý. Vygenerujte nový kľúč v paneli"
+" BigScale a skúste to znova."
 
+#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/tailscale.rs:316
+#, rust-format
 msgid "Login rejected by server: {detail}"
 msgstr "Prihlásenie zamietnuté serverom: {detail}"
+
+#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/mod.rs:431
+msgid "Switch account"
+msgstr "Prepnúť účet"
+
+#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/sidebar.rs:66
+msgid "Use a pre-auth key"
+msgstr "Použiť pred-autentifikačný kľúč"
+
+#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/sidebar.rs:67
+msgid "Paste the key your administrator sent you"
+msgstr "Vložte kľúč, ktorý vám poslal správca"
+
+#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/sidebar.rs:91
+msgid "Apply manual setup"
+msgstr "Použiť manuálne nastavenie"
+
+#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/sidebar.rs:93
+msgid "Save"
+msgstr "Uložiť"
+
+#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/sidebar.rs:96
+msgid "Save the server and key above"
+msgstr "Uložiť server a kľúč vyššie"
+
+#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/sidebar.rs:117
+msgid "Connect automatically"
+msgstr "Pripojiť automaticky"
+
+#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/sidebar.rs:118
+msgid "Join the network when BigLace starts"
+msgstr "Pripojiť sa k sieti pri spustení BigLace"
+
+#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/mod.rs:418
+msgid "Sign in or paste a pre-auth key"
+msgstr "Prihlásiť sa alebo vložiť pred-autentifikačný kľúč"
+
+#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/sidebar.rs:59
+msgid "Sign in with your BigScale panel account"
+msgstr "Prihlásiť sa pomocou účtu BigScale panel"
+
+#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/mod.rs:425
+msgid "Server not set"
+msgstr "Server nie je nastavený"
+
+#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/mod.rs:181
+msgid "Setup saved"
+msgstr "Nastavenie uložené"
+
+#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/mod.rs:237
+msgid "Sign in or paste a pre-auth key first."
+msgstr "Najprv sa prihláste alebo vložte pred-autentifikačný kľúč."
+
+#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/content.rs:62
+msgid "Sign in to connect"
+msgstr "Prihlásiť sa pre pripojenie"
+
+#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/content.rs:63
+msgid "Use the panel on the left to sign in or paste a pre-auth key."
+msgstr ""
+"Použite panel naľavo na prihlásenie alebo vloženie pred-autentifikačného "
+"kľúča."
+
+#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/content.rs:71
+msgid "Not connected"
+msgstr "Nie je pripojené"
+
+#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/content.rs:72
+msgid "Press Connect on the left to join the network."
+msgstr "Stlačte tlačidlo Pripojiť vľavo a pripojte sa k sieti."
+
+#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/content.rs:146
+#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/mod.rs:399
+#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/mod.rs:446
+msgid "Connecting…"
+msgstr "Pripája sa…"
+
+#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/content.rs:195
+msgid "No other devices on the network yet."
+msgstr "V sieti zatiaľ nie sú žiadne ďalšie zariadenia."
+
+#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/content.rs:179
+#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/peer_row.rs:52
+msgid "Copy IP address"
+msgstr "Kopírovať IP adresu"
+
+#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/peer_row.rs:60
+#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/mod.rs:300
+msgid "IP address copied"
+msgstr "IP adresa skopírovaná"
+
+#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/peer_row.rs:74
+msgid "Open files (SFTP)"
+msgstr "Otvoriť súbory (SFTP)"
+
+#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/peer_row.rs:84
+msgid "Open terminal (SSH)"
+msgstr "Otvoriť terminál (SSH)"
+
+#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/peer_row.rs:15
+#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/peer_row.rs:16
+msgid "offline"
+msgstr "offline"
+
+#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/mod.rs:396
+msgid "Service stopped"
+msgstr "Služba zastavená"
+
+#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/content.rs:37
+#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/mod.rs:398
+msgid "Disconnected"
+msgstr "Odpojené"
+
+#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/mod.rs:343
+#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/mod.rs:400
+msgid "Connected"
+msgstr "Pripojené"
+
+#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/mod.rs:113
+msgid "Refresh"
+msgstr "Obnoviť"
+
+#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/dialogs.rs:192
+msgid "Signed in. Press Connect to join the network."
+msgstr "Prihlásené. Stlačte tlačidlo Pripojiť a pripojte sa k sieti."
+
+#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/mod.rs:483
+msgid "no other devices"
+msgstr "žiadne ďalšie zariadenia"
+
+#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/mod.rs:485
+#, rust-format
+msgid "{online} online"
+msgstr "{online} online"
+
+#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/mod.rs:487
+#, rust-format
+msgid "{online} online · {offline} offline"
+msgstr "{online} online · {offline} offline"
+
+#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/content.rs:116
+msgid "The tailscale service is not running"
+msgstr "Služba tailscale nie je spustená"
+
+#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/content.rs:118
+msgid "BigLace needs the tailscaled background service to manage the network."
+msgstr "BigLace potrebuje službu tailscaled na pozadí na správu siete."
+
+#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/sidebar.rs:83
+msgid "Pre-auth key"
+msgstr "Pred-autentifikačný kľúč"
+
+#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/mod.rs:397
+#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/mod.rs:417
+msgid "Not signed in"
+msgstr "Nie ste prihlásený"
+
+#~ msgid "Refresh list"
+#~ msgstr "Obnoviť zoznam"
+
+#~ msgid "Files"
+#~ msgstr "Súbory"
+
+#~ msgid "Terminal"
+#~ msgstr "Terminál"
+
+#~ msgid "Copied!"
+#~ msgstr "Skopírované!"
+
+#~ msgid "Key generated successfully."
+#~ msgstr "Kľúč bol úspešne vygenerovaný."
+
+#~ msgid "Service not found"
+#~ msgstr "Služba sa nenašla"
+
+#~ msgid ""
+#~ "The tailscaled service is not running.\n"
+#~ "Click below to start it."
+#~ msgstr ""
+#~ "Služba tailscaled nie je spustená.\n"
+#~ "Kliknutím nižšie ju spustíte."
+
+#~ msgid "Server"
+#~ msgstr "Server"
+
+#~ msgid "Address of your BigScale/Headscale server."
+#~ msgstr "Adresa vášho BigScale/Headscale servera."
+
+#~ msgid "Your identity on the network"
+#~ msgstr "Vaša identita v sieti"
+
+#~ msgid ""
+#~ "Personal key generated for you in the BigScale panel (\"New key\" in Users)."
+#~ " Each person uses their own — this is not the server's key."
+#~ msgstr ""
+#~ "Osobný kľúč vygenerovaný pre vás v paneli BigScale (\"Nový kľúč\" v sekcii "
+#~ "Používatelia). Každá osoba používa svoj vlastný – toto nie je kľúč servera."
+
+#~ msgid "Pre-auth key (yours)"
+#~ msgstr "Pred-autentifikačný kľúč (váš)"
+
+#~ msgid "Name shown to other devices on the network."
+#~ msgstr "Názov zobrazený ostatným zariadeniam v sieti."
+
+#~ msgid "Options"
+#~ msgstr "Možnosti"
+
+#~ msgid "Connect automatically on startup"
+#~ msgstr "Automaticky sa pripojiť pri spustení"
+
+#~ msgid "Please wait..."
+#~ msgstr "Čakajte prosím..."
+
+#~ msgid "Connected to the network"
+#~ msgstr "Pripojené k sieti"
+
+#~ msgid "Your IP address"
+#~ msgstr "Vaša IP adresa"
+
+#~ msgid "No other devices found."
+#~ msgstr "Neboli nájdené žiadne iné zariadenia."
+
+#~ msgid "Copy"
+#~ msgstr "Kopírovať"

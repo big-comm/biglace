@@ -12,73 +12,61 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 
-#: src/window.rs
+#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/mod.rs:441
 msgid "Disconnect"
 msgstr "Bağlantıyı Kes"
 
-#: src/window.rs
-msgid "Refresh list"
-msgstr "Listeyi Yenile"
-
-#: src/window.rs
+#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/content.rs:44
 msgid "Main menu"
 msgstr "Ana Menü"
 
-#: src/window.rs
+#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/dialogs.rs:57
+#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/mod.rs:114
 msgid "Sign in with panel account"
 msgstr "Panel hesabıyla oturum aç"
 
-#: src/window.rs
+#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/mod.rs:115
 msgid "Make this user the tailscale operator"
 msgstr "Bu kullanıcıyı tailscale operatörü yap"
 
-#: src/window.rs
+#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/mod.rs:116
 msgid "About BigLace"
 msgstr "BigLace Hakkında"
 
-#: src/window.rs
+#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/dialogs.rs:41
 msgid "Tailscale operator"
 msgstr "Tailscale operatörü"
 
-#: src/window.rs
+#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/dialogs.rs:36
 msgid "Done. You will no longer need a password to connect or disconnect."
 msgstr ""
 "Tamam. Artık bağlanmak veya bağlantıyı kesmek için bir parolaya ihtiyacınız "
 "olmayacak."
 
-#: src/window.rs
+#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/dialogs.rs:37
+#, rust-format
 msgid "Failed: {error}"
 msgstr "Başarısız: {error}"
 
-#: src/window.rs
+#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/dialogs.rs:44
 msgid "OK"
 msgstr "Tamam"
 
-#: src/window.rs
+#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/dialogs.rs:200
+#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/mod.rs:352
+#, rust-format
 msgid "Error: {error}"
 msgstr "Hata: {error}"
 
-#: src/window.rs
-msgid "Files"
-msgstr "Dosyalar"
-
-#: src/window.rs
-msgid "Terminal"
-msgstr "Terminal"
-
-#: src/window.rs
-msgid "Copied!"
-msgstr "Kopyalandı!"
-
-#: src/window.rs
+#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/dialogs.rs:28
 msgid "Mesh VPN client for BigScale/Headscale."
 msgstr "BigScale/Headscale için Mesh VPN istemcisi."
 
-#: src/window.rs
+#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/dialogs.rs:68
 msgid "Panel credentials"
 msgstr "Panel kimlik bilgileri"
 
-#: src/window.rs
+#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/dialogs.rs:70
 msgid ""
 "Use your BigScale panel username and password to generate a key "
 "automatically."
@@ -86,157 +74,324 @@ msgstr ""
 "Anahtarı otomatik oluşturmak için BigScale panel kullanıcı adınızı ve "
 "şifrenizi kullanın."
 
-#: src/window.rs
+#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/dialogs.rs:75
 msgid "Panel URL"
 msgstr "Panel URL'si"
 
-#: src/window.rs
+#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/dialogs.rs:78
 msgid "Username"
 msgstr "Kullanıcı adı"
 
-#: src/window.rs
+#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/dialogs.rs:79
 msgid "Password"
 msgstr "Şifre"
 
-#: src/window.rs
+#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/dialogs.rs:80
 msgid "Network user identifier"
 msgstr "Ağ kullanıcı tanımlayıcısı"
 
-#: src/window.rs
+#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/dialogs.rs:111
 msgid "Cancel"
 msgstr "İptal"
 
-#: src/window.rs
+#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/dialogs.rs:113
+#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/sidebar.rs:56
+#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/mod.rs:419
 msgid "Sign in"
 msgstr "Oturum aç"
 
-#: src/window.rs
+#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/dialogs.rs:152
 msgid "Fill in URL, username and password."
 msgstr "URL, kullanıcı adı ve şifreyi doldurun."
 
-#: src/window.rs
-msgid "Key generated successfully."
-msgstr "Anahtar başarıyla oluşturuldu."
-
-#: src/window.rs
-msgid "Service not found"
-msgstr "Hizmet bulunamadı"
-
-#: src/window.rs
-msgid ""
-"The tailscaled service is not running.\n"
-"Click below to start it."
-msgstr ""
-"tailscaled hizmeti çalışmıyor.\n"
-"Başlatmak için aşağıya tıklayın."
-
-#: src/window.rs
+#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/content.rs:122
 msgid "Start service"
 msgstr "Hizmeti başlat"
 
-#: src/window.rs
-msgid "Server"
-msgstr "Sunucu"
-
-#: src/window.rs
-msgid "Address of your BigScale/Headscale server."
-msgstr "BigScale/Headscale sunucunuzun adresi."
-
-#: src/window.rs
+#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/sidebar.rs:74
 msgid "Server URL"
 msgstr "Sunucu URL'si"
 
-#: src/window.rs
-msgid "Your identity on the network"
-msgstr "Ağdaki kimliğiniz"
-
-#: src/window.rs
-msgid ""
-"Personal key generated for you in the BigScale panel (\"New key\" in Users)."
-" Each person uses their own — this is not the server's key."
-msgstr ""
-"BigScale panelinde sizin için oluşturulan kişisel anahtar (Kullanıcılar "
-"bölümünde \"Yeni anahtar\"). Herkes kendi anahtarını kullanır — bu sunucunun"
-" anahtarı değildir."
-
-#: src/window.rs
-msgid "Pre-auth key (yours)"
-msgstr "Ön yetkilendirme anahtarı (size ait)"
-
-#: src/window.rs
+#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/content.rs:169
 msgid "This device"
 msgstr "Bu cihaz"
 
-#: src/window.rs
-msgid "Name shown to other devices on the network."
-msgstr "Ağdaki diğer cihazlara gösterilen ad."
-
-#: src/window.rs
+#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/sidebar.rs:109
 msgid "Device name"
 msgstr "Cihaz adı"
 
-#: src/window.rs
-msgid "Options"
-msgstr "Seçenekler"
-
-#: src/window.rs
-msgid "Connect automatically on startup"
-msgstr "Başlangıçta otomatik bağlan"
-
-#: src/window.rs
+#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/sidebar.rs:134
+#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/mod.rs:451
+#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/mod.rs:456
 msgid "Connect"
 msgstr "Bağlan"
 
-#: src/window.rs
-msgid "Please wait..."
-msgstr "Lütfen bekleyin..."
-
-#: src/window.rs
-msgid "Connected to the network"
-msgstr "Ağa bağlandı"
-
-#: src/window.rs
-msgid "Your IP address"
-msgstr "IP adresiniz"
-
-#: src/window.rs
+#. ── Devices on the network ──
+#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/content.rs:186
 msgid "Devices on the network"
 msgstr "Ağdaki cihazlar"
 
-#: src/window.rs
-msgid "No other devices found."
-msgstr "Başka cihaz bulunamadı."
-
-#: src/window.rs
-msgid "Copy"
-msgstr "Kopyala"
-
-#: src/tailscale.rs
+#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/tailscale.rs:204
 msgid "Failed to run tailscale"
 msgstr "Tailscale çalıştırılamadı"
 
-#: src/tailscale.rs
+#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/tailscale.rs:224
+#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/tailscale.rs:257
+#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/tailscale.rs:320
 msgid "Failed to connect — check the server URL and key."
 msgstr "Bağlantı kurulamadı — sunucu URL'sini ve anahtarı kontrol edin."
 
-#: src/tailscale.rs
+#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/tailscale.rs:245
 msgid "Failed to run pkexec tailscale"
 msgstr "pkexec tailscale çalıştırılamadı"
 
-#: src/tailscale.rs
+#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/tailscale.rs:364
 msgid "Could not determine the current user."
 msgstr "Geçerli kullanıcı belirlenemedi."
 
-#: src/tailscale.rs
+#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/tailscale.rs:370
 msgid "Failed to run pkexec tailscale set"
 msgstr "pkexec tailscale set çalıştırılamadı"
 
-#: src/tailscale.rs
+#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/tailscale.rs:372
 msgid "Failed to set tailscale operator."
 msgstr "Tailscale operatörü ayarlanamadı."
 
-msgid "The pre-auth key was rejected by the server. Generate a new key in the BigScale panel and try again."
-msgstr "Ön kimlik doğrulama anahtarı sunucu tarafından reddedildi. BigScale panelinde yeni bir anahtar oluşturun ve yeniden deneyin."
+#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/tailscale.rs:313
+msgid ""
+"The pre-auth key was rejected by the server. Generate a new key in the "
+"BigScale panel and try again."
+msgstr ""
+"Ön kimlik doğrulama anahtarı sunucu tarafından reddedildi. BigScale "
+"panelinde yeni bir anahtar oluşturun ve yeniden deneyin."
 
+#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/tailscale.rs:316
+#, rust-format
 msgid "Login rejected by server: {detail}"
 msgstr "Sunucu girişi reddetti: {detail}"
+
+#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/mod.rs:431
+msgid "Switch account"
+msgstr "Hesap değiştir"
+
+#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/sidebar.rs:66
+msgid "Use a pre-auth key"
+msgstr "Ön yetkilendirme anahtarı kullan"
+
+#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/sidebar.rs:67
+msgid "Paste the key your administrator sent you"
+msgstr "Yöneticinizin size gönderdiği anahtarı yapıştırın"
+
+#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/sidebar.rs:91
+msgid "Apply manual setup"
+msgstr "Manuel kurulumu uygula"
+
+#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/sidebar.rs:93
+msgid "Save"
+msgstr "Kaydet"
+
+#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/sidebar.rs:96
+msgid "Save the server and key above"
+msgstr "Yukarıdaki sunucuyu ve anahtarı kaydet"
+
+#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/sidebar.rs:117
+msgid "Connect automatically"
+msgstr "Otomatik bağlan"
+
+#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/sidebar.rs:118
+msgid "Join the network when BigLace starts"
+msgstr "BigLace başladığında ağa katıl"
+
+#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/mod.rs:418
+msgid "Sign in or paste a pre-auth key"
+msgstr "Oturum açın veya ön yetkilendirme anahtarı yapıştırın"
+
+#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/sidebar.rs:59
+msgid "Sign in with your BigScale panel account"
+msgstr "BigScale panel hesabınızla oturum açın"
+
+#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/mod.rs:425
+msgid "Server not set"
+msgstr "Sunucu ayarlanmamış"
+
+#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/mod.rs:181
+msgid "Setup saved"
+msgstr "Kurulum kaydedildi"
+
+#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/mod.rs:237
+msgid "Sign in or paste a pre-auth key first."
+msgstr "Önce oturum açın veya ön yetkilendirme anahtarı yapıştırın."
+
+#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/content.rs:62
+msgid "Sign in to connect"
+msgstr "Bağlanmak için oturum açın"
+
+#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/content.rs:63
+msgid "Use the panel on the left to sign in or paste a pre-auth key."
+msgstr ""
+"Bağlanmak için soldaki paneli kullanarak oturum açın veya ön yetkilendirme "
+"anahtarı yapıştırın."
+
+#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/content.rs:71
+msgid "Not connected"
+msgstr "Bağlı değil"
+
+#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/content.rs:72
+msgid "Press Connect on the left to join the network."
+msgstr "Ağa katılmak için soldaki Bağlan düğmesine basın."
+
+#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/content.rs:146
+#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/mod.rs:399
+#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/mod.rs:446
+msgid "Connecting…"
+msgstr "Bağlanıyor…"
+
+#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/content.rs:195
+msgid "No other devices on the network yet."
+msgstr "Ağda henüz başka cihaz yok."
+
+#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/content.rs:179
+#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/peer_row.rs:52
+msgid "Copy IP address"
+msgstr "IP adresini kopyala"
+
+#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/peer_row.rs:60
+#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/mod.rs:300
+msgid "IP address copied"
+msgstr "IP adresi kopyalandı"
+
+#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/peer_row.rs:74
+msgid "Open files (SFTP)"
+msgstr "Dosyaları aç (SFTP)"
+
+#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/peer_row.rs:84
+msgid "Open terminal (SSH)"
+msgstr "Terminal aç (SSH)"
+
+#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/peer_row.rs:15
+#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/peer_row.rs:16
+msgid "offline"
+msgstr "çevrimdışı"
+
+#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/mod.rs:396
+msgid "Service stopped"
+msgstr "Hizmet durduruldu"
+
+#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/content.rs:37
+#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/mod.rs:398
+msgid "Disconnected"
+msgstr "Bağlantı kesildi"
+
+#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/mod.rs:343
+#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/mod.rs:400
+msgid "Connected"
+msgstr "Bağlandı"
+
+#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/mod.rs:113
+msgid "Refresh"
+msgstr "Yenile"
+
+#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/dialogs.rs:192
+msgid "Signed in. Press Connect to join the network."
+msgstr "Oturum açıldı. Ağa katılmak için Bağlan'a basın."
+
+#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/mod.rs:483
+msgid "no other devices"
+msgstr "başka cihaz yok"
+
+#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/mod.rs:485
+#, rust-format
+msgid "{online} online"
+msgstr "{online} çevrimiçi"
+
+#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/mod.rs:487
+#, rust-format
+msgid "{online} online · {offline} offline"
+msgstr "{online} çevrimiçi · {offline} çevrimdışı"
+
+#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/content.rs:116
+msgid "The tailscale service is not running"
+msgstr "Tailscale hizmeti çalışmıyor"
+
+#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/content.rs:118
+msgid "BigLace needs the tailscaled background service to manage the network."
+msgstr ""
+"BigLace, ağı yönetmek için tailscaled arka plan hizmetine ihtiyaç duyar."
+
+#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/sidebar.rs:83
+msgid "Pre-auth key"
+msgstr "Ön yetkilendirme anahtarı"
+
+#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/mod.rs:397
+#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/mod.rs:417
+msgid "Not signed in"
+msgstr "Oturum açılmadı"
+
+#~ msgid "Refresh list"
+#~ msgstr "Listeyi Yenile"
+
+#~ msgid "Files"
+#~ msgstr "Dosyalar"
+
+#~ msgid "Terminal"
+#~ msgstr "Terminal"
+
+#~ msgid "Copied!"
+#~ msgstr "Kopyalandı!"
+
+#~ msgid "Key generated successfully."
+#~ msgstr "Anahtar başarıyla oluşturuldu."
+
+#~ msgid "Service not found"
+#~ msgstr "Hizmet bulunamadı"
+
+#~ msgid ""
+#~ "The tailscaled service is not running.\n"
+#~ "Click below to start it."
+#~ msgstr ""
+#~ "tailscaled hizmeti çalışmıyor.\n"
+#~ "Başlatmak için aşağıya tıklayın."
+
+#~ msgid "Server"
+#~ msgstr "Sunucu"
+
+#~ msgid "Address of your BigScale/Headscale server."
+#~ msgstr "BigScale/Headscale sunucunuzun adresi."
+
+#~ msgid "Your identity on the network"
+#~ msgstr "Ağdaki kimliğiniz"
+
+#~ msgid ""
+#~ "Personal key generated for you in the BigScale panel (\"New key\" in Users)."
+#~ " Each person uses their own — this is not the server's key."
+#~ msgstr ""
+#~ "BigScale panelinde sizin için oluşturulan kişisel anahtar (Kullanıcılar "
+#~ "bölümünde \"Yeni anahtar\"). Herkes kendi anahtarını kullanır — bu sunucunun"
+#~ " anahtarı değildir."
+
+#~ msgid "Pre-auth key (yours)"
+#~ msgstr "Ön yetkilendirme anahtarı (size ait)"
+
+#~ msgid "Name shown to other devices on the network."
+#~ msgstr "Ağdaki diğer cihazlara gösterilen ad."
+
+#~ msgid "Options"
+#~ msgstr "Seçenekler"
+
+#~ msgid "Connect automatically on startup"
+#~ msgstr "Başlangıçta otomatik bağlan"
+
+#~ msgid "Please wait..."
+#~ msgstr "Lütfen bekleyin..."
+
+#~ msgid "Connected to the network"
+#~ msgstr "Ağa bağlandı"
+
+#~ msgid "Your IP address"
+#~ msgstr "IP adresiniz"
+
+#~ msgid "No other devices found."
+#~ msgstr "Başka cihaz bulunamadı."
+
+#~ msgid "Copy"
+#~ msgstr "Kopyala"
