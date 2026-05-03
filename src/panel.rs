@@ -1,5 +1,6 @@
 use anyhow::{anyhow, Context, Result};
 use serde::{Deserialize, Serialize};
+use std::sync::Arc;
 use std::time::Duration;
 
 #[derive(Debug, Clone)]
@@ -34,9 +35,12 @@ pub fn request_preauth(creds: &PanelCredentials) -> Result<PreAuthResponse> {
     let base = creds.url.trim_end_matches('/');
     let endpoint = format!("{base}/api/v1/preauth-key");
 
+    // ureq 2.x doesn't auto-wire native-tls — must pass the connector explicitly.
+    let tls = native_tls::TlsConnector::new().context("init TLS connector")?;
     let agent = ureq::AgentBuilder::new()
         .timeout_connect(Duration::from_secs(10))
         .timeout_read(Duration::from_secs(30))
+        .tls_connector(Arc::new(tls))
         .build();
 
     let body = PreAuthRequest {
