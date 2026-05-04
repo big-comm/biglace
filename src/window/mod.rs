@@ -112,6 +112,7 @@ fn setup_menu(ui: &Ui, cfg: &Rc<RefCell<config::Config>>) {
     let menu = gtk4::gio::Menu::new();
     menu.append(Some(&tr!("Refresh")),                              Some("win.refresh"));
     menu.append(Some(&tr!("Sign in with panel account")),           Some("win.panel-login"));
+    menu.append(Some(&tr!("Sign out")),                             Some("win.sign-out"));
     menu.append(Some(&tr!("Make this user the tailscale operator")), Some("win.set-operator"));
     menu.append(Some(&tr!("About BigLace")),                        Some("win.about"));
     ui.content.btn_menu.set_menu_model(Some(&menu));
@@ -149,19 +150,23 @@ fn setup_menu(ui: &Ui, cfg: &Rc<RefCell<config::Config>>) {
         });
         ui.win.add_action(&action);
     }
+
+    {
+        let action = gtk4::gio::SimpleAction::new("sign-out", None);
+        let win_w = ui.win.clone();
+        let toast_w = ui.toast.clone();
+        let cfg2 = cfg.clone();
+        let sidebar_w = ui.sidebar.clone();
+        action.connect_activate(move |_, _| {
+            dialogs::confirm_sign_out(&win_w, &toast_w, &cfg2, &sidebar_w);
+        });
+        ui.win.add_action(&action);
+    }
 }
 
 // ─── Signal wiring ───────────────────────────────────────────────────────────
 
 fn wire_signals(ui: &Ui, cfg: &Rc<RefCell<config::Config>>) {
-    // ── Switch account button → open panel-login dialog ──
-    {
-        let win_w = ui.win.clone();
-        ui.sidebar.btn_switch_account.connect_clicked(move |_| {
-            gtk4::prelude::WidgetExt::activate_action(&win_w, "win.panel-login", None).ok();
-        });
-    }
-
     // ── Save manual key/server ──
     {
         let ui2 = ui.clone();
@@ -413,12 +418,10 @@ fn apply_state(
     ui.content.stack.set_visible_child_name(page);
 
     // ── Identity card ──
-    if cfg.authkey.is_empty() {
+    let signed_in = !cfg.authkey.is_empty();
+    if !signed_in {
         ui.sidebar.identity_row.set_title(&tr!("Not signed in"));
         ui.sidebar.identity_row.set_subtitle(&tr!("Sign in or paste a pre-auth key"));
-        ui.sidebar.btn_switch_account.set_label(&tr!("Sign in"));
-        ui.sidebar.btn_switch_account.add_css_class("suggested-action");
-        ui.sidebar.btn_switch_account.remove_css_class("flat");
         ui.sidebar.expander_manual.set_visible(true);
     } else {
         let host = if cfg.hostname.is_empty() { "—".to_string() } else { cfg.hostname.clone() };
@@ -429,14 +432,20 @@ fn apply_state(
         };
         ui.sidebar.identity_row.set_title(&host);
         ui.sidebar.identity_row.set_subtitle(&url);
-        ui.sidebar.btn_switch_account.set_label(&tr!("Switch account"));
-        ui.sidebar.btn_switch_account.remove_css_class("suggested-action");
-        ui.sidebar.btn_switch_account.add_css_class("flat");
         // Already signed in — hide the manual-key advanced row to avoid
         // suggesting a key still needs to be pasted. It'll come back if the
         // user signs out (clears authkey).
         ui.sidebar.expander_manual.set_visible(false);
         ui.sidebar.expander_manual.set_expanded(false);
+    }
+
+    // ── Menu items: gate by sign-in state ──
+    // Sign-in actions only make sense when out; sign-out only when in.
+    if let Some(act) = ui.win.lookup_action("panel-login").and_downcast::<gtk4::gio::SimpleAction>() {
+        act.set_enabled(!signed_in);
+    }
+    if let Some(act) = ui.win.lookup_action("sign-out").and_downcast::<gtk4::gio::SimpleAction>() {
+        act.set_enabled(signed_in);
     }
 
     // ── Connect / Disconnect button ──

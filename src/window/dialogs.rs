@@ -46,6 +46,98 @@ pub fn show_set_operator(parent: &libadwaita::ApplicationWindow) {
     dlg.present();
 }
 
+/// Confirm with the user, then tear down the current session.
+///
+/// We deliberately do NOT auto-open the panel-login dialog after sign-out:
+/// users who joined via a manually-pasted pre-auth key don't have panel
+/// credentials, and the sidebar reverts to the "not signed in" layout where
+/// they can pick freely between panel login (menu) and the manual-key
+/// expander.
+pub fn confirm_sign_out(
+    parent: &libadwaita::ApplicationWindow,
+    overlay: &libadwaita::ToastOverlay,
+    cfg:    &Rc<RefCell<config::Config>>,
+    sidebar: &Sidebar,
+) {
+    if cfg.borrow().authkey.is_empty() {
+        return;
+    }
+
+    let dlg = libadwaita::MessageDialog::new(
+        Some(parent),
+        Some(&tr!("Sign out of current account?")),
+        Some(&tr!(
+            "This will disconnect from the network, sign this device out of \
+             the current control server, and forget the saved password. You'll \
+             then be able to sign in with a different account."
+        )),
+    );
+    dlg.add_response("cancel", &tr!("Cancel"));
+    dlg.add_response("ok", &tr!("Sign out"));
+    dlg.set_response_appearance("ok", libadwaita::ResponseAppearance::Destructive);
+    dlg.set_default_response(Some("cancel"));
+    dlg.set_close_response("cancel");
+
+    let parent_w  = parent.clone();
+    let overlay_w = overlay.clone();
+    let cfg_w     = cfg.clone();
+    let sidebar_w = sidebar.clone();
+    dlg.connect_response(None, move |dlg, resp| {
+        if resp != "ok" {
+            dlg.close();
+            return;
+        }
+        dlg.close();
+        sign_out(&parent_w, &overlay_w, &cfg_w, &sidebar_w);
+    });
+    dlg.present();
+}
+
+/// Tear down the current session, leaving the UI in the "not signed in"
+/// state. Runs `tailscale logout` on a background thread so the UI stays
+/// responsive — the logout call itself can block on network when the control
+/// server is unreachable.
+fn sign_out(
+    parent: &libadwaita::ApplicationWindow,
+    overlay: &libadwaita::ToastOverlay,
+    cfg:    &Rc<RefCell<config::Config>>,
+    sidebar: &Sidebar,
+) {
+    // Snapshot credentials we need to clear from the keyring, then wipe the
+    // identity-bearing fields from the on-disk config. We deliberately keep
+    // `server_url`, `panel_url`, `hostname` and `auto_connect`: typically
+    // the user is switching accounts on the same control server, so making
+    // them retype URLs each time is friction. They can still edit them
+    // manually when moving to a different server.
+    let (panel_url, panel_username) = {
+        let mut c = cfg.borrow_mut();
+        let pu = c.panel_url.clone();
+        let pn = c.panel_username.clone();
+        c.authkey        = String::new();
+        c.panel_username = String::new();
+        config::save(&c).ok();
+        (pu, pn)
+    };
+    secrets::clear(&panel_url, &panel_username);
+
+    sidebar.entry_key.set_text("");
+
+    std::thread::spawn(|| {
+        let _ = tailscale::logout();
+    });
+
+    overlay.add_toast(
+        libadwaita::Toast::builder()
+            .title(tr!("Signed out."))
+            .timeout(3)
+            .build(),
+    );
+
+    // Refresh so the sidebar flips to the "not signed in" layout, exposing
+    // both the manual-key expander and the panel-login button.
+    gtk4::prelude::WidgetExt::activate_action(parent, "win.refresh", None).ok();
+}
+
 pub fn show_panel_login(
     parent: &libadwaita::ApplicationWindow,
     overlay: &libadwaita::ToastOverlay,
