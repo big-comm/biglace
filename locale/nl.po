@@ -12,7 +12,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/mod.rs:441
+#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/mod.rs:456
 msgid "Disconnect"
 msgstr "Verbreken"
 
@@ -20,87 +20,76 @@ msgstr "Verbreken"
 msgid "Main menu"
 msgstr "Hoofdmenu"
 
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/dialogs.rs:57
 #: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/mod.rs:114
 msgid "Sign in with panel account"
 msgstr "Inloggen met paneelaccount"
 
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/mod.rs:115
+#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/mod.rs:116
 msgid "Make this user the tailscale operator"
 msgstr "Maak deze gebruiker de tailscale-operator"
 
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/mod.rs:116
+#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/mod.rs:117
 msgid "About BigLace"
 msgstr "Over BigLace"
 
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/dialogs.rs:41
+#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/dialogs.rs:42
 msgid "Tailscale operator"
 msgstr "Tailscale-operator"
 
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/dialogs.rs:36
+#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/dialogs.rs:37
 msgid "Done. You will no longer need a password to connect or disconnect."
 msgstr ""
 "Klaar. U heeft geen wachtwoord meer nodig om verbinding te maken of te "
 "verbreken."
 
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/dialogs.rs:37
+#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/dialogs.rs:38
 #, rust-format
 msgid "Failed: {error}"
 msgstr "Mislukt: {error}"
 
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/dialogs.rs:44
+#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/dialogs.rs:45
 msgid "OK"
 msgstr "OK"
 
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/dialogs.rs:200
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/mod.rs:352
+#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/dialogs.rs:354
+#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/mod.rs:357
 #, rust-format
 msgid "Error: {error}"
 msgstr "Fout: {error}"
 
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/dialogs.rs:28
+#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/dialogs.rs:29
 msgid "Mesh VPN client for BigScale/Headscale."
 msgstr "Mesh VPN-client voor BigScale/Headscale."
 
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/dialogs.rs:68
+#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/dialogs.rs:161
 msgid "Panel credentials"
 msgstr "Panelgegevens"
 
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/dialogs.rs:70
-msgid ""
-"Use your BigScale panel username and password to generate a key "
-"automatically."
-msgstr ""
-"Gebruik uw BigScale-panelgebruikersnaam en wachtwoord om automatisch een "
-"sleutel te genereren."
-
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/dialogs.rs:75
+#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/dialogs.rs:170
 msgid "Panel URL"
 msgstr "Panel-URL"
 
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/dialogs.rs:78
+#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/dialogs.rs:173
 msgid "Username"
 msgstr "Gebruikersnaam"
 
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/dialogs.rs:79
+#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/dialogs.rs:174
 msgid "Password"
 msgstr "Wachtwoord"
 
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/dialogs.rs:80
-msgid "Network user identifier"
-msgstr "Netwerkgebruikers-ID"
-
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/dialogs.rs:111
+#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/dialogs.rs:75
+#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/dialogs.rs:217
 msgid "Cancel"
 msgstr "Annuleren"
 
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/dialogs.rs:113
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/sidebar.rs:56
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/mod.rs:419
+#. The OK button needs to flip between "Sign in" and "spinner + Connecting…"
+#. while the HTTP call is in flight. Build both children up front and just
+#. swap the button's child — simpler than juggling visibility flags.
+#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/dialogs.rs:222
 msgid "Sign in"
 msgstr "Inloggen"
 
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/dialogs.rs:152
+#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/dialogs.rs:275
 msgid "Fill in URL, username and password."
 msgstr "Vul URL, gebruikersnaam en wachtwoord in."
 
@@ -108,7 +97,7 @@ msgstr "Vul URL, gebruikersnaam en wachtwoord in."
 msgid "Start service"
 msgstr "Service starten"
 
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/sidebar.rs:74
+#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/sidebar.rs:69
 msgid "Server URL"
 msgstr "Server-URL"
 
@@ -116,13 +105,13 @@ msgstr "Server-URL"
 msgid "This device"
 msgstr "Dit apparaat"
 
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/sidebar.rs:109
+#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/sidebar.rs:104
 msgid "Device name"
 msgstr "Apparaatnaam"
 
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/sidebar.rs:134
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/mod.rs:451
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/mod.rs:456
+#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/sidebar.rs:129
+#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/mod.rs:466
+#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/mod.rs:471
 msgid "Connect"
 msgstr "Verbinden"
 
@@ -145,15 +134,15 @@ msgstr "Verbinding mislukt — controleer de server-URL en sleutel."
 msgid "Failed to run pkexec tailscale"
 msgstr "Uitvoeren van pkexec tailscale mislukt"
 
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/tailscale.rs:364
+#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/tailscale.rs:382
 msgid "Could not determine the current user."
 msgstr "Kan de huidige gebruiker niet bepalen."
 
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/tailscale.rs:370
+#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/tailscale.rs:388
 msgid "Failed to run pkexec tailscale set"
 msgstr "Uitvoeren van pkexec tailscale set mislukt"
 
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/tailscale.rs:372
+#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/tailscale.rs:390
 msgid "Failed to set tailscale operator."
 msgstr "Instellen van tailscale-operator mislukt."
 
@@ -170,55 +159,39 @@ msgstr ""
 msgid "Login rejected by server: {detail}"
 msgstr "Aanmelding afgewezen door server: {detail}"
 
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/mod.rs:431
-msgid "Switch account"
-msgstr "Account wisselen"
-
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/sidebar.rs:66
-msgid "Use a pre-auth key"
-msgstr "Gebruik een pre-authenticatiesleutel"
-
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/sidebar.rs:67
-msgid "Paste the key your administrator sent you"
-msgstr "Plak de sleutel die uw beheerder u heeft gestuurd"
-
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/sidebar.rs:91
+#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/sidebar.rs:86
 msgid "Apply manual setup"
 msgstr "Handmatige configuratie toepassen"
 
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/sidebar.rs:93
+#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/sidebar.rs:88
 msgid "Save"
 msgstr "Opslaan"
 
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/sidebar.rs:96
+#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/sidebar.rs:91
 msgid "Save the server and key above"
 msgstr "Sla de server en sleutel hierboven op"
 
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/sidebar.rs:117
+#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/sidebar.rs:112
 msgid "Connect automatically"
 msgstr "Automatisch verbinden"
 
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/sidebar.rs:118
+#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/sidebar.rs:113
 msgid "Join the network when BigLace starts"
 msgstr "Word lid van het netwerk wanneer BigLace start"
 
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/mod.rs:418
+#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/mod.rs:424
 msgid "Sign in or paste a pre-auth key"
 msgstr "Log in of plak een pre-authenticatiesleutel"
 
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/sidebar.rs:59
-msgid "Sign in with your BigScale panel account"
-msgstr "Log in met uw BigScale-paneelaccount"
-
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/mod.rs:425
+#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/mod.rs:429
 msgid "Server not set"
 msgstr "Server niet ingesteld"
 
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/mod.rs:181
+#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/mod.rs:186
 msgid "Setup saved"
 msgstr "Configuratie opgeslagen"
 
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/mod.rs:237
+#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/mod.rs:242
 msgid "Sign in or paste a pre-auth key first."
 msgstr "Log eerst in of plak een pre-authenticatiesleutel."
 
@@ -241,8 +214,9 @@ msgid "Press Connect on the left to join the network."
 msgstr "Druk links op Verbinden om lid te worden van het netwerk."
 
 #: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/content.rs:146
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/mod.rs:399
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/mod.rs:446
+#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/dialogs.rs:229
+#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/mod.rs:404
+#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/mod.rs:461
 msgid "Connecting…"
 msgstr "Verbinden…"
 
@@ -256,7 +230,7 @@ msgid "Copy IP address"
 msgstr "IP-adres kopiëren"
 
 #: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/peer_row.rs:60
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/mod.rs:300
+#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/mod.rs:305
 msgid "IP address copied"
 msgstr "IP-adres gekopieerd"
 
@@ -273,17 +247,17 @@ msgstr "Terminal openen (SSH)"
 msgid "offline"
 msgstr "offline"
 
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/mod.rs:396
+#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/mod.rs:401
 msgid "Service stopped"
 msgstr "Service gestopt"
 
 #: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/content.rs:37
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/mod.rs:398
+#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/mod.rs:403
 msgid "Disconnected"
 msgstr "Verbinding verbroken"
 
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/mod.rs:343
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/mod.rs:400
+#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/mod.rs:348
+#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/mod.rs:405
 msgid "Connected"
 msgstr "Verbonden"
 
@@ -291,20 +265,20 @@ msgstr "Verbonden"
 msgid "Refresh"
 msgstr "Vernieuwen"
 
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/dialogs.rs:192
+#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/dialogs.rs:340
 msgid "Signed in. Press Connect to join the network."
 msgstr "Aangemeld. Druk op Verbinden om lid te worden van het netwerk."
 
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/mod.rs:483
+#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/mod.rs:498
 msgid "no other devices"
 msgstr "geen andere apparaten"
 
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/mod.rs:485
+#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/mod.rs:500
 #, rust-format
 msgid "{online} online"
 msgstr "{online} online"
 
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/mod.rs:487
+#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/mod.rs:502
 #, rust-format
 msgid "{online} online · {offline} offline"
 msgstr "{online} online · {offline} offline"
@@ -319,14 +293,84 @@ msgstr ""
 "BigLace heeft de tailscaled-achtergrondservice nodig om het netwerk te "
 "beheren."
 
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/sidebar.rs:83
+#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/sidebar.rs:78
 msgid "Pre-auth key"
 msgstr "Pre-authenticatiesleutel"
 
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/mod.rs:397
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/mod.rs:417
+#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/mod.rs:402
+#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/mod.rs:423
 msgid "Not signed in"
 msgstr "Niet aangemeld"
+
+#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/sidebar.rs:60
+msgid "Advanced: use a pre-auth key"
+msgstr "Geavanceerd: gebruik een pre-authenticatiesleutel"
+
+#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/sidebar.rs:61
+msgid "Already have a key from your administrator? Paste it here."
+msgstr "Heeft u al een sleutel van uw beheerder? Plak deze hier."
+
+#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/dialogs.rs:68
+msgid "Sign out of current account?"
+msgstr "Uitloggen bij huidig account?"
+
+#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/dialogs.rs:70
+msgid ""
+"This will disconnect from the network, sign this device out of the current "
+"control server, and forget the saved password. You'll then be able to sign "
+"in with a different account."
+msgstr ""
+"Dit verbreekt de verbinding met het netwerk, meldt dit apparaat af van de "
+"huidige besturingsserver en vergeet het opgeslagen wachtwoord. U kunt daarna"
+" inloggen met een ander account."
+
+#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/dialogs.rs:76
+#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/mod.rs:115
+msgid "Sign out"
+msgstr "Uitloggen"
+
+#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/dialogs.rs:131
+msgid "Signed out."
+msgstr "Uitgelogd."
+
+#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/dialogs.rs:150
+msgid "Connect via panel account"
+msgstr "Verbinden via paneelaccount"
+
+#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/dialogs.rs:163
+msgid ""
+"Sign in with your BigScale panel username and password. A device identity "
+"will be created on the network automatically — no manual key needed."
+msgstr ""
+"Log in met uw BigScale-paneelgebruikersnaam en -wachtwoord. Er wordt "
+"automatisch een apparaatidentiteit op het netwerk aangemaakt — geen "
+"handmatige sleutel nodig."
+
+#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/dialogs.rs:176
+msgid "Network identifier (will be created if new)"
+msgstr "Netwerkidentificatie (wordt aangemaakt indien nieuw)"
+
+#~ msgid ""
+#~ "Use your BigScale panel username and password to generate a key "
+#~ "automatically."
+#~ msgstr ""
+#~ "Gebruik uw BigScale-panelgebruikersnaam en wachtwoord om automatisch een "
+#~ "sleutel te genereren."
+
+#~ msgid "Network user identifier"
+#~ msgstr "Netwerkgebruikers-ID"
+
+#~ msgid "Switch account"
+#~ msgstr "Account wisselen"
+
+#~ msgid "Use a pre-auth key"
+#~ msgstr "Gebruik een pre-authenticatiesleutel"
+
+#~ msgid "Paste the key your administrator sent you"
+#~ msgstr "Plak de sleutel die uw beheerder u heeft gestuurd"
+
+#~ msgid "Sign in with your BigScale panel account"
+#~ msgstr "Log in met uw BigScale-paneelaccount"
 
 #~ msgid "Refresh list"
 #~ msgstr "Lijst vernieuwen"
