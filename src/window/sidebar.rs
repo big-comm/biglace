@@ -7,7 +7,6 @@ use crate::tr;
 pub struct Sidebar {
     pub toolbar:            libadwaita::ToolbarView,
     pub identity_row:       libadwaita::ActionRow,
-    pub btn_switch_account: gtk4::Button,
     pub expander_manual:    libadwaita::ExpanderRow,
     pub entry_server:       libadwaita::EntryRow,
     pub entry_key:          libadwaita::EntryRow,
@@ -52,13 +51,6 @@ pub fn build() -> Sidebar {
     avatar.add_css_class("dim-label");
     identity_row.add_prefix(&avatar);
 
-    let btn_switch_account = gtk4::Button::builder()
-        .label(tr!("Sign in"))
-        .css_classes(["flat"])
-        .valign(gtk4::Align::Center)
-        .tooltip_text(tr!("Sign in with your BigScale panel account"))
-        .build();
-    identity_row.add_suffix(&btn_switch_account);
     grp_identity.add(&identity_row);
 
     // Manual key expander — secondary path for users who already have a key
@@ -147,7 +139,6 @@ pub fn build() -> Sidebar {
     Sidebar {
         toolbar,
         identity_row,
-        btn_switch_account,
         expander_manual,
         entry_server,
         entry_key,

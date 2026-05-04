@@ -322,7 +322,14 @@ pub fn connect(server: &str, authkey: &str, hostname: &str) -> Result<()> {
 
 fn try_connect(server: &str, authkey: &str, hostname: &str) -> Result<()> {
     let user = std::env::var("USER").unwrap_or_default();
-    let mut args = vec!["up", "--accept-routes"];
+    // `--reset` clears any pref cached from a previous `tailscale up`/`set`
+    // run that we don't explicitly carry over here. Without it, tailscale
+    // aborts with "changing settings via 'tailscale up' requires mentioning
+    // all non-default flags" whenever an old biglace (or a manual `tailscale
+    // set`) left a flag enabled that the current biglace doesn't pass —
+    // e.g. --ssh, --shields-up, --advertise-routes. BigLace owns the full
+    // user-facing config, so resetting on each up is the right call.
+    let mut args = vec!["up", "--reset", "--accept-routes"];
 
     let s_arg;
     let a_arg;
@@ -358,6 +365,13 @@ fn try_connect(server: &str, authkey: &str, hostname: &str) -> Result<()> {
 
 pub fn disconnect() -> Result<()> {
     run_tailscale_with_fallback(&["down"])
+}
+
+/// Sign the device out of its current control server. Use when the user wants
+/// to switch accounts — `down` only stops the tunnel but keeps the node
+/// registered, so the next `up` would silently rejoin the same account.
+pub fn logout() -> Result<()> {
+    run_tailscale_with_fallback(&["logout"])
 }
 
 /// One-time setup: make `$USER` the tailscale operator so subsequent

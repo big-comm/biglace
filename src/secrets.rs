@@ -41,7 +41,6 @@ pub fn load(panel_url: &str, username: &str) -> Option<String> {
 }
 
 /// Forget a stored password — call when the user signs out / switches account.
-#[allow(dead_code)]
 pub fn clear(panel_url: &str, username: &str) {
     if let Some(e) = entry(panel_url, username) {
         let _ = e.delete_credential();
