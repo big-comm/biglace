@@ -419,6 +419,7 @@ fn apply_state(
         ui.sidebar.btn_switch_account.set_label(&tr!("Sign in"));
         ui.sidebar.btn_switch_account.add_css_class("suggested-action");
         ui.sidebar.btn_switch_account.remove_css_class("flat");
+        ui.sidebar.expander_manual.set_visible(true);
     } else {
         let host = if cfg.hostname.is_empty() { "—".to_string() } else { cfg.hostname.clone() };
         let url  = if cfg.server_url.is_empty() {
@@ -431,6 +432,11 @@ fn apply_state(
         ui.sidebar.btn_switch_account.set_label(&tr!("Switch account"));
         ui.sidebar.btn_switch_account.remove_css_class("suggested-action");
         ui.sidebar.btn_switch_account.add_css_class("flat");
+        // Already signed in — hide the manual-key advanced row to avoid
+        // suggesting a key still needs to be pasted. It'll come back if the
+        // user signs out (clears authkey).
+        ui.sidebar.expander_manual.set_visible(false);
+        ui.sidebar.expander_manual.set_expanded(false);
     }
 
     // ── Connect / Disconnect button ──

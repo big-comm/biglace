@@ -7,6 +7,7 @@ use std::time::Duration;
 
 use crate::config;
 use crate::panel::{self, PanelCredentials};
+use crate::secrets;
 use crate::tailscale;
 use crate::tr;
 use crate::trf;
@@ -54,8 +55,8 @@ pub fn show_panel_login(
     let dlg = libadwaita::Window::builder()
         .transient_for(parent)
         .modal(true)
-        .title(tr!("Sign in with panel account"))
-        .default_width(460)
+        .title(tr!("Connect via panel account"))
+        .default_width(480)
         .build();
 
     let outer = gtk4::Box::new(gtk4::Orientation::Vertical, 0);
@@ -67,7 +68,9 @@ pub fn show_panel_login(
     let grp = libadwaita::PreferencesGroup::builder()
         .title(tr!("Panel credentials"))
         .description(tr!(
-            "Use your BigScale panel username and password to generate a key automatically."
+            "Sign in with your BigScale panel username and password. \
+             A device identity will be created on the network automatically — \
+             no manual key needed."
         ))
         .build();
 
@@ -77,12 +80,23 @@ pub fn show_panel_login(
         .build();
     let er_user = libadwaita::EntryRow::builder().title(tr!("Username")).build();
     let er_pass = libadwaita::PasswordEntryRow::builder().title(tr!("Password")).build();
-    let er_node = libadwaita::EntryRow::builder().title(tr!("Network user identifier")).build();
+    let er_node = libadwaita::EntryRow::builder()
+        .title(tr!("Network identifier (will be created if new)"))
+        .build();
 
     {
         let c = cfg.borrow();
         er_url.set_text(&c.panel_url);
+        er_user.set_text(&c.panel_username);
         er_node.set_text(&c.hostname);
+        // Pre-fill the password from the OS keyring if we've seen this user
+        // on this panel before. Falls back to empty silently when no keyring
+        // backend is available.
+        if !c.panel_url.is_empty() && !c.panel_username.is_empty() {
+            if let Some(pw) = secrets::load(&c.panel_url, &c.panel_username) {
+                er_pass.set_text(&pw);
+            }
+        }
     }
 
     grp.add(&er_url);
@@ -109,9 +123,22 @@ pub fn show_panel_login(
     btn_box.set_margin_end(16);
 
     let btn_cancel = gtk4::Button::builder().label(tr!("Cancel")).build();
+
+    // The OK button needs to flip between "Sign in" and "spinner + Connecting…"
+    // while the HTTP call is in flight. Build both children up front and just
+    // swap the button's child — simpler than juggling visibility flags.
+    let ok_label_idle = gtk4::Label::new(Some(&tr!("Sign in")));
+
+    let ok_busy_box = gtk4::Box::new(gtk4::Orientation::Horizontal, 8);
+    ok_busy_box.set_halign(gtk4::Align::Center);
+    let ok_spinner = gtk4::Spinner::new();
+    ok_spinner.set_size_request(16, 16);
+    ok_busy_box.append(&ok_spinner);
+    ok_busy_box.append(&gtk4::Label::new(Some(&tr!("Connecting…"))));
+
     let btn_ok = gtk4::Button::builder()
-        .label(tr!("Sign in"))
         .css_classes(["suggested-action"])
+        .child(&ok_label_idle)
         .build();
     btn_box.append(&btn_cancel);
     btn_box.append(&btn_ok);
@@ -126,6 +153,7 @@ pub fn show_panel_login(
 
     {
         let dlg2 = dlg.clone();
+        let win2 = parent.clone();
         let lbl_err2 = lbl_err.clone();
         let er_url2 = er_url.clone();
         let er_user2 = er_user.clone();
@@ -135,10 +163,13 @@ pub fn show_panel_login(
         let sidebar2 = sidebar.clone();
         let toast2 = overlay.clone();
         let btn_ok_w = btn_ok.clone();
+        let btn_cancel_w = btn_cancel.clone();
+        let ok_idle_w = ok_label_idle.clone();
+        let ok_busy_w = ok_busy_box.clone();
+        let ok_spinner_w = ok_spinner.clone();
 
         btn_ok.connect_clicked(move |_| {
             lbl_err2.set_text("");
-            btn_ok_w.set_sensitive(false);
 
             let creds = PanelCredentials {
                 url:      er_url2.text().to_string(),
@@ -150,9 +181,14 @@ pub fn show_panel_login(
 
             if creds.url.is_empty() || creds.username.is_empty() || creds.password.is_empty() {
                 lbl_err2.set_text(&tr!("Fill in URL, username and password."));
-                btn_ok_w.set_sensitive(true);
                 return;
             }
+
+            // Visual busy state: disable OK + Cancel, swap label for spinner.
+            btn_ok_w.set_sensitive(false);
+            btn_cancel_w.set_sensitive(false);
+            btn_ok_w.set_child(Some(&ok_busy_w));
+            ok_spinner_w.start();
 
             let slot: Arc<Mutex<Option<Result<panel::PreAuthResponse, String>>>> =
                 Arc::new(Mutex::new(None));
@@ -164,29 +200,49 @@ pub fn show_panel_login(
             });
 
             let dlg3 = dlg2.clone();
+            let win3 = win2.clone();
             let lbl_err3 = lbl_err2.clone();
             let cfg3 = cfg2.clone();
             let sidebar3 = sidebar2.clone();
             let toast3 = toast2.clone();
             let btn_ok_w2 = btn_ok_w.clone();
+            let btn_cancel_w2 = btn_cancel_w.clone();
+            let ok_idle_w2 = ok_idle_w.clone();
+            let ok_spinner_w2 = ok_spinner_w.clone();
             let panel_url = creds.url.clone();
-            let node = creds.node.clone();
+            let username  = creds.username.clone();
+            let password  = creds.password.clone();
+            let node      = creds.node.clone();
 
             glib::timeout_add_local(Duration::from_millis(300), move || {
                 match slot.lock().ok().and_then(|mut g| g.take()) {
                     None => glib::ControlFlow::Continue,
                     Some(Ok(resp)) => {
-                        sidebar3.entry_server.set_text(&resp.server_url);
+                        // The server may return a loopback (127.0.0.1) URL
+                        // when its public_url isn't configured — fall back
+                        // to whatever the user actually typed in panel URL.
+                        let server_url = sanitize_server_url(
+                            &resp.server_url,
+                            &panel_url,
+                        );
+                        sidebar3.entry_server.set_text(&server_url);
                         sidebar3.entry_key.set_text(&resp.authkey);
                         sidebar3.entry_host.set_text(&node);
+                        // Collapse the manual-key expander — the key was just
+                        // generated for the user, no need to show the field.
+                        sidebar3.expander_manual.set_expanded(false);
                         {
                             let mut c = cfg3.borrow_mut();
-                            c.panel_url  = panel_url.clone();
-                            c.server_url = resp.server_url.clone();
-                            c.authkey    = resp.authkey.clone();
-                            c.hostname   = node.clone();
+                            c.panel_url      = panel_url.clone();
+                            c.panel_username = username.clone();
+                            c.server_url     = server_url.clone();
+                            c.authkey        = resp.authkey.clone();
+                            c.hostname       = node.clone();
                             config::save(&c).ok();
                         }
+                        // Stash the password in the OS-native keyring so the
+                        // user doesn't retype it next time they sign in.
+                        secrets::save(&panel_url, &username, &password);
                         toast3.add_toast(
                             libadwaita::Toast::builder()
                                 .title(tr!("Signed in. Press Connect to join the network."))
@@ -194,11 +250,21 @@ pub fn show_panel_login(
                                 .build(),
                         );
                         dlg3.close();
+                        // Force the sidebar / status to re-read config now —
+                        // otherwise the UI keeps showing the "not signed in"
+                        // layout until the next 30s refresh tick.
+                        gtk4::prelude::WidgetExt::activate_action(
+                            &win3, "win.refresh", None,
+                        ).ok();
                         glib::ControlFlow::Break
                     }
                     Some(Err(e)) => {
                         lbl_err3.set_text(&trf!("Error: {error}", "error" => e));
+                        // Restore the idle button state so the user can retry.
+                        ok_spinner_w2.stop();
+                        btn_ok_w2.set_child(Some(&ok_idle_w2));
                         btn_ok_w2.set_sensitive(true);
+                        btn_cancel_w2.set_sensitive(true);
                         glib::ControlFlow::Break
                     }
                 }
@@ -207,4 +273,19 @@ pub fn show_panel_login(
     }
 
     dlg.present();
+}
+
+/// If the server returned a loopback URL (because its `server_url` config is
+/// pointing at 127.0.0.1 — common when the panel runs behind a reverse proxy
+/// and was set up with the default), fall back to whatever the user typed
+/// as the panel URL. The user clearly reaches the panel from outside, so
+/// that URL is also the right `--login-server` for tailscale.
+fn sanitize_server_url(server_from_response: &str, panel_url_typed: &str) -> String {
+    let s = server_from_response.trim();
+    let is_loopback = s.contains("127.0.0.1") || s.contains("localhost") || s.contains("0.0.0.0");
+    if s.is_empty() || is_loopback {
+        panel_url_typed.trim_end_matches('/').to_string()
+    } else {
+        s.to_string()
+    }
 }
