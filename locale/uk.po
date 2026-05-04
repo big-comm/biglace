@@ -12,7 +12,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/mod.rs:441
+#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/mod.rs:456
 msgid "Disconnect"
 msgstr "Відключитися"
 
@@ -20,85 +20,74 @@ msgstr "Відключитися"
 msgid "Main menu"
 msgstr "Головне меню"
 
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/dialogs.rs:57
 #: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/mod.rs:114
 msgid "Sign in with panel account"
 msgstr "Увійти через обліковий запис панелі"
 
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/mod.rs:115
+#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/mod.rs:116
 msgid "Make this user the tailscale operator"
 msgstr "Зробити цього користувача оператором Tailscale"
 
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/mod.rs:116
+#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/mod.rs:117
 msgid "About BigLace"
 msgstr "Про BigLace"
 
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/dialogs.rs:41
+#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/dialogs.rs:42
 msgid "Tailscale operator"
 msgstr "Оператор Tailscale"
 
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/dialogs.rs:36
+#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/dialogs.rs:37
 msgid "Done. You will no longer need a password to connect or disconnect."
 msgstr "Готово. Тепер вам не потрібен пароль для підключення або відключення."
 
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/dialogs.rs:37
+#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/dialogs.rs:38
 #, rust-format
 msgid "Failed: {error}"
 msgstr "Помилка: {error}"
 
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/dialogs.rs:44
+#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/dialogs.rs:45
 msgid "OK"
 msgstr "OK"
 
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/dialogs.rs:200
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/mod.rs:352
+#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/dialogs.rs:354
+#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/mod.rs:357
 #, rust-format
 msgid "Error: {error}"
 msgstr "Помилка: {error}"
 
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/dialogs.rs:28
+#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/dialogs.rs:29
 msgid "Mesh VPN client for BigScale/Headscale."
 msgstr "Mesh VPN-клієнт для BigScale/Headscale."
 
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/dialogs.rs:68
+#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/dialogs.rs:161
 msgid "Panel credentials"
 msgstr "Облікові дані панелі"
 
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/dialogs.rs:70
-msgid ""
-"Use your BigScale panel username and password to generate a key "
-"automatically."
-msgstr ""
-"Використовуйте ім'я користувача та пароль панелі BigScale для автоматичної "
-"генерації ключа."
-
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/dialogs.rs:75
+#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/dialogs.rs:170
 msgid "Panel URL"
 msgstr "URL панелі"
 
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/dialogs.rs:78
+#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/dialogs.rs:173
 msgid "Username"
 msgstr "Ім'я користувача"
 
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/dialogs.rs:79
+#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/dialogs.rs:174
 msgid "Password"
 msgstr "Пароль"
 
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/dialogs.rs:80
-msgid "Network user identifier"
-msgstr "Ідентифікатор користувача мережі"
-
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/dialogs.rs:111
+#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/dialogs.rs:75
+#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/dialogs.rs:217
 msgid "Cancel"
 msgstr "Скасувати"
 
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/dialogs.rs:113
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/sidebar.rs:56
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/mod.rs:419
+#. The OK button needs to flip between "Sign in" and "spinner + Connecting…"
+#. while the HTTP call is in flight. Build both children up front and just
+#. swap the button's child — simpler than juggling visibility flags.
+#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/dialogs.rs:222
 msgid "Sign in"
 msgstr "Увійти"
 
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/dialogs.rs:152
+#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/dialogs.rs:275
 msgid "Fill in URL, username and password."
 msgstr "Заповніть URL, ім'я користувача та пароль."
 
@@ -106,7 +95,7 @@ msgstr "Заповніть URL, ім'я користувача та пароль
 msgid "Start service"
 msgstr "Запустити службу"
 
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/sidebar.rs:74
+#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/sidebar.rs:69
 msgid "Server URL"
 msgstr "URL сервера"
 
@@ -114,13 +103,13 @@ msgstr "URL сервера"
 msgid "This device"
 msgstr "Цей пристрій"
 
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/sidebar.rs:109
+#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/sidebar.rs:104
 msgid "Device name"
 msgstr "Назва пристрою"
 
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/sidebar.rs:134
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/mod.rs:451
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/mod.rs:456
+#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/sidebar.rs:129
+#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/mod.rs:466
+#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/mod.rs:471
 msgid "Connect"
 msgstr "Підключитися"
 
@@ -143,15 +132,15 @@ msgstr "Не вдалося підключитися — перевірте URL 
 msgid "Failed to run pkexec tailscale"
 msgstr "Не вдалося запустити pkexec tailscale"
 
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/tailscale.rs:364
+#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/tailscale.rs:382
 msgid "Could not determine the current user."
 msgstr "Не вдалося визначити поточного користувача."
 
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/tailscale.rs:370
+#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/tailscale.rs:388
 msgid "Failed to run pkexec tailscale set"
 msgstr "Не вдалося запустити pkexec tailscale set"
 
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/tailscale.rs:372
+#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/tailscale.rs:390
 msgid "Failed to set tailscale operator."
 msgstr "Не вдалося встановити оператора tailscale."
 
@@ -168,55 +157,39 @@ msgstr ""
 msgid "Login rejected by server: {detail}"
 msgstr "Сервер відхилив вхід: {detail}"
 
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/mod.rs:431
-msgid "Switch account"
-msgstr "Змінити обліковий запис"
-
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/sidebar.rs:66
-msgid "Use a pre-auth key"
-msgstr "Використати передзатверджений ключ"
-
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/sidebar.rs:67
-msgid "Paste the key your administrator sent you"
-msgstr "Вставте ключ, який надіслав ваш адміністратор"
-
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/sidebar.rs:91
+#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/sidebar.rs:86
 msgid "Apply manual setup"
 msgstr "Застосувати ручне налаштування"
 
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/sidebar.rs:93
+#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/sidebar.rs:88
 msgid "Save"
 msgstr "Зберегти"
 
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/sidebar.rs:96
+#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/sidebar.rs:91
 msgid "Save the server and key above"
 msgstr "Зберегти сервер і ключ вище"
 
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/sidebar.rs:117
+#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/sidebar.rs:112
 msgid "Connect automatically"
 msgstr "Підключатися автоматично"
 
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/sidebar.rs:118
+#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/sidebar.rs:113
 msgid "Join the network when BigLace starts"
 msgstr "Приєднуватися до мережі під час запуску BigLace"
 
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/mod.rs:418
+#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/mod.rs:424
 msgid "Sign in or paste a pre-auth key"
 msgstr "Увійдіть або вставте передзатверджений ключ"
 
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/sidebar.rs:59
-msgid "Sign in with your BigScale panel account"
-msgstr "Увійти за допомогою облікового запису панелі BigScale"
-
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/mod.rs:425
+#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/mod.rs:429
 msgid "Server not set"
 msgstr "Сервер не встановлено"
 
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/mod.rs:181
+#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/mod.rs:186
 msgid "Setup saved"
 msgstr "Налаштування збережено"
 
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/mod.rs:237
+#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/mod.rs:242
 msgid "Sign in or paste a pre-auth key first."
 msgstr "Спочатку увійдіть або вставте передзатверджений ключ."
 
@@ -239,8 +212,9 @@ msgid "Press Connect on the left to join the network."
 msgstr "Натисніть «Підключитися» ліворуч, щоб приєднатися до мережі."
 
 #: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/content.rs:146
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/mod.rs:399
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/mod.rs:446
+#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/dialogs.rs:229
+#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/mod.rs:404
+#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/mod.rs:461
 msgid "Connecting…"
 msgstr "Підключення…"
 
@@ -254,7 +228,7 @@ msgid "Copy IP address"
 msgstr "Копіювати IP-адресу"
 
 #: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/peer_row.rs:60
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/mod.rs:300
+#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/mod.rs:305
 msgid "IP address copied"
 msgstr "IP-адресу скопійовано"
 
@@ -271,17 +245,17 @@ msgstr "Відкрити термінал (SSH)"
 msgid "offline"
 msgstr "офлайн"
 
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/mod.rs:396
+#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/mod.rs:401
 msgid "Service stopped"
 msgstr "Службу зупинено"
 
 #: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/content.rs:37
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/mod.rs:398
+#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/mod.rs:403
 msgid "Disconnected"
 msgstr "Відключено"
 
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/mod.rs:343
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/mod.rs:400
+#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/mod.rs:348
+#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/mod.rs:405
 msgid "Connected"
 msgstr "Підключено"
 
@@ -289,20 +263,20 @@ msgstr "Підключено"
 msgid "Refresh"
 msgstr "Оновити"
 
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/dialogs.rs:192
+#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/dialogs.rs:340
 msgid "Signed in. Press Connect to join the network."
 msgstr "Ви ввійшли. Натисніть «Підключитися», щоб приєднатися до мережі."
 
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/mod.rs:483
+#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/mod.rs:498
 msgid "no other devices"
 msgstr "інших пристроїв немає"
 
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/mod.rs:485
+#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/mod.rs:500
 #, rust-format
 msgid "{online} online"
 msgstr "{online} онлайн"
 
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/mod.rs:487
+#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/mod.rs:502
 #, rust-format
 msgid "{online} online · {offline} offline"
 msgstr "{online} онлайн · {offline} офлайн"
@@ -315,14 +289,84 @@ msgstr "Служба tailscale не запущена"
 msgid "BigLace needs the tailscaled background service to manage the network."
 msgstr "BigLace потребує фонової служби tailscaled для керування мережею."
 
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/sidebar.rs:83
+#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/sidebar.rs:78
 msgid "Pre-auth key"
 msgstr "Попередньо авторизований ключ"
 
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/mod.rs:397
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/mod.rs:417
+#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/mod.rs:402
+#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/mod.rs:423
 msgid "Not signed in"
 msgstr "Не виконано вхід"
+
+#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/sidebar.rs:60
+msgid "Advanced: use a pre-auth key"
+msgstr "Розширено: використати попередньо авторизований ключ"
+
+#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/sidebar.rs:61
+msgid "Already have a key from your administrator? Paste it here."
+msgstr "Вже маєте ключ від адміністратора? Вставте його тут."
+
+#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/dialogs.rs:68
+msgid "Sign out of current account?"
+msgstr "Вийти з поточного облікового запису?"
+
+#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/dialogs.rs:70
+msgid ""
+"This will disconnect from the network, sign this device out of the current "
+"control server, and forget the saved password. You'll then be able to sign "
+"in with a different account."
+msgstr ""
+"Це призведе до відключення від мережі, виходу цього пристрою з поточного "
+"сервера керування та видалення збереженого пароля. Після цього ви зможете "
+"увійти з іншим обліковим записом."
+
+#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/dialogs.rs:76
+#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/mod.rs:115
+msgid "Sign out"
+msgstr "Вийти"
+
+#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/dialogs.rs:131
+msgid "Signed out."
+msgstr "Вихід виконано."
+
+#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/dialogs.rs:150
+msgid "Connect via panel account"
+msgstr "Підключитися через обліковий запис панелі"
+
+#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/dialogs.rs:163
+msgid ""
+"Sign in with your BigScale panel username and password. A device identity "
+"will be created on the network automatically — no manual key needed."
+msgstr ""
+"Увійдіть за допомогою імені користувача та пароля панелі BigScale. "
+"Ідентифікатор пристрою буде створено в мережі автоматично — ручний ключ не "
+"потрібен."
+
+#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/dialogs.rs:176
+msgid "Network identifier (will be created if new)"
+msgstr "Ідентифікатор мережі (буде створено, якщо новий)"
+
+#~ msgid ""
+#~ "Use your BigScale panel username and password to generate a key "
+#~ "automatically."
+#~ msgstr ""
+#~ "Використовуйте ім'я користувача та пароль панелі BigScale для автоматичної "
+#~ "генерації ключа."
+
+#~ msgid "Network user identifier"
+#~ msgstr "Ідентифікатор користувача мережі"
+
+#~ msgid "Switch account"
+#~ msgstr "Змінити обліковий запис"
+
+#~ msgid "Use a pre-auth key"
+#~ msgstr "Використати передзатверджений ключ"
+
+#~ msgid "Paste the key your administrator sent you"
+#~ msgstr "Вставте ключ, який надіслав ваш адміністратор"
+
+#~ msgid "Sign in with your BigScale panel account"
+#~ msgstr "Увійти за допомогою облікового запису панелі BigScale"
 
 #~ msgid "Refresh list"
 #~ msgstr "Оновити список"

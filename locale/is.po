@@ -12,7 +12,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/mod.rs:441
+#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/mod.rs:456
 msgid "Disconnect"
 msgstr "Aftengja"
 
@@ -20,85 +20,74 @@ msgstr "Aftengja"
 msgid "Main menu"
 msgstr "Aðalvalmynd"
 
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/dialogs.rs:57
 #: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/mod.rs:114
 msgid "Sign in with panel account"
 msgstr "Skráðu þig inn með panel-reikningi"
 
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/mod.rs:115
+#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/mod.rs:116
 msgid "Make this user the tailscale operator"
 msgstr "Gerðu þennan notanda að tailscale-stjórnanda"
 
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/mod.rs:116
+#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/mod.rs:117
 msgid "About BigLace"
 msgstr "Um BigLace"
 
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/dialogs.rs:41
+#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/dialogs.rs:42
 msgid "Tailscale operator"
 msgstr "Tailscale-stjórnandi"
 
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/dialogs.rs:36
+#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/dialogs.rs:37
 msgid "Done. You will no longer need a password to connect or disconnect."
 msgstr "Lokið. Þú þarft ekki lengur lykilorð til að tengjast eða aftengjast."
 
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/dialogs.rs:37
+#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/dialogs.rs:38
 #, rust-format
 msgid "Failed: {error}"
 msgstr "Mistókst: {error}"
 
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/dialogs.rs:44
+#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/dialogs.rs:45
 msgid "OK"
 msgstr "Í lagi"
 
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/dialogs.rs:200
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/mod.rs:352
+#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/dialogs.rs:354
+#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/mod.rs:357
 #, rust-format
 msgid "Error: {error}"
 msgstr "Villa: {error}"
 
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/dialogs.rs:28
+#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/dialogs.rs:29
 msgid "Mesh VPN client for BigScale/Headscale."
 msgstr "Mesh VPN-biðlari fyrir BigScale/Headscale."
 
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/dialogs.rs:68
+#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/dialogs.rs:161
 msgid "Panel credentials"
 msgstr "Innskráningarupplýsingar spjalds"
 
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/dialogs.rs:70
-msgid ""
-"Use your BigScale panel username and password to generate a key "
-"automatically."
-msgstr ""
-"Notaðu notandanafn og lykilorð frá BigScale spjaldinu þínu til að búa til "
-"lykil sjálfkrafa."
-
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/dialogs.rs:75
+#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/dialogs.rs:170
 msgid "Panel URL"
 msgstr "Slóð spjalds"
 
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/dialogs.rs:78
+#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/dialogs.rs:173
 msgid "Username"
 msgstr "Notandanafn"
 
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/dialogs.rs:79
+#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/dialogs.rs:174
 msgid "Password"
 msgstr "Lykilorð"
 
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/dialogs.rs:80
-msgid "Network user identifier"
-msgstr "Auðkenni netnotanda"
-
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/dialogs.rs:111
+#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/dialogs.rs:75
+#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/dialogs.rs:217
 msgid "Cancel"
 msgstr "Hætta við"
 
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/dialogs.rs:113
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/sidebar.rs:56
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/mod.rs:419
+#. The OK button needs to flip between "Sign in" and "spinner + Connecting…"
+#. while the HTTP call is in flight. Build both children up front and just
+#. swap the button's child — simpler than juggling visibility flags.
+#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/dialogs.rs:222
 msgid "Sign in"
 msgstr "Skrá inn"
 
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/dialogs.rs:152
+#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/dialogs.rs:275
 msgid "Fill in URL, username and password."
 msgstr "Fylltu út slóð, notandanafn og lykilorð."
 
@@ -106,7 +95,7 @@ msgstr "Fylltu út slóð, notandanafn og lykilorð."
 msgid "Start service"
 msgstr "Ræsa þjónustu"
 
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/sidebar.rs:74
+#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/sidebar.rs:69
 msgid "Server URL"
 msgstr "Vefslóð þjóns"
 
@@ -114,13 +103,13 @@ msgstr "Vefslóð þjóns"
 msgid "This device"
 msgstr "Þetta tæki"
 
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/sidebar.rs:109
+#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/sidebar.rs:104
 msgid "Device name"
 msgstr "Tækisnafn"
 
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/sidebar.rs:134
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/mod.rs:451
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/mod.rs:456
+#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/sidebar.rs:129
+#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/mod.rs:466
+#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/mod.rs:471
 msgid "Connect"
 msgstr "Tengjast"
 
@@ -143,15 +132,15 @@ msgstr "Mistókst að tengjast — athugaðu vefslóð þjónsins og lykilinn."
 msgid "Failed to run pkexec tailscale"
 msgstr "Mistókst að keyra pkexec tailscale"
 
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/tailscale.rs:364
+#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/tailscale.rs:382
 msgid "Could not determine the current user."
 msgstr "Gat ekki ákvarðað núverandi notanda."
 
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/tailscale.rs:370
+#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/tailscale.rs:388
 msgid "Failed to run pkexec tailscale set"
 msgstr "Mistókst að keyra pkexec tailscale set"
 
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/tailscale.rs:372
+#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/tailscale.rs:390
 msgid "Failed to set tailscale operator."
 msgstr "Mistókst að stilla tailscale stjórnanda."
 
@@ -168,55 +157,39 @@ msgstr ""
 msgid "Login rejected by server: {detail}"
 msgstr "Innskráningu hafnað af þjóni: {detail}"
 
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/mod.rs:431
-msgid "Switch account"
-msgstr "Skipta um reikning"
-
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/sidebar.rs:66
-msgid "Use a pre-auth key"
-msgstr "Nota forvottaðan lykil"
-
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/sidebar.rs:67
-msgid "Paste the key your administrator sent you"
-msgstr "Límdu lykilinn sem stjórnandinn sendi þér"
-
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/sidebar.rs:91
+#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/sidebar.rs:86
 msgid "Apply manual setup"
 msgstr "Nota handvirka uppsetningu"
 
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/sidebar.rs:93
+#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/sidebar.rs:88
 msgid "Save"
 msgstr "Vista"
 
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/sidebar.rs:96
+#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/sidebar.rs:91
 msgid "Save the server and key above"
 msgstr "Vistaðu þjóninn og lykilinn hér að ofan"
 
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/sidebar.rs:117
+#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/sidebar.rs:112
 msgid "Connect automatically"
 msgstr "Tengjast sjálfkrafa"
 
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/sidebar.rs:118
+#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/sidebar.rs:113
 msgid "Join the network when BigLace starts"
 msgstr "Tengjast netinu þegar BigLace ræsist"
 
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/mod.rs:418
+#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/mod.rs:424
 msgid "Sign in or paste a pre-auth key"
 msgstr "Skráðu þig inn eða límdu forvottaðan lykil"
 
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/sidebar.rs:59
-msgid "Sign in with your BigScale panel account"
-msgstr "Skráðu þig inn með BigScale spjaldi reikningnum þínum"
-
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/mod.rs:425
+#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/mod.rs:429
 msgid "Server not set"
 msgstr "Þjónn ekki stilltur"
 
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/mod.rs:181
+#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/mod.rs:186
 msgid "Setup saved"
 msgstr "Uppsetning vistuð"
 
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/mod.rs:237
+#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/mod.rs:242
 msgid "Sign in or paste a pre-auth key first."
 msgstr "Skráðu þig fyrst inn eða límdu forvottaðan lykil."
 
@@ -238,8 +211,9 @@ msgid "Press Connect on the left to join the network."
 msgstr "Ýttu á Tengja vinstra megin til að tengjast netinu."
 
 #: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/content.rs:146
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/mod.rs:399
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/mod.rs:446
+#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/dialogs.rs:229
+#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/mod.rs:404
+#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/mod.rs:461
 msgid "Connecting…"
 msgstr "Tengist…"
 
@@ -253,7 +227,7 @@ msgid "Copy IP address"
 msgstr "Afrita IP-tölu"
 
 #: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/peer_row.rs:60
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/mod.rs:300
+#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/mod.rs:305
 msgid "IP address copied"
 msgstr "IP-tala afrituð"
 
@@ -270,17 +244,17 @@ msgstr "Opna skipanalínu (SSH)"
 msgid "offline"
 msgstr "ótengt"
 
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/mod.rs:396
+#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/mod.rs:401
 msgid "Service stopped"
 msgstr "Þjónusta stöðvuð"
 
 #: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/content.rs:37
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/mod.rs:398
+#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/mod.rs:403
 msgid "Disconnected"
 msgstr "Aftengt"
 
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/mod.rs:343
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/mod.rs:400
+#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/mod.rs:348
+#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/mod.rs:405
 msgid "Connected"
 msgstr "Tengt"
 
@@ -288,20 +262,20 @@ msgstr "Tengt"
 msgid "Refresh"
 msgstr "Endurlesa"
 
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/dialogs.rs:192
+#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/dialogs.rs:340
 msgid "Signed in. Press Connect to join the network."
 msgstr "Innskráð/ur. Ýttu á Tengja til að tengjast netinu."
 
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/mod.rs:483
+#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/mod.rs:498
 msgid "no other devices"
 msgstr "engin önnur tæki"
 
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/mod.rs:485
+#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/mod.rs:500
 #, rust-format
 msgid "{online} online"
 msgstr "{online} á netinu"
 
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/mod.rs:487
+#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/mod.rs:502
 #, rust-format
 msgid "{online} online · {offline} offline"
 msgstr "{online} á netinu · {offline} ótengdur"
@@ -314,14 +288,84 @@ msgstr "Tailscale-þjónustan er ekki í gangi"
 msgid "BigLace needs the tailscaled background service to manage the network."
 msgstr "BigLace þarf bakgrunnsþjónustuna tailscaled til að stjórna netinu."
 
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/sidebar.rs:83
+#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/sidebar.rs:78
 msgid "Pre-auth key"
 msgstr "Forvottaður lykill"
 
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/mod.rs:397
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/mod.rs:417
+#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/mod.rs:402
+#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/mod.rs:423
 msgid "Not signed in"
 msgstr "Ekki skráð/ur inn"
+
+#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/sidebar.rs:60
+msgid "Advanced: use a pre-auth key"
+msgstr "Ítarlegt: nota forlykilslykil"
+
+#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/sidebar.rs:61
+msgid "Already have a key from your administrator? Paste it here."
+msgstr "Ertu nú þegar með lykil frá kerfisstjóranum þínum? Límdu hann hér."
+
+#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/dialogs.rs:68
+msgid "Sign out of current account?"
+msgstr "Skrá þig út af núverandi reikningi?"
+
+#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/dialogs.rs:70
+msgid ""
+"This will disconnect from the network, sign this device out of the current "
+"control server, and forget the saved password. You'll then be able to sign "
+"in with a different account."
+msgstr ""
+"Þetta mun aftengja þig frá netinu, skrá þetta tæki út af núverandi "
+"stjórnþjóni og gleyma vistuðu lykilorði. Þú getur síðan skráð þig inn með "
+"öðrum reikningi."
+
+#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/dialogs.rs:76
+#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/mod.rs:115
+msgid "Sign out"
+msgstr "Skrá út"
+
+#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/dialogs.rs:131
+msgid "Signed out."
+msgstr "Útskráð/ur."
+
+#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/dialogs.rs:150
+msgid "Connect via panel account"
+msgstr "Tengjast í gegnum reikning á spjaldi"
+
+#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/dialogs.rs:163
+msgid ""
+"Sign in with your BigScale panel username and password. A device identity "
+"will be created on the network automatically — no manual key needed."
+msgstr ""
+"Skráðu þig inn með notandanafni og lykilorði frá BigScale spjaldinu þínu. "
+"Tækjaauðkenni verður sjálfkrafa búið til á netinu — enginn handvirkur lykill"
+" nauðsynlegur."
+
+#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/dialogs.rs:176
+msgid "Network identifier (will be created if new)"
+msgstr "Netauðkenni (verður búið til ef nýtt)"
+
+#~ msgid ""
+#~ "Use your BigScale panel username and password to generate a key "
+#~ "automatically."
+#~ msgstr ""
+#~ "Notaðu notandanafn og lykilorð frá BigScale spjaldinu þínu til að búa til "
+#~ "lykil sjálfkrafa."
+
+#~ msgid "Network user identifier"
+#~ msgstr "Auðkenni netnotanda"
+
+#~ msgid "Switch account"
+#~ msgstr "Skipta um reikning"
+
+#~ msgid "Use a pre-auth key"
+#~ msgstr "Nota forvottaðan lykil"
+
+#~ msgid "Paste the key your administrator sent you"
+#~ msgstr "Límdu lykilinn sem stjórnandinn sendi þér"
+
+#~ msgid "Sign in with your BigScale panel account"
+#~ msgstr "Skráðu þig inn með BigScale spjaldi reikningnum þínum"
 
 #~ msgid "Refresh list"
 #~ msgstr "Endurnýja lista"
