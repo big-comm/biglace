@@ -10,17 +10,22 @@ pub struct Config {
     pub auto_connect: bool,
 
     #[serde(default)]
-    pub panel_url:    String,
+    pub panel_url:      String,
+    // Last-used panel username, pre-filled in the login dialog so the user
+    // doesn't retype it each time. Password is intentionally NOT persisted.
+    #[serde(default)]
+    pub panel_username: String,
 }
 
 impl Default for Config {
     fn default() -> Self {
         Self {
-            server_url:   String::new(),
-            authkey:      String::new(),
-            hostname:     default_hostname(),
-            auto_connect: false,
-            panel_url:    String::new(),
+            server_url:     String::new(),
+            authkey:        String::new(),
+            hostname:       default_hostname(),
+            auto_connect:   false,
+            panel_url:      String::new(),
+            panel_username: String::new(),
         }
     }
 }

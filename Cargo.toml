@@ -17,6 +17,17 @@ gettext-rs  = { version = "0.7", features = ["gettext-system"] }
 ureq        = { version = "2",   default-features = false, features = ["json", "native-tls"] }
 native-tls  = "0.2"
 
+# Native OS credential storage. Per-target features avoid pulling in the
+# wrong backend on cross-compiles (e.g. don't drag D-Bus into a Windows build).
+[target.'cfg(target_os = "linux")'.dependencies]
+keyring = { version = "3", default-features = false, features = ["sync-secret-service", "crypto-rust"] }
+
+[target.'cfg(target_os = "windows")'.dependencies]
+keyring = { version = "3", default-features = false, features = ["windows-native"] }
+
+[target.'cfg(target_os = "macos")'.dependencies]
+keyring = { version = "3", default-features = false, features = ["apple-native"] }
+
 [profile.release]
 opt-level     = "z"
 lto           = true

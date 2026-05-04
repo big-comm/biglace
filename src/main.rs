@@ -1,6 +1,7 @@
 mod config;
 mod i18n;
 mod panel;
+mod secrets;
 mod tailscale;
 mod window;
 

@@ -61,10 +61,13 @@ pub fn build() -> Sidebar {
     identity_row.add_suffix(&btn_switch_account);
     grp_identity.add(&identity_row);
 
-    // Manual key expander
+    // Manual key expander — secondary path for users who already have a key
+    // (e.g. one their admin sent by email). The primary path is the panel
+    // login button above, which generates a key automatically.
     let expander_manual = libadwaita::ExpanderRow::builder()
-        .title(tr!("Use a pre-auth key"))
-        .subtitle(tr!("Paste the key your administrator sent you"))
+        .title(tr!("Advanced: use a pre-auth key"))
+        .subtitle(tr!("Already have a key from your administrator? Paste it here."))
+        .expanded(false)
         .build();
     let pwd_icon = gtk4::Image::from_icon_name("dialog-password-symbolic");
     pwd_icon.set_pixel_size(20);
