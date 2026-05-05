@@ -5,15 +5,17 @@ use crate::tr;
 
 #[derive(Clone)]
 pub struct Sidebar {
-    pub toolbar:            libadwaita::ToolbarView,
-    pub identity_row:       libadwaita::ActionRow,
-    pub expander_manual:    libadwaita::ExpanderRow,
-    pub entry_server:       libadwaita::EntryRow,
-    pub entry_key:          libadwaita::EntryRow,
-    pub btn_save_manual:    gtk4::Button,
-    pub entry_host:         libadwaita::EntryRow,
-    pub switch_auto:        gtk4::Switch,
-    pub btn_connect:        gtk4::Button,
+    pub toolbar:                libadwaita::ToolbarView,
+    pub identity_row:           libadwaita::ActionRow,
+    pub expander_manual:        libadwaita::ExpanderRow,
+    pub entry_server:           libadwaita::EntryRow,
+    pub entry_key:              libadwaita::EntryRow,
+    pub btn_save_manual:        gtk4::Button,
+    pub entry_host:             libadwaita::EntryRow,
+    pub switch_auto:            gtk4::Switch,
+    pub switch_auto_reconnect:  gtk4::Switch,
+    pub switch_notify:          gtk4::Switch,
+    pub btn_connect:            gtk4::Button,
 }
 
 pub fn build() -> Sidebar {
@@ -122,6 +124,34 @@ pub fn build() -> Sidebar {
     auto_row.set_activatable_widget(Some(&switch_auto));
     grp_prefs.add(&auto_row);
 
+    let reconnect_row = libadwaita::ActionRow::builder()
+        .title(tr!("Reconnect on drop"))
+        .subtitle(tr!("Retry with backoff when the connection is lost"))
+        .build();
+    let reconnect_icon = gtk4::Image::from_icon_name("view-refresh-symbolic");
+    reconnect_icon.set_pixel_size(20);
+    reconnect_row.add_prefix(&reconnect_icon);
+    let switch_auto_reconnect = gtk4::Switch::builder()
+        .valign(gtk4::Align::Center)
+        .build();
+    reconnect_row.add_suffix(&switch_auto_reconnect);
+    reconnect_row.set_activatable_widget(Some(&switch_auto_reconnect));
+    grp_prefs.add(&reconnect_row);
+
+    let notify_row = libadwaita::ActionRow::builder()
+        .title(tr!("Notify on peer changes"))
+        .subtitle(tr!("Show a desktop notification when peers go online/offline"))
+        .build();
+    let notify_icon = gtk4::Image::from_icon_name("preferences-system-notifications-symbolic");
+    notify_icon.set_pixel_size(20);
+    notify_row.add_prefix(&notify_icon);
+    let switch_notify = gtk4::Switch::builder()
+        .valign(gtk4::Align::Center)
+        .build();
+    notify_row.add_suffix(&switch_notify);
+    notify_row.set_activatable_widget(Some(&switch_notify));
+    grp_prefs.add(&notify_row);
+
     outer.append(&grp_prefs);
 
     // ── Connect / Disconnect button ──
@@ -145,6 +175,8 @@ pub fn build() -> Sidebar {
         btn_save_manual,
         entry_host,
         switch_auto,
+        switch_auto_reconnect,
+        switch_notify,
         btn_connect,
     }
 }

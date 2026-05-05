@@ -12,23 +12,23 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/mod.rs:456
+#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/mod.rs:810
 msgid "Disconnect"
 msgstr "연결 해제"
 
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/content.rs:44
+#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/content.rs:46
 msgid "Main menu"
 msgstr "메인 메뉴"
 
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/mod.rs:114
+#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/mod.rs:427
 msgid "Sign in with panel account"
 msgstr "패널 계정으로 로그인"
 
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/mod.rs:116
+#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/mod.rs:429
 msgid "Make this user the tailscale operator"
 msgstr "이 사용자를 Tailscale 운영자로 설정"
 
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/mod.rs:117
+#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/mod.rs:431
 msgid "About BigLace"
 msgstr "BigLace 정보"
 
@@ -50,7 +50,7 @@ msgid "OK"
 msgstr "확인"
 
 #: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/dialogs.rs:354
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/mod.rs:357
+#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/mod.rs:691
 #, rust-format
 msgid "Error: {error}"
 msgstr "오류: {error}"
@@ -91,171 +91,172 @@ msgstr "로그인"
 msgid "Fill in URL, username and password."
 msgstr "URL, 사용자 이름, 비밀번호를 입력하세요."
 
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/content.rs:122
+#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/content.rs:145
 msgid "Start service"
 msgstr "서비스 시작"
 
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/sidebar.rs:69
+#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/sidebar.rs:71
 msgid "Server URL"
 msgstr "서버 URL"
 
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/content.rs:169
+#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/content.rs:192
 msgid "This device"
 msgstr "이 기기"
 
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/sidebar.rs:104
+#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/sidebar.rs:106
 msgid "Device name"
 msgstr "기기 이름"
 
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/sidebar.rs:129
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/mod.rs:466
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/mod.rs:471
+#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/sidebar.rs:159
+#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/mod.rs:820
+#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/mod.rs:825
 msgid "Connect"
 msgstr "연결"
 
 #. ── Devices on the network ──
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/content.rs:186
+#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/content.rs:209
 msgid "Devices on the network"
 msgstr "네트워크 상의 기기"
 
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/tailscale.rs:204
+#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/tailscale.rs:281
 msgid "Failed to run tailscale"
 msgstr "tailscale 실행 실패"
 
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/tailscale.rs:224
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/tailscale.rs:257
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/tailscale.rs:320
+#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/tailscale.rs:301
+#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/tailscale.rs:334
+#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/tailscale.rs:397
 msgid "Failed to connect — check the server URL and key."
 msgstr "연결 실패 — 서버 URL과 키를 확인하세요."
 
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/tailscale.rs:245
+#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/tailscale.rs:322
 msgid "Failed to run pkexec tailscale"
 msgstr "pkexec tailscale 실행 실패"
 
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/tailscale.rs:382
+#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/tailscale.rs:459
 msgid "Could not determine the current user."
 msgstr "현재 사용자를 확인할 수 없습니다."
 
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/tailscale.rs:388
+#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/tailscale.rs:465
 msgid "Failed to run pkexec tailscale set"
 msgstr "pkexec tailscale set 실행 실패"
 
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/tailscale.rs:390
+#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/tailscale.rs:467
 msgid "Failed to set tailscale operator."
 msgstr "tailscale 운영자 설정 실패"
 
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/tailscale.rs:313
+#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/tailscale.rs:390
 msgid ""
 "The pre-auth key was rejected by the server. Generate a new key in the "
 "BigScale panel and try again."
 msgstr "서버가 사전 인증 키를 거부했습니다. BigScale 패널에서 새 키를 생성한 후 다시 시도하세요."
 
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/tailscale.rs:316
+#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/tailscale.rs:393
 #, rust-format
 msgid "Login rejected by server: {detail}"
 msgstr "서버가 로그인을 거부했습니다: {detail}"
 
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/sidebar.rs:86
+#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/sidebar.rs:88
 msgid "Apply manual setup"
 msgstr "수동 설정 적용"
 
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/sidebar.rs:88
+#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/sidebar.rs:90
 msgid "Save"
 msgstr "저장"
 
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/sidebar.rs:91
+#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/sidebar.rs:93
 msgid "Save the server and key above"
 msgstr "위의 서버와 키 저장"
 
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/sidebar.rs:112
+#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/sidebar.rs:114
 msgid "Connect automatically"
 msgstr "자동 연결"
 
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/sidebar.rs:113
+#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/sidebar.rs:115
 msgid "Join the network when BigLace starts"
 msgstr "BigLace 시작 시 네트워크에 가입"
 
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/mod.rs:424
+#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/mod.rs:782
 msgid "Sign in or paste a pre-auth key"
 msgstr "로그인 또는 사전 인증 키 붙여넣기"
 
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/mod.rs:429
+#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/mod.rs:787
 msgid "Server not set"
 msgstr "서버가 설정되지 않음"
 
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/mod.rs:186
+#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/mod.rs:504
 msgid "Setup saved"
 msgstr "설정이 저장되었습니다"
 
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/mod.rs:242
+#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/mod.rs:580
 msgid "Sign in or paste a pre-auth key first."
 msgstr "먼저 로그인하거나 사전 인증 키를 붙여넣으세요."
 
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/content.rs:62
+#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/content.rs:83
 msgid "Sign in to connect"
 msgstr "로그인하여 연결"
 
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/content.rs:63
+#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/content.rs:84
 msgid "Use the panel on the left to sign in or paste a pre-auth key."
 msgstr "왼쪽 패널을 사용하여 로그인하거나 사전 인증 키를 붙여넣으세요."
 
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/content.rs:71
+#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/content.rs:92
 msgid "Not connected"
 msgstr "연결되지 않음"
 
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/content.rs:72
+#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/content.rs:93
 msgid "Press Connect on the left to join the network."
 msgstr "왼쪽의 연결 버튼을 눌러 네트워크에 가입하세요."
 
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/content.rs:146
 #: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/dialogs.rs:229
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/mod.rs:404
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/mod.rs:461
+#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/content.rs:169
+#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/mod.rs:740
+#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/mod.rs:815
 msgid "Connecting…"
 msgstr "연결 중…"
 
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/content.rs:195
+#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/content.rs:218
 msgid "No other devices on the network yet."
 msgstr "아직 네트워크에 다른 기기가 없습니다."
 
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/content.rs:179
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/peer_row.rs:52
+#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/content.rs:202
+#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/peer_row.rs:105
 msgid "Copy IP address"
 msgstr "IP 주소 복사"
 
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/peer_row.rs:60
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/mod.rs:305
+#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/mod.rs:641
+#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/peer_row.rs:113
+#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/peer_row.rs:161
+#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/peer_row.rs:170
 msgid "IP address copied"
 msgstr "IP 주소가 복사되었습니다"
 
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/peer_row.rs:74
+#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/peer_row.rs:128
 msgid "Open files (SFTP)"
 msgstr "파일 열기 (SFTP)"
 
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/peer_row.rs:84
+#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/peer_row.rs:139
 msgid "Open terminal (SSH)"
 msgstr "터미널 열기 (SSH)"
 
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/peer_row.rs:15
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/peer_row.rs:16
+#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/peer_row.rs:40
 msgid "offline"
 msgstr "오프라인"
 
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/mod.rs:401
+#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/mod.rs:737
 msgid "Service stopped"
 msgstr "서비스 중지됨"
 
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/content.rs:37
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/mod.rs:403
+#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/content.rs:39
+#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/mod.rs:739
 msgid "Disconnected"
 msgstr "연결 해제됨"
 
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/mod.rs:348
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/mod.rs:405
+#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/mod.rs:682
+#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/mod.rs:741
 msgid "Connected"
 msgstr "연결됨"
 
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/mod.rs:113
+#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/mod.rs:426
 msgid "Refresh"
 msgstr "새로고침"
 
@@ -263,42 +264,42 @@ msgstr "새로고침"
 msgid "Signed in. Press Connect to join the network."
 msgstr "로그인되었습니다. 네트워크에 가입하려면 연결을 누르세요."
 
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/mod.rs:498
+#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/mod.rs:891
 msgid "no other devices"
 msgstr "다른 기기 없음"
 
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/mod.rs:500
+#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/mod.rs:893
 #, rust-format
 msgid "{online} online"
 msgstr "{online} 온라인"
 
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/mod.rs:502
+#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/mod.rs:895
 #, rust-format
 msgid "{online} online · {offline} offline"
 msgstr "{online} 온라인 · {offline} 오프라인"
 
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/content.rs:116
+#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/content.rs:139
 msgid "The tailscale service is not running"
 msgstr "Tailscale 서비스가 실행 중이지 않습니다"
 
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/content.rs:118
+#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/content.rs:141
 msgid "BigLace needs the tailscaled background service to manage the network."
 msgstr "BigLace는 네트워크 관리를 위해 tailscaled 백그라운드 서비스가 필요합니다."
 
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/sidebar.rs:78
+#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/sidebar.rs:80
 msgid "Pre-auth key"
 msgstr "사전 인증 키"
 
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/mod.rs:402
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/mod.rs:423
+#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/mod.rs:738
+#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/mod.rs:781
 msgid "Not signed in"
 msgstr "로그인되지 않음"
 
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/sidebar.rs:60
+#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/sidebar.rs:62
 msgid "Advanced: use a pre-auth key"
 msgstr "고급: 사전 인증 키 사용"
 
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/sidebar.rs:61
+#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/sidebar.rs:63
 msgid "Already have a key from your administrator? Paste it here."
 msgstr "관리자로부터 키를 이미 받으셨나요? 여기에 붙여넣으세요."
 
@@ -316,7 +317,7 @@ msgstr ""
 "계정으로 로그인할 수 있습니다."
 
 #: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/dialogs.rs:76
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/mod.rs:115
+#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/mod.rs:428
 msgid "Sign out"
 msgstr "로그아웃"
 
@@ -338,6 +339,95 @@ msgstr ""
 #: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/dialogs.rs:176
 msgid "Network identifier (will be created if new)"
 msgstr "네트워크 식별자 (새로 생성되는 경우 자동 지정)"
+
+#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/peer_row.rs:277
+msgid "Copy"
+msgstr "복사"
+
+#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/sidebar.rs:128
+msgid "Reconnect on drop"
+msgstr "연결 끊김 시 자동 재연결"
+
+#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/sidebar.rs:129
+msgid "Retry with backoff when the connection is lost"
+msgstr "연결이 끊어졌을 때 백오프(backoff) 방식으로 재시도"
+
+#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/sidebar.rs:142
+msgid "Notify on peer changes"
+msgstr "피어 변경 시 알림"
+
+#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/sidebar.rs:143
+msgid "Show a desktop notification when peers go online/offline"
+msgstr "피어가 온라인/오프라인 상태가 되면 데스크톱 알림 표시"
+
+#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/mod.rs:430
+msgid "View tailscaled logs"
+msgstr "tailscaled 로그 보기"
+
+#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/mod.rs:751
+msgid "Server unreachable"
+msgstr "서버에 연결할 수 없음"
+
+#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/mod.rs:761
+#, rust-format
+msgid "Update available: v{version}"
+msgstr "업데이트 가능: v{version}"
+
+#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/mod.rs:915
+msgid "is online"
+msgstr "온라인 상태입니다"
+
+#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/mod.rs:917
+msgid "went offline"
+msgstr "오프라인 상태가 되었습니다"
+
+#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/peer_row.rs:78
+msgid "Unpin from top"
+msgstr "상단 고정 해제"
+
+#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/peer_row.rs:78
+msgid "Pin to top"
+msgstr "상단에 고정"
+
+#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/peer_row.rs:149
+msgid "DNS name"
+msgstr "DNS 이름"
+
+#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/peer_row.rs:152
+msgid "DNS name copied"
+msgstr "DNS 이름이 복사되었습니다"
+
+#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/peer_row.rs:174
+msgid "Owner"
+msgstr "소유자"
+
+#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/peer_row.rs:177
+msgid "Tags"
+msgstr "태그"
+
+#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/peer_row.rs:182
+msgid "Last seen"
+msgstr "마지막 확인 시간"
+
+#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/peer_row.rs:189
+msgid "Use as exit node"
+msgstr "종료 노드로 사용"
+
+#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/peer_row.rs:190
+msgid "Route all traffic through this peer"
+msgstr "모든 트래픽을 이 피어를 통해 라우팅"
+
+#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/peer_row.rs:232
+msgid "Exit node enabled"
+msgstr "종료 노드 활성화됨"
+
+#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/peer_row.rs:232
+msgid "Exit node disabled"
+msgstr "종료 노드 비활성화됨"
+
+#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/peer_row.rs:234
+msgid "Failed to update exit node"
+msgstr "종료 노드 업데이트 실패"
 
 #~ msgid ""
 #~ "Use your BigScale panel username and password to generate a key "
@@ -422,6 +512,3 @@ msgstr "네트워크 식별자 (새로 생성되는 경우 자동 지정)"
 
 #~ msgid "No other devices found."
 #~ msgstr "다른 기기를 찾을 수 없습니다."
-
-#~ msgid "Copy"
-#~ msgstr "복사"

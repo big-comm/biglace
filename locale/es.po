@@ -12,23 +12,23 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
 
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/mod.rs:456
+#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/mod.rs:810
 msgid "Disconnect"
 msgstr "Salir de la red"
 
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/content.rs:44
+#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/content.rs:46
 msgid "Main menu"
 msgstr "Menú principal"
 
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/mod.rs:114
+#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/mod.rs:427
 msgid "Sign in with panel account"
 msgstr "Iniciar sesión con cuenta del panel"
 
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/mod.rs:116
+#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/mod.rs:429
 msgid "Make this user the tailscale operator"
 msgstr "Hacer a este usuario operador de tailscale"
 
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/mod.rs:117
+#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/mod.rs:431
 msgid "About BigLace"
 msgstr "Acerca de BigLace"
 
@@ -52,7 +52,7 @@ msgid "OK"
 msgstr "OK"
 
 #: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/dialogs.rs:354
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/mod.rs:357
+#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/mod.rs:691
 #, rust-format
 msgid "Error: {error}"
 msgstr "Error: {error}"
@@ -93,60 +93,60 @@ msgstr "Iniciar sesión"
 msgid "Fill in URL, username and password."
 msgstr "Completa URL, usuario y contraseña."
 
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/content.rs:122
+#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/content.rs:145
 msgid "Start service"
 msgstr "Iniciar servicio"
 
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/sidebar.rs:69
+#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/sidebar.rs:71
 msgid "Server URL"
 msgstr "URL del servidor"
 
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/content.rs:169
+#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/content.rs:192
 msgid "This device"
 msgstr "Este dispositivo"
 
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/sidebar.rs:104
+#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/sidebar.rs:106
 msgid "Device name"
 msgstr "Nombre del dispositivo"
 
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/sidebar.rs:129
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/mod.rs:466
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/mod.rs:471
+#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/sidebar.rs:159
+#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/mod.rs:820
+#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/mod.rs:825
 msgid "Connect"
 msgstr "Conectar"
 
 #. ── Devices on the network ──
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/content.rs:186
+#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/content.rs:209
 msgid "Devices on the network"
 msgstr "Dispositivos en la red"
 
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/tailscale.rs:204
+#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/tailscale.rs:281
 msgid "Failed to run tailscale"
 msgstr "Error al ejecutar tailscale"
 
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/tailscale.rs:224
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/tailscale.rs:257
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/tailscale.rs:320
+#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/tailscale.rs:301
+#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/tailscale.rs:334
+#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/tailscale.rs:397
 msgid "Failed to connect — check the server URL and key."
 msgstr "Error al conectar — revisa el servidor y la clave."
 
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/tailscale.rs:245
+#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/tailscale.rs:322
 msgid "Failed to run pkexec tailscale"
 msgstr "Error al ejecutar pkexec tailscale"
 
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/tailscale.rs:382
+#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/tailscale.rs:459
 msgid "Could not determine the current user."
 msgstr "No se pudo determinar el usuario actual."
 
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/tailscale.rs:388
+#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/tailscale.rs:465
 msgid "Failed to run pkexec tailscale set"
 msgstr "Error al ejecutar pkexec tailscale set"
 
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/tailscale.rs:390
+#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/tailscale.rs:467
 msgid "Failed to set tailscale operator."
 msgstr "Error al definir el operador de tailscale."
 
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/tailscale.rs:313
+#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/tailscale.rs:390
 msgid ""
 "The pre-auth key was rejected by the server. Generate a new key in the "
 "BigScale panel and try again."
@@ -154,114 +154,115 @@ msgstr ""
 "La clave de pre-autenticación fue rechazada por el servidor. Genera una "
 "nueva clave en el panel BigScale e inténtalo de nuevo."
 
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/tailscale.rs:316
+#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/tailscale.rs:393
 #, rust-format
 msgid "Login rejected by server: {detail}"
 msgstr "Inicio de sesión rechazado por el servidor: {detail}"
 
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/sidebar.rs:86
+#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/sidebar.rs:88
 msgid "Apply manual setup"
 msgstr "Aplicar configuración manual"
 
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/sidebar.rs:88
+#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/sidebar.rs:90
 msgid "Save"
 msgstr "Guardar"
 
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/sidebar.rs:91
+#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/sidebar.rs:93
 msgid "Save the server and key above"
 msgstr "Guardar el servidor y la clave de arriba"
 
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/sidebar.rs:112
+#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/sidebar.rs:114
 msgid "Connect automatically"
 msgstr "Conectar automáticamente"
 
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/sidebar.rs:113
+#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/sidebar.rs:115
 msgid "Join the network when BigLace starts"
 msgstr "Unirse a la red al iniciar BigLace"
 
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/mod.rs:424
+#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/mod.rs:782
 msgid "Sign in or paste a pre-auth key"
 msgstr "Inicie sesión o pegue una clave de preautenticación"
 
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/mod.rs:429
+#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/mod.rs:787
 msgid "Server not set"
 msgstr "Servidor no establecido"
 
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/mod.rs:186
+#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/mod.rs:504
 msgid "Setup saved"
 msgstr "Configuración guardada"
 
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/mod.rs:242
+#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/mod.rs:580
 msgid "Sign in or paste a pre-auth key first."
 msgstr "Primero inicie sesión o pegue una clave de preautenticación."
 
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/content.rs:62
+#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/content.rs:83
 msgid "Sign in to connect"
 msgstr "Inicie sesión para conectar"
 
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/content.rs:63
+#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/content.rs:84
 msgid "Use the panel on the left to sign in or paste a pre-auth key."
 msgstr ""
 "Use el panel de la izquierda para iniciar sesión o pegar una clave de "
 "preautenticación."
 
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/content.rs:71
+#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/content.rs:92
 msgid "Not connected"
 msgstr "No conectado"
 
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/content.rs:72
+#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/content.rs:93
 msgid "Press Connect on the left to join the network."
 msgstr "Pulse Conectar a la izquierda para unirse a la red."
 
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/content.rs:146
 #: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/dialogs.rs:229
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/mod.rs:404
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/mod.rs:461
+#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/content.rs:169
+#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/mod.rs:740
+#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/mod.rs:815
 msgid "Connecting…"
 msgstr "Conectando…"
 
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/content.rs:195
+#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/content.rs:218
 msgid "No other devices on the network yet."
 msgstr "Aún no hay otros dispositivos en la red."
 
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/content.rs:179
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/peer_row.rs:52
+#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/content.rs:202
+#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/peer_row.rs:105
 msgid "Copy IP address"
 msgstr "Copiar dirección IP"
 
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/peer_row.rs:60
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/mod.rs:305
+#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/mod.rs:641
+#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/peer_row.rs:113
+#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/peer_row.rs:161
+#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/peer_row.rs:170
 msgid "IP address copied"
 msgstr "Dirección IP copiada"
 
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/peer_row.rs:74
+#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/peer_row.rs:128
 msgid "Open files (SFTP)"
 msgstr "Abrir archivos (SFTP)"
 
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/peer_row.rs:84
+#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/peer_row.rs:139
 msgid "Open terminal (SSH)"
 msgstr "Abrir terminal (SSH)"
 
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/peer_row.rs:15
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/peer_row.rs:16
+#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/peer_row.rs:40
 msgid "offline"
 msgstr "sin conexión"
 
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/mod.rs:401
+#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/mod.rs:737
 msgid "Service stopped"
 msgstr "Servicio detenido"
 
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/content.rs:37
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/mod.rs:403
+#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/content.rs:39
+#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/mod.rs:739
 msgid "Disconnected"
 msgstr "Desconectado"
 
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/mod.rs:348
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/mod.rs:405
+#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/mod.rs:682
+#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/mod.rs:741
 msgid "Connected"
 msgstr "Conectado"
 
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/mod.rs:113
+#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/mod.rs:426
 msgid "Refresh"
 msgstr "Actualizar"
 
@@ -269,42 +270,42 @@ msgstr "Actualizar"
 msgid "Signed in. Press Connect to join the network."
 msgstr "Sesión iniciada. Pulse Conectar para unirse a la red."
 
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/mod.rs:498
+#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/mod.rs:891
 msgid "no other devices"
 msgstr "ningún otro dispositivo"
 
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/mod.rs:500
+#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/mod.rs:893
 #, rust-format
 msgid "{online} online"
 msgstr "{online} en línea"
 
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/mod.rs:502
+#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/mod.rs:895
 #, rust-format
 msgid "{online} online · {offline} offline"
 msgstr "{online} en línea · {offline} sin conexión"
 
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/content.rs:116
+#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/content.rs:139
 msgid "The tailscale service is not running"
 msgstr "El servicio tailscale no está en ejecución"
 
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/content.rs:118
+#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/content.rs:141
 msgid "BigLace needs the tailscaled background service to manage the network."
 msgstr "BigLace necesita el servicio tailscaled para gestionar la red."
 
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/sidebar.rs:78
+#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/sidebar.rs:80
 msgid "Pre-auth key"
 msgstr "Clave de preautorización"
 
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/mod.rs:402
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/mod.rs:423
+#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/mod.rs:738
+#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/mod.rs:781
 msgid "Not signed in"
 msgstr "No has iniciado sesión"
 
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/sidebar.rs:60
+#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/sidebar.rs:62
 msgid "Advanced: use a pre-auth key"
 msgstr "Avanzado: usar una clave de preautorización"
 
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/sidebar.rs:61
+#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/sidebar.rs:63
 msgid "Already have a key from your administrator? Paste it here."
 msgstr "¿Ya tienes una clave de tu administrador? Pégala aquí."
 
@@ -323,7 +324,7 @@ msgstr ""
 "iniciar sesión con una cuenta diferente."
 
 #: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/dialogs.rs:76
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/mod.rs:115
+#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/mod.rs:428
 msgid "Sign out"
 msgstr "Cerrar sesión"
 
@@ -347,6 +348,97 @@ msgstr ""
 #: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/dialogs.rs:176
 msgid "Network identifier (will be created if new)"
 msgstr "Identificador de red (se creará si es nuevo)"
+
+#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/peer_row.rs:277
+msgid "Copy"
+msgstr "Copiar"
+
+#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/sidebar.rs:128
+msgid "Reconnect on drop"
+msgstr "Reconectar al caer"
+
+#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/sidebar.rs:129
+msgid "Retry with backoff when the connection is lost"
+msgstr "Reintentar con espera progresiva cuando se pierda la conexión"
+
+#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/sidebar.rs:142
+msgid "Notify on peer changes"
+msgstr "Notificar cambios entre pares"
+
+#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/sidebar.rs:143
+msgid "Show a desktop notification when peers go online/offline"
+msgstr ""
+"Mostrar una notificación de escritorio cuando los pares se "
+"conecten/desconecten"
+
+#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/mod.rs:430
+msgid "View tailscaled logs"
+msgstr "Ver registros de tailscaled"
+
+#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/mod.rs:751
+msgid "Server unreachable"
+msgstr "Servidor inalcanzable"
+
+#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/mod.rs:761
+#, rust-format
+msgid "Update available: v{version}"
+msgstr "Actualización disponible: v{version}"
+
+#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/mod.rs:915
+msgid "is online"
+msgstr "está en línea"
+
+#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/mod.rs:917
+msgid "went offline"
+msgstr "se desconectó"
+
+#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/peer_row.rs:78
+msgid "Unpin from top"
+msgstr "Desanclar del inicio"
+
+#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/peer_row.rs:78
+msgid "Pin to top"
+msgstr "Anclar al inicio"
+
+#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/peer_row.rs:149
+msgid "DNS name"
+msgstr "Nombre DNS"
+
+#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/peer_row.rs:152
+msgid "DNS name copied"
+msgstr "Nombre DNS copiado"
+
+#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/peer_row.rs:174
+msgid "Owner"
+msgstr "Propietario"
+
+#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/peer_row.rs:177
+msgid "Tags"
+msgstr "Etiquetas"
+
+#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/peer_row.rs:182
+msgid "Last seen"
+msgstr "Última vez visto"
+
+#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/peer_row.rs:189
+msgid "Use as exit node"
+msgstr "Usar como nodo de salida"
+
+#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/peer_row.rs:190
+msgid "Route all traffic through this peer"
+msgstr "Enrutar todo el tráfico a través de este par"
+
+#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/peer_row.rs:232
+msgid "Exit node enabled"
+msgstr "Nodo de salida activado"
+
+#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/peer_row.rs:232
+msgid "Exit node disabled"
+msgstr "Nodo de salida desactivado"
+
+#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/peer_row.rs:234
+msgid "Failed to update exit node"
+msgstr "Error al actualizar el nodo de salida"
 
 #~ msgid ""
 #~ "Use your BigScale panel username and password to generate a key "
@@ -434,6 +526,3 @@ msgstr "Identificador de red (se creará si es nuevo)"
 
 #~ msgid "No other devices found."
 #~ msgstr "No se encontraron otros dispositivos."
-
-#~ msgid "Copy"
-#~ msgstr "Copiar"
