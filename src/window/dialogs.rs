@@ -21,7 +21,7 @@ pub fn show_about(parent: &libadwaita::ApplicationWindow) {
         .application_name("BigLace")
         .application_icon("org.communitybig.biglace")
         .developer_name("BigCommunity")
-        .version(env!("CARGO_PKG_VERSION"))
+        .version(crate::APP_VERSION)
         .website("https://github.com/big-comm/biglace")
         .issue_url("https://github.com/big-comm/biglace/issues")
         .copyright("© 2026 BigCommunity")

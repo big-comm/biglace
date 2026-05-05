@@ -22,6 +22,24 @@ const CSS: &str = r#"
     padding: 6px 12px;
     color: alpha(@card_fg_color, 0.75);
 }
+
+/* Header badges — small pills sitting next to the title.
+   `badge-warning` is used for "server unreachable" / health issues,
+   `badge-info` for the self-update notice. */
+.badge {
+    padding: 2px 10px;
+    border-radius: 999px;
+    font-size: 0.85em;
+    font-weight: 600;
+}
+.badge-warning {
+    background-color: alpha(@warning_color, 0.18);
+    color: @warning_color;
+}
+.badge-info {
+    background-color: alpha(@accent_color, 0.18);
+    color: @accent_color;
+}
 "#;
 
 pub fn install() {

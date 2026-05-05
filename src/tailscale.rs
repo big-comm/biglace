@@ -54,7 +54,11 @@ pub struct Status {
 #[derive(Debug, Clone)]
 pub struct Peer {
     pub hostname: String,
+    /// First TailscaleIP — kept as `ip` for backwards compatibility with the
+    /// existing UI. Same value as `ipv4` whenever the peer has one.
     pub ip:       String,
+    pub ipv4:     String,
+    pub ipv6:     String,
     pub dns_name: String,
     pub online:   bool,
     pub os:       String,
@@ -62,6 +66,15 @@ pub struct Peer {
     /// (`ssh <user>@host`). Empty when tailscaled doesn't expose a UserMap
     /// entry, in which case the terminal launcher falls back to bare `ssh host`.
     pub user:     String,
+    /// Last time tailscaled saw the peer. Empty string when unknown (e.g. the
+    /// peer never came online since the daemon started).
+    pub last_seen: String,
+    /// Tags advertised by the peer (ACL tags), with the leading `tag:` stripped.
+    pub tags:     Vec<String>,
+    /// True when this peer currently advertises itself as an exit node.
+    pub exit_node_offered: bool,
+    /// True when biglace is using this peer as its exit node.
+    pub exit_node_active: bool,
 }
 
 // ─── Tailscale JSON structs ───────────────────────────────────────────────────
@@ -95,6 +108,18 @@ struct TsNode {
     os: Option<String>,
     #[serde(rename = "UserID")]
     user_id: Option<i64>,
+    #[serde(rename = "LastSeen")]
+    last_seen: Option<String>,
+    #[serde(rename = "Tags")]
+    tags: Option<Vec<String>>,
+    /// `PrimaryRoutes` includes `0.0.0.0/0` and/or `::/0` when the node is an
+    /// exit node. We don't deserialize the full route list — `ExitNodeOption`
+    /// in tailscaled's status JSON already tells us whether the peer offers
+    /// exit-node service, and `ExitNode` whether we currently route through it.
+    #[serde(rename = "ExitNodeOption", default)]
+    exit_node_option: bool,
+    #[serde(rename = "ExitNode", default)]
+    exit_node: bool,
 }
 
 #[derive(Deserialize)]
@@ -209,17 +234,35 @@ pub fn get_peers() -> Vec<Peer> {
         .peers
         .unwrap_or_default()
         .into_values()
-        .map(|n| Peer {
-            hostname: n.hostname.unwrap_or_default(),
-            ip:       n.ips.as_ref().and_then(|v| v.first().cloned()).unwrap_or_default(),
-            dns_name: n.dns_name.map(|d| d.trim_end_matches('.').to_string()).unwrap_or_default(),
-            online:   n.online.unwrap_or(false),
-            os:       n.os.unwrap_or_default(),
-            user:     resolve_user(n.user_id),
+        .map(|n| {
+            let ips = n.ips.unwrap_or_default();
+            let ipv4 = ips.iter().find(|i| !i.contains(':')).cloned().unwrap_or_default();
+            let ipv6 = ips.iter().find(|i| i.contains(':')).cloned().unwrap_or_default();
+            let ip = ips.first().cloned().unwrap_or_default();
+            let tags = n.tags.unwrap_or_default()
+                .into_iter()
+                .map(|t| t.strip_prefix("tag:").unwrap_or(&t).to_string())
+                .collect();
+            Peer {
+                hostname: n.hostname.unwrap_or_default(),
+                ip,
+                ipv4,
+                ipv6,
+                dns_name: n.dns_name.map(|d| d.trim_end_matches('.').to_string()).unwrap_or_default(),
+                online:   n.online.unwrap_or(false),
+                os:       n.os.unwrap_or_default(),
+                user:     resolve_user(n.user_id),
+                last_seen: n.last_seen.unwrap_or_default(),
+                tags,
+                exit_node_offered: n.exit_node_option,
+                exit_node_active:  n.exit_node,
+            }
         })
         .collect();
 
-    // online first, then alphabetical
+    // online first, then alphabetical. Final ordering (favorites first) happens
+    // in the UI layer, which knows the user's pin list — keeping it out of
+    // here means tests of get_peers don't need a Config to compare against.
     peers.sort_by(|a, b| b.online.cmp(&a.online).then(a.hostname.cmp(&b.hostname)));
     peers
 }
@@ -472,4 +515,80 @@ pub fn open_terminal(host: &str, user: &str) {
             return;
         }
     }
+}
+
+/// Open a terminal that tails `tailscaled`'s journal. Useful for debugging
+/// connect failures without leaving biglace.
+pub fn open_logs() {
+    // `pkexec journalctl -fu tailscaled` would be ideal but pkexec inside a
+    // terminal child often deadlocks on polkit's auth dialog. Plain
+    // `journalctl` works for the user's own session journal and surfaces
+    // tailscaled-routed lines via the system journal under `-u tailscaled`
+    // when the user is in `systemd-journal` (Manjaro default).
+    let cmd = "journalctl -fu tailscaled --no-pager; echo; echo '[press enter to close]'; read";
+    for (term, args) in &[
+        ("ashyterm",       vec!["-e", cmd]),
+        ("xterm",          vec!["-e", cmd]),
+        ("konsole",        vec!["-e", "bash", "-c", cmd]),
+        ("gnome-terminal", vec!["--", "bash", "-c", cmd]),
+        ("xfce4-terminal", vec!["-e", cmd]),
+    ] {
+        if Command::new(term).args(args).spawn().is_ok() {
+            return;
+        }
+    }
+}
+
+// ─── Exit nodes ──────────────────────────────────────────────────────────────
+
+/// Route this device's traffic through `host` (matched against tailscaled's
+/// known peer hostnames). Pass `None` to clear the exit node and return to
+/// direct routing.
+pub fn set_exit_node(host: Option<&str>) -> Result<()> {
+    let arg = match host {
+        Some(h) => format!("--exit-node={h}"),
+        None    => "--exit-node=".to_string(),
+    };
+    run_tailscale_with_fallback(&["set", &arg])
+}
+
+// ─── Latency ─────────────────────────────────────────────────────────────────
+
+/// One-shot ping to `target` (IP or hostname). Returns the round-trip time in
+/// milliseconds on the first reply, or None on timeout / unreachable. Caps at
+/// ~2s so a dead peer doesn't hang the periodic refresh.
+pub fn ping_ms(target: &str) -> Option<f64> {
+    let out = Command::new("tailscale")
+        .args(["ping", "--c=1", "--timeout=2s", "--until-direct=false", target])
+        .output()
+        .ok()?;
+    if !out.status.success() {
+        return None;
+    }
+    let stdout = String::from_utf8_lossy(&out.stdout);
+    // Lines look like:
+    //   pong from box (100.64.0.5) via 1.2.3.4:41641 in 14ms
+    //   pong from box (100.64.0.5) via DERP(nyc) in 27ms
+    let line = stdout.lines().find(|l| l.starts_with("pong from"))?;
+    let ms_idx = line.rfind(" in ")? + 4;
+    let rest = &line[ms_idx..];
+    let num_end = rest.find(|c: char| !c.is_ascii_digit() && c != '.')?;
+    rest[..num_end].parse::<f64>().ok()
+}
+
+// ─── Headscale health ────────────────────────────────────────────────────────
+
+/// Hit `<server_url>/health` and return true on HTTP 200. Doesn't follow
+/// redirects to avoid mistaking a captive portal / NPM 502 page for success.
+/// Empty URL → false (we never reached out, so we don't have a verdict).
+pub fn headscale_healthy(server_url: &str) -> bool {
+    let url = server_url.trim_end_matches('/');
+    if url.is_empty() {
+        return false;
+    }
+    let endpoint = format!("{url}/health");
+    let agent = ureq::AgentBuilder::new()
+        .timeout(std::time::Duration::from_secs(3))
+        .build();
+    matches!(agent.get(&endpoint).call(), Ok(r) if r.status() == 200)
 }

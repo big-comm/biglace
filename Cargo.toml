@@ -1,6 +1,6 @@
 [package]
 name = "biglace"
-version = "0.1.5"
+version = "1.0.0"
 edition = "2021"
 authors = ["BigCommunity"]
 description = "Mesh VPN client with a graphical interface for Headscale/Tailscale"
@@ -21,6 +21,10 @@ native-tls  = "0.2"
 # wrong backend on cross-compiles (e.g. don't drag D-Bus into a Windows build).
 [target.'cfg(target_os = "linux")'.dependencies]
 keyring = { version = "3", default-features = false, features = ["sync-secret-service", "crypto-rust"] }
+# StatusNotifierItem (KDE/freedesktop tray spec, also honored by GNOME via the
+# AppIndicator extension). `async-io` picks the lighter zbus backend; `blocking`
+# wraps it in a sync API so we don't need a tokio runtime in main().
+ksni = { version = "0.3", default-features = false, features = ["async-io", "blocking"] }
 
 [target.'cfg(target_os = "windows")'.dependencies]
 keyring = { version = "3", default-features = false, features = ["windows-native"] }

@@ -8,6 +8,8 @@ pub struct Content {
     pub toolbar:            libadwaita::ToolbarView,
     pub status_dot:         gtk4::Box,
     pub status_label:       gtk4::Label,
+    pub health_badge:       gtk4::Label,
+    pub update_badge:       gtk4::Label,
     pub btn_menu:           gtk4::MenuButton,
     pub stack:              gtk4::Stack,
     pub btn_start_service:  gtk4::Button,
@@ -44,6 +46,25 @@ pub fn build() -> Content {
         .tooltip_text(tr!("Main menu"))
         .build();
     header.pack_end(&btn_menu);
+
+    // Header badges — visibility is toggled in apply_state(). Keep them in the
+    // start area so they sit just left of the title without crowding the menu
+    // button on the right.
+    let health_badge = gtk4::Label::builder()
+        .label("")
+        .visible(false)
+        .build();
+    health_badge.add_css_class("badge");
+    health_badge.add_css_class("badge-warning");
+    header.pack_start(&health_badge);
+
+    let update_badge = gtk4::Label::builder()
+        .label("")
+        .visible(false)
+        .build();
+    update_badge.add_css_class("badge");
+    update_badge.add_css_class("badge-info");
+    header.pack_start(&update_badge);
 
     toolbar.add_top_bar(&header);
 
@@ -100,6 +121,8 @@ pub fn build() -> Content {
         toolbar,
         status_dot,
         status_label,
+        health_badge,
+        update_badge,
         btn_menu,
         stack,
         btn_start_service,

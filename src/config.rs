@@ -15,6 +15,23 @@ pub struct Config {
     // doesn't retype it each time. Password is intentionally NOT persisted.
     #[serde(default)]
     pub panel_username: String,
+
+    /// Pinned peers, identified by hostname. Pinned peers sort to the top
+    /// of the list regardless of online/offline state — handy when you have
+    /// a frota of clients and only care about a handful day-to-day.
+    #[serde(default)]
+    pub favorites:    Vec<String>,
+
+    /// When true, biglace will keep retrying connect() with exponential
+    /// backoff after the daemon reports a drop. Independent of `auto_connect`,
+    /// which only fires once at startup.
+    #[serde(default)]
+    pub auto_reconnect: bool,
+
+    /// Enable libnotify (`notify-send`) toasts when a peer transitions
+    /// between online and offline. Off by default to keep the desktop quiet.
+    #[serde(default)]
+    pub notify_peer_changes: bool,
 }
 
 impl Default for Config {
@@ -26,6 +43,26 @@ impl Default for Config {
             auto_connect:   false,
             panel_url:      String::new(),
             panel_username: String::new(),
+            favorites:      Vec::new(),
+            auto_reconnect: false,
+            notify_peer_changes: false,
+        }
+    }
+}
+
+impl Config {
+    pub fn is_favorite(&self, hostname: &str) -> bool {
+        self.favorites.iter().any(|h| h == hostname)
+    }
+
+    /// Toggle the pin state for `hostname`. Returns the new state (true = pinned).
+    pub fn toggle_favorite(&mut self, hostname: &str) -> bool {
+        if let Some(pos) = self.favorites.iter().position(|h| h == hostname) {
+            self.favorites.remove(pos);
+            false
+        } else {
+            self.favorites.push(hostname.to_string());
+            true
         }
     }
 }
