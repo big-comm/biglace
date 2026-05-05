@@ -12,7 +12,8 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/mod.rs:810
+#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/tray.rs:87
+#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/mod.rs:817
 msgid "Disconnect"
 msgstr "Prekini vezu"
 
@@ -108,9 +109,10 @@ msgstr "Ovaj uređaj"
 msgid "Device name"
 msgstr "Naziv uređaja"
 
+#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/tray.rs:94
 #: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/sidebar.rs:159
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/mod.rs:820
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/mod.rs:825
+#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/mod.rs:827
+#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/mod.rs:832
 msgid "Connect"
 msgstr "Poveži se"
 
@@ -178,11 +180,11 @@ msgstr "Automatski se poveži"
 msgid "Join the network when BigLace starts"
 msgstr "Pridruži se mreži kada BigLace pokrene"
 
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/mod.rs:782
+#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/mod.rs:789
 msgid "Sign in or paste a pre-auth key"
 msgstr "Prijavi se ili zalijepi pre-auth ključ"
 
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/mod.rs:787
+#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/mod.rs:794
 msgid "Server not set"
 msgstr "Poslužitelj nije postavljen"
 
@@ -211,10 +213,10 @@ msgstr "Nije povezano"
 msgid "Press Connect on the left to join the network."
 msgstr "Pritisnite Poveži se lijevo za pridruživanje mreži."
 
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/dialogs.rs:229
 #: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/content.rs:169
+#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/dialogs.rs:229
 #: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/mod.rs:740
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/mod.rs:815
+#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/mod.rs:822
 msgid "Connecting…"
 msgstr "Povezivanje…"
 
@@ -223,22 +225,22 @@ msgid "No other devices on the network yet."
 msgstr "Još nema drugih uređaja na mreži."
 
 #: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/content.rs:202
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/peer_row.rs:105
+#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/peer_row.rs:126
 msgid "Copy IP address"
 msgstr "Kopiraj IP adresu"
 
 #: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/mod.rs:641
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/peer_row.rs:113
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/peer_row.rs:161
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/peer_row.rs:170
+#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/peer_row.rs:134
+#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/peer_row.rs:186
+#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/peer_row.rs:195
 msgid "IP address copied"
 msgstr "IP adresa kopirana"
 
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/peer_row.rs:128
+#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/peer_row.rs:153
 msgid "Open files (SFTP)"
 msgstr "Otvori datoteke (SFTP)"
 
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/peer_row.rs:139
+#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/peer_row.rs:164
 msgid "Open terminal (SSH)"
 msgstr "Otvori terminal (SSH)"
 
@@ -250,11 +252,13 @@ msgstr "izvan mreže"
 msgid "Service stopped"
 msgstr "Usluga zaustavljena"
 
+#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/tray.rs:69
 #: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/content.rs:39
 #: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/mod.rs:739
 msgid "Disconnected"
 msgstr "Prekinuta veza"
 
+#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/tray.rs:64
 #: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/mod.rs:682
 #: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/mod.rs:741
 msgid "Connected"
@@ -268,16 +272,16 @@ msgstr "Osvježi"
 msgid "Signed in. Press Connect to join the network."
 msgstr "Prijavljeni ste. Pritisnite Poveži se za pridruživanje mreži."
 
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/mod.rs:891
+#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/mod.rs:898
 msgid "no other devices"
 msgstr "nema drugih uređaja"
 
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/mod.rs:893
+#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/mod.rs:900
 #, rust-format
 msgid "{online} online"
 msgstr "{online} na mreži"
 
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/mod.rs:895
+#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/mod.rs:902
 #, rust-format
 msgid "{online} online · {offline} offline"
 msgstr "{online} na mreži · {offline} izvan mreže"
@@ -295,7 +299,7 @@ msgid "Pre-auth key"
 msgstr "Pre-auth ključ"
 
 #: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/mod.rs:738
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/mod.rs:781
+#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/mod.rs:788
 msgid "Not signed in"
 msgstr "Niste prijavljeni"
 
@@ -346,7 +350,7 @@ msgstr ""
 msgid "Network identifier (will be created if new)"
 msgstr "Identifikator mreže (bit će stvoren ako je nov)"
 
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/peer_row.rs:277
+#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/peer_row.rs:302
 msgid "Copy"
 msgstr "Kopiraj"
 
@@ -371,70 +375,95 @@ msgstr ""
 msgid "View tailscaled logs"
 msgstr "Pregledaj tailscaled zapise"
 
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/mod.rs:751
+#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/mod.rs:758
 msgid "Server unreachable"
 msgstr "Poslužitelj nedostupan"
 
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/mod.rs:761
+#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/mod.rs:768
 #, rust-format
 msgid "Update available: v{version}"
 msgstr "Dostupno ažuriranje: v{version}"
 
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/mod.rs:915
+#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/mod.rs:922
 msgid "is online"
 msgstr "je online"
 
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/mod.rs:917
+#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/mod.rs:924
 msgid "went offline"
 msgstr "je offline"
 
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/peer_row.rs:78
+#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/peer_row.rs:81
 msgid "Unpin from top"
 msgstr "Otkači s vrha"
 
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/peer_row.rs:78
+#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/peer_row.rs:81
 msgid "Pin to top"
 msgstr "Prikači na vrh"
 
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/peer_row.rs:149
+#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/peer_row.rs:174
 msgid "DNS name"
 msgstr "DNS naziv"
 
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/peer_row.rs:152
+#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/peer_row.rs:177
 msgid "DNS name copied"
 msgstr "DNS naziv kopiran"
 
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/peer_row.rs:174
+#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/peer_row.rs:199
 msgid "Owner"
 msgstr "Vlasnik"
 
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/peer_row.rs:177
+#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/peer_row.rs:202
 msgid "Tags"
 msgstr "Oznake"
 
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/peer_row.rs:182
+#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/peer_row.rs:207
 msgid "Last seen"
 msgstr "Zadnji put viđen"
 
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/peer_row.rs:189
+#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/peer_row.rs:214
 msgid "Use as exit node"
 msgstr "Koristi kao izlazni čvor"
 
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/peer_row.rs:190
+#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/peer_row.rs:215
 msgid "Route all traffic through this peer"
 msgstr "Usmjeri sav promet kroz ovog peer-a"
 
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/peer_row.rs:232
+#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/peer_row.rs:257
 msgid "Exit node enabled"
 msgstr "Izlazni čvor omogućen"
 
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/peer_row.rs:232
+#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/peer_row.rs:257
 msgid "Exit node disabled"
 msgstr "Izlazni čvor onemogućen"
 
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/peer_row.rs:234
+#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/peer_row.rs:259
 msgid "Failed to update exit node"
 msgstr "Neuspješno ažuriranje izlaznog čvora"
+
+#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/peer_row.rs:103
+msgid "Pinned to top"
+msgstr "Prikvačeno na vrh"
+
+#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/peer_row.rs:105
+msgid "Unpinned"
+msgstr "Otkvačeno"
+
+#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/tray.rs:65
+msgid "Connected · 1 peer"
+msgstr "Povezano · 1 vršnjak"
+
+#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/tray.rs:66
+#, rust-format
+msgid "Connected · {n} peers"
+msgstr "Povezano · {n} vršnjaka"
+
+#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/tray.rs:103
+msgid "Show BigLace"
+msgstr "Prikaži BigLace"
+
+#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/tray.rs:112
+msgid "Quit"
+msgstr "Izlaz"
 
 #~ msgid ""
 #~ "Use your BigScale panel username and password to generate a key "

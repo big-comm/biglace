@@ -140,26 +140,30 @@ pub fn build(peer: &Peer, ctx: &PeerCtx) -> libadwaita::ExpanderRow {
     }
 
     if peer.online && !host.is_empty() {
+        // SSH/SFTP login is the peer's hostname (its OS user), NOT the
+        // BigScale account login (`peer.user`) — multiple devices can share
+        // one BigScale account, but each has its own local OS user that
+        // matches the device hostname on Linux.
         let host_files = host.clone();
-        let user_files = peer.user.clone();
+        let ssh_user_files = peer.hostname.clone();
         let btn_files = gtk4::Button::builder()
             .icon_name("folder-remote-symbolic")
             .css_classes(["flat"])
             .valign(gtk4::Align::Center)
             .tooltip_text(tr!("Open files (SFTP)"))
             .build();
-        btn_files.connect_clicked(move |_| tailscale::open_files(&host_files, &user_files));
+        btn_files.connect_clicked(move |_| tailscale::open_files(&host_files, &ssh_user_files));
         row.add_suffix(&btn_files);
 
         let host_term = host.clone();
-        let user_term = peer.user.clone();
+        let ssh_user_term = peer.hostname.clone();
         let btn_term = gtk4::Button::builder()
             .icon_name("utilities-terminal-symbolic")
             .css_classes(["flat"])
             .valign(gtk4::Align::Center)
             .tooltip_text(tr!("Open terminal (SSH)"))
             .build();
-        btn_term.connect_clicked(move |_| tailscale::open_terminal(&host_term, &user_term));
+        btn_term.connect_clicked(move |_| tailscale::open_terminal(&host_term, &ssh_user_term));
         row.add_suffix(&btn_term);
     }
 

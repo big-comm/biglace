@@ -14,6 +14,8 @@ use ksni::{
     MenuItem, ToolTip, Tray,
 };
 
+use crate::{tr, trf};
+
 #[derive(Debug, Clone, Copy)]
 pub enum TrayCommand {
     /// Bring the main window to the foreground (or unhide it).
@@ -59,12 +61,12 @@ impl Tray for BigLaceTray {
     fn tool_tip(&self) -> ToolTip {
         let description = if self.connected {
             match self.peer_count {
-                0 => "Connected".to_string(),
-                1 => "Connected · 1 peer".to_string(),
-                n => format!("Connected · {n} peers"),
+                0 => tr!("Connected"),
+                1 => tr!("Connected · 1 peer"),
+                n => trf!("Connected · {n} peers", "n" => n),
             }
         } else {
-            "Disconnected".into()
+            tr!("Disconnected")
         };
         ToolTip {
             icon_name: self.icon_name(),
@@ -82,16 +84,14 @@ impl Tray for BigLaceTray {
     fn menu(&self) -> Vec<MenuItem<Self>> {
         let connect_or_disconnect: MenuItem<Self> = if self.connected {
             StandardItem {
-                label: "Disconnect".into(),
-                icon_name: "network-offline-symbolic".into(),
+                label: tr!("Disconnect"),
                 activate: Box::new(|t: &mut BigLaceTray| t.send(TrayCommand::Disconnect)),
                 ..Default::default()
             }
             .into()
         } else {
             StandardItem {
-                label: "Connect".into(),
-                icon_name: "network-transmit-receive-symbolic".into(),
+                label: tr!("Connect"),
                 activate: Box::new(|t: &mut BigLaceTray| t.send(TrayCommand::Connect)),
                 ..Default::default()
             }
@@ -100,8 +100,7 @@ impl Tray for BigLaceTray {
 
         vec![
             StandardItem {
-                label: "Show BigLace".into(),
-                icon_name: "view-fullscreen-symbolic".into(),
+                label: tr!("Show BigLace"),
                 activate: Box::new(|t: &mut BigLaceTray| t.send(TrayCommand::Show)),
                 ..Default::default()
             }
@@ -110,8 +109,7 @@ impl Tray for BigLaceTray {
             connect_or_disconnect,
             MenuItem::Separator,
             StandardItem {
-                label: "Quit".into(),
-                icon_name: "application-exit-symbolic".into(),
+                label: tr!("Quit"),
                 activate: Box::new(|t: &mut BigLaceTray| t.send(TrayCommand::Quit)),
                 ..Default::default()
             }

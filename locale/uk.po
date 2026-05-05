@@ -12,7 +12,8 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/mod.rs:810
+#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/tray.rs:87
+#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/mod.rs:817
 msgid "Disconnect"
 msgstr "Відключитися"
 
@@ -107,9 +108,10 @@ msgstr "Цей пристрій"
 msgid "Device name"
 msgstr "Назва пристрою"
 
+#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/tray.rs:94
 #: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/sidebar.rs:159
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/mod.rs:820
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/mod.rs:825
+#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/mod.rs:827
+#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/mod.rs:832
 msgid "Connect"
 msgstr "Підключитися"
 
@@ -177,11 +179,11 @@ msgstr "Підключатися автоматично"
 msgid "Join the network when BigLace starts"
 msgstr "Приєднуватися до мережі під час запуску BigLace"
 
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/mod.rs:782
+#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/mod.rs:789
 msgid "Sign in or paste a pre-auth key"
 msgstr "Увійдіть або вставте передзатверджений ключ"
 
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/mod.rs:787
+#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/mod.rs:794
 msgid "Server not set"
 msgstr "Сервер не встановлено"
 
@@ -211,10 +213,10 @@ msgstr "Не підключено"
 msgid "Press Connect on the left to join the network."
 msgstr "Натисніть «Підключитися» ліворуч, щоб приєднатися до мережі."
 
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/dialogs.rs:229
 #: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/content.rs:169
+#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/dialogs.rs:229
 #: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/mod.rs:740
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/mod.rs:815
+#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/mod.rs:822
 msgid "Connecting…"
 msgstr "Підключення…"
 
@@ -223,22 +225,22 @@ msgid "No other devices on the network yet."
 msgstr "Інших пристроїв у мережі поки немає."
 
 #: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/content.rs:202
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/peer_row.rs:105
+#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/peer_row.rs:126
 msgid "Copy IP address"
 msgstr "Копіювати IP-адресу"
 
 #: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/mod.rs:641
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/peer_row.rs:113
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/peer_row.rs:161
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/peer_row.rs:170
+#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/peer_row.rs:134
+#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/peer_row.rs:186
+#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/peer_row.rs:195
 msgid "IP address copied"
 msgstr "IP-адресу скопійовано"
 
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/peer_row.rs:128
+#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/peer_row.rs:153
 msgid "Open files (SFTP)"
 msgstr "Відкрити файли (SFTP)"
 
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/peer_row.rs:139
+#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/peer_row.rs:164
 msgid "Open terminal (SSH)"
 msgstr "Відкрити термінал (SSH)"
 
@@ -250,11 +252,13 @@ msgstr "офлайн"
 msgid "Service stopped"
 msgstr "Службу зупинено"
 
+#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/tray.rs:69
 #: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/content.rs:39
 #: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/mod.rs:739
 msgid "Disconnected"
 msgstr "Відключено"
 
+#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/tray.rs:64
 #: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/mod.rs:682
 #: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/mod.rs:741
 msgid "Connected"
@@ -268,16 +272,16 @@ msgstr "Оновити"
 msgid "Signed in. Press Connect to join the network."
 msgstr "Ви ввійшли. Натисніть «Підключитися», щоб приєднатися до мережі."
 
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/mod.rs:891
+#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/mod.rs:898
 msgid "no other devices"
 msgstr "інших пристроїв немає"
 
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/mod.rs:893
+#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/mod.rs:900
 #, rust-format
 msgid "{online} online"
 msgstr "{online} онлайн"
 
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/mod.rs:895
+#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/mod.rs:902
 #, rust-format
 msgid "{online} online · {offline} offline"
 msgstr "{online} онлайн · {offline} офлайн"
@@ -295,7 +299,7 @@ msgid "Pre-auth key"
 msgstr "Попередньо авторизований ключ"
 
 #: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/mod.rs:738
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/mod.rs:781
+#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/mod.rs:788
 msgid "Not signed in"
 msgstr "Не виконано вхід"
 
@@ -347,7 +351,7 @@ msgstr ""
 msgid "Network identifier (will be created if new)"
 msgstr "Ідентифікатор мережі (буде створено, якщо новий)"
 
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/peer_row.rs:277
+#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/peer_row.rs:302
 msgid "Copy"
 msgstr "Копіювати"
 
@@ -372,70 +376,95 @@ msgstr ""
 msgid "View tailscaled logs"
 msgstr "Переглянути журнали tailscaled"
 
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/mod.rs:751
+#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/mod.rs:758
 msgid "Server unreachable"
 msgstr "Сервер недоступний"
 
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/mod.rs:761
+#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/mod.rs:768
 #, rust-format
 msgid "Update available: v{version}"
 msgstr "Доступне оновлення: v{version}"
 
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/mod.rs:915
+#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/mod.rs:922
 msgid "is online"
 msgstr "в мережі"
 
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/mod.rs:917
+#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/mod.rs:924
 msgid "went offline"
 msgstr "вийшов з мережі"
 
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/peer_row.rs:78
+#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/peer_row.rs:81
 msgid "Unpin from top"
 msgstr "Відкріпити зверху"
 
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/peer_row.rs:78
+#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/peer_row.rs:81
 msgid "Pin to top"
 msgstr "Закріпити зверху"
 
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/peer_row.rs:149
+#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/peer_row.rs:174
 msgid "DNS name"
 msgstr "DNS-ім'я"
 
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/peer_row.rs:152
+#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/peer_row.rs:177
 msgid "DNS name copied"
 msgstr "DNS-ім'я скопійовано"
 
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/peer_row.rs:174
+#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/peer_row.rs:199
 msgid "Owner"
 msgstr "Власник"
 
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/peer_row.rs:177
+#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/peer_row.rs:202
 msgid "Tags"
 msgstr "Теги"
 
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/peer_row.rs:182
+#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/peer_row.rs:207
 msgid "Last seen"
 msgstr "Востаннє бачили"
 
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/peer_row.rs:189
+#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/peer_row.rs:214
 msgid "Use as exit node"
 msgstr "Використовувати як вихідний вузол"
 
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/peer_row.rs:190
+#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/peer_row.rs:215
 msgid "Route all traffic through this peer"
 msgstr "Маршрутизувати весь трафік через цей пір"
 
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/peer_row.rs:232
+#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/peer_row.rs:257
 msgid "Exit node enabled"
 msgstr "Вихідний вузол увімкнено"
 
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/peer_row.rs:232
+#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/peer_row.rs:257
 msgid "Exit node disabled"
 msgstr "Вихідний вузол вимкнено"
 
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/peer_row.rs:234
+#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/peer_row.rs:259
 msgid "Failed to update exit node"
 msgstr "Не вдалося оновити вихідний вузол"
+
+#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/peer_row.rs:103
+msgid "Pinned to top"
+msgstr "Закріплено вгорі"
+
+#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/peer_row.rs:105
+msgid "Unpinned"
+msgstr "Відкріплено"
+
+#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/tray.rs:65
+msgid "Connected · 1 peer"
+msgstr "Підключено · 1 одноранговий вузол"
+
+#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/tray.rs:66
+#, rust-format
+msgid "Connected · {n} peers"
+msgstr "Підключено · {n} однорангових вузлів"
+
+#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/tray.rs:103
+msgid "Show BigLace"
+msgstr "Показати BigLace"
+
+#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/tray.rs:112
+msgid "Quit"
+msgstr "Вийти"
 
 #~ msgid ""
 #~ "Use your BigScale panel username and password to generate a key "

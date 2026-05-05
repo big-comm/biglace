@@ -12,7 +12,8 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/mod.rs:810
+#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/tray.rs:87
+#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/mod.rs:817
 msgid "Disconnect"
 msgstr "Deconectare"
 
@@ -108,9 +109,10 @@ msgstr "Acest dispozitiv"
 msgid "Device name"
 msgstr "Numele dispozitivului"
 
+#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/tray.rs:94
 #: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/sidebar.rs:159
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/mod.rs:820
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/mod.rs:825
+#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/mod.rs:827
+#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/mod.rs:832
 msgid "Connect"
 msgstr "Conectare"
 
@@ -178,11 +180,11 @@ msgstr "Conectare automată"
 msgid "Join the network when BigLace starts"
 msgstr "Alătură-te rețelei când BigLace pornește"
 
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/mod.rs:782
+#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/mod.rs:789
 msgid "Sign in or paste a pre-auth key"
 msgstr "Autentifică-te sau lipește o cheie de pre-autentificare"
 
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/mod.rs:787
+#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/mod.rs:794
 msgid "Server not set"
 msgstr "Server nesetat"
 
@@ -212,10 +214,10 @@ msgstr "Neconectat"
 msgid "Press Connect on the left to join the network."
 msgstr "Apăsați Conectare în stânga pentru a vă alătura rețelei."
 
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/dialogs.rs:229
 #: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/content.rs:169
+#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/dialogs.rs:229
 #: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/mod.rs:740
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/mod.rs:815
+#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/mod.rs:822
 msgid "Connecting…"
 msgstr "Se conectează…"
 
@@ -224,22 +226,22 @@ msgid "No other devices on the network yet."
 msgstr "Încă nu există alte dispozitive în rețea."
 
 #: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/content.rs:202
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/peer_row.rs:105
+#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/peer_row.rs:126
 msgid "Copy IP address"
 msgstr "Copiază adresa IP"
 
 #: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/mod.rs:641
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/peer_row.rs:113
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/peer_row.rs:161
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/peer_row.rs:170
+#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/peer_row.rs:134
+#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/peer_row.rs:186
+#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/peer_row.rs:195
 msgid "IP address copied"
 msgstr "Adresă IP copiată"
 
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/peer_row.rs:128
+#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/peer_row.rs:153
 msgid "Open files (SFTP)"
 msgstr "Deschide fișiere (SFTP)"
 
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/peer_row.rs:139
+#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/peer_row.rs:164
 msgid "Open terminal (SSH)"
 msgstr "Deschide terminal (SSH)"
 
@@ -251,11 +253,13 @@ msgstr "offline"
 msgid "Service stopped"
 msgstr "Serviciu oprit"
 
+#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/tray.rs:69
 #: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/content.rs:39
 #: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/mod.rs:739
 msgid "Disconnected"
 msgstr "Deconectat"
 
+#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/tray.rs:64
 #: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/mod.rs:682
 #: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/mod.rs:741
 msgid "Connected"
@@ -269,16 +273,16 @@ msgstr "Reîmprospătează"
 msgid "Signed in. Press Connect to join the network."
 msgstr "Autentificat. Apăsați Conectare pentru a vă alătura rețelei."
 
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/mod.rs:891
+#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/mod.rs:898
 msgid "no other devices"
 msgstr "niciun alt dispozitiv"
 
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/mod.rs:893
+#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/mod.rs:900
 #, rust-format
 msgid "{online} online"
 msgstr "{online} online"
 
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/mod.rs:895
+#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/mod.rs:902
 #, rust-format
 msgid "{online} online · {offline} offline"
 msgstr "{online} online · {offline} offline"
@@ -298,7 +302,7 @@ msgid "Pre-auth key"
 msgstr "Cheie de pre-autentificare"
 
 #: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/mod.rs:738
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/mod.rs:781
+#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/mod.rs:788
 msgid "Not signed in"
 msgstr "Nu ești autentificat"
 
@@ -350,7 +354,7 @@ msgstr ""
 msgid "Network identifier (will be created if new)"
 msgstr "Identificator de rețea (va fi creat dacă este nou)"
 
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/peer_row.rs:277
+#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/peer_row.rs:302
 msgid "Copy"
 msgstr "Copiază"
 
@@ -374,70 +378,95 @@ msgstr "Afișează o notificare pe desktop când nodurile devin online/offline"
 msgid "View tailscaled logs"
 msgstr "Vizualizare jurnale tailscaled"
 
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/mod.rs:751
+#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/mod.rs:758
 msgid "Server unreachable"
 msgstr "Server inaccesibil"
 
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/mod.rs:761
+#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/mod.rs:768
 #, rust-format
 msgid "Update available: v{version}"
 msgstr "Actualizare disponibilă: v{version}"
 
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/mod.rs:915
+#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/mod.rs:922
 msgid "is online"
 msgstr "este online"
 
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/mod.rs:917
+#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/mod.rs:924
 msgid "went offline"
 msgstr "a devenit offline"
 
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/peer_row.rs:78
+#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/peer_row.rs:81
 msgid "Unpin from top"
 msgstr "Anulează fixarea sus"
 
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/peer_row.rs:78
+#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/peer_row.rs:81
 msgid "Pin to top"
 msgstr "Fixează sus"
 
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/peer_row.rs:149
+#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/peer_row.rs:174
 msgid "DNS name"
 msgstr "Nume DNS"
 
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/peer_row.rs:152
+#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/peer_row.rs:177
 msgid "DNS name copied"
 msgstr "Nume DNS copiat"
 
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/peer_row.rs:174
+#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/peer_row.rs:199
 msgid "Owner"
 msgstr "Proprietar"
 
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/peer_row.rs:177
+#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/peer_row.rs:202
 msgid "Tags"
 msgstr "Etichete"
 
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/peer_row.rs:182
+#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/peer_row.rs:207
 msgid "Last seen"
 msgstr "Văzut ultima dată"
 
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/peer_row.rs:189
+#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/peer_row.rs:214
 msgid "Use as exit node"
 msgstr "Folosește ca nod de ieșire"
 
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/peer_row.rs:190
+#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/peer_row.rs:215
 msgid "Route all traffic through this peer"
 msgstr "Dirijează tot traficul prin acest peer"
 
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/peer_row.rs:232
+#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/peer_row.rs:257
 msgid "Exit node enabled"
 msgstr "Nod de ieșire activat"
 
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/peer_row.rs:232
+#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/peer_row.rs:257
 msgid "Exit node disabled"
 msgstr "Nod de ieșire dezactivat"
 
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/peer_row.rs:234
+#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/peer_row.rs:259
 msgid "Failed to update exit node"
 msgstr "Actualizarea nodului de ieșire a eșuat"
+
+#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/peer_row.rs:103
+msgid "Pinned to top"
+msgstr "Fixat în partea de sus"
+
+#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/peer_row.rs:105
+msgid "Unpinned"
+msgstr "De-fixat"
+
+#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/tray.rs:65
+msgid "Connected · 1 peer"
+msgstr "Conectat · 1 peer"
+
+#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/tray.rs:66
+#, rust-format
+msgid "Connected · {n} peers"
+msgstr "Conectat · {n} peeri"
+
+#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/tray.rs:103
+msgid "Show BigLace"
+msgstr "Afișează BigLace"
+
+#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/tray.rs:112
+msgid "Quit"
+msgstr "Ieșire"
 
 #~ msgid ""
 #~ "Use your BigScale panel username and password to generate a key "
