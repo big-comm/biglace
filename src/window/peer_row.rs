@@ -69,23 +69,44 @@ pub fn build(peer: &Peer, ctx: &PeerCtx) -> libadwaita::ExpanderRow {
 
     // ── Suffix buttons: pin, copy IP, files, terminal ──
     // Pin button — always visible, regardless of online state, so the user
-    // can curate favorites even on quiet days.
+    // can curate favorites even on quiet days. We use a fixed icon
+    // (`starred-symbolic`) and toggle CSS classes for the visual state,
+    // because some icon themes render `non-starred-symbolic` and
+    // `starred-symbolic` nearly identically.
     let is_fav = ctx.cfg.borrow().is_favorite(&peer.hostname);
     let btn_pin = gtk4::Button::builder()
-        .icon_name(if is_fav { "starred-symbolic" } else { "non-starred-symbolic" })
+        .icon_name("starred-symbolic")
         .css_classes(["flat"])
         .valign(gtk4::Align::Center)
         .tooltip_text(if is_fav { tr!("Unpin from top") } else { tr!("Pin to top") })
         .build();
+    if is_fav {
+        btn_pin.add_css_class("accent");
+    } else {
+        btn_pin.add_css_class("dim-label");
+    }
     {
         let cfg = ctx.cfg.clone();
         let refresh = ctx.refresh.clone();
+        let toast = ctx.toast.clone();
         let host = peer.hostname.clone();
         btn_pin.connect_clicked(move |_| {
-            let mut c = cfg.borrow_mut();
-            c.toggle_favorite(&host);
-            let _ = config::save(&c);
-            drop(c);
+            let now_pinned = {
+                let mut c = cfg.borrow_mut();
+                let p = c.toggle_favorite(&host);
+                let _ = config::save(&c);
+                p
+            };
+            toast.add_toast(
+                libadwaita::Toast::builder()
+                    .title(if now_pinned {
+                        tr!("Pinned to top")
+                    } else {
+                        tr!("Unpinned")
+                    })
+                    .timeout(2)
+                    .build(),
+            );
             refresh();
         });
     }

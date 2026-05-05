@@ -744,9 +744,16 @@ fn apply_state(
     ui.content.status_label.set_text(&status_text);
 
     // ── Headscale health badge (header) ──
+    // Only flag the server as unreachable when *we're not connected*. If the
+    // tunnel is up, the server is obviously routable — and many Headscale
+    // deployments behind nginx/Caddy don't expose /health anyway, so a
+    // failed probe there is not a useful signal while connected.
     let health_ok = ctx.health_ok.lock().map(|g| *g).unwrap_or(true);
     let server_set = !cfg_snap.server_url.is_empty();
-    if server_set && !health_ok && state != AppState::ServiceStopped {
+    let show_health_badge = server_set
+        && !health_ok
+        && matches!(state, AppState::Disconnected | AppState::NotSignedIn);
+    if show_health_badge {
         ui.content.health_badge.set_visible(true);
         ui.content.health_badge.set_label(&tr!("Server unreachable"));
     } else {

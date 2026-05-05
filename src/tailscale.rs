@@ -578,9 +578,13 @@ pub fn ping_ms(target: &str) -> Option<f64> {
 
 // ─── Headscale health ────────────────────────────────────────────────────────
 
-/// Hit `<server_url>/health` and return true on HTTP 200. Doesn't follow
-/// redirects to avoid mistaking a captive portal / NPM 502 page for success.
-/// Empty URL → false (we never reached out, so we don't have a verdict).
+/// Hit `<server_url>/health` and return true on any 2xx response. Headscale
+/// versions and reverse proxies vary on the exact code (200 vs 204), so we
+/// accept the whole 2xx range. Empty URL → false (we never reached out).
+///
+/// The badge that consumes this is only shown while *disconnected*, so a
+/// false negative here can't surprise an already-connected user — see
+/// `apply_state` in `window/mod.rs`.
 pub fn headscale_healthy(server_url: &str) -> bool {
     let url = server_url.trim_end_matches('/');
     if url.is_empty() {
@@ -588,7 +592,7 @@ pub fn headscale_healthy(server_url: &str) -> bool {
     }
     let endpoint = format!("{url}/health");
     let agent = ureq::AgentBuilder::new()
-        .timeout(std::time::Duration::from_secs(3))
+        .timeout(std::time::Duration::from_secs(5))
         .build();
-    matches!(agent.get(&endpoint).call(), Ok(r) if r.status() == 200)
+    matches!(agent.get(&endpoint).call(), Ok(r) if (200..300).contains(&r.status()))
 }
