@@ -6,7 +6,6 @@ use std::{fs, path::PathBuf};
 pub struct Config {
     pub server_url:   String,
     pub authkey:      String,
-    pub hostname:     String,
     pub auto_connect: bool,
 
     #[serde(default)]
@@ -39,7 +38,6 @@ impl Default for Config {
         Self {
             server_url:     String::new(),
             authkey:        String::new(),
-            hostname:       default_hostname(),
             auto_connect:   false,
             panel_url:      String::new(),
             panel_username: String::new(),
@@ -67,12 +65,14 @@ impl Config {
     }
 }
 
-fn default_hostname() -> String {
-    std::env::var("HOSTNAME")
-        .or_else(|_| {
-            fs::read_to_string("/etc/hostname").map(|s| s.trim().to_string())
-        })
-        .unwrap_or_else(|_| "meu-pc".into())
+/// The local OS user, used as the device's tailscale hostname so other peers
+/// can SSH/SFTP into it (`ssh <os-user>@<peer-dns>`). We always derive this
+/// at runtime — never persist it — so a config copied between machines auto-
+/// adapts to whoever runs biglace.
+pub fn os_user() -> String {
+    std::env::var("USER")
+        .or_else(|_| std::env::var("LOGNAME"))
+        .unwrap_or_else(|_| "biglace".into())
 }
 
 fn path() -> PathBuf {

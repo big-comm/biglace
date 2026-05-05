@@ -180,7 +180,7 @@ pub fn show_panel_login(
         let c = cfg.borrow();
         er_url.set_text(&c.panel_url);
         er_user.set_text(&c.panel_username);
-        er_node.set_text(&c.hostname);
+        er_node.set_text(&config::os_user());
         // Pre-fill the password from the OS keyring if we've seen this user
         // on this panel before. Falls back to empty silently when no keyring
         // backend is available.
@@ -268,7 +268,9 @@ pub fn show_panel_login(
                 username: er_user2.text().to_string(),
                 password: er_pass2.text().to_string(),
                 node:     er_node2.text().to_string(),
-                hostname: er_node2.text().to_string(),
+                // Tailscale hostname is the local OS user, not the panel
+                // identifier — peers use it as the SSH/SFTP login.
+                hostname: config::os_user(),
             };
 
             if creds.url.is_empty() || creds.username.is_empty() || creds.password.is_empty() {
@@ -304,7 +306,6 @@ pub fn show_panel_login(
             let panel_url = creds.url.clone();
             let username  = creds.username.clone();
             let password  = creds.password.clone();
-            let node      = creds.node.clone();
 
             glib::timeout_add_local(Duration::from_millis(300), move || {
                 match slot.lock().ok().and_then(|mut g| g.take()) {
@@ -319,7 +320,6 @@ pub fn show_panel_login(
                         );
                         sidebar3.entry_server.set_text(&server_url);
                         sidebar3.entry_key.set_text(&resp.authkey);
-                        sidebar3.entry_host.set_text(&node);
                         // Collapse the manual-key expander — the key was just
                         // generated for the user, no need to show the field.
                         sidebar3.expander_manual.set_expanded(false);
@@ -329,7 +329,6 @@ pub fn show_panel_login(
                             c.panel_username = username.clone();
                             c.server_url     = server_url.clone();
                             c.authkey        = resp.authkey.clone();
-                            c.hostname       = node.clone();
                             config::save(&c).ok();
                         }
                         // Stash the password in the OS-native keyring so the
