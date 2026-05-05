@@ -67,23 +67,25 @@ pub fn build(peer: &Peer, toast: &libadwaita::ToastOverlay) -> libadwaita::Actio
 
     if peer.online && !host.is_empty() {
         let host_files = host.clone();
+        let user_files = peer.user.clone();
         let btn_files = gtk4::Button::builder()
             .icon_name("folder-remote-symbolic")
             .css_classes(["flat"])
             .valign(gtk4::Align::Center)
             .tooltip_text(tr!("Open files (SFTP)"))
             .build();
-        btn_files.connect_clicked(move |_| tailscale::open_files(&host_files));
+        btn_files.connect_clicked(move |_| tailscale::open_files(&host_files, &user_files));
         row.add_suffix(&btn_files);
 
         let host_term = host.clone();
+        let user_term = peer.user.clone();
         let btn_term = gtk4::Button::builder()
             .icon_name("utilities-terminal-symbolic")
             .css_classes(["flat"])
             .valign(gtk4::Align::Center)
             .tooltip_text(tr!("Open terminal (SSH)"))
             .build();
-        btn_term.connect_clicked(move |_| tailscale::open_terminal(&host_term));
+        btn_term.connect_clicked(move |_| tailscale::open_terminal(&host_term, &user_term));
         row.add_suffix(&btn_term);
     }
 
