@@ -11,7 +11,6 @@ pub struct Sidebar {
     pub entry_server:           libadwaita::EntryRow,
     pub entry_key:              libadwaita::EntryRow,
     pub btn_save_manual:        gtk4::Button,
-    pub entry_host:             libadwaita::EntryRow,
     pub switch_auto:            gtk4::Switch,
     pub switch_auto_reconnect:  gtk4::Switch,
     pub switch_notify:          gtk4::Switch,
@@ -102,14 +101,6 @@ pub fn build() -> Sidebar {
     // ── Preferences card ──
     let grp_prefs = libadwaita::PreferencesGroup::new();
 
-    let entry_host = libadwaita::EntryRow::builder()
-        .title(tr!("Device name"))
-        .build();
-    let host_icon = gtk4::Image::from_icon_name("computer-symbolic");
-    host_icon.set_pixel_size(20);
-    entry_host.add_prefix(&host_icon);
-    grp_prefs.add(&entry_host);
-
     let auto_row = libadwaita::ActionRow::builder()
         .title(tr!("Connect automatically"))
         .subtitle(tr!("Join the network when BigLace starts"))
@@ -173,7 +164,6 @@ pub fn build() -> Sidebar {
         entry_server,
         entry_key,
         btn_save_manual,
-        entry_host,
         switch_auto,
         switch_auto_reconnect,
         switch_notify,

@@ -182,7 +182,7 @@ pub fn build(app: &libadwaita::Application) {
         if c.auto_connect && !c.authkey.is_empty()
             && tailscale::is_service_active() && !tailscale::get_status().online
         {
-            do_connect(&ctx, c.server_url, c.authkey, c.hostname);
+            do_connect(&ctx, c.server_url, c.authkey, config::os_user());
         }
     }
 }
@@ -357,7 +357,7 @@ fn spawn_reconnect_worker(ctx: &Ctx) {
             // Double-check we're still offline before firing.
             if tailscale::is_service_active() && !tailscale::get_status().online {
                 let c = ctx_inner.cfg.borrow().clone();
-                do_connect(&ctx_inner, c.server_url, c.authkey, c.hostname);
+                do_connect(&ctx_inner, c.server_url, c.authkey, config::os_user());
             }
         });
         glib::ControlFlow::Continue
@@ -413,7 +413,6 @@ fn version_is_newer(candidate: &str, current: &str) -> bool {
 fn apply_config_to_widgets(ui: &Ui, c: &config::Config) {
     ui.sidebar.entry_server.set_text(&c.server_url);
     ui.sidebar.entry_key.set_text(&c.authkey);
-    ui.sidebar.entry_host.set_text(&c.hostname);
     ui.sidebar.switch_auto.set_active(c.auto_connect);
     ui.sidebar.switch_auto_reconnect.set_active(c.auto_reconnect);
     ui.sidebar.switch_notify.set_active(c.notify_peer_changes);
@@ -509,16 +508,6 @@ fn wire_signals(ctx: &Ctx) {
         });
     }
 
-    // ── Device name auto-save ──
-    {
-        let cfg2 = ctx.cfg.clone();
-        let entry = ctx.ui.sidebar.entry_host.clone();
-        ctx.ui.sidebar.entry_host.connect_apply(move |_| {
-            let mut c = cfg2.borrow_mut();
-            c.hostname = entry.text().to_string();
-            config::save(&c).ok();
-        });
-    }
 
     // ── Auto-connect switch → save ──
     {
@@ -583,15 +572,10 @@ fn wire_signals(ctx: &Ctx) {
                     );
                     return;
                 }
-                {
-                    let mut cm = ctx2.cfg.borrow_mut();
-                    cm.hostname = ctx2.ui.sidebar.entry_host.text().to_string();
-                    config::save(&cm).ok();
-                }
                 do_connect(
                     &ctx2,
                     c.server_url, c.authkey,
-                    ctx2.ui.sidebar.entry_host.text().to_string(),
+                    config::os_user(),
                 );
             }
         });
@@ -789,7 +773,7 @@ fn apply_state(
         ui.sidebar.identity_row.set_subtitle(&tr!("Sign in or paste a pre-auth key"));
         ui.sidebar.expander_manual.set_visible(true);
     } else {
-        let host = if cfg_snap.hostname.is_empty() { "—".to_string() } else { cfg_snap.hostname.clone() };
+        let host = config::os_user();
         let url  = if cfg_snap.server_url.is_empty() {
             tr!("Server not set")
         } else {
