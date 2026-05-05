@@ -58,6 +58,10 @@ pub struct Peer {
     pub dns_name: String,
     pub online:   bool,
     pub os:       String,
+    /// BigScale account that owns the device — used as the default SSH login
+    /// (`ssh <user>@host`). Empty when tailscaled doesn't expose a UserMap
+    /// entry, in which case the terminal launcher falls back to bare `ssh host`.
+    pub user:     String,
 }
 
 // ─── Tailscale JSON structs ───────────────────────────────────────────────────
@@ -70,6 +74,11 @@ struct TsStatus {
     peers: Option<std::collections::HashMap<String, TsNode>>,
     #[serde(rename = "Health")]
     health: Option<Vec<String>>,
+    /// Map of user-id → user metadata. Tailscale serializes the keys as JSON
+    /// numbers but serde decodes them as strings. Used to translate the
+    /// numeric `User` on each peer into the BigScale account login.
+    #[serde(rename = "User")]
+    users: Option<std::collections::HashMap<String, TsUser>>,
 }
 
 #[derive(Deserialize)]
@@ -84,6 +93,14 @@ struct TsNode {
     online: Option<bool>,
     #[serde(rename = "OS")]
     os: Option<String>,
+    #[serde(rename = "UserID")]
+    user_id: Option<i64>,
+}
+
+#[derive(Deserialize)]
+struct TsUser {
+    #[serde(rename = "LoginName")]
+    login_name: Option<String>,
 }
 
 // ─── Detection ───────────────────────────────────────────────────────────────
@@ -172,6 +189,22 @@ pub fn get_peers() -> Vec<Peer> {
         Err(_) => return vec![],
     };
 
+    // Tailscale's UserMap is keyed by stringified user-id. Build a quick
+    // id → login lookup, stripping any trailing "@github" / "@bigscale.net"
+    // tail so it matches the local SSH username on the peer.
+    let users = ts.users.unwrap_or_default();
+    let resolve_user = |uid: Option<i64>| -> String {
+        let uid = match uid {
+            Some(v) if v > 0 => v,
+            _ => return String::new(),
+        };
+        users
+            .get(&uid.to_string())
+            .and_then(|u| u.login_name.clone())
+            .map(|l| l.split('@').next().unwrap_or("").to_string())
+            .unwrap_or_default()
+    };
+
     let mut peers: Vec<Peer> = ts
         .peers
         .unwrap_or_default()
@@ -182,6 +215,7 @@ pub fn get_peers() -> Vec<Peer> {
             dns_name: n.dns_name.map(|d| d.trim_end_matches('.').to_string()).unwrap_or_default(),
             online:   n.online.unwrap_or(false),
             os:       n.os.unwrap_or_default(),
+            user:     resolve_user(n.user_id),
         })
         .collect();
 
@@ -392,20 +426,47 @@ pub fn set_operator_current_user() -> Result<()> {
     Ok(())
 }
 
-pub fn open_files(ip: &str) {
-    let _ = Command::new("xdg-open")
-        .arg(format!("sftp://{ip}/"))
-        .spawn();
+/// Open a file manager pointed at `sftp://<user>@<host>/`. Plain `xdg-open`
+/// on a bare `sftp://host/` triggers GVfs's "location not mounted" error
+/// because the handler tries to use the local username — we pre-build the
+/// URL with the peer owner so Nautilus/Dolphin/etc. can mount on the fly.
+pub fn open_files(host: &str, user: &str) {
+    let target = if user.is_empty() {
+        host.to_string()
+    } else {
+        format!("{user}@{host}")
+    };
+    let url = format!("sftp://{target}/");
+
+    // File managers that natively understand sftp:// (they prompt for
+    // credentials and mount via GVfs/KIO automatically). Fall back to
+    // xdg-open as a last resort.
+    for cmd in &["nautilus", "nemo", "caja", "dolphin", "thunar", "pcmanfm", "xdg-open"] {
+        if Command::new(cmd).arg(&url).spawn().is_ok() {
+            return;
+        }
+    }
 }
 
-pub fn open_terminal(ip: &str) {
+/// Open a terminal running `ssh <user>@<host>`. When `user` is empty (peer
+/// owner couldn't be resolved from the UserMap) we fall back to `ssh <host>`,
+/// which makes ssh use the local username — usually wrong, but better than
+/// failing to launch at all.
+pub fn open_terminal(host: &str, user: &str) {
+    let target = if user.is_empty() {
+        host.to_string()
+    } else {
+        format!("{user}@{host}")
+    };
+    let ssh_cmd = format!("ssh {target}");
+
     // Try common terminals in preference order.
     for (term, args) in &[
-        ("ashyterm",         vec!["-e", &format!("ssh {ip}")]),
-        ("xterm",            vec!["-e", &format!("ssh {ip}")]),
-        ("konsole",          vec!["-e", &format!("ssh {ip}")]),
-        ("gnome-terminal",   vec!["--", "ssh", ip]),
-        ("xfce4-terminal",   vec!["-e", &format!("ssh {ip}")]),
+        ("ashyterm",         vec!["-e", ssh_cmd.as_str()]),
+        ("xterm",            vec!["-e", ssh_cmd.as_str()]),
+        ("konsole",          vec!["-e", ssh_cmd.as_str()]),
+        ("gnome-terminal",   vec!["--", "ssh", target.as_str()]),
+        ("xfce4-terminal",   vec!["-e", ssh_cmd.as_str()]),
     ] {
         if Command::new(term).args(args).spawn().is_ok() {
             return;
