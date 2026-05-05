@@ -12,7 +12,8 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/mod.rs:810
+#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/tray.rs:87
+#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/mod.rs:817
 msgid "Disconnect"
 msgstr "Αποσύνδεση"
 
@@ -109,9 +110,10 @@ msgstr "Αυτή η συσκευή"
 msgid "Device name"
 msgstr "Όνομα συσκευής"
 
+#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/tray.rs:94
 #: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/sidebar.rs:159
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/mod.rs:820
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/mod.rs:825
+#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/mod.rs:827
+#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/mod.rs:832
 msgid "Connect"
 msgstr "Σύνδεση"
 
@@ -180,11 +182,11 @@ msgstr "Αυτόματη σύνδεση"
 msgid "Join the network when BigLace starts"
 msgstr "Σύνδεση στο δίκτυο κατά την εκκίνηση του BigLace"
 
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/mod.rs:782
+#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/mod.rs:789
 msgid "Sign in or paste a pre-auth key"
 msgstr "Συνδεθείτε ή επικολλήστε ένα προ-εξουσιοδοτημένο κλειδί"
 
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/mod.rs:787
+#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/mod.rs:794
 msgid "Server not set"
 msgstr "Ο διακομιστής δεν έχει οριστεί"
 
@@ -214,10 +216,10 @@ msgstr "Δεν είστε συνδεδεμένος"
 msgid "Press Connect on the left to join the network."
 msgstr "Πατήστε Σύνδεση στα αριστερά για να συμμετάσχετε στο δίκτυο."
 
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/dialogs.rs:229
 #: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/content.rs:169
+#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/dialogs.rs:229
 #: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/mod.rs:740
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/mod.rs:815
+#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/mod.rs:822
 msgid "Connecting…"
 msgstr "Σύνδεση σε εξέλιξη…"
 
@@ -226,22 +228,22 @@ msgid "No other devices on the network yet."
 msgstr "Δεν υπάρχουν ακόμα άλλες συσκευές στο δίκτυο."
 
 #: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/content.rs:202
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/peer_row.rs:105
+#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/peer_row.rs:126
 msgid "Copy IP address"
 msgstr "Αντιγραφή διεύθυνσης IP"
 
 #: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/mod.rs:641
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/peer_row.rs:113
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/peer_row.rs:161
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/peer_row.rs:170
+#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/peer_row.rs:134
+#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/peer_row.rs:186
+#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/peer_row.rs:195
 msgid "IP address copied"
 msgstr "Η διεύθυνση IP αντιγράφηκε"
 
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/peer_row.rs:128
+#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/peer_row.rs:153
 msgid "Open files (SFTP)"
 msgstr "Άνοιγμα αρχείων (SFTP)"
 
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/peer_row.rs:139
+#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/peer_row.rs:164
 msgid "Open terminal (SSH)"
 msgstr "Άνοιγμα τερματικού (SSH)"
 
@@ -253,11 +255,13 @@ msgstr "εκτός σύνδεσης"
 msgid "Service stopped"
 msgstr "Η υπηρεσία σταμάτησε"
 
+#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/tray.rs:69
 #: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/content.rs:39
 #: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/mod.rs:739
 msgid "Disconnected"
 msgstr "Αποσυνδέθηκε"
 
+#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/tray.rs:64
 #: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/mod.rs:682
 #: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/mod.rs:741
 msgid "Connected"
@@ -271,16 +275,16 @@ msgstr "Ανανέωση"
 msgid "Signed in. Press Connect to join the network."
 msgstr "Έχετε συνδεθεί. Πατήστε Σύνδεση για να συμμετάσχετε στο δίκτυο."
 
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/mod.rs:891
+#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/mod.rs:898
 msgid "no other devices"
 msgstr "καμία άλλη συσκευή"
 
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/mod.rs:893
+#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/mod.rs:900
 #, rust-format
 msgid "{online} online"
 msgstr "{online} συνδεδεμένο"
 
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/mod.rs:895
+#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/mod.rs:902
 #, rust-format
 msgid "{online} online · {offline} offline"
 msgstr "{online} συνδεδεμένο · {offline} αποσυνδεδεμένο"
@@ -300,7 +304,7 @@ msgid "Pre-auth key"
 msgstr "Κλειδί προ-εξουσιοδότησης"
 
 #: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/mod.rs:738
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/mod.rs:781
+#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/mod.rs:788
 msgid "Not signed in"
 msgstr "Δεν έχετε συνδεθεί"
 
@@ -353,7 +357,7 @@ msgstr ""
 msgid "Network identifier (will be created if new)"
 msgstr "Αναγνωριστικό δικτύου (θα δημιουργηθεί αν δεν υπάρχει)"
 
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/peer_row.rs:277
+#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/peer_row.rs:302
 msgid "Copy"
 msgstr "Αντιγραφή"
 
@@ -379,70 +383,95 @@ msgstr ""
 msgid "View tailscaled logs"
 msgstr "Προβολή αρχείων καταγραφής tailscaled"
 
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/mod.rs:751
+#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/mod.rs:758
 msgid "Server unreachable"
 msgstr "Ο διακομιστής δεν είναι προσβάσιμος"
 
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/mod.rs:761
+#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/mod.rs:768
 #, rust-format
 msgid "Update available: v{version}"
 msgstr "Διαθέσιμη ενημέρωση: v{version}"
 
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/mod.rs:915
+#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/mod.rs:922
 msgid "is online"
 msgstr "είναι online"
 
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/mod.rs:917
+#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/mod.rs:924
 msgid "went offline"
 msgstr "έγινε offline"
 
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/peer_row.rs:78
+#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/peer_row.rs:81
 msgid "Unpin from top"
 msgstr "Αφαίρεση από την κορυφή"
 
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/peer_row.rs:78
+#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/peer_row.rs:81
 msgid "Pin to top"
 msgstr "Καρφίτσωμα στην κορυφή"
 
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/peer_row.rs:149
+#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/peer_row.rs:174
 msgid "DNS name"
 msgstr "Όνομα DNS"
 
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/peer_row.rs:152
+#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/peer_row.rs:177
 msgid "DNS name copied"
 msgstr "Το όνομα DNS αντιγράφηκε"
 
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/peer_row.rs:174
+#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/peer_row.rs:199
 msgid "Owner"
 msgstr "Κάτοχος"
 
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/peer_row.rs:177
+#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/peer_row.rs:202
 msgid "Tags"
 msgstr "Ετικέτες"
 
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/peer_row.rs:182
+#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/peer_row.rs:207
 msgid "Last seen"
 msgstr "Τελευταία εμφάνιση"
 
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/peer_row.rs:189
+#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/peer_row.rs:214
 msgid "Use as exit node"
 msgstr "Χρήση ως κόμβος εξόδου"
 
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/peer_row.rs:190
+#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/peer_row.rs:215
 msgid "Route all traffic through this peer"
 msgstr "Δρομολόγηση όλης της κίνησης μέσω αυτού του peer"
 
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/peer_row.rs:232
+#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/peer_row.rs:257
 msgid "Exit node enabled"
 msgstr "Κόμβος εξόδου ενεργοποιημένος"
 
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/peer_row.rs:232
+#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/peer_row.rs:257
 msgid "Exit node disabled"
 msgstr "Κόμβος εξόδου απενεργοποιημένος"
 
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/peer_row.rs:234
+#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/peer_row.rs:259
 msgid "Failed to update exit node"
 msgstr "Αποτυχία ενημέρωσης κόμβου εξόδου"
+
+#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/peer_row.rs:103
+msgid "Pinned to top"
+msgstr "Καρφιτσωμένο στην κορυφή"
+
+#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/peer_row.rs:105
+msgid "Unpinned"
+msgstr "Αποκαρφιτσώθηκε"
+
+#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/tray.rs:65
+msgid "Connected · 1 peer"
+msgstr "Συνδεδεμένο · 1 peer"
+
+#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/tray.rs:66
+#, rust-format
+msgid "Connected · {n} peers"
+msgstr "Συνδεδεμένο · {n} peers"
+
+#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/tray.rs:103
+msgid "Show BigLace"
+msgstr "Εμφάνιση BigLace"
+
+#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/tray.rs:112
+msgid "Quit"
+msgstr "Έξοδος"
 
 #~ msgid ""
 #~ "Use your BigScale panel username and password to generate a key "

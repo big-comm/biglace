@@ -62,9 +62,9 @@ pub struct Peer {
     pub dns_name: String,
     pub online:   bool,
     pub os:       String,
-    /// BigScale account that owns the device — used as the default SSH login
-    /// (`ssh <user>@host`). Empty when tailscaled doesn't expose a UserMap
-    /// entry, in which case the terminal launcher falls back to bare `ssh host`.
+    /// BigScale account that owns the device (e.g. `tales`). Shown in the UI
+    /// as "Owner" and not used for SSH/SFTP — the SSH login is the device's
+    /// OS user, which on Linux matches `hostname`.
     pub user:     String,
     /// Last time tailscaled saw the peer. Empty string when unknown (e.g. the
     /// peer never came online since the daemon started).
@@ -469,10 +469,11 @@ pub fn set_operator_current_user() -> Result<()> {
     Ok(())
 }
 
-/// Open a file manager pointed at `sftp://<user>@<host>/`. Plain `xdg-open`
-/// on a bare `sftp://host/` triggers GVfs's "location not mounted" error
-/// because the handler tries to use the local username — we pre-build the
-/// URL with the peer owner so Nautilus/Dolphin/etc. can mount on the fly.
+/// Open the user's default file manager pointed at `sftp://<user>@<host>/`.
+/// We pre-build the URL with the peer owner so handlers don't fall back to
+/// the local username (which would trigger GVfs's "location not mounted"
+/// error). `xdg-open` then dispatches to whichever GUI file manager the
+/// desktop is configured to use — Dolphin, Thunar, Nemo, Nautilus, etc.
 pub fn open_files(host: &str, user: &str) {
     let target = if user.is_empty() {
         host.to_string()
@@ -480,19 +481,11 @@ pub fn open_files(host: &str, user: &str) {
         format!("{user}@{host}")
     };
     let url = format!("sftp://{target}/");
-
-    // File managers that natively understand sftp:// (they prompt for
-    // credentials and mount via GVfs/KIO automatically). Fall back to
-    // xdg-open as a last resort.
-    for cmd in &["nautilus", "nemo", "caja", "dolphin", "thunar", "pcmanfm", "xdg-open"] {
-        if Command::new(cmd).arg(&url).spawn().is_ok() {
-            return;
-        }
-    }
+    let _ = Command::new("xdg-open").arg(&url).spawn();
 }
 
-/// Open a terminal running `ssh <user>@<host>`. When `user` is empty (peer
-/// owner couldn't be resolved from the UserMap) we fall back to `ssh <host>`,
+/// Open a terminal running `ssh <user>@<host>`. `user` should be the peer's
+/// OS user (its hostname on Linux). When empty we fall back to `ssh <host>`,
 /// which makes ssh use the local username — usually wrong, but better than
 /// failing to launch at all.
 pub fn open_terminal(host: &str, user: &str) {
