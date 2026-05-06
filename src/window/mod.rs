@@ -419,21 +419,22 @@ fn spawn_update_check(ctx: &Ctx) {
 ///   2. GET `/api/bs/v1/node` and update the `device_meta` cache that
 ///      peer rows read on each render.
 ///
-/// Skipped while disconnected or while the panel URL isn't configured.
+/// Skipped while disconnected. Idle on non-BigScale tailnets — `panel::*`
+/// resolves the panel via the tailnet's MagicDNS, so a vanilla headscale or
+/// Tailscale-oficial tailnet (no `panel.<suffix>`) just short-circuits.
 /// Errors are logged and never propagated — a temporarily unreachable panel
 /// must not break the rest of the UI.
 fn spawn_device_meta_worker(ctx: &Ctx) {
-    let cfg = ctx.cfg.clone();
     let device_meta = ctx.device_meta.clone();
     let tx = ctx.refresh_tx.clone();
 
     let kick = move || {
-        // panel_url is the public sign-in FQDN; we only use its presence as a
-        // "device is paired with a panel" signal. The actual requests below go
-        // to the hardcoded tailnet hostname inside `panel::*`.
-        if cfg.borrow().panel_url.is_empty() {
-            return;
-        }
+        // The integration is gated by tailnet identity, not by a panel login —
+        // POST /api/devices/me/os-user authenticates by tunnel source IP, so
+        // any peer on a BigScale tailnet propagates its $USER automatically,
+        // without the user ever opening "Sign in with panel". On non-BigScale
+        // tailnets the helpers in `panel::*` short-circuit (DNS for
+        // `panel.<MagicDNSSuffix>` doesn't resolve), so this stays a no-op.
         if !tailscale::is_service_active() || !tailscale::get_status().online {
             return;
         }
