@@ -113,19 +113,19 @@ pub fn build(peer: &Peer, ctx: &PeerCtx) -> libadwaita::ExpanderRow {
     }
     row.add_suffix(&btn_pin);
 
-    // Target for the ssh/sftp launch. We deliberately prefer the tailnet IP
-    // over `<peer>.<MagicDNSSuffix>`: biglace gets the IP from `tailscale
-    // status --json` (always populated when the peer is reachable), while
-    // the DNS form depends on the host's resolver knowing about MagicDNS.
-    // On boxes where openresolv/systemd-resolved isn't wired correctly the
-    // hostname-form ssh fails outright. The IP form bypasses that and works
-    // as long as the tunnel is up.
-    let host = if !peer.ipv4.is_empty() {
-        peer.ipv4.clone()
-    } else if !peer.ip.is_empty() {
+    // Hostname to display and to try first when launching ssh/sftp. The
+    // actual target is decided at click time by `tailscale::pick_target`,
+    // which falls back to the IP when the host's resolver can't resolve
+    // the name (broken openresolv etc).
+    let host = if peer.dns_name.is_empty() {
         peer.ip.clone()
     } else {
         peer.dns_name.clone()
+    };
+    let ip_fallback = if !peer.ipv4.is_empty() {
+        peer.ipv4.clone()
+    } else {
+        peer.ip.clone()
     };
 
     if !peer.ip.is_empty() {
@@ -180,6 +180,7 @@ pub fn build(peer: &Peer, ctx: &PeerCtx) -> libadwaita::ExpanderRow {
             .unwrap_or_else(|| peer.hostname.clone());
 
         let host_files = host.clone();
+        let ip_files = ip_fallback.clone();
         let ssh_user_files = ssh_user.clone();
         let btn_files = gtk4::Button::builder()
             .icon_name("folder-remote-symbolic")
@@ -187,10 +188,14 @@ pub fn build(peer: &Peer, ctx: &PeerCtx) -> libadwaita::ExpanderRow {
             .valign(gtk4::Align::Center)
             .tooltip_text(tr!("Open files (SFTP)"))
             .build();
-        btn_files.connect_clicked(move |_| tailscale::open_files(&host_files, &ssh_user_files));
+        btn_files.connect_clicked(move |_| {
+            let target = tailscale::pick_target(&host_files, &ip_files);
+            tailscale::open_files(&target, &ssh_user_files);
+        });
         row.add_suffix(&btn_files);
 
         let host_term = host.clone();
+        let ip_term = ip_fallback.clone();
         let ssh_user_term = ssh_user.clone();
         let btn_term = gtk4::Button::builder()
             .icon_name("utilities-terminal-symbolic")
@@ -198,7 +203,10 @@ pub fn build(peer: &Peer, ctx: &PeerCtx) -> libadwaita::ExpanderRow {
             .valign(gtk4::Align::Center)
             .tooltip_text(tr!("Open terminal (SSH)"))
             .build();
-        btn_term.connect_clicked(move |_| tailscale::open_terminal(&host_term, &ssh_user_term));
+        btn_term.connect_clicked(move |_| {
+            let target = tailscale::pick_target(&host_term, &ip_term);
+            tailscale::open_terminal(&target, &ssh_user_term);
+        });
         row.add_suffix(&btn_term);
     }
 
