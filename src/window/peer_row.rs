@@ -25,7 +25,8 @@ pub struct PeerCtx {
 
 pub fn build(peer: &Peer, ctx: &PeerCtx) -> libadwaita::ExpanderRow {
     let row = libadwaita::ExpanderRow::new();
-    row.set_title(if peer.hostname.is_empty() { "—" } else { &peer.hostname });
+    let display = peer.display_name();
+    row.set_title(if display.is_empty() { "—" } else { &display });
 
     // ── Subtitle: IP · OS · offline · latency ──
     let os_label = friendly_os(&peer.os);
@@ -140,16 +141,23 @@ pub fn build(peer: &Peer, ctx: &PeerCtx) -> libadwaita::ExpanderRow {
     }
 
     if peer.online && !host.is_empty() {
-        // SSH login is the OS user of the peer machine, propagated via the
-        // `tag:user-<name>` ACL tag (see tailscale.rs::connect). When the
-        // peer didn't advertise the tag (older biglace, denied by ACL, etc.)
-        // we fall back to the peer's hostname — usually wrong, but better
-        // than failing the launcher outright.
-        let ssh_user = if peer.ssh_user.is_empty() {
-            peer.hostname.clone()
-        } else {
-            peer.ssh_user.clone()
-        };
+        // Login precedence: per-peer override (set by the user) > os_user
+        // propagated by the panel (Option D) > peer hostname as last resort.
+        // The override exists for multi-user servers where neither the panel
+        // nor the hostname matches the local user's account on that box.
+        let ssh_user = ctx
+            .cfg
+            .borrow()
+            .peer_overrides
+            .get(&peer.hostname)
+            .cloned()
+            .unwrap_or_else(|| {
+                if peer.ssh_user.is_empty() {
+                    peer.hostname.clone()
+                } else {
+                    peer.ssh_user.clone()
+                }
+            });
 
         let host_files = host.clone();
         let ssh_user_files = ssh_user.clone();
@@ -205,6 +213,65 @@ pub fn build(peer: &Peer, ctx: &PeerCtx) -> libadwaita::ExpanderRow {
     if !peer.user.is_empty() {
         row.add_row(&detail_row("avatar-default-symbolic", &tr!("Owner"), &peer.user));
     }
+
+    // ── SSH login override row ──
+    // EntryRow with libadwaita's apply button: typing + Enter saves; emptying
+    // + Enter clears the override and falls back to the panel's os_user.
+    {
+        let host = peer.hostname.clone();
+        let auto = if peer.ssh_user.is_empty() {
+            peer.hostname.clone()
+        } else {
+            peer.ssh_user.clone()
+        };
+        let current = ctx
+            .cfg
+            .borrow()
+            .peer_overrides
+            .get(&host)
+            .cloned()
+            .unwrap_or_default();
+
+        let entry = libadwaita::EntryRow::builder()
+            .title(tr!("SSH login (override)"))
+            .show_apply_button(true)
+            .build();
+        // Hint the user what would be used if they leave this empty.
+        if !auto.is_empty() {
+            entry.set_input_hints(gtk4::InputHints::NO_SPELLCHECK);
+            entry.set_text(&current);
+        }
+
+        let icon = gtk4::Image::from_icon_name("avatar-default-symbolic");
+        icon.set_pixel_size(18);
+        icon.add_css_class("dim-label");
+        entry.add_prefix(&icon);
+
+        let cfg = ctx.cfg.clone();
+        let toast = ctx.toast.clone();
+        let refresh = ctx.refresh.clone();
+        entry.connect_apply(move |e| {
+            let value = e.text().to_string();
+            {
+                let mut c = cfg.borrow_mut();
+                if value.trim().is_empty() {
+                    c.peer_overrides.remove(&host);
+                } else {
+                    c.peer_overrides.insert(host.clone(), value.trim().to_string());
+                }
+                let _ = config::save(&c);
+            }
+            toast.add_toast(
+                libadwaita::Toast::builder()
+                    .title(tr!("Saved"))
+                    .timeout(2)
+                    .build(),
+            );
+            refresh();
+        });
+        row.add_row(&entry);
+    }
+
     if !peer.tags.is_empty() {
         row.add_row(&detail_row("emblem-system-symbolic", &tr!("Tags"), &peer.tags.join(", ")));
     }

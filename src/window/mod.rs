@@ -65,6 +65,11 @@ struct Ctx {
     /// hostname → online flag from the previous render. Diff'd against the
     /// current render to fire desktop notifications on transitions.
     last_peer_states: Rc<RefCell<HashMap<String, bool>>>,
+    /// hostname → instant of the last `notify-send` we fired for this peer.
+    /// Used to debounce notifications when a peer flaps online/offline rapidly
+    /// (tailscale's `Online` field can oscillate around DERP heartbeats), so
+    /// the user doesn't get spammed by KDE/GNOME's notification daemon.
+    last_peer_notifications: Rc<RefCell<HashMap<String, std::time::Instant>>>,
     /// Most recent Headscale `/health` result. Drives the badge in the header.
     /// Defaults to true so a fresh launch doesn't briefly flash a red banner.
     health_ok: Arc<Mutex<bool>>,
@@ -134,6 +139,7 @@ pub fn build(app: &libadwaita::Application) {
         tray:  Rc::new(RefCell::new(None)),
         latency: Arc::new(Mutex::new(HashMap::new())),
         last_peer_states: Rc::new(RefCell::new(HashMap::new())),
+        last_peer_notifications: Rc::new(RefCell::new(HashMap::new())),
         health_ok: Arc::new(Mutex::new(true)),
         reconnect_attempts: Rc::new(RefCell::new(0)),
         update_available: Arc::new(Mutex::new(None)),
@@ -932,24 +938,37 @@ fn apply_state(
 
     // ── Connected: this device, peers, bottom bar ──
     if state == AppState::Connected {
-        let host = status
-            .dns_name
-            .as_deref()
-            .or(status.hostname.as_deref())
-            .unwrap_or("—");
+        let display = status.display_name();
+        let title = if display.is_empty() { "—".to_string() } else { display };
         let ip = status.ip.as_deref().unwrap_or("—");
-        ui.content.self_row.set_title(host);
+        ui.content.self_row.set_title(&title);
         ui.content.self_row.set_subtitle(ip);
 
         // Diff against previous render to fire libnotify on transitions.
+        // Per-peer 60s cooldown swallows flaps — tailscale's `Online` field
+        // can oscillate around DERP heartbeats and we don't want every blip
+        // to show up as a popup.
         let mut prev = ctx.last_peer_states.borrow_mut();
         if cfg_snap.notify_peer_changes && !prev.is_empty() {
+            let mut last_notif = ctx.last_peer_notifications.borrow_mut();
+            let now = std::time::Instant::now();
+            let cooldown = std::time::Duration::from_secs(60);
             for p in peers {
                 let was = prev.get(&p.hostname).copied();
-                if was == Some(true) && !p.online {
-                    notify_peer_change(&p.hostname, false);
-                } else if was == Some(false) && p.online {
-                    notify_peer_change(&p.hostname, true);
+                let transition = match (was, p.online) {
+                    (Some(true), false) => Some(false),
+                    (Some(false), true) => Some(true),
+                    _ => None,
+                };
+                if let Some(state) = transition {
+                    let recent = last_notif
+                        .get(&p.hostname)
+                        .map(|t| now.duration_since(*t) < cooldown)
+                        .unwrap_or(false);
+                    if !recent {
+                        notify_peer_change(&p.display_name(), state);
+                        last_notif.insert(p.hostname.clone(), now);
+                    }
                 }
             }
         }
@@ -1012,11 +1031,11 @@ fn apply_state(
 /// Send a desktop notification via `notify-send`. Silent on failure (no
 /// notification daemon, missing binary, …) — never crash the GTK loop on
 /// a missing optional integration.
-fn notify_peer_change(hostname: &str, online: bool) {
+fn notify_peer_change(name: &str, online: bool) {
     let summary = if online {
-        format!("{hostname} {}", tr!("is online"))
+        format!("{name} {}", tr!("is online"))
     } else {
-        format!("{hostname} {}", tr!("went offline"))
+        format!("{name} {}", tr!("went offline"))
     };
     let icon = if online { "network-transmit-receive-symbolic" } else { "network-offline-symbolic" };
     let _ = std::process::Command::new("notify-send")

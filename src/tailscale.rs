@@ -81,6 +81,43 @@ pub struct Peer {
     pub exit_node_active: bool,
 }
 
+impl Peer {
+    /// Visible label for the row title. Prefers the headscale-assigned name —
+    /// the first label of `DNSName` — so renames done in the BigScale panel
+    /// surface immediately, without the user having to touch the remote box's
+    /// `/etc/hostname`. Falls back to `HostName` (the peer's OS hostname),
+    /// then to the IP, so the row never renders blank. Display only — keys
+    /// for favorites, overrides, latency cache etc. stay on `hostname`.
+    pub fn display_name(&self) -> String {
+        if let Some(label) = first_dns_label(&self.dns_name) {
+            return label;
+        }
+        if !self.hostname.is_empty() {
+            return self.hostname.clone();
+        }
+        self.ip.clone()
+    }
+}
+
+impl Status {
+    /// Same precedence as `Peer::display_name`, applied to the local node.
+    pub fn display_name(&self) -> String {
+        if let Some(label) = self.dns_name.as_deref().and_then(first_dns_label) {
+            return label;
+        }
+        if let Some(h) = self.hostname.as_deref().filter(|h| !h.is_empty()) {
+            return h.to_string();
+        }
+        self.ip.clone().unwrap_or_default()
+    }
+}
+
+fn first_dns_label(dns: &str) -> Option<String> {
+    let trimmed = dns.trim_end_matches('.');
+    let label = trimmed.split('.').next()?;
+    if label.is_empty() { None } else { Some(label.to_string()) }
+}
+
 // ─── Tailscale JSON structs ───────────────────────────────────────────────────
 
 #[derive(Deserialize)]
