@@ -1,6 +1,6 @@
 use anyhow::Result;
 use serde::{Deserialize, Serialize};
-use std::{fs, path::PathBuf};
+use std::{collections::HashMap, fs, path::PathBuf};
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct Config {
@@ -39,6 +39,13 @@ pub struct Config {
     /// between online and offline. Off by default to keep the desktop quiet.
     #[serde(default)]
     pub notify_peer_changes: bool,
+
+    /// Per-peer SSH login overrides, keyed by hostname. Takes precedence over
+    /// the `os_user` propagated by the panel (Option D), which itself falls
+    /// back to the peer's hostname. Lets the user say "on this multi-user
+    /// server I'm `contos`, not whatever the panel advertises".
+    #[serde(default)]
+    pub peer_overrides: HashMap<String, String>,
 }
 
 impl Default for Config {
@@ -53,6 +60,7 @@ impl Default for Config {
             favorites:      Vec::new(),
             auto_reconnect: false,
             notify_peer_changes: false,
+            peer_overrides: HashMap::new(),
         }
     }
 }
