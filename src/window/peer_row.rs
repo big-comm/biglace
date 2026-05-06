@@ -113,7 +113,16 @@ pub fn build(peer: &Peer, ctx: &PeerCtx) -> libadwaita::ExpanderRow {
     }
     row.add_suffix(&btn_pin);
 
-    let host = if peer.dns_name.is_empty() {
+    // Target for the ssh/sftp launch. We deliberately prefer the tailnet IP
+    // over `<peer>.<MagicDNSSuffix>`: biglace gets the IP from `tailscale
+    // status --json` (always populated when the peer is reachable), while
+    // the DNS form depends on the host's resolver knowing about MagicDNS.
+    // On boxes where openresolv/systemd-resolved isn't wired correctly the
+    // hostname-form ssh fails outright. The IP form bypasses that and works
+    // as long as the tunnel is up.
+    let host = if !peer.ipv4.is_empty() {
+        peer.ipv4.clone()
+    } else if !peer.ip.is_empty() {
         peer.ip.clone()
     } else {
         peer.dns_name.clone()
