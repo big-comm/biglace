@@ -42,8 +42,9 @@ pub struct Config {
 
     /// Per-peer SSH login overrides, keyed by hostname. Takes precedence over
     /// the `os_user` propagated by the panel (Option D), which itself falls
-    /// back to the peer's hostname. Lets the user say "on this multi-user
-    /// server I'm `contos`, not whatever the panel advertises".
+    /// back to the peer's hostname. Lets the user override the login on a
+    /// multi-user server where neither the panel nor the hostname matches
+    /// their actual account on that box.
     #[serde(default)]
     pub peer_overrides: HashMap<String, String>,
 }
