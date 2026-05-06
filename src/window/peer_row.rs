@@ -140,12 +140,19 @@ pub fn build(peer: &Peer, ctx: &PeerCtx) -> libadwaita::ExpanderRow {
     }
 
     if peer.online && !host.is_empty() {
-        // SSH/SFTP login is the peer's hostname (its OS user), NOT the
-        // BigScale account login (`peer.user`) — multiple devices can share
-        // one BigScale account, but each has its own local OS user that
-        // matches the device hostname on Linux.
+        // SSH login is the OS user of the peer machine, propagated via the
+        // `tag:user-<name>` ACL tag (see tailscale.rs::connect). When the
+        // peer didn't advertise the tag (older biglace, denied by ACL, etc.)
+        // we fall back to the peer's hostname — usually wrong, but better
+        // than failing the launcher outright.
+        let ssh_user = if peer.ssh_user.is_empty() {
+            peer.hostname.clone()
+        } else {
+            peer.ssh_user.clone()
+        };
+
         let host_files = host.clone();
-        let ssh_user_files = peer.hostname.clone();
+        let ssh_user_files = ssh_user.clone();
         let btn_files = gtk4::Button::builder()
             .icon_name("folder-remote-symbolic")
             .css_classes(["flat"])
@@ -156,7 +163,7 @@ pub fn build(peer: &Peer, ctx: &PeerCtx) -> libadwaita::ExpanderRow {
         row.add_suffix(&btn_files);
 
         let host_term = host.clone();
-        let ssh_user_term = peer.hostname.clone();
+        let ssh_user_term = ssh_user.clone();
         let btn_term = gtk4::Button::builder()
             .icon_name("utilities-terminal-symbolic")
             .css_classes(["flat"])

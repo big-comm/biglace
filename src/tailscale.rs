@@ -63,9 +63,13 @@ pub struct Peer {
     pub online:   bool,
     pub os:       String,
     /// BigScale account that owns the device (e.g. `tales`). Shown in the UI
-    /// as "Owner" and not used for SSH/SFTP — the SSH login is the device's
-    /// OS user, which on Linux matches `hostname`.
+    /// as "Owner".
     pub user:     String,
+    /// OS login on the peer's machine — the right-hand side of `ssh user@host`.
+    /// Extracted from a `tag:user-<name>` ACL tag advertised by the peer on
+    /// connect (see `connect()`). Empty when the peer didn't advertise the
+    /// tag; callers fall back to the peer's hostname in that case.
+    pub ssh_user: String,
     /// Last time tailscaled saw the peer. Empty string when unknown (e.g. the
     /// peer never came online since the daemon started).
     pub last_seen: String,
@@ -239,7 +243,7 @@ pub fn get_peers() -> Vec<Peer> {
             let ipv4 = ips.iter().find(|i| !i.contains(':')).cloned().unwrap_or_default();
             let ipv6 = ips.iter().find(|i| i.contains(':')).cloned().unwrap_or_default();
             let ip = ips.first().cloned().unwrap_or_default();
-            let tags = n.tags.unwrap_or_default()
+            let tags: Vec<String> = n.tags.unwrap_or_default()
                 .into_iter()
                 .map(|t| t.strip_prefix("tag:").unwrap_or(&t).to_string())
                 .collect();
@@ -252,6 +256,10 @@ pub fn get_peers() -> Vec<Peer> {
                 online:   n.online.unwrap_or(false),
                 os:       n.os.unwrap_or_default(),
                 user:     resolve_user(n.user_id),
+                // Filled in by the window layer from the panel's device-meta
+                // cache — empty here means "not known yet"; callers fall back
+                // to using the peer's hostname as the SSH login.
+                ssh_user: String::new(),
                 last_seen: n.last_seen.unwrap_or_default(),
                 tags,
                 exit_node_offered: n.exit_node_option,
@@ -469,11 +477,19 @@ pub fn set_operator_current_user() -> Result<()> {
     Ok(())
 }
 
-/// Open the user's default file manager pointed at `sftp://<user>@<host>/`.
-/// We pre-build the URL with the peer owner so handlers don't fall back to
-/// the local username (which would trigger GVfs's "location not mounted"
-/// error). `xdg-open` then dispatches to whichever GUI file manager the
-/// desktop is configured to use — Dolphin, Thunar, Nemo, Nautilus, etc.
+/// Open the user's configured file manager pointed at `sftp://<user>@<host>/`.
+///
+/// We can't rely on `xdg-open` alone: it forwards to `gio open`, which fails
+/// on a bare sftp URL with "location is not mounted" because GVfs needs an
+/// explicit mount step before it'll open. So we resolve the user's preferred
+/// handler ourselves:
+///   1. `xdg-mime query default x-scheme-handler/sftp` → the .desktop entry
+///      that the user (or distro) set as the SFTP handler. `gtk-launch` runs
+///      it with the URL as argument.
+///   2. Same for `inode/directory` — many file managers register only there.
+///   3. Probe a known list of GUI managers in popularity order. Each one of
+///      them mounts the SFTP location itself and pops up the password prompt.
+///   4. Last resort: `gio mount` then `xdg-open`.
 pub fn open_files(host: &str, user: &str) {
     let target = if user.is_empty() {
         host.to_string()
@@ -481,7 +497,40 @@ pub fn open_files(host: &str, user: &str) {
         format!("{user}@{host}")
     };
     let url = format!("sftp://{target}/");
+
+    for mime in &["x-scheme-handler/sftp", "inode/directory"] {
+        if let Some(desktop) = default_handler_for(mime) {
+            let r = Command::new("gtk-launch").args([&desktop, &url]).status();
+            if matches!(r, Ok(s) if s.success()) {
+                return;
+            }
+        }
+    }
+
+    for cmd in &["nautilus", "nemo", "caja", "dolphin", "thunar", "pcmanfm"] {
+        if Command::new(cmd).arg(&url).spawn().is_ok() {
+            return;
+        }
+    }
+
+    let _ = Command::new("gio").args(["mount", &url]).status();
     let _ = Command::new("xdg-open").arg(&url).spawn();
+}
+
+fn default_handler_for(mime: &str) -> Option<String> {
+    let out = Command::new("xdg-mime")
+        .args(["query", "default", mime])
+        .output()
+        .ok()?;
+    if !out.status.success() {
+        return None;
+    }
+    let s = std::str::from_utf8(&out.stdout).ok()?.trim();
+    if s.is_empty() {
+        None
+    } else {
+        Some(s.to_string())
+    }
 }
 
 /// Open a terminal running `ssh <user>@<host>`. `user` should be the peer's

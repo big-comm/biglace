@@ -10,6 +10,7 @@ pub struct Sidebar {
     pub expander_manual:        libadwaita::ExpanderRow,
     pub entry_server:           libadwaita::EntryRow,
     pub entry_key:              libadwaita::EntryRow,
+    pub entry_host:             libadwaita::EntryRow,
     pub btn_save_manual:        gtk4::Button,
     pub switch_auto:            gtk4::Switch,
     pub switch_auto_reconnect:  gtk4::Switch,
@@ -82,6 +83,17 @@ pub fn build() -> Sidebar {
     key_icon.set_pixel_size(18);
     entry_key.add_prefix(&key_icon);
     expander_manual.add_row(&entry_key);
+
+    // Device name (BigScale identifier). Becomes the tailscale hostname and
+    // therefore this device's DNS — `<name>.bigscale.net`. Distinct from the
+    // local OS user, which is propagated separately via a `tag:user-…` tag.
+    let entry_host = libadwaita::EntryRow::builder()
+        .title(tr!("Device name (e.g. tales)"))
+        .build();
+    let host_icon = gtk4::Image::from_icon_name("computer-symbolic");
+    host_icon.set_pixel_size(18);
+    entry_host.add_prefix(&host_icon);
+    expander_manual.add_row(&entry_host);
 
     let save_row = libadwaita::ActionRow::new();
     save_row.set_title(&tr!("Apply manual setup"));
@@ -163,6 +175,7 @@ pub fn build() -> Sidebar {
         expander_manual,
         entry_server,
         entry_key,
+        entry_host,
         btn_save_manual,
         switch_auto,
         switch_auto_reconnect,

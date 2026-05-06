@@ -8,6 +8,14 @@ pub struct Config {
     pub authkey:      String,
     pub auto_connect: bool,
 
+    /// Tailscale hostname for this device — the BigScale account identifier
+    /// (e.g. `tales`), which becomes the device's DNS name (`tales.bigscale.net`).
+    /// Distinct from the local OS user (`os_user()`) — that one is propagated
+    /// separately via a `tag:user-…` ACL tag so peers can compose the SSH
+    /// login `<os_user>@<hostname>.bigscale.net` from the two.
+    #[serde(default)]
+    pub hostname:     String,
+
     #[serde(default)]
     pub panel_url:      String,
     // Last-used panel username, pre-filled in the login dialog so the user
@@ -39,6 +47,7 @@ impl Default for Config {
             server_url:     String::new(),
             authkey:        String::new(),
             auto_connect:   false,
+            hostname:       String::new(),
             panel_url:      String::new(),
             panel_username: String::new(),
             favorites:      Vec::new(),

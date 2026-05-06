@@ -180,7 +180,17 @@ pub fn show_panel_login(
         let c = cfg.borrow();
         er_url.set_text(&c.panel_url);
         er_user.set_text(&c.panel_username);
-        er_node.set_text(&config::os_user());
+        // Pre-fill the device identifier with whatever's saved (or the panel
+        // username as a friendly default for first-time setup). This is the
+        // tailscale hostname that becomes `<name>.bigscale.net`.
+        let default_node = if !c.hostname.is_empty() {
+            c.hostname.clone()
+        } else if !c.panel_username.is_empty() {
+            c.panel_username.clone()
+        } else {
+            config::os_user()
+        };
+        er_node.set_text(&default_node);
         // Pre-fill the password from the OS keyring if we've seen this user
         // on this panel before. Falls back to empty silently when no keyring
         // backend is available.
@@ -263,14 +273,16 @@ pub fn show_panel_login(
         btn_ok.connect_clicked(move |_| {
             lbl_err2.set_text("");
 
+            let node_text = er_node2.text().to_string();
             let creds = PanelCredentials {
                 url:      er_url2.text().to_string(),
                 username: er_user2.text().to_string(),
                 password: er_pass2.text().to_string(),
-                node:     er_node2.text().to_string(),
-                // Tailscale hostname is the local OS user, not the panel
-                // identifier — peers use it as the SSH/SFTP login.
-                hostname: config::os_user(),
+                node:     node_text.clone(),
+                // Tailscale hostname is the BigScale identifier the user
+                // chose — what becomes `<hostname>.bigscale.net`. The OS user
+                // is propagated separately via a `tag:user-…` ACL tag.
+                hostname: node_text,
             };
 
             if creds.url.is_empty() || creds.username.is_empty() || creds.password.is_empty() {
@@ -320,6 +332,7 @@ pub fn show_panel_login(
                         );
                         sidebar3.entry_server.set_text(&server_url);
                         sidebar3.entry_key.set_text(&resp.authkey);
+                        sidebar3.entry_host.set_text(&creds.hostname);
                         // Collapse the manual-key expander — the key was just
                         // generated for the user, no need to show the field.
                         sidebar3.expander_manual.set_expanded(false);
@@ -329,6 +342,7 @@ pub fn show_panel_login(
                             c.panel_username = username.clone();
                             c.server_url     = server_url.clone();
                             c.authkey        = resp.authkey.clone();
+                            c.hostname       = creds.hostname.clone();
                             config::save(&c).ok();
                         }
                         // Stash the password in the OS-native keyring so the
