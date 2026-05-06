@@ -13,6 +13,7 @@ use std::sync::{mpsc, Arc, Mutex};
 use std::time::Duration;
 
 use crate::config;
+use crate::panel;
 use crate::tailscale::{self, Peer, Status};
 use crate::tr;
 use crate::trf;
@@ -74,6 +75,12 @@ struct Ctx {
     /// version newer than the running build is found. None means "no update
     /// to advertise" (offline check, same version, or check failed).
     update_available: Arc<Mutex<Option<String>>>,
+    /// `hostname → os_user` cache fetched from the BigScale panel. Filled by
+    /// `spawn_device_meta_worker`; merged into peer rows so SSH/SFTP buttons
+    /// can compose `<os_user>@<hostname>.bigscale.net`. Empty until the first
+    /// successful panel call — peers fall back to using their hostname as
+    /// the SSH login while empty.
+    device_meta: Arc<Mutex<HashMap<String, String>>>,
     /// Worker threads send `()` here to ask the main loop to call
     /// `refresh_state`. A poller in `build()` drains the receiver. This is
     /// our cross-thread bridge — the closure captured by `idle_add_once` only
@@ -130,6 +137,7 @@ pub fn build(app: &libadwaita::Application) {
         health_ok: Arc::new(Mutex::new(true)),
         reconnect_attempts: Rc::new(RefCell::new(0)),
         update_available: Arc::new(Mutex::new(None)),
+        device_meta: Arc::new(Mutex::new(HashMap::new())),
         refresh_tx,
     };
 
@@ -176,13 +184,14 @@ pub fn build(app: &libadwaita::Application) {
     spawn_health_worker(&ctx);
     spawn_reconnect_worker(&ctx);
     spawn_update_check(&ctx);
+    spawn_device_meta_worker(&ctx);
 
     {
         let c = cfg.borrow().clone();
         if c.auto_connect && !c.authkey.is_empty()
             && tailscale::is_service_active() && !tailscale::get_status().online
         {
-            do_connect(&ctx, c.server_url, c.authkey, config::os_user());
+            do_connect(&ctx, c.server_url, c.authkey, c.hostname.clone());
         }
     }
 }
@@ -357,7 +366,7 @@ fn spawn_reconnect_worker(ctx: &Ctx) {
             // Double-check we're still offline before firing.
             if tailscale::is_service_active() && !tailscale::get_status().online {
                 let c = ctx_inner.cfg.borrow().clone();
-                do_connect(&ctx_inner, c.server_url, c.authkey, config::os_user());
+                do_connect(&ctx_inner, c.server_url, c.authkey, c.hostname.clone());
             }
         });
         glib::ControlFlow::Continue
@@ -398,6 +407,63 @@ fn spawn_update_check(ctx: &Ctx) {
     });
 }
 
+/// Periodic round-trip with the BigScale panel for OS-user metadata:
+///   1. POST our own `$USER` to `/api/devices/me/os-user` (idempotent — the
+///      panel returns 304 when the value is unchanged, so the cost stays low).
+///   2. GET `/api/bs/v1/node` and update the `device_meta` cache that
+///      peer rows read on each render.
+///
+/// Skipped while disconnected or while the panel URL isn't configured.
+/// Errors are logged and never propagated — a temporarily unreachable panel
+/// must not break the rest of the UI.
+fn spawn_device_meta_worker(ctx: &Ctx) {
+    let cfg = ctx.cfg.clone();
+    let device_meta = ctx.device_meta.clone();
+    let tx = ctx.refresh_tx.clone();
+
+    let kick = move || {
+        // panel_url is the public sign-in FQDN; we only use its presence as a
+        // "device is paired with a panel" signal. The actual requests below go
+        // to the hardcoded tailnet hostname inside `panel::*`.
+        if cfg.borrow().panel_url.is_empty() {
+            return;
+        }
+        if !tailscale::is_service_active() || !tailscale::get_status().online {
+            return;
+        }
+        let os_user = config::os_user();
+        let device_meta_t = device_meta.clone();
+        let tx_t = tx.clone();
+        std::thread::spawn(move || {
+            // Best-effort POST first so the GET right after sees our own row
+            // populated for the local device.
+            if let Err(e) = panel::post_os_user(&os_user) {
+                eprintln!("[biglace] panel: post os_user failed: {e}");
+            }
+            match panel::fetch_device_meta() {
+                Ok(map) => {
+                    if let Ok(mut g) = device_meta_t.lock() {
+                        *g = map;
+                    }
+                    let _ = tx_t.send(());
+                }
+                Err(e) => eprintln!("[biglace] panel: fetch device-meta failed: {e}"),
+            }
+        });
+    };
+
+    // First kick a few seconds after startup — gives the daemon time to settle
+    // if the user has auto-connect on, so we POST from a real tailnet IP.
+    {
+        let kick_once = kick.clone();
+        glib::timeout_add_seconds_local_once(5, kick_once);
+    }
+    glib::timeout_add_seconds_local(30, move || {
+        kick();
+        glib::ControlFlow::Continue
+    });
+}
+
 /// Naive semver-ish comparison: split on `.`, parse u32 components,
 /// compare lexicographically. Pre-release tags (`-rc1` etc.) make this
 /// imprecise but biglace doesn't currently ship those, so good enough.
@@ -413,6 +479,7 @@ fn version_is_newer(candidate: &str, current: &str) -> bool {
 fn apply_config_to_widgets(ui: &Ui, c: &config::Config) {
     ui.sidebar.entry_server.set_text(&c.server_url);
     ui.sidebar.entry_key.set_text(&c.authkey);
+    ui.sidebar.entry_host.set_text(&c.hostname);
     ui.sidebar.switch_auto.set_active(c.auto_connect);
     ui.sidebar.switch_auto_reconnect.set_active(c.auto_reconnect);
     ui.sidebar.switch_notify.set_active(c.notify_peer_changes);
@@ -491,10 +558,12 @@ fn wire_signals(ctx: &Ctx) {
         ctx.ui.sidebar.btn_save_manual.connect_clicked(move |_| {
             let server = ctx2.ui.sidebar.entry_server.text().to_string();
             let key    = ctx2.ui.sidebar.entry_key.text().to_string();
+            let host   = ctx2.ui.sidebar.entry_host.text().to_string();
             {
                 let mut c = ctx2.cfg.borrow_mut();
                 c.server_url = server;
                 c.authkey    = key;
+                c.hostname   = host;
                 config::save(&c).ok();
             }
             ctx2.ui.sidebar.expander_manual.set_expanded(false);
@@ -575,7 +644,7 @@ fn wire_signals(ctx: &Ctx) {
                 do_connect(
                     &ctx2,
                     c.server_url, c.authkey,
-                    config::os_user(),
+                    c.hostname.clone(),
                 );
             }
         });
@@ -661,6 +730,30 @@ fn do_connect(
             None => glib::ControlFlow::Continue,
             Some(Ok(())) => {
                 refresh_state(&ctx2);
+                // Push our $USER to the panel and refresh the peer→os_user
+                // cache right away so the SFTP/SSH buttons of the just-listed
+                // peers compose the correct login on the very first render
+                // — without this, the user would wait up to 30s for the next
+                // device-meta worker tick.
+                if !ctx2.cfg.borrow().panel_url.is_empty() {
+                    let os_user = config::os_user();
+                    let device_meta = ctx2.device_meta.clone();
+                    let refresh_tx = ctx2.refresh_tx.clone();
+                    std::thread::spawn(move || {
+                        if let Err(e) = panel::post_os_user(&os_user) {
+                            eprintln!("[biglace] panel: post os_user failed: {e}");
+                        }
+                        match panel::fetch_device_meta() {
+                            Ok(map) => {
+                                if let Ok(mut g) = device_meta.lock() {
+                                    *g = map;
+                                }
+                                let _ = refresh_tx.send(());
+                            }
+                            Err(e) => eprintln!("[biglace] panel: fetch device-meta failed: {e}"),
+                        }
+                    });
+                }
                 ctx2.ui.toast.add_toast(
                     libadwaita::Toast::builder()
                         .title(tr!("Connected"))
@@ -691,7 +784,18 @@ fn refresh_state(ctx: &Ctx) {
     }
 
     let status = tailscale::get_status();
-    let peers  = if status.online { tailscale::get_peers() } else { vec![] };
+    let mut peers  = if status.online { tailscale::get_peers() } else { vec![] };
+
+    // Enrich peers with the OS user the panel knows for each hostname. Empty
+    // map = "panel hasn't been polled yet (or is unreachable)" — peer rows
+    // fall back to the hostname for SSH composition.
+    if let Ok(meta) = ctx.device_meta.lock() {
+        for p in peers.iter_mut() {
+            if let Some(u) = meta.get(&p.hostname) {
+                p.ssh_user = u.clone();
+            }
+        }
+    }
 
     let state = if status.online {
         AppState::Connected
@@ -773,7 +877,14 @@ fn apply_state(
         ui.sidebar.identity_row.set_subtitle(&tr!("Sign in or paste a pre-auth key"));
         ui.sidebar.expander_manual.set_visible(true);
     } else {
-        let host = config::os_user();
+        // Show the BigScale identifier the user picked (or a placeholder if
+        // they haven't typed one yet). The OS user is intentionally not shown
+        // here — it's only relevant for SSH composition, not for "who am I".
+        let host = if cfg_snap.hostname.is_empty() {
+            tr!("(no device name)")
+        } else {
+            cfg_snap.hostname.clone()
+        };
         let url  = if cfg_snap.server_url.is_empty() {
             tr!("Server not set")
         } else {
