@@ -133,6 +133,19 @@ struct TsStatus {
     /// numeric `User` on each peer into the BigScale account login.
     #[serde(rename = "User")]
     users: Option<std::collections::HashMap<String, TsUser>>,
+    /// Tailnet-wide DNS suffix (e.g. `bigscale.net`). Used by the panel
+    /// integration to derive `panel.<suffix>` without hardcoding `bigscale.net`,
+    /// so biglace stays usable against non-BigScale headscale/tailscale tailnets.
+    #[serde(rename = "MagicDNSSuffix")]
+    magic_dns_suffix: Option<String>,
+    #[serde(rename = "CurrentTailnet")]
+    current_tailnet: Option<TsCurrentTailnet>,
+}
+
+#[derive(Deserialize)]
+struct TsCurrentTailnet {
+    #[serde(rename = "MagicDNSSuffix")]
+    magic_dns_suffix: Option<String>,
 }
 
 #[derive(Deserialize)]
@@ -187,6 +200,46 @@ pub fn is_service_active() -> bool {
         .status()
         .map(|s| s.success())
         .unwrap_or(false)
+}
+
+/// Tailnet IP of the BigScale panel peer (the one whose DNSName is
+/// `panel.<MagicDNSSuffix>`), as advertised by tailscaled. Returns None when:
+///   - tailscaled is down or unparseable,
+///   - the tailnet has no MagicDNSSuffix (rare),
+///   - no peer matches `panel.<suffix>` (vanilla headscale/tailscale tailnets).
+///
+/// Used in place of OS-level DNS resolution because biglace runs on hosts
+/// where MagicDNS may not be wired into the resolver (broken resolvconf,
+/// containerized userspace, etc). Asking tailscaled directly bypasses
+/// /etc/resolv.conf entirely and works as long as the tunnel is up.
+pub fn panel_peer_ip() -> Option<String> {
+    let out = Command::new("tailscale").args(["status", "--json"]).output().ok()?;
+    if !out.status.success() {
+        return None;
+    }
+    let ts: TsStatus = serde_json::from_slice(&out.stdout).ok()?;
+    let suffix = ts
+        .magic_dns_suffix
+        .clone()
+        .or_else(|| ts.current_tailnet.as_ref().and_then(|c| c.magic_dns_suffix.clone()))
+        .map(|s| s.trim_end_matches('.').to_string())
+        .filter(|s| !s.is_empty())?;
+    let target = format!("panel.{suffix}");
+
+    let peers = ts.peers?;
+    for n in peers.into_values() {
+        let dns = n.dns_name.as_deref().unwrap_or("").trim_end_matches('.');
+        if dns == target {
+            // Prefer IPv4 — some hosts have v6 disabled and `connect()` to a
+            // [::1]-style URL would fail before TLS even starts.
+            let ips = n.ips.unwrap_or_default();
+            if let Some(v4) = ips.iter().find(|i| !i.contains(':')) {
+                return Some(v4.clone());
+            }
+            return ips.into_iter().next();
+        }
+    }
+    None
 }
 
 // ─── Status ──────────────────────────────────────────────────────────────────
@@ -244,6 +297,25 @@ pub fn get_status() -> Status {
 
 // ─── Peers ───────────────────────────────────────────────────────────────────
 
+/// Owner accounts that represent server-side infrastructure on the tailnet,
+/// not actual user devices. Filtered out of `get_peers()` so they don't show
+/// up in the device list — e.g. the BigScale panel itself joins the tailnet
+/// under `_panel` to authenticate `/api/devices/me/os-user` by tunnel
+/// identity, but it's not a peer the user can connect to.
+///
+/// The engine often hides the owning user's info from unrelated peers
+/// (`tailscale status --json` only includes users you share a permission
+/// with), so `resolve_user` returns an empty string for the panel. The
+/// DNS name fallback in `get_peers` catches that case.
+const RESERVED_OWNERS: &[&str] = &["_panel"];
+
+/// First DNS label of infrastructure peers, applied alongside `RESERVED_OWNERS`.
+/// Same hostname the BigScale entrypoint registers the panel under
+/// (`BIGSCALE_PANEL_HOSTNAME`, default `panel`). Compared against the leading
+/// label of `panel.<MagicDNSSuffix>` so it can't match an unrelated peer that
+/// happened to be named "panel" on a different tailnet.
+const RESERVED_FIRST_LABELS: &[&str] = &["panel"];
+
 pub fn get_peers() -> Vec<Peer> {
     let out = match Command::new("tailscale").args(["status", "--json"]).output() {
         Ok(o) if o.status.success() => o,
@@ -271,10 +343,43 @@ pub fn get_peers() -> Vec<Peer> {
             .unwrap_or_default()
     };
 
+    // Tailnet suffix (e.g. `bigscale.net`) used to recognize the panel peer by
+    // its DNS name when the engine has hidden the owning user from us.
+    let suffix = ts
+        .magic_dns_suffix
+        .clone()
+        .or_else(|| ts.current_tailnet.as_ref().and_then(|c| c.magic_dns_suffix.clone()))
+        .map(|s| s.trim_end_matches('.').to_string())
+        .filter(|s| !s.is_empty());
+
+    let is_reserved = |n: &TsNode| -> bool {
+        if RESERVED_OWNERS.contains(&resolve_user(n.user_id).as_str()) {
+            return true;
+        }
+        let dns = n.dns_name.as_deref().unwrap_or("").trim_end_matches('.');
+        if let Some(label) = dns.split('.').next() {
+            if RESERVED_FIRST_LABELS.contains(&label) {
+                // Only treat the leading label as reserved when the rest of the
+                // DNS name matches our tailnet suffix — otherwise a peer
+                // genuinely named "panel" on an unrelated tailnet would be
+                // filtered out by accident.
+                if let Some(suf) = suffix.as_deref() {
+                    let rest = dns.strip_prefix(label).unwrap_or("");
+                    let rest = rest.strip_prefix('.').unwrap_or(rest);
+                    if rest == suf {
+                        return true;
+                    }
+                }
+            }
+        }
+        false
+    };
+
     let mut peers: Vec<Peer> = ts
         .peers
         .unwrap_or_default()
         .into_values()
+        .filter(|n| !is_reserved(n))
         .map(|n| {
             let ips = n.ips.unwrap_or_default();
             let ipv4 = ips.iter().find(|i| !i.contains(':')).cloned().unwrap_or_default();
