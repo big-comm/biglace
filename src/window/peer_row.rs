@@ -141,23 +141,34 @@ pub fn build(peer: &Peer, ctx: &PeerCtx) -> libadwaita::ExpanderRow {
     }
 
     if peer.online && !host.is_empty() {
-        // Login precedence: per-peer override (set by the user) > os_user
-        // propagated by the panel (Option D) > peer hostname as last resort.
-        // The override exists for multi-user servers where neither the panel
-        // nor the hostname matches the local user's account on that box.
+        // Login precedence:
+        //   1. Per-peer override set by the user — wins for multi-user
+        //      servers where neither default fits.
+        //   2. `os_user` propagated by the BigScale panel (Option D) —
+        //      authoritative when available, but the panel needs to be on
+        //      the tailnet for the worker to reach it.
+        //   3. The peer's BigScale owner (`peer.user`) — works for personal
+        //      devices where the OS user matches the account login (the
+        //      common case), and survives panel renames since the owner
+        //      doesn't change with `givenName`.
+        //   4. Peer's OS hostname — last resort. Stale after a panel
+        //      rename, but at least never empty.
         let ssh_user = ctx
             .cfg
             .borrow()
             .peer_overrides
             .get(&peer.hostname)
             .cloned()
-            .unwrap_or_else(|| {
-                if peer.ssh_user.is_empty() {
-                    peer.hostname.clone()
+            .or_else(|| {
+                if !peer.ssh_user.is_empty() {
+                    Some(peer.ssh_user.clone())
+                } else if !peer.user.is_empty() {
+                    Some(peer.user.clone())
                 } else {
-                    peer.ssh_user.clone()
+                    None
                 }
-            });
+            })
+            .unwrap_or_else(|| peer.hostname.clone());
 
         let host_files = host.clone();
         let ssh_user_files = ssh_user.clone();
