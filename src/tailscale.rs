@@ -619,6 +619,34 @@ pub fn set_operator_current_user() -> Result<()> {
     Ok(())
 }
 
+/// Pick the right target for `ssh`/`sftp` at click time: prefer the tailnet
+/// hostname (more readable, survives the peer reconnecting on a different
+/// IP), but fall back to the IP when the local resolver can't resolve the
+/// name. The fallback exists because biglace runs on every distro under the
+/// sun and openresolv/systemd-resolved misconfiguration silently breaks
+/// MagicDNS without the user noticing — the IP path keeps the launch
+/// buttons usable in that case.
+///
+/// Resolution is synchronous on purpose. Modern resolvers fail fast on
+/// NXDOMAIN (a few ms), so the click-handler delay is imperceptible. Only
+/// when the network is really wedged could this stall, and a stalled
+/// network would block the actual ssh/sftp call right after anyway.
+pub fn pick_target(dns_name: &str, ip_fallback: &str) -> String {
+    use std::net::ToSocketAddrs;
+    if !dns_name.is_empty() {
+        // Port is irrelevant — `getaddrinfo` only needs *something* to
+        // attempt the lookup against. We don't open this socket.
+        if (dns_name, 22_u16)
+            .to_socket_addrs()
+            .map(|mut it| it.next().is_some())
+            .unwrap_or(false)
+        {
+            return dns_name.to_string();
+        }
+    }
+    ip_fallback.to_string()
+}
+
 /// Open the user's configured file manager pointed at `sftp://<user>@<host>/`.
 ///
 /// We can't rely on `xdg-open` alone: it forwards to `gio open`, which fails
