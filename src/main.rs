@@ -12,7 +12,11 @@ use gtk4::prelude::*;
 // freed pages indefinitely, so a long-idle GTK app drifts upward in RSS
 // even when it's doing nothing. jemalloc's background thread runs madvise
 // over decayed dirty pages, returning them to the kernel.
-#[cfg(any(target_os = "linux", target_os = "macos"))]
+//
+// Gated behind the `jemalloc` cargo feature (default on) so packagers whose
+// linker can't resolve tikv-jemalloc-sys's prefixed `_rjem_*` symbols can
+// fall back to the system allocator with `--no-default-features`.
+#[cfg(all(feature = "jemalloc", any(target_os = "linux", target_os = "macos")))]
 #[global_allocator]
 static GLOBAL: tikv_jemallocator::Jemalloc = tikv_jemallocator::Jemalloc;
 
@@ -21,7 +25,7 @@ static GLOBAL: tikv_jemallocator::Jemalloc = tikv_jemallocator::Jemalloc;
 // after bursts (e.g. tailscale status parsing) instead of lingering in
 // the process's working set. `background_thread:true` activates the
 // builtin reclaimer so we don't have to drive `mallctl("epoch")` ourselves.
-#[cfg(any(target_os = "linux", target_os = "macos"))]
+#[cfg(all(feature = "jemalloc", any(target_os = "linux", target_os = "macos")))]
 #[allow(non_upper_case_globals)]
 #[export_name = "malloc_conf"]
 pub static MALLOC_CONF: &[u8] =

@@ -6,6 +6,15 @@ authors = ["BigCommunity"]
 description = "Mesh VPN client with a graphical interface for Headscale/Tailscale"
 license = "MIT"
 
+[features]
+# jemalloc on by default for local cargo builds — gives the long-idle RSS win
+# described in main.rs. Distro packagers (PKGBUILD, .deb, etc.) should build
+# with `--no-default-features` because some hardened linker setups (Arch's
+# LLD + `-Wl,--gc-sections -nodefaultlibs -pie`) fail to resolve the prefixed
+# `_rjem_*` symbols from tikv-jemalloc-sys's static archive.
+default = ["jemalloc"]
+jemalloc = ["dep:tikv-jemallocator"]
+
 [dependencies]
 gtk4        = { version = "0.11", features = ["v4_12"] }
 libadwaita  = { version = "0.9",  features = ["v1_4"] }
@@ -17,6 +26,16 @@ gettext-rs  = { version = "0.7", features = ["gettext-system"] }
 ureq        = { version = "2",   default-features = false, features = ["json", "native-tls"] }
 native-tls  = "0.2"
 
+# jemalloc: long-running desktop processes on glibc accumulate fragmentation
+# and glibc's malloc doesn't return free pages to the kernel. jemalloc has a
+# background thread that decays unused pages back via madvise — this is the
+# single biggest RSS win for an app that stays open for hours.
+# Linux/macOS only; jemalloc has no Windows support in tikv-jemallocator.
+# Optional + cfg-gated below so a `--no-default-features` build is the
+# escape hatch for packagers whose linker can't resolve `_rjem_*` symbols.
+[target.'cfg(any(target_os = "linux", target_os = "macos"))'.dependencies]
+tikv-jemallocator = { version = "0.6", default-features = false, features = ["background_threads"], optional = true }
+
 # Native OS credential storage. Per-target features avoid pulling in the
 # wrong backend on cross-compiles (e.g. don't drag D-Bus into a Windows build).
 [target.'cfg(target_os = "linux")'.dependencies]
@@ -25,19 +44,12 @@ keyring = { version = "3", default-features = false, features = ["sync-secret-se
 # AppIndicator extension). `async-io` picks the lighter zbus backend; `blocking`
 # wraps it in a sync API so we don't need a tokio runtime in main().
 ksni = { version = "0.3", default-features = false, features = ["async-io", "blocking"] }
-# jemalloc: long-running desktop processes on glibc accumulate fragmentation
-# and glibc's malloc doesn't return free pages to the kernel. jemalloc has a
-# background thread that decays unused pages back via madvise — this is the
-# single biggest RSS win for an app that stays open for hours.
-# Linux/macOS only; jemalloc has no Windows support in tikv-jemallocator.
-tikv-jemallocator = { version = "0.6", default-features = false, features = ["background_threads"] }
 
 [target.'cfg(target_os = "windows")'.dependencies]
 keyring = { version = "3", default-features = false, features = ["windows-native"] }
 
 [target.'cfg(target_os = "macos")'.dependencies]
 keyring = { version = "3", default-features = false, features = ["apple-native"] }
-tikv-jemallocator = { version = "0.6", default-features = false, features = ["background_threads"] }
 
 [profile.release]
 opt-level     = "z"

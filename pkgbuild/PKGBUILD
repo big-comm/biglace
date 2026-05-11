@@ -39,7 +39,14 @@ prepare() {
 build() {
     cd "${srcdir}/${pkgname}"
     export RUSTUP_TOOLCHAIN=stable
-    cargo build --release --locked 2>/dev/null || cargo build --release
+    # --no-default-features disables the bundled jemalloc allocator.
+    # Arch's hardened LLD link (with -Wl,--gc-sections -nodefaultlibs -pie)
+    # fails to resolve tikv-jemalloc-sys's prefixed `_rjem_*` symbols, so we
+    # fall back to glibc's malloc here. The non-allocator optimizations
+    # (status cache, diff-based UI refresh, ureq agent reuse) carry most of
+    # the RSS savings — jemalloc just smooths long-idle drift.
+    cargo build --release --locked --no-default-features 2>/dev/null \
+        || cargo build --release --no-default-features
 }
 
 package() {
