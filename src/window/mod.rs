@@ -7,7 +7,8 @@ mod style;
 use gtk4::{glib, prelude::*};
 use libadwaita::prelude::*;
 use std::cell::RefCell;
-use std::collections::HashMap;
+use std::collections::{HashMap, HashSet};
+use std::hash::{Hash, Hasher};
 use std::rc::Rc;
 use std::sync::{mpsc, Arc, Mutex};
 use std::time::Duration;
@@ -86,6 +87,22 @@ struct Ctx {
     /// successful panel call — peers fall back to using their hostname as
     /// the SSH login while empty.
     device_meta: Arc<Mutex<HashMap<String, String>>>,
+    /// Hostnames of peers whose detail panel is currently expanded. Updated
+    /// from each row's `notify::expanded` listener; consumed by the next
+    /// rebuild to restore the user's open rows so the periodic refresh
+    /// doesn't slam expanders shut.
+    expanded_peers: Rc<RefCell<HashSet<String>>>,
+    /// Hash of the last rendered peer set's structural fields. Compared on
+    /// each refresh: if it matches, we skip rebuilding the ListBox and just
+    /// update subtitles in place (which is the common path — latency polls
+    /// fire every 20s and otherwise nothing has changed). u64::MAX is the
+    /// sentinel for "no render yet", so the first refresh always rebuilds.
+    last_peer_signature: Rc<RefCell<u64>>,
+    /// Live `hostname → row` map for the currently rendered peers, kept in
+    /// sync with the ListBox. The soft-refresh path looks up each peer by
+    /// hostname and calls `set_subtitle` on its row without touching the
+    /// rest of the widget tree.
+    peer_rows: Rc<RefCell<HashMap<String, libadwaita::ExpanderRow>>>,
     /// Worker threads send `()` here to ask the main loop to call
     /// `refresh_state`. A poller in `build()` drains the receiver. This is
     /// our cross-thread bridge — the closure captured by `idle_add_once` only
@@ -144,6 +161,9 @@ pub fn build(app: &libadwaita::Application) {
         reconnect_attempts: Rc::new(RefCell::new(0)),
         update_available: Arc::new(Mutex::new(None)),
         device_meta: Arc::new(Mutex::new(HashMap::new())),
+        expanded_peers: Rc::new(RefCell::new(HashSet::new())),
+        last_peer_signature: Rc::new(RefCell::new(u64::MAX)),
+        peer_rows: Rc::new(RefCell::new(HashMap::new())),
         refresh_tx,
     };
 
@@ -790,8 +810,12 @@ fn refresh_state(ctx: &Ctx) {
         return;
     }
 
-    let status = tailscale::get_status();
-    let mut peers  = if status.online { tailscale::get_peers() } else { vec![] };
+    // One subprocess + JSON parse covers both. Cuts the periodic-refresh
+    // tailscaled hit in half compared to separate get_status / get_peers.
+    let (status, mut peers) = tailscale::get_status_and_peers();
+    if !status.online {
+        peers.clear();
+    }
 
     // Enrich peers with the OS user the panel knows for each hostname. Empty
     // map = "panel hasn't been polled yet (or is unreachable)" — peer rows
@@ -990,21 +1014,53 @@ fn apply_state(
                 .then(a.hostname.cmp(&b.hostname))
         });
 
-        while let Some(child) = ui.content.peers_list.first_child() {
-            ui.content.peers_list.remove(&child);
-        }
-        let refresh_cb: Rc<dyn Fn()> = {
-            let ctx2 = ctx.clone();
-            Rc::new(move || refresh_state(&ctx2))
+        // Diff against the previous render. Latency changes — by far the most
+        // frequent refresh trigger (20s worker) — never alter the signature,
+        // so we only rewrite the subtitle of each existing row. A full rebuild
+        // only happens when the structural shape changes (peer added/removed,
+        // online flag flipped, pin toggled, IP/DNS/owner moved, etc.).
+        let new_sig = compute_peer_signature(&sorted, &cfg_snap);
+        let prev_sig = *ctx.last_peer_signature.borrow();
+        let row_map_has_all = {
+            let m = ctx.peer_rows.borrow();
+            !m.is_empty() && sorted.iter().all(|p| m.contains_key(&p.hostname))
         };
-        let peer_ctx = peer_row::PeerCtx {
-            toast:   ui.toast.clone(),
-            cfg:     ctx.cfg.clone(),
-            latency: ctx.latency.clone(),
-            refresh: refresh_cb,
-        };
-        for peer in sorted {
-            ui.content.peers_list.append(&peer_row::build(peer, &peer_ctx));
+
+        if new_sig == prev_sig && row_map_has_all {
+            let rows = ctx.peer_rows.borrow();
+            for peer in &sorted {
+                if let Some(row) = rows.get(&peer.hostname) {
+                    row.set_subtitle(&peer_row::compose_subtitle(peer, &ctx.latency));
+                }
+            }
+        } else {
+            *ctx.last_peer_signature.borrow_mut() = new_sig;
+            while let Some(child) = ui.content.peers_list.first_child() {
+                ui.content.peers_list.remove(&child);
+            }
+            let refresh_cb: Rc<dyn Fn()> = {
+                let ctx2 = ctx.clone();
+                Rc::new(move || refresh_state(&ctx2))
+            };
+            let peer_ctx = peer_row::PeerCtx {
+                toast:    ui.toast.clone(),
+                cfg:      ctx.cfg.clone(),
+                latency:  ctx.latency.clone(),
+                refresh:  refresh_cb,
+                expanded: ctx.expanded_peers.clone(),
+            };
+            let mut new_rows: HashMap<String, libadwaita::ExpanderRow> =
+                HashMap::with_capacity(sorted.len());
+            for peer in &sorted {
+                let row = peer_row::build(peer, &peer_ctx);
+                ui.content.peers_list.append(&row);
+                new_rows.insert(peer.hostname.clone(), row);
+            }
+            *ctx.peer_rows.borrow_mut() = new_rows;
+            // Drop expanded entries for peers that no longer exist so the
+            // set doesn't grow unbounded across long sessions.
+            let live: HashSet<&str> = sorted.iter().map(|p| p.hostname.as_str()).collect();
+            ctx.expanded_peers.borrow_mut().retain(|h| live.contains(h.as_str()));
         }
 
         let online  = peers.iter().filter(|p| p.online).count();
@@ -1021,12 +1077,50 @@ fn apply_state(
     } else {
         ui.content.bottom_label.set_text("");
         ctx.last_peer_states.borrow_mut().clear();
+        // Invalidate render caches so we don't try to "soft-refresh" a list
+        // that no longer matches what the user sees (the connected page is
+        // hidden in this branch). The next time we re-enter Connected the
+        // first refresh will repopulate them with a fresh rebuild.
+        ctx.peer_rows.borrow_mut().clear();
+        *ctx.last_peer_signature.borrow_mut() = u64::MAX;
     }
 
     // ── Tray indicator ──
     let connected = state == AppState::Connected;
     let online_peers = peers.iter().filter(|p| p.online).count();
     update_tray(ctx, connected, online_peers);
+}
+
+/// Hash the structural fields of the rendered peer list, in render order.
+/// Anything that would change the layout, the prefix/suffix buttons, or the
+/// detail rows of an ExpanderRow goes in here; latency is intentionally
+/// excluded — that's the field the soft-refresh path updates without
+/// rebuilding. Favorites are folded in because pin state affects sort order.
+fn compute_peer_signature(sorted: &[&Peer], cfg: &config::Config) -> u64 {
+    let mut h = std::collections::hash_map::DefaultHasher::new();
+    sorted.len().hash(&mut h);
+    for p in sorted {
+        p.hostname.hash(&mut h);
+        p.online.hash(&mut h);
+        p.ip.hash(&mut h);
+        p.ipv4.hash(&mut h);
+        p.ipv6.hash(&mut h);
+        p.dns_name.hash(&mut h);
+        p.os.hash(&mut h);
+        p.user.hash(&mut h);
+        p.ssh_user.hash(&mut h);
+        p.exit_node_offered.hash(&mut h);
+        p.exit_node_active.hash(&mut h);
+        p.tags.hash(&mut h);
+        // last_seen only renders while offline; include it so a stale
+        // timestamp on a still-offline peer doesn't keep the row out of date.
+        if !p.online {
+            p.last_seen.hash(&mut h);
+        }
+        cfg.is_favorite(&p.hostname).hash(&mut h);
+        cfg.peer_overrides.get(&p.hostname).hash(&mut h);
+    }
+    h.finish()
 }
 
 /// Send a desktop notification via `notify-send`. Silent on failure (no

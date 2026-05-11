@@ -37,3 +37,7 @@ opt-level     = "z"
 lto           = true
 codegen-units = 1
 strip         = true
+# Drop unwinding tables and landing pads — biglace is a desktop app, a panic
+# means a bug we want to crash loudly on, not gracefully unwind. Saves
+# binary size and a slice of resident RAM that's never useful at runtime.
+panic         = "abort"

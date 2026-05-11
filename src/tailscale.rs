@@ -284,15 +284,7 @@ pub fn get_status() -> Status {
         Err(_) => return Status::default(),
     };
 
-    let node = ts.self_node.as_ref();
-    Status {
-        online:   node.and_then(|n| n.online).unwrap_or(false),
-        ip:       node.and_then(|n| n.ips.as_ref()?.first().cloned()),
-        hostname: node.and_then(|n| n.hostname.clone()),
-        dns_name: node
-            .and_then(|n| n.dns_name.clone())
-            .map(|d| d.trim_end_matches('.').to_string()),
-    }
+    build_status(&ts)
 }
 
 // ─── Peers ───────────────────────────────────────────────────────────────────
@@ -316,6 +308,41 @@ const RESERVED_OWNERS: &[&str] = &["_panel"];
 /// happened to be named "panel" on a different tailnet.
 const RESERVED_FIRST_LABELS: &[&str] = &["panel"];
 
+/// Single-shot variant that returns both the local status and the peer list
+/// from one `tailscale status --json` subprocess. The window's refresh path
+/// is the hot caller — using this in place of separate `get_status()` +
+/// `get_peers()` halves the subprocess + JSON-parse cost per tick, which
+/// matters because the periodic refresh fires every ~20s and Status's JSON
+/// can run a few hundred KB on busy tailnets.
+pub fn get_status_and_peers() -> (Status, Vec<Peer>) {
+    if !is_installed() {
+        return (Status::default(), vec![]);
+    }
+    let out = match Command::new("tailscale").args(["status", "--json"]).output() {
+        Ok(o) if o.status.success() => o,
+        _ => return (Status::default(), vec![]),
+    };
+    let ts: TsStatus = match serde_json::from_slice(&out.stdout) {
+        Ok(v) => v,
+        Err(_) => return (Status::default(), vec![]),
+    };
+    let status = build_status(&ts);
+    let peers = build_peers(ts);
+    (status, peers)
+}
+
+fn build_status(ts: &TsStatus) -> Status {
+    let node = ts.self_node.as_ref();
+    Status {
+        online:   node.and_then(|n| n.online).unwrap_or(false),
+        ip:       node.and_then(|n| n.ips.as_ref()?.first().cloned()),
+        hostname: node.and_then(|n| n.hostname.clone()),
+        dns_name: node
+            .and_then(|n| n.dns_name.clone())
+            .map(|d| d.trim_end_matches('.').to_string()),
+    }
+}
+
 pub fn get_peers() -> Vec<Peer> {
     let out = match Command::new("tailscale").args(["status", "--json"]).output() {
         Ok(o) if o.status.success() => o,
@@ -326,7 +353,10 @@ pub fn get_peers() -> Vec<Peer> {
         Ok(v) => v,
         Err(_) => return vec![],
     };
+    build_peers(ts)
+}
 
+fn build_peers(ts: TsStatus) -> Vec<Peer> {
     // Tailscale's UserMap is keyed by stringified user-id. Build a quick
     // id → login lookup, stripping any trailing "@github" / "@bigscale.net"
     // tail so it matches the local SSH username on the peer.

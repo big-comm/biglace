@@ -1,18 +1,26 @@
 use anyhow::{anyhow, Context, Result};
 use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
-use std::sync::Arc;
+use std::sync::{Arc, OnceLock};
 use std::time::Duration;
 
-/// Build a ureq agent that knows how to do TLS via native-tls. The default
-/// builder doesn't wire it in — calls to https:// fail without this.
-fn build_agent() -> Result<ureq::Agent> {
-    let tls = native_tls::TlsConnector::new().context("init TLS connector")?;
-    Ok(ureq::AgentBuilder::new()
-        .timeout_connect(Duration::from_secs(10))
-        .timeout_read(Duration::from_secs(30))
-        .tls_connector(Arc::new(tls))
-        .build())
+/// Process-wide ureq agent. Building one allocates a TlsConnector and an
+/// internal connection pool — both are reusable across requests, so we keep
+/// a single instance for the lifetime of the app. The OnceLock holds a
+/// Result so a failed TLS init can still be surfaced to each caller without
+/// retrying the (unlikely-to-recover) initialization.
+fn shared_agent() -> Result<ureq::Agent> {
+    static AGENT: OnceLock<std::result::Result<ureq::Agent, String>> = OnceLock::new();
+    let cell = AGENT.get_or_init(|| {
+        let tls = native_tls::TlsConnector::new()
+            .map_err(|e| format!("init TLS connector: {e}"))?;
+        Ok(ureq::AgentBuilder::new()
+            .timeout_connect(Duration::from_secs(10))
+            .timeout_read(Duration::from_secs(30))
+            .tls_connector(Arc::new(tls))
+            .build())
+    });
+    cell.clone().map_err(|e| anyhow!("{e}"))
 }
 
 #[derive(Debug, Clone)]
@@ -47,7 +55,7 @@ pub fn request_preauth(creds: &PanelCredentials) -> Result<PreAuthResponse> {
     let base = creds.url.trim_end_matches('/');
     let endpoint = format!("{base}/api/v1/preauth-key");
 
-    let agent = build_agent()?;
+    let agent = shared_agent()?;
 
     let body = PreAuthRequest {
         username:  &creds.username,
@@ -115,7 +123,7 @@ struct OsUserBody<'a> {
 pub fn post_os_user(os_user: &str) -> Result<()> {
     let Some(base) = panel_tailnet_url() else { return Ok(()); };
     let endpoint = format!("{base}/api/devices/me/os-user");
-    let agent = build_agent()?;
+    let agent = shared_agent()?;
 
     let response = agent
         .post(&endpoint)
@@ -152,7 +160,7 @@ pub fn post_os_user(os_user: &str) -> Result<()> {
 pub fn fetch_device_meta() -> Result<HashMap<String, String>> {
     let Some(base) = panel_tailnet_url() else { return Ok(HashMap::new()); };
     let endpoint = format!("{base}/api/devices/os-users");
-    let agent = build_agent()?;
+    let agent = shared_agent()?;
 
     let resp = agent.get(&endpoint).set("Accept", "application/json").call();
     match resp {

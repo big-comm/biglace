@@ -1,6 +1,7 @@
 use gtk4::prelude::*;
 use libadwaita::prelude::*;
 use std::cell::RefCell;
+use std::collections::HashSet;
 use std::rc::Rc;
 use std::sync::{Arc, Mutex};
 
@@ -21,6 +22,40 @@ pub struct PeerCtx {
     /// Hook the window installs so peer-row actions can ask for a redraw
     /// (e.g. after pinning a peer, the list must re-sort).
     pub refresh: Rc<dyn Fn()>,
+    /// Hostnames whose detail panel is currently expanded. Mutated by the
+    /// row's `notify::expanded` listener so a periodic refresh that rebuilds
+    /// the list can restore the user's open rows — otherwise tailscaled's
+    /// 20-30s poll would slam every expander shut while the user is reading.
+    pub expanded: Rc<RefCell<HashSet<String>>>,
+}
+
+/// Compose the row subtitle from the peer's static fields plus the latest
+/// latency reading from the shared cache. Extracted so the window can update
+/// just the subtitle on an existing row (soft refresh) without rebuilding
+/// the whole expander — that's the common case, since the latency poll fires
+/// every 20s and otherwise nothing has changed.
+pub fn compose_subtitle(
+    peer: &Peer,
+    latency: &Arc<Mutex<std::collections::HashMap<String, Option<f64>>>>,
+) -> String {
+    let mut bits: Vec<String> = Vec::with_capacity(4);
+    if !peer.ip.is_empty() {
+        bits.push(peer.ip.clone());
+    }
+    let os_label = friendly_os(&peer.os);
+    if !os_label.is_empty() {
+        bits.push(os_label);
+    }
+    if !peer.online {
+        bits.push(tr!("offline"));
+    } else if let Some(ms) = latency
+        .lock()
+        .ok()
+        .and_then(|g| g.get(&peer.hostname).copied().flatten())
+    {
+        bits.push(format!("{ms:.0} ms"));
+    }
+    bits.join("  ·  ")
 }
 
 pub fn build(peer: &Peer, ctx: &PeerCtx) -> libadwaita::ExpanderRow {
@@ -29,22 +64,29 @@ pub fn build(peer: &Peer, ctx: &PeerCtx) -> libadwaita::ExpanderRow {
     row.set_title(if display.is_empty() { "—" } else { &display });
 
     // ── Subtitle: IP · OS · offline · latency ──
-    let os_label = friendly_os(&peer.os);
-    let mut bits: Vec<String> = Vec::with_capacity(4);
-    if !peer.ip.is_empty() {
-        bits.push(peer.ip.clone());
+    row.set_subtitle(&compose_subtitle(peer, &ctx.latency));
+
+    // Restore expansion state from the previous render — without this, the
+    // 20s latency poll (and any other refresh) would slam every expander
+    // shut while the user was reading the detail rows.
+    if ctx.expanded.borrow().contains(&peer.hostname) {
+        row.set_expanded(true);
     }
-    if !os_label.is_empty() {
-        bits.push(os_label.clone());
-    }
-    if !peer.online {
-        bits.push(tr!("offline"));
-    } else if let Some(ms) = ctx.latency.lock().ok()
-        .and_then(|g| g.get(&peer.hostname).copied().flatten())
+    // Track the user's manual toggles so the next rebuild can restore them.
+    // Programmatic `set_expanded(true)` above also fires the notify, which is
+    // fine — re-inserting a value the set already contains is a no-op.
     {
-        bits.push(format!("{ms:.0} ms"));
+        let expanded = ctx.expanded.clone();
+        let host = peer.hostname.clone();
+        row.connect_expanded_notify(move |r| {
+            let mut s = expanded.borrow_mut();
+            if r.is_expanded() {
+                s.insert(host.clone());
+            } else {
+                s.remove(&host);
+            }
+        });
     }
-    row.set_subtitle(&bits.join("  ·  "));
 
     // ── Prefix: status dot + OS icon ──
     let prefix = gtk4::Box::new(gtk4::Orientation::Horizontal, 8);
