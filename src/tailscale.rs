@@ -1,8 +1,62 @@
 use anyhow::{bail, Context, Result};
 use serde::Deserialize;
 use std::process::Command;
+use std::sync::{Mutex, OnceLock};
+use std::time::{Duration, Instant};
 
 use crate::{tr, trf};
+
+/// TTL for the parsed-status cache. 500 ms is short enough that the UI never
+/// shows visibly stale data (each `refresh_state` tick is at least 30 s
+/// apart) yet long enough to swallow the burst of calls a single worker
+/// tick fires off across threads. Bumping past ~1 s starts to interact
+/// badly with the post-connect verification loop in `connect()` — which
+/// already explicitly invalidates the cache via `invalidate_status_cache()`.
+const STATUS_CACHE_TTL: Duration = Duration::from_millis(500);
+
+fn status_cache() -> &'static Mutex<Option<(Instant, TsStatus)>> {
+    static CACHE: OnceLock<Mutex<Option<(Instant, TsStatus)>>> = OnceLock::new();
+    CACHE.get_or_init(|| Mutex::new(None))
+}
+
+/// Run `tailscale status --json` and return the parsed payload, reusing the
+/// last result when it's younger than `STATUS_CACHE_TTL`. Returns None when
+/// tailscale isn't installed, the call fails, or the JSON is unparseable.
+///
+/// Important: this is the *only* path that should shell out to `tailscale
+/// status --json`. Multiple workers (latency, panel, health, refresh) hit it
+/// in overlapping windows; routing them through this cache collapses an
+/// occasional 4-5x burst of subprocesses into a single one.
+fn cached_ts_status() -> Option<TsStatus> {
+    {
+        let g = status_cache().lock().ok()?;
+        if let Some((when, ts)) = g.as_ref() {
+            if when.elapsed() < STATUS_CACHE_TTL {
+                return Some(ts.clone());
+            }
+        }
+    }
+    // Fetch outside the lock so a slow tailscaled doesn't block other
+    // callers from reading a still-valid cached value.
+    let out = Command::new("tailscale").args(["status", "--json"]).output().ok()?;
+    if !out.status.success() {
+        return None;
+    }
+    let ts: TsStatus = serde_json::from_slice(&out.stdout).ok()?;
+    if let Ok(mut g) = status_cache().lock() {
+        *g = Some((Instant::now(), ts.clone()));
+    }
+    Some(ts)
+}
+
+/// Drop the cached status so the next read does a fresh fetch. Called after
+/// `connect()`, `disconnect()`, `logout()` and `set_exit_node()` because the
+/// post-action UI refresh would otherwise see ≤500 ms of stale state.
+pub fn invalidate_status_cache() {
+    if let Ok(mut g) = status_cache().lock() {
+        *g = None;
+    }
+}
 
 // ─── Logging ─────────────────────────────────────────────────────────────────
 // Info-level lines are always printed to stderr so the user can follow what
@@ -120,7 +174,7 @@ fn first_dns_label(dns: &str) -> Option<String> {
 
 // ─── Tailscale JSON structs ───────────────────────────────────────────────────
 
-#[derive(Deserialize)]
+#[derive(Deserialize, Clone)]
 struct TsStatus {
     #[serde(rename = "Self")]
     self_node: Option<TsNode>,
@@ -142,13 +196,13 @@ struct TsStatus {
     current_tailnet: Option<TsCurrentTailnet>,
 }
 
-#[derive(Deserialize)]
+#[derive(Deserialize, Clone)]
 struct TsCurrentTailnet {
     #[serde(rename = "MagicDNSSuffix")]
     magic_dns_suffix: Option<String>,
 }
 
-#[derive(Deserialize)]
+#[derive(Deserialize, Clone)]
 struct TsNode {
     #[serde(rename = "HostName")]
     hostname: Option<String>,
@@ -176,7 +230,7 @@ struct TsNode {
     exit_node: bool,
 }
 
-#[derive(Deserialize)]
+#[derive(Deserialize, Clone)]
 struct TsUser {
     #[serde(rename = "LoginName")]
     login_name: Option<String>,
@@ -213,11 +267,7 @@ pub fn is_service_active() -> bool {
 /// containerized userspace, etc). Asking tailscaled directly bypasses
 /// /etc/resolv.conf entirely and works as long as the tunnel is up.
 pub fn panel_peer_ip() -> Option<String> {
-    let out = Command::new("tailscale").args(["status", "--json"]).output().ok()?;
-    if !out.status.success() {
-        return None;
-    }
-    let ts: TsStatus = serde_json::from_slice(&out.stdout).ok()?;
+    let ts = cached_ts_status()?;
     let suffix = ts
         .magic_dns_suffix
         .clone()
@@ -248,11 +298,7 @@ pub fn panel_peer_ip() -> Option<String> {
 /// any. `tailscale up` exits 0 even when the coordinator rejects the auth key
 /// — the failure only shows up here. Login-related messages are prioritized.
 pub fn get_health_issue() -> Option<String> {
-    let out = Command::new("tailscale").args(["status", "--json"]).output().ok()?;
-    if !out.status.success() {
-        return None;
-    }
-    let ts: TsStatus = serde_json::from_slice(&out.stdout).ok()?;
+    let ts = cached_ts_status()?;
     let health = ts.health?;
     if health.is_empty() {
         return None;
@@ -273,18 +319,10 @@ pub fn get_status() -> Status {
     if !is_installed() {
         return Status::default();
     }
-
-    let out = match Command::new("tailscale").args(["status", "--json"]).output() {
-        Ok(o) if o.status.success() => o,
-        _ => return Status::default(),
-    };
-
-    let ts: TsStatus = match serde_json::from_slice(&out.stdout) {
-        Ok(v) => v,
-        Err(_) => return Status::default(),
-    };
-
-    build_status(&ts)
+    match cached_ts_status() {
+        Some(ts) => build_status(&ts),
+        None => Status::default(),
+    }
 }
 
 // ─── Peers ───────────────────────────────────────────────────────────────────
@@ -318,13 +356,8 @@ pub fn get_status_and_peers() -> (Status, Vec<Peer>) {
     if !is_installed() {
         return (Status::default(), vec![]);
     }
-    let out = match Command::new("tailscale").args(["status", "--json"]).output() {
-        Ok(o) if o.status.success() => o,
-        _ => return (Status::default(), vec![]),
-    };
-    let ts: TsStatus = match serde_json::from_slice(&out.stdout) {
-        Ok(v) => v,
-        Err(_) => return (Status::default(), vec![]),
+    let Some(ts) = cached_ts_status() else {
+        return (Status::default(), vec![]);
     };
     let status = build_status(&ts);
     let peers = build_peers(ts);
@@ -344,16 +377,10 @@ fn build_status(ts: &TsStatus) -> Status {
 }
 
 pub fn get_peers() -> Vec<Peer> {
-    let out = match Command::new("tailscale").args(["status", "--json"]).output() {
-        Ok(o) if o.status.success() => o,
-        _ => return vec![],
-    };
-
-    let ts: TsStatus = match serde_json::from_slice(&out.stdout) {
-        Ok(v) => v,
-        Err(_) => return vec![],
-    };
-    build_peers(ts)
+    match cached_ts_status() {
+        Some(ts) => build_peers(ts),
+        None => vec![],
+    }
 }
 
 fn build_peers(ts: TsStatus) -> Vec<Peer> {
@@ -549,8 +576,11 @@ pub fn connect(server: &str, authkey: &str, hostname: &str) -> Result<()> {
 
     // `tailscale up` exits 0 even when the coordinator rejects the key.
     // The real failure only appears in Self.Online and the Health array.
-    // Wait briefly for the daemon to settle, then verify.
+    // Wait briefly for the daemon to settle, then verify. Bypass the status
+    // cache on every iteration so we don't spin at the cache TTL granularity
+    // while waiting for the daemon to flip Online.
     for _ in 0..10 {
+        invalidate_status_cache();
         let post = get_status();
         if post.online {
             dbg(&format!("connect: post-status online=true hostname={:?} ip={:?}",
@@ -621,14 +651,18 @@ fn try_connect(server: &str, authkey: &str, hostname: &str) -> Result<()> {
 }
 
 pub fn disconnect() -> Result<()> {
-    run_tailscale_with_fallback(&["down"])
+    let r = run_tailscale_with_fallback(&["down"]);
+    invalidate_status_cache();
+    r
 }
 
 /// Sign the device out of its current control server. Use when the user wants
 /// to switch accounts — `down` only stops the tunnel but keeps the node
 /// registered, so the next `up` would silently rejoin the same account.
 pub fn logout() -> Result<()> {
-    run_tailscale_with_fallback(&["logout"])
+    let r = run_tailscale_with_fallback(&["logout"]);
+    invalidate_status_cache();
+    r
 }
 
 /// One-time setup: make `$USER` the tailscale operator so subsequent
@@ -791,7 +825,9 @@ pub fn set_exit_node(host: Option<&str>) -> Result<()> {
         Some(h) => format!("--exit-node={h}"),
         None    => "--exit-node=".to_string(),
     };
-    run_tailscale_with_fallback(&["set", &arg])
+    let r = run_tailscale_with_fallback(&["set", &arg]);
+    invalidate_status_cache();
+    r
 }
 
 // ─── Latency ─────────────────────────────────────────────────────────────────

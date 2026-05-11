@@ -25,12 +25,19 @@ keyring = { version = "3", default-features = false, features = ["sync-secret-se
 # AppIndicator extension). `async-io` picks the lighter zbus backend; `blocking`
 # wraps it in a sync API so we don't need a tokio runtime in main().
 ksni = { version = "0.3", default-features = false, features = ["async-io", "blocking"] }
+# jemalloc: long-running desktop processes on glibc accumulate fragmentation
+# and glibc's malloc doesn't return free pages to the kernel. jemalloc has a
+# background thread that decays unused pages back via madvise — this is the
+# single biggest RSS win for an app that stays open for hours.
+# Linux/macOS only; jemalloc has no Windows support in tikv-jemallocator.
+tikv-jemallocator = { version = "0.6", default-features = false, features = ["background_threads"] }
 
 [target.'cfg(target_os = "windows")'.dependencies]
 keyring = { version = "3", default-features = false, features = ["windows-native"] }
 
 [target.'cfg(target_os = "macos")'.dependencies]
 keyring = { version = "3", default-features = false, features = ["apple-native"] }
+tikv-jemallocator = { version = "0.6", default-features = false, features = ["background_threads"] }
 
 [profile.release]
 opt-level     = "z"
