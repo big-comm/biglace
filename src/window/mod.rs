@@ -300,27 +300,60 @@ fn setup_close_to_tray(ctx: &Ctx, tray_active: bool) {
 // ─── Background workers ──────────────────────────────────────────────────────
 
 /// Re-measure latency to every online peer roughly every 20s. Each ping has
-/// a hard 2s cap inside `tailscale::ping_ms`, so a frota of 50 dead peers
-/// can't stall the worker for longer than ~100s — and dead peers won't be
-/// pinged anyway because we filter on `peer.online`.
+/// a hard 2s cap inside `tailscale::ping_ms`, and we now fan out across up
+/// to `PING_PARALLELISM` worker threads, so even a tailnet with dozens of
+/// pingable peers finishes inside one batch instead of stretching across
+/// minutes of sequential probes. Dead peers are filtered out via `peer.online`.
 fn spawn_latency_worker(ctx: &Ctx) {
+    /// Cap on concurrent `tailscale ping` invocations. Each ping shells out
+    /// to a subprocess and tailscaled handles them concurrently anyway, so
+    /// a hard ceiling avoids hammering the daemon on huge tailnets while
+    /// still cutting wall-clock time by ~Nx on small ones. Six is enough
+    /// for typical home/team tailnets and gentle on shared hardware.
+    const PING_PARALLELISM: usize = 6;
+
     let latency = ctx.latency.clone();
     let tx = ctx.refresh_tx.clone();
     glib::timeout_add_seconds_local(20, move || {
-        let online_targets: Vec<(String, String)> = tailscale::get_peers()
-            .into_iter()
-            .filter(|p| p.online && !p.ip.is_empty())
-            .map(|p| (p.hostname, p.ip))
-            .collect();
-
+        // Snapshotting peers off the GTK thread keeps the main loop free
+        // even if tailscaled is slow — we don't read the result here, the
+        // background thread does the parsing + pinging + send().
         let lat = latency.clone();
         let tx_t = tx.clone();
         std::thread::spawn(move || {
-            for (host, ip) in online_targets {
-                let ms = tailscale::ping_ms(&ip);
-                if let Ok(mut g) = lat.lock() {
-                    g.insert(host, ms);
-                }
+            let online_targets: Vec<(String, String)> = tailscale::get_peers()
+                .into_iter()
+                .filter(|p| p.online && !p.ip.is_empty())
+                .map(|p| (p.hostname, p.ip))
+                .collect();
+            if online_targets.is_empty() {
+                return;
+            }
+
+            // Work-stealing via a shared `Mutex<Vec<...>>` cursor. Each worker
+            // pulls the next target, runs ping_ms (which can block up to 2s),
+            // writes the result into the shared latency map. We use `join`
+            // on the handles so we only fire one `refresh_tx.send()` at the
+            // end of the batch — otherwise N pings would trigger N refreshes.
+            let queue = std::sync::Arc::new(std::sync::Mutex::new(online_targets));
+            let n_workers = PING_PARALLELISM.min(
+                queue.lock().map(|q| q.len()).unwrap_or(1).max(1),
+            );
+            let mut handles = Vec::with_capacity(n_workers);
+            for _ in 0..n_workers {
+                let q = queue.clone();
+                let lat_w = lat.clone();
+                handles.push(std::thread::spawn(move || loop {
+                    let next = q.lock().ok().and_then(|mut v| v.pop());
+                    let Some((host, ip)) = next else { return };
+                    let ms = tailscale::ping_ms(&ip);
+                    if let Ok(mut g) = lat_w.lock() {
+                        g.insert(host, ms);
+                    }
+                }));
+            }
+            for h in handles {
+                let _ = h.join();
             }
             let _ = tx_t.send(());
         });
@@ -369,6 +402,13 @@ fn spawn_reconnect_worker(ctx: &Ctx) {
     let was_online = Rc::new(RefCell::new(false));
     glib::timeout_add_seconds_local(15, move || {
         let cfg = ctx2.cfg.borrow().clone();
+        // Cheap short-circuits first — when neither requirement to ever fire
+        // a reconnect is met, we don't even need to know the online state,
+        // so we can skip the tailscaled probe entirely. Most users don't
+        // have auto-reconnect on, so this is the hot path most of the time.
+        if !cfg.auto_reconnect || cfg.authkey.is_empty() {
+            return glib::ControlFlow::Continue;
+        }
         let now_online = tailscale::is_service_active() && tailscale::get_status().online;
         let prev = *was_online.borrow();
         *was_online.borrow_mut() = now_online;
@@ -378,7 +418,7 @@ fn spawn_reconnect_worker(ctx: &Ctx) {
             *ctx2.reconnect_attempts.borrow_mut() = 0;
             return glib::ControlFlow::Continue;
         }
-        if !cfg.auto_reconnect || cfg.authkey.is_empty() || !prev {
+        if !prev {
             return glib::ControlFlow::Continue;
         }
         // Exponential backoff with cap: 15s, 30s, 1m, 2m, 4m, 5m, 5m, ...
@@ -455,13 +495,17 @@ fn spawn_device_meta_worker(ctx: &Ctx) {
         // without the user ever opening "Sign in with panel". On non-BigScale
         // tailnets the helpers in `panel::*` short-circuit (DNS for
         // `panel.<MagicDNSSuffix>` doesn't resolve), so this stays a no-op.
-        if !tailscale::is_service_active() || !tailscale::get_status().online {
-            return;
-        }
         let os_user = config::os_user();
         let device_meta_t = device_meta.clone();
         let tx_t = tx.clone();
         std::thread::spawn(move || {
+            // Gating moved off the GTK thread so a slow `systemctl is-active`
+            // or `tailscale status --json` (cache miss) doesn't stall the
+            // main loop. The cost is negligible — we exit early in the
+            // common "not connected" case before any HTTP work happens.
+            if !tailscale::is_service_active() || !tailscale::get_status().online {
+                return;
+            }
             // Best-effort POST first so the GET right after sees our own row
             // populated for the local device.
             if let Err(e) = panel::post_os_user(&os_user) {
