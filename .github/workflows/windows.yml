@@ -1,22 +1,34 @@
 # Windows MSI pipeline.
 #
-# Triggered manually (workflow_dispatch) or on tag push. Builds biglace.exe
-# against the gvsbuild prebuilt GTK4 + Libadwaita SDK, bundles the runtime
-# DLLs alongside the .exe, and emits a single x64 MSI. The MSI installs
-# perMachine into Program Files\BigLace, drops a Start Menu shortcut, and
-# uninstalls cleanly through "Apps & features".
+# Triggered by a `repository_dispatch` from the BigCommunity build-package
+# composite action (after it publishes the release for a new tag), or
+# manually via workflow_dispatch. Builds biglace.exe against the gvsbuild
+# prebuilt GTK4 + Libadwaita SDK, bundles the runtime DLLs alongside the
+# .exe, and emits a single x64 MSI. The MSI installs perMachine into
+# Program Files\BigLace, drops a Start Menu shortcut, and uninstalls
+# cleanly through "Apps & features".
 #
 # Output: artifact `biglace-msi` containing biglace-<version>-x86_64.msi.
-# On a tag push (`vX.Y.Z`), the artifact is also attached to a GitHub Release
-# so end users can download the MSI directly without browsing CI runs.
+# When the run is tied to a tag, the MSI is also attached to that tag's
+# GitHub Release so end users can download it without browsing CI runs.
 
 name: Windows MSI
 
+# Triggered by:
+#   - repository_dispatch from the build-package composite action after it
+#     publishes a release via the GitHub API. `push: tags` does NOT fire for
+#     API-created tags, which is why we can't rely on it.
+#   - workflow_dispatch for manual rebuilds; pass a `tag` to attach the MSI
+#     to an existing release, or leave blank to build a one-off artifact.
 on:
   workflow_dispatch:
-  push:
-    tags:
-      - 'v*'
+    inputs:
+      tag:
+        description: 'Existing tag to build the MSI for (optional)'
+        required: false
+        type: string
+  repository_dispatch:
+    types: [windows-msi-build]
 
 env:
   # Pin gvsbuild so reproducible builds don't drift when upstream cuts a new
@@ -32,8 +44,26 @@ jobs:
     runs-on: windows-latest
 
     steps:
+      # Resolve the tag we're building. Priority:
+      #   1. repository_dispatch payload (from build-package after release)
+      #   2. workflow_dispatch input (manual rebuild against an existing tag)
+      #   3. github.ref_name (manual trigger on a branch, no tag attached)
+      - name: Resolve tag
+        id: resolve
+        shell: bash
+        run: |
+          tag="${{ github.event.client_payload.tag_name }}"
+          if [ -z "$tag" ]; then tag="${{ github.event.inputs.tag }}"; fi
+          if [ -z "$tag" ]; then tag="${{ github.ref_name }}"; fi
+          echo "tag=$tag" >> "$GITHUB_OUTPUT"
+          echo "Resolved tag: $tag"
+
       - name: Checkout
         uses: actions/checkout@v4
+        with:
+          # Build the exact source the package was tagged from. Falls back to
+          # the workflow's own ref when no tag is in play (e.g. ad-hoc runs).
+          ref: ${{ steps.resolve.outputs.tag }}
 
       # ── Rust toolchain ───────────────────────────────────────────────────
       # Stable + the MSVC target. dtolnay/rust-toolchain is the most maintained
@@ -196,7 +226,7 @@ jobs:
               -C "-arch x64" `
               -L "-ext" -L "WixUtilExtension" `
               -I "wix\runtime.wxs" `
-              --output "target\biglace-${{ github.ref_name }}-x86_64.msi"
+              --output "target\biglace-${{ steps.resolve.outputs.tag }}-x86_64.msi"
 
       - name: Upload MSI artifact
         uses: actions/upload-artifact@v4
@@ -206,12 +236,18 @@ jobs:
           if-no-files-found: error
           retention-days: 30
 
-      # ── Attach to GitHub Release on tag push ─────────────────────────────
+      # ── Attach to GitHub Release ─────────────────────────────────────────
+      # Always attempt to attach when we resolved a tag (repository_dispatch
+      # or workflow_dispatch with a tag input). The release was already
+      # created by build-package; we just upload the MSI to it.
       - name: Attach to release
-        if: startsWith(github.ref, 'refs/tags/v')
+        if: >-
+          github.event_name == 'repository_dispatch' ||
+          (github.event_name == 'workflow_dispatch' && github.event.inputs.tag != '')
         uses: softprops/action-gh-release@v2
         with:
           files: target/*.msi
+          tag_name: ${{ steps.resolve.outputs.tag }}
           fail_on_unmatched_files: true
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
