@@ -1174,17 +1174,54 @@ fn compute_peer_signature(sorted: &[&Peer], cfg: &config::Config) -> u64 {
 /// Send a desktop notification via `notify-send`. Silent on failure (no
 /// notification daemon, missing binary, …) — never crash the GTK loop on
 /// a missing optional integration.
+///
+/// Notifications are coalesced into a single entry in the daemon: we
+/// remember the last `--print-id` and pass `--replace-id` on subsequent
+/// calls. Without this, GNOME/KDE stack one card per peer transition, so
+/// a VPN that brings ten peers online produces ten separate banners.
+/// With it, the user sees a single banner that updates in place.
 #[cfg(target_os = "linux")]
 fn notify_peer_change(name: &str, online: bool) {
+    use std::sync::{Mutex, OnceLock};
+
+    static LAST_ID: OnceLock<Mutex<Option<u32>>> = OnceLock::new();
+    let slot = LAST_ID.get_or_init(|| Mutex::new(None));
+
     let summary = if online {
         format!("{name} {}", tr!("is online"))
     } else {
         format!("{name} {}", tr!("went offline"))
     };
     let icon = if online { "network-transmit-receive-symbolic" } else { "network-offline-symbolic" };
-    let _ = std::process::Command::new("notify-send")
-        .args(["--app-name=BigLace", "--icon", icon, "--", &summary])
-        .spawn();
+    let prev_id = slot.lock().ok().and_then(|g| *g);
+
+    // Run on a worker thread so the synchronous `output()` call (needed to
+    // capture the ID) doesn't stall the GTK main loop.
+    std::thread::spawn(move || {
+        let mut cmd = std::process::Command::new("notify-send");
+        cmd.args(["--app-name=BigLace", "--icon", icon, "--print-id"]);
+        // `x-canonical-private-synchronous` is honored by GNOME, dunst and
+        // mako as a stronger "this updates the previous one" hint when the
+        // tag matches — defensive: gives in-place updates even on the very
+        // first call before we have an ID to replace.
+        cmd.args(["--hint", "string:x-canonical-private-synchronous:biglace-peer-status"]);
+        let prev_id_str;
+        if let Some(id) = prev_id {
+            prev_id_str = id.to_string();
+            cmd.args(["--replace-id", &prev_id_str]);
+        }
+        cmd.args(["--", &summary]);
+
+        if let Ok(out) = cmd.output() {
+            if let Ok(text) = std::str::from_utf8(&out.stdout) {
+                if let Ok(new_id) = text.trim().parse::<u32>() {
+                    if let Ok(mut g) = LAST_ID.get().expect("initialized above").lock() {
+                        *g = Some(new_id);
+                    }
+                }
+            }
+        }
+    });
 }
 
 /// Windows: emit an Action Center toast through `tauri-winrt-notification`.
