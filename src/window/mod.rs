@@ -18,7 +18,6 @@ use crate::panel;
 use crate::tailscale::{self, Peer, Status};
 use crate::tr;
 use crate::trf;
-#[cfg(target_os = "linux")]
 use crate::tray;
 
 #[derive(Clone, Copy, PartialEq, Eq, Debug)]
@@ -40,11 +39,9 @@ struct Ui {
 
 /// Cross-thread handle to the tray indicator. Wrapped in `Rc<RefCell<Option<…>>>`
 /// so callers can update it from the GTK loop and so the optional case
-/// (headless / no D-Bus / non-Linux) is a single `borrow().as_ref()` away.
-#[cfg(target_os = "linux")]
-type TrayHandle = Rc<RefCell<Option<ksni::blocking::Handle<tray::BigLaceTray>>>>;
-#[cfg(not(target_os = "linux"))]
-type TrayHandle = Rc<RefCell<Option<()>>>;
+/// (headless / no D-Bus / tray init failed / unsupported target) is a single
+/// `borrow().as_ref()` away.
+type TrayHandle = Rc<RefCell<Option<tray::Handle>>>;
 
 /// Aggregates everything the UI flow needs into one struct so signal
 /// handlers can capture a single `Ctx` clone instead of juggling six Rcs.
@@ -222,12 +219,11 @@ pub fn build(app: &libadwaita::Application) {
     }
 }
 
-// ─── Tray (StatusNotifierItem) ───────────────────────────────────────────────
+// ─── Tray (StatusNotifierItem on Linux, Shell_NotifyIcon on Windows) ─────────
 
 /// Spawn the system-tray indicator and wire its actions to the existing UI
 /// flows. Returns true when the tray was registered successfully — callers
 /// use this to decide whether the close button should hide instead of quit.
-#[cfg(target_os = "linux")]
 fn setup_tray(ctx: &Ctx) -> bool {
     let Some((rx, handle)) = tray::spawn() else { return false; };
     *ctx.tray.borrow_mut() = Some(handle);
@@ -236,22 +232,22 @@ fn setup_tray(ctx: &Ctx) -> bool {
     glib::timeout_add_local(Duration::from_millis(150), move || {
         while let Ok(cmd) = rx.try_recv() {
             match cmd {
-                tray::TrayCommand::Show => {
+                tray::Command::Show => {
                     ctx2.ui.win.present();
                 }
-                tray::TrayCommand::Connect => {
+                tray::Command::Connect => {
                     if ctx2.ui.sidebar.btn_connect.is_sensitive()
                         && !ctx2.ui.sidebar.btn_connect.has_css_class("destructive-action")
                     {
                         ctx2.ui.sidebar.btn_connect.emit_clicked();
                     }
                 }
-                tray::TrayCommand::Disconnect => {
+                tray::Command::Disconnect => {
                     if ctx2.ui.sidebar.btn_connect.has_css_class("destructive-action") {
                         ctx2.ui.sidebar.btn_connect.emit_clicked();
                     }
                 }
-                tray::TrayCommand::Quit => {
+                tray::Command::Quit => {
                     if let Some(app) = ctx2.ui.win.application() {
                         app.quit();
                     }
@@ -263,23 +259,13 @@ fn setup_tray(ctx: &Ctx) -> bool {
     true
 }
 
-#[cfg(not(target_os = "linux"))]
-fn setup_tray(_ctx: &Ctx) -> bool { false }
-
 /// Push the current connection state into the tray indicator (tooltip + the
 /// connect/disconnect menu label flip). No-op when the tray failed to spawn.
-#[cfg(target_os = "linux")]
 fn update_tray(ctx: &Ctx, connected: bool, peer_count: usize) {
     if let Some(h) = ctx.tray.borrow().as_ref() {
-        h.update(|t| {
-            t.connected = connected;
-            t.peer_count = peer_count;
-        });
+        h.update(connected, peer_count);
     }
 }
-
-#[cfg(not(target_os = "linux"))]
-fn update_tray(_ctx: &Ctx, _connected: bool, _peer_count: usize) {}
 
 /// Hijack the window's close button so it hides the window instead of
 /// destroying it — the tray icon is the live presence and quitting only
@@ -731,9 +717,27 @@ fn wire_signals(ctx: &Ctx) {
             let slot: Arc<Mutex<Option<bool>>> = Arc::new(Mutex::new(None));
             let slot_t = slot.clone();
             std::thread::spawn(move || {
+                // Linux: `pkexec systemctl enable --now tailscaled` prompts via
+                // polkit and registers the unit for auto-start. Windows: the
+                // installer already configures `Tailscale` to start at boot,
+                // so all we need is `sc start` — which silently no-ops when
+                // the service is already RUNNING. Both paths return a single
+                // bool so the GTK-side poller can be shared.
+                #[cfg(target_os = "linux")]
                 let ok = std::process::Command::new("pkexec")
                     .args(["systemctl", "enable", "--now", "tailscaled"])
                     .status().map(|s| s.success()).unwrap_or(false);
+                #[cfg(target_os = "windows")]
+                let ok = std::process::Command::new("sc")
+                    .args(["start", "Tailscale"])
+                    .status()
+                    // sc returns 1056 (ERROR_SERVICE_ALREADY_RUNNING) when the
+                    // service is already up — that's success from the user's
+                    // perspective, so accept any exit code as long as the
+                    // process ran.
+                    .map(|_| true).unwrap_or(false);
+                #[cfg(not(any(target_os = "linux", target_os = "windows")))]
+                let ok = false;
                 if let Ok(mut g) = slot_t.lock() { *g = Some(ok); }
             });
 
@@ -1170,6 +1174,7 @@ fn compute_peer_signature(sorted: &[&Peer], cfg: &config::Config) -> u64 {
 /// Send a desktop notification via `notify-send`. Silent on failure (no
 /// notification daemon, missing binary, …) — never crash the GTK loop on
 /// a missing optional integration.
+#[cfg(target_os = "linux")]
 fn notify_peer_change(name: &str, online: bool) {
     let summary = if online {
         format!("{name} {}", tr!("is online"))
@@ -1181,4 +1186,33 @@ fn notify_peer_change(name: &str, online: bool) {
         .args(["--app-name=BigLace", "--icon", icon, "--", &summary])
         .spawn();
 }
+
+/// Windows: emit an Action Center toast through `tauri-winrt-notification`.
+/// We borrow the PowerShell AUMID because Action Center silently drops
+/// toasts whose AppUserModelID isn't registered with the system. A future
+/// MSI tweak can register an AUMID for `org.communitybig.biglace` (Start
+/// Menu shortcut + `System.AppUserModel.ID` property), at which point we
+/// swap the constant for our own ID and toasts get the BigLace name + icon.
+#[cfg(target_os = "windows")]
+fn notify_peer_change(name: &str, online: bool) {
+    use tauri_winrt_notification::Toast;
+
+    let summary = if online {
+        format!("{name} {}", tr!("is online"))
+    } else {
+        format!("{name} {}", tr!("went offline"))
+    };
+
+    // Show is fallible (Windows can refuse to surface toasts in Focus
+    // Assist / DND mode). Drop the result — notifications are best-effort.
+    let _ = Toast::new(Toast::POWERSHELL_APP_ID)
+        .title("BigLace")
+        .text1(&summary)
+        .show();
+}
+
+/// macOS / other targets: no toast backend wired up yet. The peer
+/// transition still updates the UI; we just don't emit a system toast.
+#[cfg(not(any(target_os = "linux", target_os = "windows")))]
+fn notify_peer_change(_name: &str, _online: bool) {}
 

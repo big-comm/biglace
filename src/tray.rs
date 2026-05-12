@@ -1,23 +1,33 @@
-//! StatusNotifierItem (system tray) integration.
+//! System tray indicator (cross-platform façade).
 //!
-//! Runs on a dedicated std::thread (via `ksni`'s blocking adapter) and pushes
-//! user actions back to the GTK main loop through an std::sync::mpsc channel.
-//! The GTK side owns the widgets, so the tray never touches them directly —
-//! it only emits commands and lets the main loop translate them into the
-//! existing connect/disconnect/show flows.
+//! Linux uses StatusNotifierItem via `ksni`; Windows uses Shell_NotifyIcon
+//! via `tray-icon`. Both backends push user actions into a single mpsc
+//! channel that the GTK main loop polls, so the rest of the codebase doesn't
+//! need to know which backend is active — `tray::spawn()` returns a
+//! `(Receiver<Command>, Handle)` pair on every platform.
+//!
+//! On targets we don't ship for (today: anything other than Linux/Windows),
+//! `spawn()` returns `None` so the app silently runs without a tray icon.
 
 use std::sync::mpsc;
 
-use ksni::{
-    blocking::{Handle, TrayMethods},
-    menu::StandardItem,
-    MenuItem, ToolTip, Tray,
-};
+#[cfg(target_os = "linux")]
+mod linux;
+#[cfg(target_os = "windows")]
+mod windows;
+#[cfg(not(any(target_os = "linux", target_os = "windows")))]
+mod stub;
 
-use crate::{tr, trf};
+#[cfg(target_os = "linux")]
+use linux as imp;
+#[cfg(target_os = "windows")]
+use windows as imp;
+#[cfg(not(any(target_os = "linux", target_os = "windows")))]
+use stub as imp;
 
+/// User-initiated actions emitted by the tray menu / icon clicks.
 #[derive(Debug, Clone, Copy)]
-pub enum TrayCommand {
+pub enum Command {
     /// Bring the main window to the foreground (or unhide it).
     Show,
     /// User asked to (re)connect from the tray menu.
@@ -28,115 +38,25 @@ pub enum TrayCommand {
     Quit,
 }
 
-pub struct BigLaceTray {
-    pub connected:  bool,
-    pub peer_count: usize,
-    sender: mpsc::Sender<TrayCommand>,
+/// Cross-platform handle that lets the GTK main loop push status updates
+/// into the tray indicator (tooltip, connect/disconnect label flip).
+pub struct Handle {
+    inner: imp::HandleImpl,
 }
 
-impl BigLaceTray {
-    fn send(&self, cmd: TrayCommand) {
-        // The receiver lives on the GTK main loop; if it's gone, the app is
-        // shutting down and a dropped command is fine.
-        let _ = self.sender.send(cmd);
-    }
-}
-
-impl Tray for BigLaceTray {
-    fn id(&self) -> String {
-        "org.communitybig.biglace".into()
-    }
-
-    fn title(&self) -> String {
-        "BigLace".into()
-    }
-
-    fn icon_name(&self) -> String {
-        // Symbolic SVG ships under usr/share/icons/hicolor/symbolic/apps/.
-        // Themes recolor it to the panel's foreground, so we get a true
-        // monochrome indicator on light and dark panels alike.
-        "org.communitybig.biglace-symbolic".into()
-    }
-
-    fn tool_tip(&self) -> ToolTip {
-        let description = if self.connected {
-            match self.peer_count {
-                0 => tr!("Connected"),
-                1 => tr!("Connected · 1 peer"),
-                n => trf!("Connected · {n} peers", "n" => n),
-            }
-        } else {
-            tr!("Disconnected")
-        };
-        ToolTip {
-            icon_name: self.icon_name(),
-            icon_pixmap: vec![],
-            title: "BigLace".into(),
-            description,
-        }
-    }
-
-    fn activate(&mut self, _x: i32, _y: i32) {
-        // Left-click on the indicator brings the window to the front.
-        self.send(TrayCommand::Show);
-    }
-
-    fn menu(&self) -> Vec<MenuItem<Self>> {
-        let connect_or_disconnect: MenuItem<Self> = if self.connected {
-            StandardItem {
-                label: tr!("Disconnect"),
-                activate: Box::new(|t: &mut BigLaceTray| t.send(TrayCommand::Disconnect)),
-                ..Default::default()
-            }
-            .into()
-        } else {
-            StandardItem {
-                label: tr!("Connect"),
-                activate: Box::new(|t: &mut BigLaceTray| t.send(TrayCommand::Connect)),
-                ..Default::default()
-            }
-            .into()
-        };
-
-        vec![
-            StandardItem {
-                label: tr!("Show BigLace"),
-                activate: Box::new(|t: &mut BigLaceTray| t.send(TrayCommand::Show)),
-                ..Default::default()
-            }
-            .into(),
-            MenuItem::Separator,
-            connect_or_disconnect,
-            MenuItem::Separator,
-            StandardItem {
-                label: tr!("Quit"),
-                activate: Box::new(|t: &mut BigLaceTray| t.send(TrayCommand::Quit)),
-                ..Default::default()
-            }
-            .into(),
-        ]
+impl Handle {
+    /// Reflect the current connection state on the tray icon. Cheap and
+    /// idempotent — call from `refresh_state` regardless of whether
+    /// anything actually changed.
+    pub fn update(&self, connected: bool, peer_count: usize) {
+        self.inner.update(connected, peer_count);
     }
 }
 
-/// Spawn the SNI service on a background thread. Returns the receiver the GTK
-/// main loop must poll for user actions, plus a handle that lets the GTK side
-/// push status updates back into the indicator (tooltip, menu label).
-///
-/// Returns `None` if the D-Bus session bus is unreachable — common on
-/// headless systems and in some sandboxed flatpak runs. The app keeps
-/// working without a tray in that case.
-pub fn spawn() -> Option<(mpsc::Receiver<TrayCommand>, Handle<BigLaceTray>)> {
-    let (tx, rx) = mpsc::channel();
-    let tray = BigLaceTray {
-        connected:  false,
-        peer_count: 0,
-        sender:     tx,
-    };
-    match tray.spawn() {
-        Ok(handle) => Some((rx, handle)),
-        Err(e) => {
-            eprintln!("[biglace] tray: failed to register StatusNotifierItem: {e}");
-            None
-        }
-    }
+/// Spawn the platform-appropriate tray service. Returns `None` when the
+/// backend can't initialize (no D-Bus session on Linux, tray subsystem
+/// failure on Windows, unsupported target). Callers must keep the returned
+/// `Handle` alive for as long as they want the icon visible.
+pub fn spawn() -> Option<(mpsc::Receiver<Command>, Handle)> {
+    imp::spawn().map(|(rx, inner)| (rx, Handle { inner }))
 }

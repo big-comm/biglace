@@ -1,0 +1,158 @@
+<?xml version="1.0" encoding="windows-1252"?>
+<!--
+    BigLace MSI installer template (WiX 3.x).
+
+    This file is consumed by `cargo wix` (https://github.com/volks73/cargo-wix)
+    in the GitHub Actions Windows pipeline. It defines:
+      - the install target (Program Files\BigLace),
+      - the main biglace.exe + license + icon,
+      - a Start Menu shortcut,
+      - the GTK4/Libadwaita runtime DLLs, harvested at build time by heat.exe
+        from `target\wix-stage\` and dropped into a fragment file at
+        `wix\runtime.wxs` whose `RuntimeFiles` ComponentGroup we reference here.
+
+    GUIDs:
+      - UpgradeCode is hardcoded — every release of BigLace uses the same value,
+        which is what lets the MSI replace previous installs in place. Do NOT
+        regenerate it. Changing it would orphan installed copies on the user's
+        PC (Windows would treat the new MSI as an unrelated product).
+      - Component GUIDs marked with `*` are auto-generated at build time, which
+        is fine because each Component's contents are static (single keypath
+        file). For Components whose contents could vary across builds (the
+        harvested runtime fragment), heat.exe assigns deterministic GUIDs.
+-->
+<Wix xmlns="http://schemas.microsoft.com/wix/2006/wi"
+     xmlns:util="http://schemas.microsoft.com/wix/UtilExtension">
+
+    <Product Id="*"
+             Name="BigLace"
+             UpgradeCode="149a33f1-a138-4bab-904c-e54dc8465875"
+             Manufacturer="BigCommunity"
+             Language="1033"
+             Codepage="1252"
+             Version="$(var.Version)">
+
+        <Package Id="*"
+                 Keywords="Installer"
+                 Description="BigLace mesh VPN client"
+                 Manufacturer="BigCommunity"
+                 InstallerVersion="450"
+                 Languages="1033"
+                 Compressed="yes"
+                 InstallScope="perMachine"
+                 SummaryCodepage="1252"/>
+
+        <!-- Replace older installs in place. afterInstallInitialize means the
+             old version is uninstalled BEFORE the new files copy, which avoids
+             "file in use" prompts when a user upgrades while biglace.exe is
+             still running (we'll kill it via util:CloseApplication below). -->
+        <MajorUpgrade Schedule="afterInstallInitialize"
+                      DowngradeErrorMessage="A newer version of BigLace is already installed."/>
+
+        <!-- Single embedded cab — keeps the MSI as one file the user can email,
+             USB-stick, or drop into a Group Policy share without missing pieces. -->
+        <Media Id="1" Cabinet="biglace.cab" EmbedCab="yes"/>
+
+        <!-- Ask the running biglace.exe to close before upgrade/uninstall so
+             we don't fight the file lock. PromptToContinue=no means the
+             installer just closes it; the user already clicked Upgrade. -->
+        <util:CloseApplication Id="CloseBigLace"
+                               Target="biglace.exe"
+                               CloseMessage="yes"
+                               RebootPrompt="no"/>
+
+        <!-- ── Directory layout ──────────────────────────────────────────── -->
+        <Directory Id="TARGETDIR" Name="SourceDir">
+
+            <Directory Id="ProgramFiles64Folder" Name="PFiles">
+                <Directory Id="APPLICATIONFOLDER" Name="BigLace">
+                    <!-- Main executable. The actual GTK runtime DLLs live in
+                         the same folder; they're added by the harvested
+                         RuntimeFiles ComponentGroup. -->
+                    <Component Id="MainExecutable" Guid="*" Win64="yes">
+                        <File Id="biglaceEXE"
+                              Name="biglace.exe"
+                              DiskId="1"
+                              Source="$(var.CargoTargetBinDir)\biglace.exe"
+                              KeyPath="yes"/>
+                    </Component>
+
+                    <Component Id="LicenseFile" Guid="*" Win64="yes">
+                        <File Id="LicenseTXT"
+                              Name="LICENSE.txt"
+                              DiskId="1"
+                              Source="LICENSE"
+                              KeyPath="yes"/>
+                    </Component>
+                </Directory>
+            </Directory>
+
+            <Directory Id="ProgramMenuFolder">
+                <Directory Id="ApplicationProgramsFolder" Name="BigLace"/>
+            </Directory>
+
+        </Directory>
+
+        <!-- ── Start Menu shortcut ───────────────────────────────────────── -->
+        <DirectoryRef Id="ApplicationProgramsFolder">
+            <Component Id="ApplicationShortcut"
+                       Guid="2e1e0aac-0367-47ce-a284-35701e8d9883">
+                <Shortcut Id="ApplicationStartMenuShortcut"
+                          Name="BigLace"
+                          Description="Mesh VPN client"
+                          Target="[#biglaceEXE]"
+                          WorkingDirectory="APPLICATIONFOLDER"
+                          Icon="biglace.ico"/>
+                <RemoveFolder Id="CleanUpShortCut"
+                              Directory="ApplicationProgramsFolder"
+                              On="uninstall"/>
+                <!-- A Component needs a KeyPath. For shortcuts the recommended
+                     pattern is a per-user registry value — survives the
+                     ProgramMenuFolder being shared by other apps. -->
+                <RegistryValue Root="HKCU"
+                               Key="Software\BigCommunity\BigLace"
+                               Name="installed"
+                               Type="integer"
+                               Value="1"
+                               KeyPath="yes"/>
+            </Component>
+        </DirectoryRef>
+
+        <!-- ── Visual chrome ─────────────────────────────────────────────── -->
+        <Icon Id="biglace.ico" SourceFile="wix\biglace.ico"/>
+        <!-- Icon shown in "Apps & features" / "Programs and Features". -->
+        <Property Id="ARPPRODUCTICON" Value="biglace.ico"/>
+        <Property Id="ARPHELPLINK" Value="https://github.com/big-comm/biglace"/>
+        <!-- Disallow per-user install (we set InstallScope=perMachine). -->
+        <Property Id="ALLUSERS" Value="1"/>
+
+        <!-- License shown in the WixUI_Minimal welcome screen. -->
+        <WixVariable Id="WixUILicenseRtf" Value="wix\License.rtf"/>
+
+        <!-- ── Feature tree ──────────────────────────────────────────────── -->
+        <Feature Id="MainProgram"
+                 Title="BigLace"
+                 Description="The BigLace application"
+                 Level="1"
+                 ConfigurableDirectory="APPLICATIONFOLDER"
+                 AllowAdvertise="no"
+                 InstallDefault="local"
+                 Absent="disallow">
+            <ComponentRef Id="MainExecutable"/>
+            <ComponentRef Id="LicenseFile"/>
+            <ComponentRef Id="ApplicationShortcut"/>
+            <!-- Generated by `heat dir` in the CI workflow; lists every DLL,
+                 schema, and locale file shipped in the GTK4 runtime tree. -->
+            <ComponentGroupRef Id="RuntimeFiles"/>
+        </Feature>
+
+        <!-- ── UI ────────────────────────────────────────────────────────── -->
+        <!-- WixUI_Minimal: License → Install. No directory chooser. The vast
+             majority of Windows users want "next, next, finish"; advanced
+             users can msiexec /a to extract, or msiexec INSTALLLOCATION=. -->
+        <UI>
+            <UIRef Id="WixUI_Minimal"/>
+        </UI>
+
+    </Product>
+</Wix>
