@@ -6,6 +6,15 @@ authors = ["BigCommunity"]
 description = "Mesh VPN client with a graphical interface for Headscale/Tailscale"
 license = "MIT"
 
+# cargo-wix metadata. Drives the Windows MSI build in
+# .github/workflows/windows.yml. The .wxs lives at wix/main.wxs.
+[package.metadata.wix]
+include = ["wix/main.wxs"]
+# Also generate a per-build runtime fragment via heat.exe (the workflow does
+# this as a separate step before invoking cargo-wix). The fragment is included
+# at link time via -ext WixUtilExtension and the RuntimeFiles ComponentGroup
+# referenced in main.wxs.
+
 [features]
 # jemalloc on by default for local cargo builds — gives the long-idle RSS win
 # described in main.rs. Distro packagers (PKGBUILD, .deb, etc.) should build
@@ -47,6 +56,16 @@ ksni = { version = "0.3", default-features = false, features = ["async-io", "blo
 
 [target.'cfg(target_os = "windows")'.dependencies]
 keyring = { version = "3", default-features = false, features = ["windows-native"] }
+# Tray icon (Shell_NotifyIcon under the hood). Needs a Win32 message pump,
+# which we run on a dedicated worker thread inside src/tray/windows.rs.
+tray-icon = { version = "0.24", default-features = false }
+# Just the message-pump bits; pulling the rest of windows-sys would balloon
+# compile time for no reason.
+windows-sys = { version = "0.59", features = ["Win32_UI_WindowsAndMessaging"] }
+# Action Center toasts (peer online/offline notifications). Falls back to
+# the PowerShell AUMID until biglace.exe registers its own — otherwise
+# Windows refuses to surface toasts from an unregistered app id.
+tauri-winrt-notification = "0.7"
 
 [target.'cfg(target_os = "macos")'.dependencies]
 keyring = { version = "3", default-features = false, features = ["apple-native"] }

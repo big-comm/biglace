@@ -1,0 +1,217 @@
+# Windows MSI pipeline.
+#
+# Triggered manually (workflow_dispatch) or on tag push. Builds biglace.exe
+# against the gvsbuild prebuilt GTK4 + Libadwaita SDK, bundles the runtime
+# DLLs alongside the .exe, and emits a single x64 MSI. The MSI installs
+# perMachine into Program Files\BigLace, drops a Start Menu shortcut, and
+# uninstalls cleanly through "Apps & features".
+#
+# Output: artifact `biglace-msi` containing biglace-<version>-x86_64.msi.
+# On a tag push (`vX.Y.Z`), the artifact is also attached to a GitHub Release
+# so end users can download the MSI directly without browsing CI runs.
+
+name: Windows MSI
+
+on:
+  workflow_dispatch:
+  push:
+    tags:
+      - 'v*'
+
+env:
+  # Pin gvsbuild so reproducible builds don't drift when upstream cuts a new
+  # release. Bump deliberately (read the gvsbuild release notes — sometimes
+  # they break ABI). Latest known-good as of 2026-05.
+  GVSBUILD_VERSION: '2026.4.1'
+  # Rust target. Use MSVC over GNU because gvsbuild ships MSVC import libs.
+  TARGET: 'x86_64-pc-windows-msvc'
+
+jobs:
+  build:
+    name: Build MSI
+    runs-on: windows-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      # ── Rust toolchain ───────────────────────────────────────────────────
+      # Stable + the MSVC target. dtolnay/rust-toolchain is the most maintained
+      # action and skips a few seconds of overhead vs the official one.
+      - name: Install Rust (MSVC)
+        uses: dtolnay/rust-toolchain@stable
+        with:
+          targets: ${{ env.TARGET }}
+
+      - name: Cache cargo registry
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.cargo/registry
+            ~/.cargo/git
+            target
+          key: cargo-${{ runner.os }}-${{ hashFiles('Cargo.lock') }}
+          restore-keys: cargo-${{ runner.os }}-
+
+      # ── GTK4 + Libadwaita runtime (gvsbuild prebuilt) ────────────────────
+      # gvsbuild publishes a single zip with bin/, lib/, include/, share/.
+      # We extract it under a stable path so PKG_CONFIG_PATH and the link
+      # search dirs in the next step can find the .pc files and import libs.
+      - name: Cache gvsbuild
+        id: cache-gvsbuild
+        uses: actions/cache@v4
+        with:
+          path: C:\gtk-build\gtk\x64\release
+          key: gvsbuild-${{ env.GVSBUILD_VERSION }}-x64
+
+      - name: Download gvsbuild
+        if: steps.cache-gvsbuild.outputs.cache-hit != 'true'
+        shell: pwsh
+        run: |
+          $url = "https://github.com/wingtk/gvsbuild/releases/download/${{ env.GVSBUILD_VERSION }}/GTK4_Gvsbuild_${{ env.GVSBUILD_VERSION }}_x64.zip"
+          Write-Host "Downloading $url"
+          New-Item -ItemType Directory -Path C:\gtk-build\gtk\x64\release -Force | Out-Null
+          Invoke-WebRequest -Uri $url -OutFile gtk4.zip -UseBasicParsing
+          Expand-Archive -Path gtk4.zip -DestinationPath C:\gtk-build\gtk\x64\release -Force
+          Remove-Item gtk4.zip
+
+      - name: Configure GTK env vars
+        shell: pwsh
+        run: |
+          # These env exports stay alive for subsequent steps via $GITHUB_ENV.
+          # PATH is critical: the build script spawned by gtk4-rs needs to see
+          # `pkg-config.exe` and its `glib-compile-resources` siblings, all
+          # shipped under bin/.
+          $gtk = "C:\gtk-build\gtk\x64\release"
+          echo "$gtk\bin" | Out-File -FilePath $env:GITHUB_PATH -Append -Encoding utf8
+          echo "PKG_CONFIG_PATH=$gtk\lib\pkgconfig" | Out-File -FilePath $env:GITHUB_ENV -Append -Encoding utf8
+          echo "LIB=$gtk\lib;$env:LIB" | Out-File -FilePath $env:GITHUB_ENV -Append -Encoding utf8
+          echo "INCLUDE=$gtk\include;$env:INCLUDE" | Out-File -FilePath $env:GITHUB_ENV -Append -Encoding utf8
+
+      # ── Build biglace.exe ────────────────────────────────────────────────
+      # --no-default-features disables jemalloc (Linux/macOS only) and any
+      # other host-specific defaults; --release runs the optimization profile
+      # tuned in Cargo.toml (opt-level=z, panic=abort, etc.).
+      - name: Build biglace.exe
+        shell: pwsh
+        run: |
+          cargo build --release --no-default-features --target ${{ env.TARGET }}
+
+      # ── Stage runtime alongside the .exe ─────────────────────────────────
+      # Copy biglace.exe + every DLL + glib schemas + locale dir into a single
+      # tree. heat.exe will harvest this tree into a WiX fragment so each file
+      # ends up as a Component in the installer.
+      - name: Stage MSI tree
+        shell: pwsh
+        run: |
+          $stage = "target\wix-stage"
+          New-Item -ItemType Directory -Path $stage -Force | Out-Null
+
+          # Main binary.
+          Copy-Item "target\${{ env.TARGET }}\release\biglace.exe" "$stage\biglace.exe"
+
+          # GTK runtime: all DLLs the loader will resolve at startup. We copy
+          # the entire bin/*.dll because picking transitive deps by hand is
+          # brittle and the size delta is small (~80MB before MSI compression,
+          # ~40MB after).
+          Copy-Item "C:\gtk-build\gtk\x64\release\bin\*.dll" $stage
+
+          # Compiled GSettings schemas (libadwaita reads these on init).
+          $schemas = "C:\gtk-build\gtk\x64\release\share\glib-2.0\schemas"
+          if (Test-Path $schemas) {
+              New-Item -ItemType Directory -Path "$stage\share\glib-2.0\schemas" -Force | Out-Null
+              Copy-Item "$schemas\*" "$stage\share\glib-2.0\schemas" -Recurse
+          }
+
+          # Themes: Adwaita is the libadwaita default. Without it, GTK falls
+          # back to the unstyled 'hicolor' theme and icons render as missing.
+          $icons = "C:\gtk-build\gtk\x64\release\share\icons"
+          if (Test-Path $icons) {
+              New-Item -ItemType Directory -Path "$stage\share\icons" -Force | Out-Null
+              Copy-Item "$icons\Adwaita" "$stage\share\icons\Adwaita" -Recurse -ErrorAction SilentlyContinue
+              Copy-Item "$icons\hicolor" "$stage\share\icons\hicolor" -Recurse -ErrorAction SilentlyContinue
+          }
+
+          Get-ChildItem $stage -Recurse | Measure-Object -Sum Length |
+              ForEach-Object { Write-Host ("Staged tree size: {0:N1} MB" -f ($_.Sum / 1MB)) }
+
+      # ── Generate the application icon ────────────────────────────────────
+      # The repo only ships an SVG; we rasterize it into a multi-resolution .ico
+      # using ImageMagick (preinstalled on windows-latest runners).
+      - name: Generate biglace.ico from SVG
+        shell: pwsh
+        run: |
+          $svg = "usr\share\icons\hicolor\scalable\apps\org.communitybig.biglace.svg"
+          $ico = "wix\biglace.ico"
+          if (-not (Test-Path $svg)) {
+              Write-Error "SVG not found at $svg — required for the MSI icon."
+              exit 1
+          }
+          # Multi-res .ico so the icon scales cleanly in Explorer, Start Menu,
+          # and the taskbar (each surface picks the closest available size).
+          magick convert -background none `
+              "($svg)[0] -resize 16x16" `
+              "($svg)[0] -resize 32x32" `
+              "($svg)[0] -resize 48x48" `
+              "($svg)[0] -resize 64x64" `
+              "($svg)[0] -resize 128x128" `
+              "($svg)[0] -resize 256x256" `
+              $ico
+          Write-Host "Generated $ico"
+
+      # ── WiX toolset ──────────────────────────────────────────────────────
+      # cargo-wix invokes candle.exe + light.exe; we install both via the
+      # official WiX 3.x bundle (also preinstalled on windows-latest, but
+      # we install cargo-wix explicitly so its API is known).
+      - name: Install cargo-wix
+        shell: pwsh
+        run: cargo install cargo-wix --locked --version 0.3.9
+
+      # heat.exe scans the staged tree and emits a WiX fragment listing every
+      # file as a Component. The `-cg RuntimeFiles` flag groups them under the
+      # ComponentGroup name our main.wxs references via ComponentGroupRef.
+      - name: Harvest staged tree (heat.exe)
+        shell: pwsh
+        run: |
+          $heat = (Get-Command heat.exe -ErrorAction Stop).Source
+          & $heat dir "target\wix-stage" `
+              -cg RuntimeFiles `
+              -dr APPLICATIONFOLDER `
+              -gg -g1 -srd -sfrag `
+              -var var.StageDir `
+              -out "wix\runtime.wxs"
+
+      # ── Build the MSI ────────────────────────────────────────────────────
+      # `-C -dStageDir=...` passes the variable referenced inside the harvested
+      # fragment (heat emitted Source attributes like `$(var.StageDir)\foo.dll`).
+      # `-L -ext WixUtilExtension` enables util:CloseApplication used in main.wxs.
+      - name: Build MSI
+        shell: pwsh
+        run: |
+          cargo wix `
+              --no-build `
+              --nocapture `
+              --target ${{ env.TARGET }} `
+              -C "-dStageDir=target\wix-stage" `
+              -C "-arch x64" `
+              -L "-ext" -L "WixUtilExtension" `
+              -I "wix\runtime.wxs" `
+              --output "target\biglace-${{ github.ref_name }}-x86_64.msi"
+
+      - name: Upload MSI artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: biglace-msi
+          path: target/*.msi
+          if-no-files-found: error
+          retention-days: 30
+
+      # ── Attach to GitHub Release on tag push ─────────────────────────────
+      - name: Attach to release
+        if: startsWith(github.ref, 'refs/tags/v')
+        uses: softprops/action-gh-release@v2
+        with:
+          files: target/*.msi
+          fail_on_unmatched_files: true
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

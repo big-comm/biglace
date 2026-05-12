@@ -87,15 +87,42 @@ impl Config {
 /// can SSH/SFTP into it (`ssh <os-user>@<peer-dns>`). We always derive this
 /// at runtime — never persist it — so a config copied between machines auto-
 /// adapts to whoever runs biglace.
+///
+/// Windows doesn't set `USER` / `LOGNAME` — those are Unix conventions. The
+/// native equivalent is `USERNAME`, set by `cmd.exe`/`powershell.exe` and
+/// every Windows session manager.
 pub fn os_user() -> String {
     std::env::var("USER")
         .or_else(|_| std::env::var("LOGNAME"))
+        .or_else(|_| std::env::var("USERNAME"))
         .unwrap_or_else(|_| "biglace".into())
 }
 
+/// Per-OS location for the TOML config. We intentionally don't pull `dirs` or
+/// `directories` for this — env vars are stable, deterministic, and what every
+/// OS guideline actually documents (XDG on Linux, %APPDATA% on Windows,
+/// ~/Library on macOS).
+#[cfg(target_os = "linux")]
 fn path() -> PathBuf {
     let home = std::env::var("HOME").unwrap_or_else(|_| ".".into());
     PathBuf::from(home).join(".config/biglace/config.toml")
+}
+
+#[cfg(target_os = "windows")]
+fn path() -> PathBuf {
+    // %APPDATA% is the per-user roaming dir (e.g. C:\Users\foo\AppData\Roaming).
+    // Fall back to USERPROFILE then current dir so we never panic on a stripped
+    // service account profile.
+    let base = std::env::var("APPDATA")
+        .or_else(|_| std::env::var("USERPROFILE").map(|p| format!("{p}\\AppData\\Roaming")))
+        .unwrap_or_else(|_| ".".into());
+    PathBuf::from(base).join("biglace").join("config.toml")
+}
+
+#[cfg(target_os = "macos")]
+fn path() -> PathBuf {
+    let home = std::env::var("HOME").unwrap_or_else(|_| ".".into());
+    PathBuf::from(home).join("Library/Application Support/biglace/config.toml")
 }
 
 pub fn load() -> Config {

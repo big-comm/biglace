@@ -38,7 +38,7 @@ fn cached_ts_status() -> Option<TsStatus> {
     }
     // Fetch outside the lock so a slow tailscaled doesn't block other
     // callers from reading a still-valid cached value.
-    let out = Command::new("tailscale").args(["status", "--json"]).output().ok()?;
+    let out = Command::new(tailscale_cmd()).args(["status", "--json"]).output().ok()?;
     if !out.status.success() {
         return None;
     }
@@ -237,7 +237,40 @@ struct TsUser {
 }
 
 // ─── Detection ───────────────────────────────────────────────────────────────
+//
+// `tailscale` on Linux/macOS lives in PATH as a single CLI binary; on Windows
+// the installer drops it under `%ProgramFiles%\Tailscale\tailscale.exe`, which
+// is *not* in PATH for unprivileged user sessions. The CLI binary in turn
+// talks to the local daemon over a Unix socket (Linux) or a named pipe
+// (Windows) — same JSON wire format on both, so all the parsing in this file
+// is platform-independent.
 
+/// Absolute path / command name to invoke the tailscale CLI. Used everywhere
+/// we shell out so the Windows-installer path is found without the user
+/// having to add it to PATH manually.
+fn tailscale_cmd() -> &'static str {
+    #[cfg(windows)]
+    {
+        // Try a couple of well-known install locations, then fall back to the
+        // bare name in case the user added it to PATH themselves.
+        const CANDIDATES: &[&str] = &[
+            r"C:\Program Files\Tailscale\tailscale.exe",
+            r"C:\Program Files (x86)\Tailscale\tailscale.exe",
+        ];
+        for c in CANDIDATES {
+            if std::path::Path::new(c).exists() {
+                return c;
+            }
+        }
+        "tailscale.exe"
+    }
+    #[cfg(not(windows))]
+    {
+        "tailscale"
+    }
+}
+
+#[cfg(unix)]
 pub fn is_installed() -> bool {
     Command::new("which")
         .arg("tailscale")
@@ -248,12 +281,47 @@ pub fn is_installed() -> bool {
         .unwrap_or(false)
 }
 
+#[cfg(windows)]
+pub fn is_installed() -> bool {
+    // `where.exe` is the Windows analogue of `which`. We also accept the
+    // hard-coded Program Files path as "installed" so the official MSI works
+    // for users who never opened a fresh shell after install (PATH update
+    // doesn't propagate to existing processes).
+    if std::path::Path::new(r"C:\Program Files\Tailscale\tailscale.exe").exists()
+        || std::path::Path::new(r"C:\Program Files (x86)\Tailscale\tailscale.exe").exists()
+    {
+        return true;
+    }
+    Command::new("where")
+        .arg("tailscale")
+        .stdout(std::process::Stdio::null())
+        .stderr(std::process::Stdio::null())
+        .status()
+        .map(|s| s.success())
+        .unwrap_or(false)
+}
+
+#[cfg(unix)]
 pub fn is_service_active() -> bool {
     Command::new("systemctl")
         .args(["is-active", "--quiet", "tailscaled"])
         .status()
         .map(|s| s.success())
         .unwrap_or(false)
+}
+
+#[cfg(windows)]
+pub fn is_service_active() -> bool {
+    // `sc query Tailscale` always exits 0 if the service is *defined* — we
+    // need to look at the STATE line. "RUNNING" is what we want.
+    let out = Command::new("sc").args(["query", "Tailscale"]).output();
+    match out {
+        Ok(o) if o.status.success() => {
+            let s = String::from_utf8_lossy(&o.stdout);
+            s.lines().any(|l| l.trim().to_ascii_uppercase().contains("RUNNING"))
+        }
+        _ => false,
+    }
 }
 
 /// Tailnet IP of the BigScale panel peer (the one whose DNSName is
@@ -480,9 +548,10 @@ fn build_peers(ts: TsStatus) -> Vec<Peer> {
 /// operator, retry once via `pkexec` and use that single elevation to also
 /// mark the current user as operator — so subsequent calls don't need a
 /// password at all.
+#[cfg(unix)]
 fn run_tailscale_with_fallback(args: &[&str]) -> Result<()> {
     dbg(&format!("running: tailscale {}", args.join(" ")));
-    let out = Command::new("tailscale")
+    let out = Command::new(tailscale_cmd())
         .args(args)
         .output()
         .with_context(|| tr!("Failed to run tailscale"))?;
@@ -537,6 +606,38 @@ fn run_tailscale_with_fallback(args: &[&str]) -> Result<()> {
     }
 
     let msg = pk_err.trim();
+    if msg.is_empty() {
+        bail!(tr!("Failed to connect — check the server URL and key."));
+    } else {
+        bail!(msg.to_string());
+    }
+}
+
+/// Windows variant of `run_tailscale_with_fallback`. Tailscale on Windows
+/// runs as a Windows Service under LocalSystem; the CLI talks to it over a
+/// named pipe and inherits whatever rights the calling user has. There's no
+/// pkexec equivalent we can drive from a GUI app — UAC elevation has to be
+/// done by re-launching the whole process under `runas`, which is jarring
+/// and pops a system dialog the user can't preview. So we just run the CLI
+/// and surface whatever error comes back; the user fixes elevation by
+/// running biglace as administrator (recorded in the README).
+#[cfg(windows)]
+fn run_tailscale_with_fallback(args: &[&str]) -> Result<()> {
+    dbg(&format!("running: tailscale {}", args.join(" ")));
+    let out = Command::new(tailscale_cmd())
+        .args(args)
+        .output()
+        .with_context(|| tr!("Failed to run tailscale"))?;
+
+    let stderr = String::from_utf8_lossy(&out.stderr);
+    let stdout = String::from_utf8_lossy(&out.stdout);
+    dbg_output("tailscale", args, out.status.code().unwrap_or(-1), &stdout, &stderr);
+
+    if out.status.success() {
+        return Ok(());
+    }
+
+    let msg = stderr.trim();
     if msg.is_empty() {
         bail!(tr!("Failed to connect — check the server URL and key."));
     } else {
@@ -667,6 +768,7 @@ pub fn logout() -> Result<()> {
 
 /// One-time setup: make `$USER` the tailscale operator so subsequent
 /// `up`/`down` calls don't need pkexec. Always runs through pkexec.
+#[cfg(unix)]
 pub fn set_operator_current_user() -> Result<()> {
     let user = std::env::var("USER").unwrap_or_default();
     if user.is_empty() {
@@ -680,6 +782,15 @@ pub fn set_operator_current_user() -> Result<()> {
     if !st.success() {
         bail!(tr!("Failed to set tailscale operator."));
     }
+    Ok(())
+}
+
+/// On Windows there's no per-user "operator" prefs flag — the service runs as
+/// LocalSystem and any logged-in admin can drive the CLI directly. Keep the
+/// public API identical so window-side menu wiring doesn't have to be cfg'd
+/// on every platform.
+#[cfg(windows)]
+pub fn set_operator_current_user() -> Result<()> {
     Ok(())
 }
 
@@ -724,6 +835,7 @@ pub fn pick_target(dns_name: &str, ip_fallback: &str) -> String {
 ///   3. Probe a known list of GUI managers in popularity order. Each one of
 ///      them mounts the SFTP location itself and pops up the password prompt.
 ///   4. Last resort: `gio mount` then `xdg-open`.
+#[cfg(unix)]
 pub fn open_files(host: &str, user: &str) {
     let target = if user.is_empty() {
         host.to_string()
@@ -751,6 +863,55 @@ pub fn open_files(host: &str, user: &str) {
     let _ = Command::new("xdg-open").arg(&url).spawn();
 }
 
+/// Windows has no native SFTP support in Explorer — the closest UX is
+/// WinSCP (a third-party tool with a two-pane file-manager UI). We try
+/// known install locations of WinSCP first; if absent we fall back to
+/// `sshfs-win` (mounts SFTP as a drive letter via WinFSP) and lastly to
+/// `start sftp://...` so the user at least sees what URL would have opened.
+/// The README explains the WinSCP install step.
+#[cfg(windows)]
+pub fn open_files(host: &str, user: &str) {
+    let target = if user.is_empty() {
+        host.to_string()
+    } else {
+        format!("{user}@{host}")
+    };
+    let url = format!("sftp://{target}/");
+
+    // 1. WinSCP. Standard MSI installs land in Program Files; the portable
+    // `winscp.com` console launcher also accepts `sftp://` URLs identically.
+    const WINSCP: &[&str] = &[
+        r"C:\Program Files\WinSCP\WinSCP.exe",
+        r"C:\Program Files (x86)\WinSCP\WinSCP.exe",
+    ];
+    for path in WINSCP {
+        if std::path::Path::new(path).exists() {
+            let _ = Command::new(path).arg(&url).spawn();
+            return;
+        }
+    }
+    // PATH lookup, in case the user installed WinSCP via choco/scoop/portable.
+    if Command::new("winscp.exe").arg(&url).spawn().is_ok() {
+        return;
+    }
+
+    // 2. sshfs-win — opens File Explorer at \\sshfs.r\<user>@<host>. Requires
+    // both `sshfs-win` and WinFSP to be installed; we don't probe for them
+    // explicitly since spawn() will just fail silently if absent.
+    if !user.is_empty() {
+        let unc = format!(r"\\sshfs.r\{user}@{host}");
+        if Command::new("explorer.exe").arg(&unc).spawn().is_ok() {
+            return;
+        }
+    }
+
+    // 3. Last resort: ask the shell to handle the URL. This usually pops the
+    // "How do you want to open this?" dialog, which at least surfaces to the
+    // user that no SFTP client is installed.
+    let _ = Command::new("cmd").args(["/C", "start", "", &url]).spawn();
+}
+
+#[cfg(unix)]
 fn default_handler_for(mime: &str) -> Option<String> {
     let out = Command::new("xdg-mime")
         .args(["query", "default", mime])
@@ -771,6 +932,7 @@ fn default_handler_for(mime: &str) -> Option<String> {
 /// OS user (its hostname on Linux). When empty we fall back to `ssh <host>`,
 /// which makes ssh use the local username — usually wrong, but better than
 /// failing to launch at all.
+#[cfg(unix)]
 pub fn open_terminal(host: &str, user: &str) {
     let target = if user.is_empty() {
         host.to_string()
@@ -793,8 +955,48 @@ pub fn open_terminal(host: &str, user: &str) {
     }
 }
 
+/// Windows variant. Preference order:
+///   1. Windows Terminal (`wt.exe`) — modern, tabbed, ships with Win11 and
+///      is a free Store install on Win10.
+///   2. PowerShell — kept open via `-NoExit` so the SSH session output stays
+///      visible after the connection closes.
+///   3. cmd.exe `/K` — last resort, same "stay open" behavior.
+///
+/// `ssh.exe` itself ships with the OpenSSH client, an optional Windows
+/// feature that's enabled by default on Win10 (1809+) and Win11.
+#[cfg(windows)]
+pub fn open_terminal(host: &str, user: &str) {
+    let target = if user.is_empty() {
+        host.to_string()
+    } else {
+        format!("{user}@{host}")
+    };
+
+    // wt.exe new-tab ssh user@host
+    if Command::new("wt.exe")
+        .args(["new-tab", "ssh", &target])
+        .spawn()
+        .is_ok()
+    {
+        return;
+    }
+    // PowerShell with -NoExit so the window stays open after ssh exits.
+    if Command::new("powershell.exe")
+        .args(["-NoExit", "-Command", &format!("ssh {target}")])
+        .spawn()
+        .is_ok()
+    {
+        return;
+    }
+    // Fall back to cmd /K so the window doesn't vanish on disconnect.
+    let _ = Command::new("cmd.exe")
+        .args(["/K", &format!("ssh {target}")])
+        .spawn();
+}
+
 /// Open a terminal that tails `tailscaled`'s journal. Useful for debugging
 /// connect failures without leaving biglace.
+#[cfg(unix)]
 pub fn open_logs() {
     // `pkexec journalctl -fu tailscaled` would be ideal but pkexec inside a
     // terminal child often deadlocks on polkit's auth dialog. Plain
@@ -813,6 +1015,26 @@ pub fn open_logs() {
             return;
         }
     }
+}
+
+/// Windows variant — Tailscale's Windows daemon writes to its own log file
+/// under `%ProgramData%\Tailscale\Logs\`, not to the Windows Event Log. We
+/// open a PowerShell window that tails the most recent log file using
+/// `Get-Content -Wait`, which is the closest equivalent to `journalctl -f`.
+#[cfg(windows)]
+pub fn open_logs() {
+    // `-NoExit` keeps the window open after Get-Content is interrupted.
+    let cmd = r#"$d = Join-Path $env:ProgramData 'Tailscale\Logs'; if (Test-Path $d) { $f = Get-ChildItem $d -Filter *.txt | Sort-Object LastWriteTime -Descending | Select-Object -First 1; if ($f) { Get-Content $f.FullName -Wait -Tail 200 } else { Write-Host 'no log files yet' } } else { Write-Host 'Tailscale log dir not found' }"#;
+    if Command::new("wt.exe")
+        .args(["new-tab", "powershell.exe", "-NoExit", "-Command", cmd])
+        .spawn()
+        .is_ok()
+    {
+        return;
+    }
+    let _ = Command::new("powershell.exe")
+        .args(["-NoExit", "-Command", cmd])
+        .spawn();
 }
 
 // ─── Exit nodes ──────────────────────────────────────────────────────────────
@@ -836,7 +1058,7 @@ pub fn set_exit_node(host: Option<&str>) -> Result<()> {
 /// milliseconds on the first reply, or None on timeout / unreachable. Caps at
 /// ~2s so a dead peer doesn't hang the periodic refresh.
 pub fn ping_ms(target: &str) -> Option<f64> {
-    let out = Command::new("tailscale")
+    let out = Command::new(tailscale_cmd())
         .args(["ping", "--c=1", "--timeout=2s", "--until-direct=false", target])
         .output()
         .ok()?;

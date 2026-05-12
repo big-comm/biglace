@@ -3,6 +3,10 @@ mod i18n;
 mod panel;
 mod secrets;
 mod tailscale;
+// Cross-platform façade: ksni (StatusNotifierItem / D-Bus) on Linux,
+// Shell_NotifyIcon on Windows, no-op stub elsewhere. The submodule that
+// actually compiles is selected inside `tray.rs` via `#[cfg(target_os = …)]`,
+// so this `mod tray;` works for every supported target.
 mod tray;
 mod window;
 
