@@ -1,26 +1,79 @@
+<div align="center">
+
+<img src="usr/share/icons/hicolor/scalable/apps/org.communitybig.biglace.svg" width="128" alt="BigLace">
+
 # BigLace
 
-Mesh VPN client with a graphical interface (GTK4 + libadwaita), written in
-Rust. BigLace wraps the `tailscale` CLI to connect Linux machines to a
-**BigScale** coordinator (or a plain Headscale server) in a few clicks: paste
-the server URL and a personal pre-auth key, or sign in with your BigScale
-panel account and the key is generated for you.
+**Mesh VPN client with a graphical interface for Headscale and BigScale.**
+
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
+[![Platform](https://img.shields.io/badge/platform-Linux%20%7C%20Windows-blue)](#platforms)
+[![Built with Rust](https://img.shields.io/badge/Built%20with-Rust-orange?logo=rust&logoColor=white)](https://www.rust-lang.org)
+[![GTK4 · Libadwaita](https://img.shields.io/badge/GTK4-Libadwaita-blueviolet?logo=gnome&logoColor=white)](https://gtk.org)
+[![Latest release](https://img.shields.io/github/v/release/big-comm/biglace?label=release&color=brightgreen)](https://github.com/big-comm/biglace/releases)
+
+</div>
 
 ---
 
-## Features
+BigLace wraps the `tailscale` CLI in a polished GTK4 + libadwaita interface so
+end users can join a **BigScale** mesh (or any plain Headscale server) in a
+few clicks: paste a server URL and a personal pre-auth key, or sign in with a
+BigScale panel account and the key is generated for you.
 
-- Connect / disconnect via `tailscale up` / `tailscale down`.
-- List network peers with status (online/offline), IP, and short name.
-- One-click SFTP (`xdg-open sftp://…`) and SSH (in any available system
-  terminal) to online peers.
-- **Sign in with a BigScale panel account**: a dialog asks for the panel URL,
-  username, and password; BigLace asks the panel for a fresh pre-auth key and
-  fills the connection form for you.
-- Optional auto-start on launch (persisted in config).
-- Starts `tailscaled` via `pkexec` if the service is stopped.
-- Internationalised via gettext: pt-BR, en, es.
-- Standard libadwaita About window.
+## Table of contents
+
+- [Highlights](#highlights)
+- [Platforms](#platforms)
+- [Concepts: server, panel, and your personal key](#concepts-server-panel-and-your-personal-key)
+- [Two ways to fill the form](#two-ways-to-fill-the-form)
+- [Build](#build)
+- [Privileges (Linux)](#privileges-linux)
+- [Run locally](#run-locally)
+- [Configuration file](#configuration-file)
+- [Translations](#translations)
+- [Source layout](#source-layout)
+- [License](#license)
+
+---
+
+## Highlights
+
+- **One-click connect / disconnect** via `tailscale up` / `tailscale down`.
+- **Live peer list** with online/offline status, IP, and short name; favourite
+  peers float to the top.
+- **SSH and SFTP launchers** open the system terminal and file manager
+  pointing straight at an online peer (Linux: `xdg-open sftp://…`; Windows:
+  WinSCP → sshfs-win → native `sftp://` fallback).
+- **Sign in with a BigScale panel account**: BigLace asks the panel for a
+  fresh pre-auth key and fills the form for you — no copy-pasting keys.
+- **System tray indicator** (StatusNotifierItem on Linux, Shell_NotifyIcon on
+  Windows) with quick connect/disconnect and a "minimise to tray" close
+  button.
+- **Desktop notifications** when peers come online or drop off, debounced so
+  flapping peers don't spam the notification daemon.
+- **Latency pings**, **self-update check**, and a **Headscale health badge**
+  in the header — all running on background threads so the UI stays
+  responsive.
+- **Auto-reconnect with exponential backoff** when a session drops.
+- **Internationalised** via gettext (29 locales shipped, including pt-BR, en,
+  es, de, fr, it, …).
+- **Native credential storage** — pre-auth keys live in the OS keyring
+  (Secret Service on Linux, Windows Credential Manager, Apple Keychain).
+
+---
+
+## Platforms
+
+| Platform | Status | Distribution |
+|---|---|---|
+| **Linux** (Arch / BigCommunity, Fedora, Debian — anywhere with GTK4 + libadwaita 1.4) | Primary target. | `pkgbuild/PKGBUILD` ships `/usr/bin/biglace`, the `.desktop` entry, icons, and compiled `.mo` catalogues. |
+| **Windows 10 / 11 (x64)** | Supported. | `.github/workflows/windows.yml` produces a single signed-ready MSI (`biglace-<version>-x86_64.msi`) bundling biglace.exe + the gvsbuild GTK4 runtime. |
+| **macOS** | Code compiles (config path, keyring, and `Command::new` calls are cfg-gated), but no installer is shipped yet. | Build from source with `cargo build --release`. |
+
+The codebase is one Rust crate; platform differences are gated behind
+`#[cfg(target_os = …)]` blocks. Linux binaries from `cargo build` are
+unaffected by the Windows port.
 
 ---
 
@@ -120,6 +173,8 @@ them.
 
 ## Build
 
+### Linux
+
 Runtime dependencies: `gtk4`, `libadwaita`, `tailscale`, `openssl`.
 Build dependencies: `rust`, `cargo`, `pkgconf`, `openssl` (for the
 `native-tls` backend used to talk to the panel HTTPS API).
@@ -155,9 +210,37 @@ and are produced by the project's external translation pipeline from the
 `.po` files in `locale/` — neither the PKGBUILD nor `cargo build` regenerates
 them.
 
+### Windows (MSI)
+
+End-user installer is built by GitHub Actions:
+
+- **Trigger:** push a tag matching `v*` (e.g. `git tag v1.0.0 && git push --tags`),
+  or run the **Windows MSI** workflow manually from the Actions tab.
+- **Output:** `biglace-<version>-x86_64.msi` published as a workflow artifact
+  and (on tag push) attached to the GitHub Release.
+- **Install scope:** per-machine, into `C:\Program Files\BigLace`. Adds a
+  Start Menu shortcut and uninstalls cleanly through *Settings → Apps*.
+
+The pipeline pins `gvsbuild` for a reproducible MSVC GTK4 + libadwaita SDK,
+bundles all GTK runtime DLLs alongside `biglace.exe`, harvests them with
+WiX `heat.exe`, and produces the MSI through `cargo wix`. See
+[`.github/workflows/windows.yml`](.github/workflows/windows.yml) and
+[`wix/main.wxs`](wix/main.wxs) for the full recipe.
+
+To experiment locally on a Windows host with WiX 3 + Rust MSVC + gvsbuild
+installed:
+
+```powershell
+cargo build --release --no-default-features --target x86_64-pc-windows-msvc
+cargo install cargo-wix --locked --version 0.3.9
+cargo wix --no-build --target x86_64-pc-windows-msvc
+```
+
+`--no-default-features` disables jemalloc, which has no Windows backend.
+
 ---
 
-## Privileges: the tailscale operator
+## Privileges (Linux)
 
 The `tailscaled` daemon only accepts `up`/`down` from `root` or from the
 user marked as the tailscale operator. If neither applies, BigLace falls
@@ -172,9 +255,13 @@ To stop seeing the polkit prompt every connect/disconnect, use the menu
 This is equivalent to the message that the tailscale CLI itself prints:
 *"To not require root, use 'sudo tailscale set --operator=$USER' once."*
 
+On Windows, the Tailscale service runs as `LocalSystem` and BigLace talks to
+it through the standard CLI, which is already permitted for any local user —
+no equivalent polkit dance is needed.
+
 ---
 
-## Run / test locally
+## Run locally
 
 ```bash
 cargo run --release
@@ -182,10 +269,10 @@ cargo run --release
 
 If you run a local BigScale stack with the override file, point BigLace at:
 
-- Server URL: `http://localhost:18080`
-- Pre-auth key: generated in the panel at `http://localhost:3000` → Users →
-  expand a user → "New key".
-- Device name: anything.
+- **Server URL**: `http://localhost:18080`
+- **Pre-auth key**: generated in the panel at `http://localhost:3000` →
+  Users → expand a user → "New key".
+- **Device name**: anything.
 
 To exercise the panel-login path, use the menu **"Sign in with panel
 account"** with `http://localhost:3000` and your panel admin credentials.
@@ -194,7 +281,14 @@ account"** with `http://localhost:3000` and your panel admin credentials.
 
 ## Configuration file
 
-BigLace persists settings to `~/.config/biglace/config.toml`:
+BigLace persists settings to a per-user TOML file. The location follows
+each platform's convention:
+
+| Platform | Path |
+|---|---|
+| Linux | `~/.config/biglace/config.toml` |
+| Windows | `%APPDATA%\biglace\config.toml` |
+| macOS | `~/Library/Application Support/biglace/config.toml` |
 
 ```toml
 server_url   = "https://bigscale.example.com"
@@ -204,7 +298,10 @@ auto_connect = false
 panel_url    = "https://bigscale.example.com"   # optional, used by the panel-login menu
 ```
 
-You may edit the file directly or use the UI; both are equivalent.
+You may edit the file directly or use the UI; both are equivalent. Pre-auth
+keys are also mirrored to the OS keyring (Secret Service / Windows Credential
+Manager / Keychain) so they don't sit in plaintext on disk for users who
+care about that.
 
 ---
 
@@ -246,24 +343,38 @@ biglace/
 │       │   ├── scalable/apps/org.communitybig.biglace.svg
 │       │   └── symbolic/apps/org.communitybig.biglace-symbolic.svg
 │       └── locale/<lang>/LC_MESSAGES/biglace.mo   # one per language in LINGUAS
-├── locale/                               # translation sources
+├── locale/                               # translation sources (29 languages)
 │   ├── POTFILES.in
 │   ├── LINGUAS
 │   ├── biglace.pot
-│   ├── pt_BR.po
-│   ├── en.po
-│   ├── es.po
-│   └── …                                 # 29 languages total
-├── pkgbuild/
+│   └── <lang>.po
+├── pkgbuild/                             # Arch / BigCommunity packaging
 │   ├── PKGBUILD
 │   └── pkgbuild.install
+├── wix/                                  # Windows MSI assets
+│   ├── main.wxs                          # WiX 3 installer template
+│   └── License.rtf                       # EULA dialog text
+├── .github/workflows/
+│   └── windows.yml                       # Windows MSI CI pipeline
 └── src/
-    ├── main.rs        # entry point + i18n init
+    ├── main.rs        # entry point + i18n init + jemalloc (Linux/macOS)
     ├── i18n.rs        # gettext bootstrap, tr! / trf! macros
-    ├── config.rs      # ~/.config/biglace/config.toml
-    ├── tailscale.rs   # tailscale CLI wrappers
+    ├── config.rs      # per-OS config.toml location + (de)serialization
+    ├── secrets.rs     # OS keyring wrapper (Secret Service / Credential Manager / Keychain)
+    ├── tailscale.rs   # tailscale CLI wrappers, peer parsing, SSH/SFTP launchers
     ├── panel.rs       # BigScale panel HTTP client
-    └── window.rs      # UI
+    ├── tray.rs        # cross-platform tray facade (Command / Handle / spawn)
+    ├── tray/
+    │   ├── linux.rs   # ksni / StatusNotifierItem backend
+    │   ├── windows.rs # tray-icon backend with a Win32 message pump
+    │   └── stub.rs    # no-op fallback for unsupported targets
+    └── window/
+        ├── mod.rs     # main window, signal wiring, background workers
+        ├── content.rs # right-pane peer list view
+        ├── sidebar.rs # left-pane connection form
+        ├── peer_row.rs# per-peer expander row widget
+        ├── dialogs.rs # About + panel-login modals
+        └── style.rs   # CSS overrides
 ```
 
 ---
