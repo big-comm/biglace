@@ -613,9 +613,15 @@ fn wire_signals(ctx: &Ctx) {
     {
         let ctx2 = ctx.clone();
         ctx.ui.sidebar.btn_save_manual.connect_clicked(move |_| {
-            let server = ctx2.ui.sidebar.entry_server.text().to_string();
+            let server = dialogs::normalize_server_url(
+                &ctx2.ui.sidebar.entry_server.text(),
+            );
             let key    = ctx2.ui.sidebar.entry_key.text().to_string();
             let host   = ctx2.ui.sidebar.entry_host.text().to_string();
+            // Reflect the canonical form back into the entry so the user sees
+            // exactly what we'll persist (and what the next `tailscale up` will
+            // get on `--login-server`).
+            ctx2.ui.sidebar.entry_server.set_text(&server);
             {
                 let mut c = ctx2.cfg.borrow_mut();
                 c.server_url = server;
@@ -1175,42 +1181,142 @@ fn compute_peer_signature(sorted: &[&Peer], cfg: &config::Config) -> u64 {
 /// notification daemon, missing binary, …) — never crash the GTK loop on
 /// a missing optional integration.
 ///
-/// Notifications are coalesced into a single entry in the daemon: we
-/// remember the last `--print-id` and pass `--replace-id` on subsequent
-/// calls. Without this, GNOME/KDE stack one card per peer transition, so
-/// a VPN that brings ten peers online produces ten separate banners.
-/// With it, the user sees a single banner that updates in place.
+/// Two coalescing layers, since `--replace-id` only merges notifications
+/// that are still **active** in the daemon (once a card lands in the KDE
+/// history each subsequent toast becomes an independent entry, which is
+/// exactly the spam we want to avoid):
+///
+/// 1. **Buffering window (2.5 s)**: each transition is enqueued into a
+///    thread-local aggregator; the first one schedules a glib timeout that
+///    flushes the queue. Bursts (a reconnect bringing five peers up at
+///    once) collapse into one toast like "5 devices are online" — listing
+///    the names in the body — instead of five stacked banners.
+/// 2. **`--replace-id`** for any subsequent flush, so a follow-up burst
+///    updates the previous card in place while it's still active.
+///
+/// Hints used:
+/// - `desktop-entry` makes KDE/Plasma attribute toasts to biglace.desktop
+///   so its notification history groups them under one app entry instead
+///   of expanding each as a separate card.
+/// - `transient` asks the daemon to skip the persistent history — peer
+///   status is volatile and doesn't deserve a permanent timeline entry.
+/// - `x-canonical-private-synchronous` is the GNOME/dunst/mako equivalent
+///   of an explicit tag for in-place updates.
 #[cfg(target_os = "linux")]
 fn notify_peer_change(name: &str, online: bool) {
+    use std::cell::RefCell;
+
+    struct Aggregator {
+        online:    Vec<String>,
+        offline:   Vec<String>,
+        scheduled: bool,
+    }
+
+    thread_local! {
+        static AGG: RefCell<Aggregator> = RefCell::new(Aggregator {
+            online:    Vec::new(),
+            offline:   Vec::new(),
+            scheduled: false,
+        });
+    }
+
+    // Enqueue (canceling the opposite state if present — a peer that
+    // flapped offline → online inside the window has net "no change") and
+    // tell the caller whether it needs to arm the flush timer.
+    let need_schedule = AGG.with(|cell| {
+        let mut a = cell.borrow_mut();
+        if online {
+            a.offline.retain(|n| n != name);
+            if !a.online.iter().any(|n| n == name) {
+                a.online.push(name.to_string());
+            }
+        } else {
+            a.online.retain(|n| n != name);
+            if !a.offline.iter().any(|n| n == name) {
+                a.offline.push(name.to_string());
+            }
+        }
+        if a.scheduled {
+            false
+        } else {
+            a.scheduled = true;
+            true
+        }
+    });
+
+    if need_schedule {
+        glib::timeout_add_local_once(Duration::from_millis(2500), || {
+            let (online, offline) = AGG.with(|cell| {
+                let mut a = cell.borrow_mut();
+                a.scheduled = false;
+                (std::mem::take(&mut a.online), std::mem::take(&mut a.offline))
+            });
+            if online.is_empty() && offline.is_empty() {
+                return;
+            }
+            send_peer_notification(online, offline);
+        });
+    }
+}
+
+/// Compose the aggregated summary/body and shell out to `notify-send` on a
+/// worker thread (synchronous `output()` would stall the GTK loop).
+#[cfg(target_os = "linux")]
+fn send_peer_notification(online: Vec<String>, offline: Vec<String>) {
     use std::sync::{Mutex, OnceLock};
 
     static LAST_ID: OnceLock<Mutex<Option<u32>>> = OnceLock::new();
     let slot = LAST_ID.get_or_init(|| Mutex::new(None));
-
-    let summary = if online {
-        format!("{name} {}", tr!("is online"))
-    } else {
-        format!("{name} {}", tr!("went offline"))
-    };
-    let icon = if online { "network-transmit-receive-symbolic" } else { "network-offline-symbolic" };
     let prev_id = slot.lock().ok().and_then(|g| *g);
 
-    // Run on a worker thread so the synchronous `output()` call (needed to
-    // capture the ID) doesn't stall the GTK main loop.
+    let on_n  = online.len();
+    let off_n = offline.len();
+    let icon = if on_n >= off_n {
+        "network-transmit-receive-symbolic"
+    } else {
+        "network-offline-symbolic"
+    };
+
+    let summary = match (on_n, off_n) {
+        (1, 0) => format!("{} {}", online[0], tr!("is online")),
+        (0, 1) => format!("{} {}", offline[0], tr!("went offline")),
+        (n, 0) => trf!("{count} devices are online", "count" => n),
+        (0, n) => trf!("{count} devices went offline", "count" => n),
+        (a, b) => trf!(
+            "{on_count} online · {off_count} offline",
+            "on_count" => a, "off_count" => b,
+        ),
+    };
+    let body = if on_n + off_n > 1 {
+        let mut parts = Vec::new();
+        if !online.is_empty() {
+            parts.push(format!("↑ {}", online.join(", ")));
+        }
+        if !offline.is_empty() {
+            parts.push(format!("↓ {}", offline.join(", ")));
+        }
+        parts.join("\n")
+    } else {
+        String::new()
+    };
+
     std::thread::spawn(move || {
         let mut cmd = std::process::Command::new("notify-send");
         cmd.args(["--app-name=BigLace", "--icon", icon, "--print-id"]);
-        // `x-canonical-private-synchronous` is honored by GNOME, dunst and
-        // mako as a stronger "this updates the previous one" hint when the
-        // tag matches — defensive: gives in-place updates even on the very
-        // first call before we have an ID to replace.
+        cmd.arg("--urgency=low");
+        cmd.args(["--hint", "string:desktop-entry:org.communitybig.biglace"]);
+        cmd.args(["--hint", "int:transient:1"]);
         cmd.args(["--hint", "string:x-canonical-private-synchronous:biglace-peer-status"]);
         let prev_id_str;
         if let Some(id) = prev_id {
             prev_id_str = id.to_string();
             cmd.args(["--replace-id", &prev_id_str]);
         }
-        cmd.args(["--", &summary]);
+        cmd.arg("--");
+        cmd.arg(&summary);
+        if !body.is_empty() {
+            cmd.arg(&body);
+        }
 
         if let Ok(out) = cmd.output() {
             if let Ok(text) = std::str::from_utf8(&out.stdout) {

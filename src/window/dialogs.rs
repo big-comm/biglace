@@ -170,11 +170,28 @@ pub fn show_panel_login(
         .title(tr!("Panel URL"))
         .input_purpose(gtk4::InputPurpose::Url)
         .build();
+    er_url.set_tooltip_text(Some(&tr!(
+        "Address of your BigScale panel (e.g. panel.example.org). \
+         The https:// scheme is added automatically if you omit it."
+    )));
     let er_user = libadwaita::EntryRow::builder().title(tr!("Username")).build();
+    er_user.set_tooltip_text(Some(&tr!(
+        "Your panel username — the one you use to sign in to the web panel."
+    )));
     let er_pass = libadwaita::PasswordEntryRow::builder().title(tr!("Password")).build();
+    er_pass.set_tooltip_text(Some(&tr!(
+        "Your panel password. Stored in the OS keyring (libsecret on Linux, \
+         Keychain on macOS, Credential Manager on Windows)."
+    )));
     let er_node = libadwaita::EntryRow::builder()
-        .title(tr!("Network identifier (will be created if new)"))
+        .title(tr!("Device name on the network"))
         .build();
+    er_node.set_tooltip_text(Some(&tr!(
+        "The name this device shows to other peers on the VPN — this is the \
+         Tailscale hostname, NOT your computer's name and NOT your user. \
+         Lowercase letters, digits and hyphens. Example: 'tales-laptop', \
+         'francois', 'office-pc'. Pick something other peers will recognise."
+    )));
 
     {
         let c = cfg.borrow();
@@ -388,9 +405,27 @@ pub fn show_panel_login(
 fn sanitize_server_url(server_from_response: &str, panel_url_typed: &str) -> String {
     let s = server_from_response.trim();
     let is_loopback = s.contains("127.0.0.1") || s.contains("localhost") || s.contains("0.0.0.0");
-    if s.is_empty() || is_loopback {
-        panel_url_typed.trim_end_matches('/').to_string()
+    let chosen = if s.is_empty() || is_loopback {
+        panel_url_typed
     } else {
+        s
+    };
+    normalize_server_url(chosen)
+}
+
+/// Canonicalize a server URL the user typed: trim whitespace, drop trailing
+/// `/`, and prepend `https://` when no scheme is present. Lets users paste
+/// just the domain (`vpn.example.org`) — tailscale needs a full URL on
+/// `--login-server` and would reject the bare domain otherwise. Empty input
+/// passes through unchanged so callers can still detect "no server set".
+pub(super) fn normalize_server_url(input: &str) -> String {
+    let s = input.trim().trim_end_matches('/');
+    if s.is_empty() {
+        return String::new();
+    }
+    if s.contains("://") {
         s.to_string()
+    } else {
+        format!("https://{s}")
     }
 }
