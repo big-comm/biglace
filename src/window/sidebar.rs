@@ -48,6 +48,10 @@ pub fn build() -> Sidebar {
     let identity_row = libadwaita::ActionRow::new();
     identity_row.set_title("…");
     identity_row.set_subtitle("…");
+    identity_row.set_tooltip_text(Some(&tr!(
+        "Your identity on this mesh — the device name shown to other peers \
+         and the network you're connected to."
+    )));
     let avatar = gtk4::Image::from_icon_name("avatar-default-symbolic");
     avatar.set_pixel_size(28);
     avatar.add_css_class("dim-label");
@@ -63,6 +67,11 @@ pub fn build() -> Sidebar {
         .subtitle(tr!("Already have a key from your administrator? Paste it here."))
         .expanded(false)
         .build();
+    expander_manual.set_tooltip_text(Some(&tr!(
+        "Manual setup — expand to paste a server URL and pre-auth key when \
+         you already received them from your administrator. Most users \
+         should sign in through the panel button above instead."
+    )));
     let pwd_icon = gtk4::Image::from_icon_name("dialog-password-symbolic");
     pwd_icon.set_pixel_size(20);
     expander_manual.add_prefix(&pwd_icon);
@@ -71,6 +80,10 @@ pub fn build() -> Sidebar {
         .title(tr!("Server URL"))
         .input_purpose(gtk4::InputPurpose::Url)
         .build();
+    entry_server.set_tooltip_text(Some(&tr!(
+        "Address of the coordination server (e.g. vpn.example.org). \
+         The https:// scheme is added automatically if you omit it."
+    )));
     let server_icon = gtk4::Image::from_icon_name("network-server-symbolic");
     server_icon.set_pixel_size(18);
     entry_server.add_prefix(&server_icon);
@@ -79,17 +92,28 @@ pub fn build() -> Sidebar {
     let entry_key = libadwaita::EntryRow::builder()
         .title(tr!("Pre-auth key"))
         .build();
+    entry_key.set_tooltip_text(Some(&tr!(
+        "One-time or reusable key created on the server (starts with \
+         'hskey-auth-'). Used to register this device automatically without \
+         opening a browser."
+    )));
     let key_icon = gtk4::Image::from_icon_name("dialog-password-symbolic");
     key_icon.set_pixel_size(18);
     entry_key.add_prefix(&key_icon);
     expander_manual.add_row(&entry_key);
 
-    // Device name (BigScale identifier). Becomes the tailscale hostname and
-    // therefore this device's DNS — `<name>.bigscale.net`. Distinct from the
-    // local OS user, which is propagated separately via a `tag:user-…` tag.
+    // Device name (Tailscale hostname). Independent of the OS user and of
+    // the machine's local hostname — purely how this device announces
+    // itself on the mesh. Becomes the DNS leaf for this peer.
     let entry_host = libadwaita::EntryRow::builder()
-        .title(tr!("Device name (e.g. tales)"))
+        .title(tr!("Device name on the network"))
         .build();
+    entry_host.set_tooltip_text(Some(&tr!(
+        "The name this device shows to other peers on the VPN — this is \
+         the Tailscale hostname, NOT your computer's name and NOT your \
+         user. Lowercase letters, digits and hyphens. Example: \
+         'tales-laptop', 'francois', 'office-pc'."
+    )));
     let host_icon = gtk4::Image::from_icon_name("computer-symbolic");
     host_icon.set_pixel_size(18);
     entry_host.add_prefix(&host_icon);
@@ -101,7 +125,10 @@ pub fn build() -> Sidebar {
         .label(tr!("Save"))
         .css_classes(["suggested-action"])
         .valign(gtk4::Align::Center)
-        .tooltip_text(tr!("Save the server and key above"))
+        .tooltip_text(tr!(
+            "Persist the server, key and device name above. Won't connect \
+             — press Connect afterwards."
+        ))
         .build();
     save_row.add_suffix(&btn_save_manual);
     save_row.set_activatable_widget(Some(&btn_save_manual));
@@ -117,11 +144,16 @@ pub fn build() -> Sidebar {
         .title(tr!("Connect automatically"))
         .subtitle(tr!("Join the network when BigLace starts"))
         .build();
+    auto_row.set_tooltip_text(Some(&tr!(
+        "When on, BigLace runs 'tailscale up' as soon as it launches, so \
+         you join the mesh without clicking Connect every time."
+    )));
     let auto_icon = gtk4::Image::from_icon_name("emblem-synchronizing-symbolic");
     auto_icon.set_pixel_size(20);
     auto_row.add_prefix(&auto_icon);
     let switch_auto = gtk4::Switch::builder()
         .valign(gtk4::Align::Center)
+        .tooltip_text(tr!("Toggle auto-connect on startup"))
         .build();
     auto_row.add_suffix(&switch_auto);
     auto_row.set_activatable_widget(Some(&switch_auto));
@@ -131,11 +163,17 @@ pub fn build() -> Sidebar {
         .title(tr!("Reconnect on drop"))
         .subtitle(tr!("Retry with backoff when the connection is lost"))
         .build();
+    reconnect_row.set_tooltip_text(Some(&tr!(
+        "If the tunnel drops (network change, sleep, server hiccup), \
+         BigLace silently retries with growing delays instead of leaving \
+         you offline until you notice."
+    )));
     let reconnect_icon = gtk4::Image::from_icon_name("view-refresh-symbolic");
     reconnect_icon.set_pixel_size(20);
     reconnect_row.add_prefix(&reconnect_icon);
     let switch_auto_reconnect = gtk4::Switch::builder()
         .valign(gtk4::Align::Center)
+        .tooltip_text(tr!("Toggle auto-reconnect"))
         .build();
     reconnect_row.add_suffix(&switch_auto_reconnect);
     reconnect_row.set_activatable_widget(Some(&switch_auto_reconnect));
@@ -145,11 +183,17 @@ pub fn build() -> Sidebar {
         .title(tr!("Notify on peer changes"))
         .subtitle(tr!("Show a desktop notification when peers go online/offline"))
         .build();
+    notify_row.set_tooltip_text(Some(&tr!(
+        "Send a desktop toast when another device on your network goes \
+         online or offline. Rapid bursts are coalesced into a single \
+         notification so you don't get spammed during reconnects."
+    )));
     let notify_icon = gtk4::Image::from_icon_name("preferences-system-notifications-symbolic");
     notify_icon.set_pixel_size(20);
     notify_row.add_prefix(&notify_icon);
     let switch_notify = gtk4::Switch::builder()
         .valign(gtk4::Align::Center)
+        .tooltip_text(tr!("Toggle peer-change notifications"))
         .build();
     notify_row.add_suffix(&switch_notify);
     notify_row.set_activatable_widget(Some(&switch_notify));
@@ -163,6 +207,10 @@ pub fn build() -> Sidebar {
         .css_classes(["suggested-action", "pill"])
         .halign(gtk4::Align::Center)
         .margin_top(8)
+        .tooltip_text(tr!(
+            "Join or leave the mesh network. When connected, this device \
+             becomes reachable by the other peers in your account."
+        ))
         .build();
     outer.append(&btn_connect);
 
