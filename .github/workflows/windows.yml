@@ -176,27 +176,38 @@ jobs:
               ForEach-Object { Write-Host ("Staged tree size: {0:N1} MB" -f ($_.Sum / 1MB)) }
 
       # ── Generate the application icon ────────────────────────────────────
-      # The repo only ships an SVG; we rasterize it into a multi-resolution .ico
-      # using ImageMagick (preinstalled on windows-latest runners).
+      # The repo only ships an SVG; we rasterize it into a multi-resolution .ico.
+      # Two-stage to dodge two pitfalls of the windows-latest runner:
+      #   1) ImageMagick on the runner has no SVG decode delegate, so we can't
+      #      let `magick` read the SVG directly — we render PNGs first with
+      #      `rsvg-convert` (shipped by gvsbuild, already on PATH).
+      #   2) PowerShell mangles ImageMagick's `(file)[0]` stack syntax; using
+      #      one input PNG per size sidesteps the quoting problem entirely.
       - name: Generate biglace.ico from SVG
         shell: pwsh
         run: |
+          $ErrorActionPreference = 'Stop'
           $svg = "usr\share\icons\hicolor\scalable\apps\org.communitybig.biglace.svg"
           $ico = "wix\biglace.ico"
           if (-not (Test-Path $svg)) {
               Write-Error "SVG not found at $svg — required for the MSI icon."
               exit 1
           }
+
+          $tmp = New-Item -ItemType Directory -Path "target\ico-stage" -Force
+          $sizes = 16, 32, 48, 64, 128, 256
+          $pngs = foreach ($s in $sizes) {
+              $out = Join-Path $tmp "biglace-$s.png"
+              & rsvg-convert -w $s -h $s -o $out $svg
+              if ($LASTEXITCODE -ne 0) { throw "rsvg-convert failed for size $s" }
+              $out
+          }
+
           # Multi-res .ico so the icon scales cleanly in Explorer, Start Menu,
           # and the taskbar (each surface picks the closest available size).
-          magick convert -background none `
-              "($svg)[0] -resize 16x16" `
-              "($svg)[0] -resize 32x32" `
-              "($svg)[0] -resize 48x48" `
-              "($svg)[0] -resize 64x64" `
-              "($svg)[0] -resize 128x128" `
-              "($svg)[0] -resize 256x256" `
-              $ico
+          & magick @pngs $ico
+          if ($LASTEXITCODE -ne 0) { throw "magick failed to assemble $ico" }
+          if (-not (Test-Path $ico)) { throw "ICO was not produced at $ico" }
           Write-Host "Generated $ico"
 
       # ── WiX toolset ──────────────────────────────────────────────────────
