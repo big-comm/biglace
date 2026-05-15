@@ -1037,6 +1037,21 @@ pub fn open_logs() {
         .spawn();
 }
 
+// ─── Device rename ───────────────────────────────────────────────────────────
+
+/// Push a new tailscale hostname to the running daemon. `tailscale set
+/// --hostname=…` takes effect immediately, including while the tunnel is up,
+/// so we don't have to drop and re-up the connection just to rename. Persist
+/// the same value in our config separately so the next `tailscale up` (e.g.
+/// on a fresh connect after a sign-out / sign-in cycle) still passes it on
+/// the command line.
+pub fn set_hostname(name: &str) -> Result<()> {
+    let arg = format!("--hostname={name}");
+    let r = run_tailscale_with_fallback(&["set", &arg]);
+    invalidate_status_cache();
+    r
+}
+
 // ─── Exit nodes ──────────────────────────────────────────────────────────────
 
 /// Route this device's traffic through `host` (matched against tailscaled's

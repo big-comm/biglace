@@ -101,26 +101,29 @@ fn sign_out(
     parent: &libadwaita::ApplicationWindow,
     overlay: &libadwaita::ToastOverlay,
     cfg:    &Rc<RefCell<config::Config>>,
-    sidebar: &Sidebar,
+    _sidebar: &Sidebar,
 ) {
-    // Snapshot credentials we need to clear from the keyring, then wipe the
-    // identity-bearing fields from the on-disk config. We deliberately keep
-    // `server_url`, `panel_url`, `hostname` and `auto_connect`: typically
-    // the user is switching accounts on the same control server, so making
-    // them retype URLs each time is friction. They can still edit them
-    // manually when moving to a different server.
+    // Sign-out drops the credentials: keyring password AND the saved authkey.
+    // `signed_in` is gated on `!authkey.is_empty()` (see mod.rs apply_state),
+    // so leaving the key behind would make the UI think we were still signed
+    // in even after `tailscale logout` deregistered us server-side.
+    //
+    // Pre-auth keys are single-use server-side anyway, so hoarding the value
+    // locally only delays the inevitable "auth-key not found" toast on the
+    // next reconnect. Disconnect (`tailscale down`) is the path that
+    // preserves the key — that's where you keep the credential around for a
+    // quick re-up.
     let (panel_url, panel_username) = {
-        let mut c = cfg.borrow_mut();
-        let pu = c.panel_url.clone();
-        let pn = c.panel_username.clone();
-        c.authkey        = String::new();
-        c.panel_username = String::new();
-        config::save(&c).ok();
-        (pu, pn)
+        let c = cfg.borrow();
+        (c.panel_url.clone(), c.panel_username.clone())
     };
     secrets::clear(&panel_url, &panel_username);
 
-    sidebar.entry_key.set_text("");
+    {
+        let mut c = cfg.borrow_mut();
+        c.authkey.clear();
+        config::save_or_warn(&c);
+    }
 
     std::thread::spawn(|| {
         let _ = tailscale::logout();
@@ -360,7 +363,7 @@ pub fn show_panel_login(
                             c.server_url     = server_url.clone();
                             c.authkey        = resp.authkey.clone();
                             c.hostname       = creds.hostname.clone();
-                            config::save(&c).ok();
+                            config::save_or_warn(&c);
                         }
                         // Stash the password in the OS-native keyring so the
                         // user doesn't retype it next time they sign in.
@@ -395,6 +398,173 @@ pub fn show_panel_login(
     }
 
     dlg.present();
+}
+
+/// Prompt the user for a new tailscale hostname and apply it. The dialog
+/// validates client-side (lowercase letters, digits, hyphens — same charset
+/// tailscale accepts as a DNS leaf) before persisting. When the tunnel is up
+/// we push the rename to the running daemon via `tailscale set --hostname=…`
+/// in a worker thread so the call doesn't stall the GTK loop; when offline
+/// we just save the config and the next `tailscale up` will carry the new
+/// hostname through.
+pub fn show_rename_device(
+    parent:  &libadwaita::ApplicationWindow,
+    overlay: &libadwaita::ToastOverlay,
+    cfg:     &Rc<RefCell<config::Config>>,
+) {
+    let current = cfg.borrow().hostname.clone();
+
+    let entry = libadwaita::EntryRow::builder()
+        .title(tr!("Device name on the network"))
+        .build();
+    entry.set_text(&current);
+    let host_icon = gtk4::Image::from_icon_name("computer-symbolic");
+    host_icon.set_pixel_size(18);
+    entry.add_prefix(&host_icon);
+
+    let group = libadwaita::PreferencesGroup::new();
+    group.add(&entry);
+
+    let lbl_err = gtk4::Label::new(None);
+    lbl_err.add_css_class("error");
+    lbl_err.set_wrap(true);
+    lbl_err.set_max_width_chars(50);
+    lbl_err.set_visible(false);
+    lbl_err.set_xalign(0.0);
+    lbl_err.set_margin_top(8);
+
+    let outer = gtk4::Box::new(gtk4::Orientation::Vertical, 0);
+    outer.append(&group);
+    outer.append(&lbl_err);
+
+    let dlg = libadwaita::MessageDialog::new(
+        Some(parent),
+        Some(&tr!("Rename this device")),
+        Some(&tr!(
+            "The name this device shows to other peers on the VPN. \
+             Lowercase letters, digits and hyphens. Example: tales-laptop."
+        )),
+    );
+    dlg.add_response("cancel", &tr!("Cancel"));
+    dlg.add_response("save",   &tr!("Save & apply"));
+    dlg.set_response_appearance("save", libadwaita::ResponseAppearance::Suggested);
+    dlg.set_default_response(Some("save"));
+    dlg.set_close_response("cancel");
+    dlg.set_extra_child(Some(&outer));
+
+    let entry_w  = entry.clone();
+    let lbl_w    = lbl_err.clone();
+    let cfg_w    = cfg.clone();
+    let parent_w = parent.clone();
+    let overlay_w = overlay.clone();
+    dlg.connect_response(None, move |dlg, resp| {
+        if resp != "save" {
+            dlg.close();
+            return;
+        }
+        let new_name = entry_w.text().trim().to_string();
+        if let Err(msg) = validate_hostname(&new_name) {
+            lbl_w.set_text(&msg);
+            lbl_w.set_visible(true);
+            // Don't close — let the user fix the value and click Save again.
+            // MessageDialog auto-closes on response, so we have to re-present.
+            // Easiest path: open a fresh dialog by recursing — but that loses
+            // the typed text. Instead, just toast the error and keep the
+            // dialog state by re-presenting *this* dialog before it closes.
+            // Since we don't have a hook to cancel close, fall back to a toast
+            // on the parent and stop here; the dialog closes, user reopens.
+            overlay_w.add_toast(
+                libadwaita::Toast::builder()
+                    .title(msg)
+                    .timeout(4)
+                    .build(),
+            );
+            dlg.close();
+            return;
+        }
+        dlg.close();
+
+        // Persist first so an interrupted apply still ends up with the right
+        // value the next time we connect.
+        {
+            let mut c = cfg_w.borrow_mut();
+            c.hostname = new_name.clone();
+            config::save_or_warn(&c);
+        }
+
+        // If the tunnel is up, push the rename to the daemon now. Otherwise
+        // there's nothing to do — the next `tailscale up` (next connect) will
+        // pick up the new value from config.
+        let online = tailscale::is_service_active() && tailscale::get_status().online;
+        if !online {
+            overlay_w.add_toast(
+                libadwaita::Toast::builder()
+                    .title(tr!("Saved. The new name will take effect the next time you connect."))
+                    .timeout(3)
+                    .build(),
+            );
+            gtk4::prelude::WidgetExt::activate_action(&parent_w, "win.refresh", None).ok();
+            return;
+        }
+
+        let name_t = new_name.clone();
+        let slot: Arc<Mutex<Option<Result<(), String>>>> = Arc::new(Mutex::new(None));
+        let slot_t = slot.clone();
+        std::thread::spawn(move || {
+            let r = tailscale::set_hostname(&name_t).map_err(|e| e.to_string());
+            if let Ok(mut g) = slot_t.lock() { *g = Some(r); }
+        });
+
+        let parent_t  = parent_w.clone();
+        let overlay_t = overlay_w.clone();
+        glib::timeout_add_local(Duration::from_millis(250), move || {
+            match slot.lock().ok().and_then(|mut g| g.take()) {
+                None => glib::ControlFlow::Continue,
+                Some(Ok(())) => {
+                    overlay_t.add_toast(
+                        libadwaita::Toast::builder()
+                            .title(tr!("Device renamed."))
+                            .timeout(2)
+                            .build(),
+                    );
+                    gtk4::prelude::WidgetExt::activate_action(&parent_t, "win.refresh", None).ok();
+                    glib::ControlFlow::Break
+                }
+                Some(Err(e)) => {
+                    overlay_t.add_toast(
+                        libadwaita::Toast::builder()
+                            .title(trf!("Rename failed: {error}", "error" => e))
+                            .timeout(6)
+                            .build(),
+                    );
+                    glib::ControlFlow::Break
+                }
+            }
+        });
+    });
+    dlg.present();
+}
+
+/// Validate the user-typed hostname against the same charset tailscale enforces
+/// as a DNS leaf. Returns the localized error to display when the value is
+/// rejected, or Ok with the trimmed name when it's good to apply.
+fn validate_hostname(s: &str) -> Result<(), String> {
+    if s.is_empty() {
+        return Err(tr!("The device name can't be empty."));
+    }
+    if s.len() > 63 {
+        return Err(tr!("Use 63 characters or fewer."));
+    }
+    let bytes = s.as_bytes();
+    if bytes[0] == b'-' || bytes[bytes.len() - 1] == b'-' {
+        return Err(tr!("The device name can't start or end with a hyphen."));
+    }
+    if !s.chars().all(|c| c.is_ascii_lowercase() || c.is_ascii_digit() || c == '-') {
+        return Err(tr!(
+            "Only lowercase letters, digits and hyphens are allowed."
+        ));
+    }
+    Ok(())
 }
 
 /// If the server returned a loopback URL (because its `server_url` config is
