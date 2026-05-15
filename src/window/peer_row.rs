@@ -137,7 +137,7 @@ pub fn build(peer: &Peer, ctx: &PeerCtx) -> libadwaita::ExpanderRow {
             let now_pinned = {
                 let mut c = cfg.borrow_mut();
                 let p = c.toggle_favorite(&host);
-                let _ = config::save(&c);
+                config::save_or_warn(&c);
                 p
             };
             toast.add_toast(
@@ -329,7 +329,7 @@ pub fn build(peer: &Peer, ctx: &PeerCtx) -> libadwaita::ExpanderRow {
                 } else {
                     c.peer_overrides.insert(host.clone(), value.trim().to_string());
                 }
-                let _ = config::save(&c);
+                config::save_or_warn(&c);
             }
             toast.add_toast(
                 libadwaita::Toast::builder()

@@ -10,6 +10,7 @@ pub struct Content {
     pub status_label:       gtk4::Label,
     pub health_badge:       gtk4::Label,
     pub update_badge:       gtk4::Label,
+    pub btn_refresh:        gtk4::Button,
     pub btn_menu:           gtk4::MenuButton,
     pub stack:              gtk4::Stack,
     pub btn_start_service:  gtk4::Button,
@@ -46,6 +47,18 @@ pub fn build() -> Content {
         .tooltip_text(tr!("Main menu"))
         .build();
     header.pack_end(&btn_menu);
+
+    // Refresh used to be the first item inside the hamburger menu; bringing it
+    // out as a one-click icon next to the menu cuts the most common debug
+    // action from two clicks down to one. Header pack_end stacks
+    // right-to-left, so adding refresh *after* the menu places it to the menu's
+    // left, which is the conventional spot for action icons in Adwaita headers.
+    let btn_refresh = gtk4::Button::builder()
+        .icon_name("view-refresh-symbolic")
+        .css_classes(["flat"])
+        .tooltip_text(tr!("Refresh"))
+        .build();
+    header.pack_end(&btn_refresh);
 
     // Header badges — visibility is toggled in apply_state(). Keep them in the
     // start area so they sit just left of the title without crowding the menu
@@ -123,6 +136,7 @@ pub fn build() -> Content {
         status_label,
         health_badge,
         update_badge,
+        btn_refresh,
         btn_menu,
         stack,
         btn_start_service,

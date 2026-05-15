@@ -141,3 +141,15 @@ pub fn save(cfg: &Config) -> Result<()> {
     fs::write(&p, toml::to_string(cfg)?)?;
     Ok(())
 }
+
+/// Best-effort wrapper used by signal handlers that have no good way to
+/// surface a write failure (disk full, perms, RO fs). The previous code
+/// silenced these with `.ok()` and we'd find out about broken configs the
+/// hard way — by the user reporting "my switch keeps flipping back". At
+/// least log to stderr so it shows up in `journalctl --user` or the launch
+/// terminal.
+pub fn save_or_warn(cfg: &Config) {
+    if let Err(e) = save(cfg) {
+        eprintln!("[biglace] config save failed: {e}");
+    }
+}

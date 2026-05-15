@@ -7,6 +7,7 @@ use crate::tr;
 pub struct Sidebar {
     pub toolbar:                libadwaita::ToolbarView,
     pub identity_row:           libadwaita::ActionRow,
+    pub btn_edit_host:          gtk4::Button,
     pub expander_manual:        libadwaita::ExpanderRow,
     pub entry_server:           libadwaita::EntryRow,
     pub entry_key:              libadwaita::EntryRow,
@@ -56,6 +57,19 @@ pub fn build() -> Sidebar {
     avatar.set_pixel_size(28);
     avatar.add_css_class("dim-label");
     identity_row.add_prefix(&avatar);
+
+    // Pencil button that opens the rename-device dialog. Hidden while
+    // signed-out (`apply_state` toggles visibility) so the row stays clean on
+    // the not-signed-in layout where the manual-key expander is the primary
+    // affordance.
+    let btn_edit_host = gtk4::Button::builder()
+        .icon_name("document-edit-symbolic")
+        .css_classes(["flat"])
+        .valign(gtk4::Align::Center)
+        .visible(false)
+        .tooltip_text(tr!("Rename this device on the network"))
+        .build();
+    identity_row.add_suffix(&btn_edit_host);
 
     grp_identity.add(&identity_row);
 
@@ -220,6 +234,7 @@ pub fn build() -> Sidebar {
     Sidebar {
         toolbar,
         identity_row,
+        btn_edit_host,
         expander_manual,
         entry_server,
         entry_key,

@@ -74,6 +74,16 @@ struct Ctx {
     /// Auto-reconnect attempt counter — used to compute the exponential
     /// backoff delay. Cleared whenever a connect succeeds.
     reconnect_attempts: Rc<RefCell<u32>>,
+    /// SourceId of the pending backoff `timeout_add_seconds_local_once` armed
+    /// by the reconnect worker, when one is queued. The disconnect button
+    /// takes it out and removes the source so a manual disconnect doesn't get
+    /// silently undone by a stale auto-reconnect that was already in flight.
+    pending_reconnect: Rc<RefCell<Option<glib::SourceId>>>,
+    /// Tracks whether the last reconnect-worker tick saw the daemon online.
+    /// The worker compares prev→now to detect drops; the disconnect button
+    /// flips it to false so a manual disconnect doesn't look like a drop on
+    /// the next 15s tick.
+    reconnect_was_online: Rc<RefCell<bool>>,
     /// Human-readable text of the latest biglace release on Github, when a
     /// version newer than the running build is found. None means "no update
     /// to advertise" (offline check, same version, or check failed).
@@ -156,6 +166,8 @@ pub fn build(app: &libadwaita::Application) {
         last_peer_notifications: Rc::new(RefCell::new(HashMap::new())),
         health_ok: Arc::new(Mutex::new(true)),
         reconnect_attempts: Rc::new(RefCell::new(0)),
+        pending_reconnect: Rc::new(RefCell::new(None)),
+        reconnect_was_online: Rc::new(RefCell::new(false)),
         update_available: Arc::new(Mutex::new(None)),
         device_meta: Arc::new(Mutex::new(HashMap::new())),
         expanded_peers: Rc::new(RefCell::new(HashSet::new())),
@@ -230,27 +242,38 @@ fn setup_tray(ctx: &Ctx) -> bool {
 
     let ctx2 = ctx.clone();
     glib::timeout_add_local(Duration::from_millis(150), move || {
-        while let Ok(cmd) = rx.try_recv() {
-            match cmd {
-                tray::Command::Show => {
-                    ctx2.ui.win.present();
-                }
-                tray::Command::Connect => {
-                    if ctx2.ui.sidebar.btn_connect.is_sensitive()
-                        && !ctx2.ui.sidebar.btn_connect.has_css_class("destructive-action")
-                    {
-                        ctx2.ui.sidebar.btn_connect.emit_clicked();
+        // Drain whatever's queued. If the tray sender dropped (subprocess
+        // exited, KDE/GNOME tray went away), break the polling loop instead of
+        // looping forever on a dead channel — keeps the main loop cleaner and
+        // releases the captured `ctx2`.
+        loop {
+            match rx.try_recv() {
+                Ok(cmd) => match cmd {
+                    tray::Command::Show => {
+                        ctx2.ui.win.present();
                     }
-                }
-                tray::Command::Disconnect => {
-                    if ctx2.ui.sidebar.btn_connect.has_css_class("destructive-action") {
-                        ctx2.ui.sidebar.btn_connect.emit_clicked();
+                    tray::Command::Connect => {
+                        if ctx2.ui.sidebar.btn_connect.is_sensitive()
+                            && !ctx2.ui.sidebar.btn_connect.has_css_class("destructive-action")
+                        {
+                            ctx2.ui.sidebar.btn_connect.emit_clicked();
+                        }
                     }
-                }
-                tray::Command::Quit => {
-                    if let Some(app) = ctx2.ui.win.application() {
-                        app.quit();
+                    tray::Command::Disconnect => {
+                        if ctx2.ui.sidebar.btn_connect.has_css_class("destructive-action") {
+                            ctx2.ui.sidebar.btn_connect.emit_clicked();
+                        }
                     }
+                    tray::Command::Quit => {
+                        if let Some(app) = ctx2.ui.win.application() {
+                            app.quit();
+                        }
+                    }
+                },
+                Err(mpsc::TryRecvError::Empty) => break,
+                Err(mpsc::TryRecvError::Disconnected) => {
+                    eprintln!("[biglace] tray: channel closed, stopping poller");
+                    return glib::ControlFlow::Break;
                 }
             }
         }
@@ -385,7 +408,6 @@ fn spawn_health_worker(ctx: &Ctx) {
 /// so a permanent outage doesn't burn a connect attempt every second.
 fn spawn_reconnect_worker(ctx: &Ctx) {
     let ctx2 = ctx.clone();
-    let was_online = Rc::new(RefCell::new(false));
     glib::timeout_add_seconds_local(15, move || {
         let cfg = ctx2.cfg.borrow().clone();
         // Cheap short-circuits first — when neither requirement to ever fire
@@ -396,8 +418,8 @@ fn spawn_reconnect_worker(ctx: &Ctx) {
             return glib::ControlFlow::Continue;
         }
         let now_online = tailscale::is_service_active() && tailscale::get_status().online;
-        let prev = *was_online.borrow();
-        *was_online.borrow_mut() = now_online;
+        let prev = *ctx2.reconnect_was_online.borrow();
+        *ctx2.reconnect_was_online.borrow_mut() = now_online;
 
         if now_online {
             // Reset backoff on successful connect, even if user reconnected manually.
@@ -414,13 +436,22 @@ fn spawn_reconnect_worker(ctx: &Ctx) {
         *ctx2.reconnect_attempts.borrow_mut() = n + 1;
 
         let ctx_inner = ctx2.clone();
-        glib::timeout_add_seconds_local_once(delay as u32, move || {
+        let id = glib::timeout_add_seconds_local_once(delay as u32, move || {
+            // Drop our own SourceId slot first so a manual disconnect arriving
+            // mid-flight doesn't try to remove a source that's already firing.
+            ctx_inner.pending_reconnect.borrow_mut().take();
             // Double-check we're still offline before firing.
             if tailscale::is_service_active() && !tailscale::get_status().online {
                 let c = ctx_inner.cfg.borrow().clone();
                 do_connect(&ctx_inner, c.server_url, c.authkey, c.hostname.clone());
             }
         });
+        // Stash the SourceId so the disconnect handler can cancel us. Replace
+        // any previous one (shouldn't happen — the outer 15s tick already
+        // detected we were offline once — but be defensive).
+        if let Some(old) = ctx2.pending_reconnect.borrow_mut().replace(id) {
+            let _ = old.remove();
+        }
         glib::ControlFlow::Continue
     });
 }
@@ -546,7 +577,6 @@ fn apply_config_to_widgets(ui: &Ui, c: &config::Config) {
 
 fn setup_menu(ctx: &Ctx) {
     let menu = gtk4::gio::Menu::new();
-    menu.append(Some(&tr!("Refresh")),                              Some("win.refresh"));
     menu.append(Some(&tr!("Sign in with panel account")),           Some("win.panel-login"));
     menu.append(Some(&tr!("Sign out")),                             Some("win.sign-out"));
     menu.append(Some(&tr!("Make this user the tailscale operator")), Some("win.set-operator"));
@@ -609,6 +639,24 @@ fn setup_menu(ctx: &Ctx) {
 // ─── Signal wiring ───────────────────────────────────────────────────────────
 
 fn wire_signals(ctx: &Ctx) {
+    // ── Header refresh icon → win.refresh action ──
+    {
+        let win_w = ctx.ui.win.clone();
+        ctx.ui.content.btn_refresh.connect_clicked(move |_| {
+            gtk4::prelude::WidgetExt::activate_action(&win_w, "win.refresh", None).ok();
+        });
+    }
+
+    // ── Identity row pencil → rename-device dialog ──
+    {
+        let win_w     = ctx.ui.win.clone();
+        let toast_w   = ctx.ui.toast.clone();
+        let cfg2      = ctx.cfg.clone();
+        ctx.ui.sidebar.btn_edit_host.connect_clicked(move |_| {
+            dialogs::show_rename_device(&win_w, &toast_w, &cfg2);
+        });
+    }
+
     // ── Save manual key/server ──
     {
         let ctx2 = ctx.clone();
@@ -627,7 +675,7 @@ fn wire_signals(ctx: &Ctx) {
                 c.server_url = server;
                 c.authkey    = key;
                 c.hostname   = host;
-                config::save(&c).ok();
+                config::save_or_warn(&c);
             }
             ctx2.ui.sidebar.expander_manual.set_expanded(false);
             ctx2.ui.toast.add_toast(
@@ -647,7 +695,7 @@ fn wire_signals(ctx: &Ctx) {
         ctx.ui.sidebar.switch_auto.connect_state_set(move |_, active| {
             let mut c = cfg2.borrow_mut();
             c.auto_connect = active;
-            config::save(&c).ok();
+            config::save_or_warn(&c);
             glib::Propagation::Proceed
         });
     }
@@ -658,7 +706,7 @@ fn wire_signals(ctx: &Ctx) {
         ctx.ui.sidebar.switch_auto_reconnect.connect_state_set(move |_, active| {
             let mut c = cfg2.borrow_mut();
             c.auto_reconnect = active;
-            config::save(&c).ok();
+            config::save_or_warn(&c);
             glib::Propagation::Proceed
         });
     }
@@ -669,7 +717,7 @@ fn wire_signals(ctx: &Ctx) {
         ctx.ui.sidebar.switch_notify.connect_state_set(move |_, active| {
             let mut c = cfg2.borrow_mut();
             c.notify_peer_changes = active;
-            config::save(&c).ok();
+            config::save_or_warn(&c);
             glib::Propagation::Proceed
         });
     }
@@ -681,6 +729,16 @@ fn wire_signals(ctx: &Ctx) {
             // The button's role depends on current state, encoded by its CSS classes.
             if btn.has_css_class("destructive-action") {
                 eprintln!("[biglace] disconnect: button clicked");
+                // Tear down any queued auto-reconnect backoff before issuing
+                // `tailscale down` — otherwise the backoff fires a few seconds
+                // later and silently re-connects, which feels like a bug to the
+                // user. Also reset the attempt counter so the next genuine drop
+                // starts fresh at 15s instead of mid-backoff.
+                if let Some(id) = ctx2.pending_reconnect.borrow_mut().take() {
+                    let _ = id.remove();
+                }
+                *ctx2.reconnect_attempts.borrow_mut() = 0;
+                *ctx2.reconnect_was_online.borrow_mut() = false;
                 let ctx3 = ctx2.clone();
                 std::thread::spawn(|| {
                     if let Err(e) = tailscale::disconnect() {
@@ -957,6 +1015,10 @@ fn apply_state(
 
     // ── Identity card ──
     let signed_in = !cfg_snap.authkey.is_empty();
+    // Pencil button is only useful once we have an identity to rename, so it
+    // stays hidden on the signed-out layout (which doesn't show the manual
+    // expander either when `signed_in` is true).
+    ui.sidebar.btn_edit_host.set_visible(signed_in);
     if !signed_in {
         ui.sidebar.identity_row.set_title(&tr!("Not signed in"));
         ui.sidebar.identity_row.set_subtitle(&tr!("Sign in or paste a pre-auth key"));

@@ -26,23 +26,41 @@ fn entry(panel_url: &str, username: &str) -> Option<Entry> {
 }
 
 /// Persist `password` for the given panel/user. Errors (no keyring daemon,
-/// permission denied, etc.) are intentionally swallowed — at worst the user
-/// just retypes the password next time.
+/// permission denied, etc.) are logged but otherwise tolerated — at worst the
+/// user just retypes the password next time.
 pub fn save(panel_url: &str, username: &str, password: &str) {
     if let Some(e) = entry(panel_url, username) {
-        let _ = e.set_password(password);
+        if let Err(err) = e.set_password(password) {
+            eprintln!("[biglace] secrets: save failed: {err}");
+        }
     }
 }
 
 /// Look up a previously-saved password. Returns `None` when nothing is stored
-/// or the keyring is unavailable.
+/// or the keyring is unavailable. `NoEntry` is the expected miss path and
+/// stays quiet; any other failure (locked keyring, D-Bus error) is logged.
 pub fn load(panel_url: &str, username: &str) -> Option<String> {
-    entry(panel_url, username).and_then(|e| e.get_password().ok())
+    let e = entry(panel_url, username)?;
+    match e.get_password() {
+        Ok(p) => Some(p),
+        Err(keyring::Error::NoEntry) => None,
+        Err(err) => {
+            eprintln!("[biglace] secrets: load failed: {err}");
+            None
+        }
+    }
 }
 
 /// Forget a stored password — call when the user signs out / switches account.
+/// Sign-out is the user telling us "drop my credentials"; if the keyring
+/// refuses, the sign-in dialog will silently re-fill the password field next
+/// time, which feels like sign-out lied. Log loud enough to debug.
 pub fn clear(panel_url: &str, username: &str) {
     if let Some(e) = entry(panel_url, username) {
-        let _ = e.delete_credential();
+        match e.delete_credential() {
+            Ok(()) => {}
+            Err(keyring::Error::NoEntry) => {}
+            Err(err) => eprintln!("[biglace] secrets: clear failed: {err}"),
+        }
     }
 }
