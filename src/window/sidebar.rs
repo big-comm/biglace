@@ -14,6 +14,7 @@ pub struct Sidebar {
     pub entry_host:             libadwaita::EntryRow,
     pub btn_save_manual:        gtk4::Button,
     pub switch_auto:            gtk4::Switch,
+    pub switch_start_at_login:  gtk4::Switch,
     pub switch_auto_reconnect:  gtk4::Switch,
     pub switch_notify:          gtk4::Switch,
     pub btn_connect:            gtk4::Button,
@@ -173,6 +174,25 @@ pub fn build() -> Sidebar {
     auto_row.set_activatable_widget(Some(&switch_auto));
     grp_prefs.add(&auto_row);
 
+    let start_login_row = libadwaita::ActionRow::builder()
+        .title(tr!("Start BigLace with the session"))
+        .subtitle(tr!("Open BigLace after you sign in to the desktop"))
+        .build();
+    start_login_row.set_tooltip_text(Some(&tr!(
+        "Turn this on to add BigLace to your desktop session startup. Turn \
+         it off to remove it."
+    )));
+    let start_login_icon = gtk4::Image::from_icon_name("system-run-symbolic");
+    start_login_icon.set_pixel_size(20);
+    start_login_row.add_prefix(&start_login_icon);
+    let switch_start_at_login = gtk4::Switch::builder()
+        .valign(gtk4::Align::Center)
+        .tooltip_text(tr!("Toggle start with session"))
+        .build();
+    start_login_row.add_suffix(&switch_start_at_login);
+    start_login_row.set_activatable_widget(Some(&switch_start_at_login));
+    grp_prefs.add(&start_login_row);
+
     let reconnect_row = libadwaita::ActionRow::builder()
         .title(tr!("Reconnect on drop"))
         .subtitle(tr!("Retry with backoff when the connection is lost"))
@@ -241,6 +261,7 @@ pub fn build() -> Sidebar {
         entry_host,
         btn_save_manual,
         switch_auto,
+        switch_start_at_login,
         switch_auto_reconnect,
         switch_notify,
         btn_connect,

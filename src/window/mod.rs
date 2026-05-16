@@ -13,6 +13,7 @@ use std::rc::Rc;
 use std::sync::{mpsc, Arc, Mutex};
 use std::time::Duration;
 
+use crate::autostart;
 use crate::config;
 use crate::panel;
 use crate::tailscale::{self, Peer, Status};
@@ -223,7 +224,7 @@ pub fn build(app: &libadwaita::Application) {
 
     {
         let c = cfg.borrow().clone();
-        if c.auto_connect && !c.authkey.is_empty()
+        if c.auto_connect && has_connect_config(&c)
             && tailscale::is_service_active() && !tailscale::get_status().online
         {
             do_connect(&ctx, c.server_url, c.authkey, c.hostname.clone());
@@ -414,7 +415,7 @@ fn spawn_reconnect_worker(ctx: &Ctx) {
         // a reconnect is met, we don't even need to know the online state,
         // so we can skip the tailscaled probe entirely. Most users don't
         // have auto-reconnect on, so this is the hot path most of the time.
-        if !cfg.auto_reconnect || cfg.authkey.is_empty() {
+        if !cfg.auto_reconnect || !has_connect_config(&cfg) {
             return glib::ControlFlow::Continue;
         }
         let now_online = tailscale::is_service_active() && tailscale::get_status().online;
@@ -443,7 +444,9 @@ fn spawn_reconnect_worker(ctx: &Ctx) {
             // Double-check we're still offline before firing.
             if tailscale::is_service_active() && !tailscale::get_status().online {
                 let c = ctx_inner.cfg.borrow().clone();
-                do_connect(&ctx_inner, c.server_url, c.authkey, c.hostname.clone());
+                if has_connect_config(&c) {
+                    do_connect(&ctx_inner, c.server_url, c.authkey, c.hostname.clone());
+                }
             }
         });
         // Stash the SourceId so the disconnect handler can cancel us. Replace
@@ -569,8 +572,15 @@ fn apply_config_to_widgets(ui: &Ui, c: &config::Config) {
     ui.sidebar.entry_key.set_text(&c.authkey);
     ui.sidebar.entry_host.set_text(&c.hostname);
     ui.sidebar.switch_auto.set_active(c.auto_connect);
+    ui.sidebar
+        .switch_start_at_login
+        .set_active(autostart::is_enabled());
     ui.sidebar.switch_auto_reconnect.set_active(c.auto_reconnect);
     ui.sidebar.switch_notify.set_active(c.notify_peer_changes);
+}
+
+fn has_connect_config(c: &config::Config) -> bool {
+    !c.server_url.trim().is_empty() && !c.authkey.trim().is_empty()
 }
 
 // ─── Menu (hamburger) ────────────────────────────────────────────────────────
@@ -666,6 +676,24 @@ fn wire_signals(ctx: &Ctx) {
             );
             let key    = ctx2.ui.sidebar.entry_key.text().to_string();
             let host   = ctx2.ui.sidebar.entry_host.text().to_string();
+            if server.trim().is_empty() {
+                ctx2.ui.toast.add_toast(
+                    libadwaita::Toast::builder()
+                        .title(tr!("Enter the server URL before saving."))
+                        .timeout(3)
+                        .build(),
+                );
+                return;
+            }
+            if key.trim().is_empty() {
+                ctx2.ui.toast.add_toast(
+                    libadwaita::Toast::builder()
+                        .title(tr!("Enter the pre-auth key before saving."))
+                        .timeout(3)
+                        .build(),
+                );
+                return;
+            }
             // Reflect the canonical form back into the entry so the user sees
             // exactly what we'll persist (and what the next `tailscale up` will
             // get on `--login-server`).
@@ -688,6 +716,24 @@ fn wire_signals(ctx: &Ctx) {
         });
     }
 
+    // ── Start at login switch ──
+    {
+        let toast = ctx.ui.toast.clone();
+        ctx.ui.sidebar
+            .switch_start_at_login
+            .connect_state_set(move |_, active| match autostart::set_enabled(active) {
+                Ok(()) => glib::Propagation::Proceed,
+                Err(e) => {
+                    toast.add_toast(
+                        libadwaita::Toast::builder()
+                            .title(trf!("Error: {error}", "error" => e.to_string()))
+                            .timeout(5)
+                            .build(),
+                    );
+                    glib::Propagation::Stop
+                }
+            });
+    }
 
     // ── Auto-connect switch → save ──
     {
@@ -753,10 +799,19 @@ fn wire_signals(ctx: &Ctx) {
                 });
             } else {
                 let c = ctx2.cfg.borrow().clone();
-                if c.authkey.is_empty() {
+                if c.authkey.trim().is_empty() {
                     ctx2.ui.toast.add_toast(
                         libadwaita::Toast::builder()
                             .title(tr!("Sign in or paste a pre-auth key first."))
+                            .timeout(3)
+                            .build(),
+                    );
+                    return;
+                }
+                if c.server_url.trim().is_empty() {
+                    ctx2.ui.toast.add_toast(
+                        libadwaita::Toast::builder()
+                            .title(tr!("Enter the server URL before connecting."))
                             .timeout(3)
                             .build(),
                     );
@@ -942,7 +997,7 @@ fn refresh_state(ctx: &Ctx) {
 
     let state = if status.online {
         AppState::Connected
-    } else if ctx.cfg.borrow().authkey.is_empty() {
+    } else if !has_connect_config(&ctx.cfg.borrow()) {
         AppState::NotSignedIn
     } else {
         AppState::Disconnected
@@ -1014,7 +1069,7 @@ fn apply_state(
     ui.content.stack.set_visible_child_name(page);
 
     // ── Identity card ──
-    let signed_in = !cfg_snap.authkey.is_empty();
+    let signed_in = has_connect_config(&cfg_snap);
     // Pencil button is only useful once we have an identity to rename, so it
     // stays hidden on the signed-out layout (which doesn't show the manual
     // expander either when `signed_in` is true).
@@ -1420,4 +1475,3 @@ fn notify_peer_change(name: &str, online: bool) {
 /// transition still updates the UI; we just don't emit a system toast.
 #[cfg(not(any(target_os = "linux", target_os = "windows")))]
 fn notify_peer_change(_name: &str, _online: bool) {}
-

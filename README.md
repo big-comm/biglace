@@ -56,9 +56,11 @@ BigScale panel account and the key is generated for you.
   in the header — all running on background threads so the UI stays
   responsive.
 - **Auto-reconnect with exponential backoff** when a session drops.
+- **Start with the desktop session** so BigLace opens after login and can
+  auto-connect without being launched manually.
 - **Internationalised** via gettext (29 locales shipped, including pt-BR, en,
   es, de, fr, it, …).
-- **Native credential storage** — pre-auth keys live in the OS keyring
+- **Native credential storage** for panel passwords via the OS keyring
   (Secret Service on Linux, Windows Credential Manager, Apple Keychain).
 
 ---
@@ -91,6 +93,8 @@ Tailscale protocol. In the BigLace UI it is the **"Server URL"** field.
   `https://bigscale.example.com`.
 - In a local development setup with the project's `docker-compose.override.yml`
   it is `http://localhost:18080`.
+- BigLace requires this field for manual setup. An empty server is not treated
+  as an implicit "official Tailscale" mode.
 
 The server has its own administrative API key (it shows up in the panel as
 `hskey-api-…` and is **truncated** there on purpose). You **never** put that
@@ -144,12 +148,17 @@ the admin marked it reusable) or each get their own.
 
 Best for end users who received a key from the admin.
 
-- **Server URL**: e.g. `https://bigscale.example.com` (production) or
+- **Server URL**: required. E.g. `https://bigscale.example.com` (production) or
   `http://localhost:18080` (local dev with the override).
 - **Pre-auth key (yours)**: the key the admin sent you.
 - **Device name**: anything — what other peers will see, e.g. `alice-laptop`.
 
-Click **Connect**.
+Click **Save**, then **Connect**.
+
+The official Tailscale control plane is a different flow: it normally uses
+Tailscale's own login/default server and requires a Tailscale account or an
+auth key generated in that tailnet. BigLace does not infer that mode from an
+empty server field; the coordinator must be explicit.
 
 ### B. "Sign in with panel account"
 
@@ -298,10 +307,9 @@ auto_connect = false
 panel_url    = "https://bigscale.example.com"   # optional, used by the panel-login menu
 ```
 
-You may edit the file directly or use the UI; both are equivalent. Pre-auth
-keys are also mirrored to the OS keyring (Secret Service / Windows Credential
-Manager / Keychain) so they don't sit in plaintext on disk for users who
-care about that.
+You may edit the file directly or use the UI; both are equivalent. Panel
+passwords are stored in the OS keyring; pre-auth keys are persisted in this
+TOML file.
 
 ---
 

@@ -14,7 +14,7 @@ msgstr ""
 
 #: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/tray/linux.rs:76
 #: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/tray/windows.rs:136
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/mod.rs:1059
+#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/mod.rs:1114
 msgid "Disconnect"
 msgstr "ניתוק"
 
@@ -22,15 +22,15 @@ msgstr "ניתוק"
 msgid "Main menu"
 msgstr "תפריט ראשי"
 
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/mod.rs:580
+#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/mod.rs:590
 msgid "Sign in with panel account"
 msgstr "התחבר עם חשבון פאנל"
 
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/mod.rs:582
+#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/mod.rs:592
 msgid "Make this user the tailscale operator"
 msgstr "הפוך משתמש זה למפעיל tailscale"
 
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/mod.rs:584
+#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/mod.rs:594
 msgid "About BigLace"
 msgstr "אודות BigLace"
 
@@ -52,7 +52,8 @@ msgid "OK"
 msgstr "אישור"
 
 #: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/dialogs.rs:387
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/mod.rs:907
+#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/mod.rs:729
+#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/mod.rs:962
 #, rust-format
 msgid "Error: {error}"
 msgstr "שגיאה: {error}"
@@ -98,7 +99,7 @@ msgstr "מלא כתובת URL, שם משתמש וסיסמה."
 msgid "Start service"
 msgstr "הפעל שירות"
 
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/sidebar.rs:94
+#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/sidebar.rs:95
 msgid "Server URL"
 msgstr "כתובת השרת"
 
@@ -109,9 +110,9 @@ msgstr "מכשיר זה"
 #: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/tray/linux.rs:83
 #: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/tray/windows.rs:81
 #: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/tray/windows.rs:136
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/sidebar.rs:220
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/mod.rs:1069
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/mod.rs:1074
+#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/mod.rs:1124
+#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/mod.rs:1129
+#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/sidebar.rs:240
 msgid "Connect"
 msgstr "התחבר"
 
@@ -128,7 +129,7 @@ msgstr "הפעלת tailscale נכשלה"
 #: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/tailscale.rs:577
 #: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/tailscale.rs:610
 #: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/tailscale.rs:642
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/tailscale.rs:708
+#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/tailscale.rs:714
 msgid "Failed to connect — check the server URL and key."
 msgstr "ההתחברות נכשלה — בדוק את כתובת השרת והמפתח."
 
@@ -136,59 +137,60 @@ msgstr "ההתחברות נכשלה — בדוק את כתובת השרת והמ
 msgid "Failed to run pkexec tailscale"
 msgstr "הפעלת pkexec tailscale נכשלה"
 
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/tailscale.rs:775
+#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/tailscale.rs:781
 msgid "Could not determine the current user."
 msgstr "לא ניתן לקבוע את המשתמש הנוכחי."
 
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/tailscale.rs:781
+#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/tailscale.rs:787
 msgid "Failed to run pkexec tailscale set"
 msgstr "הפעלת pkexec tailscale set נכשלה"
 
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/tailscale.rs:783
+#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/tailscale.rs:789
 msgid "Failed to set tailscale operator."
 msgstr "הגדרת מפעיל tailscale נכשלה."
 
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/tailscale.rs:701
+#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/tailscale.rs:707
 msgid ""
 "The pre-auth key was rejected by the server. Generate a new key in the "
 "BigScale panel and try again."
 msgstr ""
 "מפתח האימות המקדים נדחה על ידי השרת. צור מפתח חדש בלוח BigScale ונסה שוב."
 
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/tailscale.rs:704
+#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/tailscale.rs:710
 #, rust-format
 msgid "Login rejected by server: {detail}"
 msgstr "ההתחברות נדחתה על ידי השרת: {detail}"
 
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/sidebar.rs:137
+#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/sidebar.rs:138
 msgid "Apply manual setup"
 msgstr "החל הגדרה ידנית"
 
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/sidebar.rs:139
+#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/sidebar.rs:140
 msgid "Save"
 msgstr "שמור"
 
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/sidebar.rs:158
+#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/sidebar.rs:159
 msgid "Connect automatically"
 msgstr "התחבר אוטומטית"
 
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/sidebar.rs:159
+#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/sidebar.rs:160
 msgid "Join the network when BigLace starts"
 msgstr "הצטרף לרשת כאשר BigLace מתחיל"
 
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/mod.rs:1024
+#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/mod.rs:1079
 msgid "Sign in or paste a pre-auth key"
 msgstr "היכנס או הדבק מפתח הרשאה מוקדמת"
 
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/mod.rs:1036
+#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/mod.rs:1091
 msgid "Server not set"
 msgstr "שרת לא מוגדר"
 
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/mod.rs:683
+#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/mod.rs:711
 msgid "Setup saved"
 msgstr "ההגדרה נשמרה"
 
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/mod.rs:759
+#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/tailscale.rs:653
+#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/mod.rs:805
 msgid "Sign in or paste a pre-auth key first."
 msgstr "היכנס או הדבק מפתח הרשאה מוקדמת תחילה."
 
@@ -210,8 +212,8 @@ msgstr "לחץ על \"התחבר\" בצד שמאל כדי להצטרף לרשת.
 
 #: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/content.rs:183
 #: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/dialogs.rs:259
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/mod.rs:971
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/mod.rs:1064
+#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/mod.rs:1026
+#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/mod.rs:1119
 msgid "Connecting…"
 msgstr "מתחבר…"
 
@@ -224,10 +226,10 @@ msgstr "עדיין אין מכשירים אחרים ברשת."
 msgid "Copy IP address"
 msgstr "העתק כתובת IP"
 
+#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/mod.rs:888
 #: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/peer_row.rs:186
 #: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/peer_row.rs:271
 #: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/peer_row.rs:280
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/mod.rs:833
 msgid "IP address copied"
 msgstr "כתובת IP הועתקה"
 
@@ -243,21 +245,21 @@ msgstr "פתח מסוף (SSH)"
 msgid "offline"
 msgstr "לא מקוון"
 
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/mod.rs:968
+#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/mod.rs:1023
 msgid "Service stopped"
 msgstr "השירות הופסק"
 
 #: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/tray/linux.rs:58
 #: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/tray/windows.rs:172
 #: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/content.rs:40
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/mod.rs:970
+#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/mod.rs:1025
 msgid "Disconnected"
 msgstr "מנותק"
 
 #: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/tray/linux.rs:53
 #: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/tray/windows.rs:167
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/mod.rs:898
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/mod.rs:972
+#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/mod.rs:953
+#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/mod.rs:1027
 msgid "Connected"
 msgstr "מחובר"
 
@@ -269,16 +271,16 @@ msgstr "רענן"
 msgid "Signed in. Press Connect to join the network."
 msgstr "התחברת. לחץ על \"התחבר\" כדי להצטרף לרשת."
 
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/mod.rs:1185
+#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/mod.rs:1240
 msgid "no other devices"
 msgstr "אין מכשירים אחרים"
 
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/mod.rs:1187
+#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/mod.rs:1242
 #, rust-format
 msgid "{online} online"
 msgstr "{online} מחובר לרשת"
 
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/mod.rs:1189
+#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/mod.rs:1244
 #, rust-format
 msgid "{online} online · {offline} offline"
 msgstr "{online} מחובר לרשת · {offline} לא מחובר"
@@ -291,20 +293,20 @@ msgstr "שירות tailscale אינו פועל"
 msgid "BigLace needs the tailscaled background service to manage the network."
 msgstr "BigLace זקוק לשירות הרקע tailscaled כדי לנהל את הרשת."
 
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/sidebar.rs:107
+#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/sidebar.rs:108
 msgid "Pre-auth key"
 msgstr "מפתח הרשאה מוקדמת"
 
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/mod.rs:969
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/mod.rs:1023
+#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/mod.rs:1024
+#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/mod.rs:1078
 msgid "Not signed in"
 msgstr "לא מחובר"
 
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/sidebar.rs:80
+#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/sidebar.rs:81
 msgid "Advanced: use a pre-auth key"
 msgstr "מתקדם: השתמש במפתח הרשאה מוקדמת"
 
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/sidebar.rs:81
+#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/sidebar.rs:82
 msgid "Already have a key from your administrator? Paste it here."
 msgstr "כבר יש לך מפתח מהמנהל? הדבק אותו כאן."
 
@@ -322,7 +324,7 @@ msgstr ""
 "השמורה. לאחר מכן תוכל להתחבר עם חשבון אחר."
 
 #: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/dialogs.rs:76
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/mod.rs:581
+#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/mod.rs:591
 msgid "Sign out"
 msgstr "התנתק"
 
@@ -346,42 +348,42 @@ msgstr ""
 msgid "Copy"
 msgstr "העתק"
 
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/sidebar.rs:177
+#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/sidebar.rs:197
 msgid "Reconnect on drop"
 msgstr "התחבר מחדש בעת ניתוק"
 
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/sidebar.rs:178
+#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/sidebar.rs:198
 msgid "Retry with backoff when the connection is lost"
 msgstr "נסה שוב עם השהייה כאשר החיבור אבד"
 
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/sidebar.rs:197
+#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/sidebar.rs:217
 msgid "Notify on peer changes"
 msgstr "התראה על שינויים בעמיתים"
 
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/sidebar.rs:198
+#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/sidebar.rs:218
 msgid "Show a desktop notification when peers go online/offline"
 msgstr "הצג התראה שולחנית כאשר עמיתים מתחברים/מתנתקים"
 
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/mod.rs:583
+#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/mod.rs:593
 msgid "View tailscaled logs"
 msgstr "הצג יומני tailscaled"
 
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/mod.rs:989
+#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/mod.rs:1044
 msgid "Server unreachable"
 msgstr "השרת אינו זמין"
 
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/mod.rs:999
+#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/mod.rs:1054
 #, rust-format
 msgid "Update available: v{version}"
 msgstr "עדכון זמין: v{version}"
 
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/mod.rs:1343
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/mod.rs:1406
+#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/mod.rs:1398
+#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/mod.rs:1461
 msgid "is online"
 msgstr "מחובר/ת"
 
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/mod.rs:1344
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/mod.rs:1408
+#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/mod.rs:1399
+#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/mod.rs:1463
 msgid "went offline"
 msgstr "התנתק/ה"
 
@@ -465,7 +467,7 @@ msgstr "צא"
 msgid "Connected ·"
 msgstr "מחובר ·"
 
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/sidebar.rs:53
+#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/sidebar.rs:54
 msgid ""
 "Your identity on this mesh — the device name shown to other peers and the "
 "network you're connected to."
@@ -473,11 +475,11 @@ msgstr ""
 "הזהות שלך ברשת המשולבת הזו — שם המכשיר כפי שהוא מוצג לעמיתים אחרים והרשת "
 "שאליה אתה מחובר."
 
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/sidebar.rs:70
+#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/sidebar.rs:71
 msgid "Rename this device on the network"
 msgstr "שנה שם למכשיר זה ברשת"
 
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/sidebar.rs:85
+#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/sidebar.rs:86
 msgid ""
 "Manual setup — expand to paste a server URL and pre-auth key when you "
 "already received them from your administrator. Most users should sign in "
@@ -486,7 +488,7 @@ msgstr ""
 "הגדרה ידנית — הרחב כדי להדביק כתובת שרת ומפתח הרשאה מראש שכבר קיבלת מהמנהל "
 "שלך. רוב המשתמשים צריכים להתחבר דרך כפתור הפאנל למעלה במקום."
 
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/sidebar.rs:98
+#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/sidebar.rs:99
 msgid ""
 "Address of the coordination server (e.g. vpn.example.org). The https:// "
 "scheme is added automatically if you omit it."
@@ -494,7 +496,7 @@ msgstr ""
 "כתובת שרת התיאום (לדוגמה vpn.example.org). הסיומת https:// מתווספת אוטומטית "
 "אם תשמיט אותה."
 
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/sidebar.rs:110
+#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/sidebar.rs:111
 msgid ""
 "One-time or reusable key created on the server (starts with 'hskey-auth-'). "
 "Used to register this device automatically without opening a browser."
@@ -502,13 +504,13 @@ msgstr ""
 "מפתח חד-פעמי או לשימוש חוזר שנוצר בשרת (מתחיל ב-'hskey-auth-'). משמש לרישום "
 "אוטומטי של מכשיר זה ללא פתיחת דפדפן."
 
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/sidebar.rs:123
 #: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/dialogs.rs:190
 #: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/dialogs.rs:418
+#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/sidebar.rs:124
 msgid "Device name on the network"
 msgstr "שם המכשיר ברשת"
 
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/sidebar.rs:126
+#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/sidebar.rs:127
 msgid ""
 "The name this device shows to other peers on the VPN — this is the Tailscale"
 " hostname, NOT your computer's name and NOT your user. Lowercase letters, "
@@ -518,14 +520,14 @@ msgstr ""
 "המחשב שלך ולא שם המשתמש שלך. אותיות קטנות, ספרות ומקפים. דוגמה: 'tales-"
 "laptop', 'francois', 'office-pc'."
 
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/sidebar.rs:143
+#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/sidebar.rs:144
 msgid ""
 "Persist the server, key and device name above. Won't connect — press Connect"
 " afterwards."
 msgstr ""
 "שמור את השרת, המפתח ושם המכשיר שלמעלה. לא יתחבר — לחץ על 'התחבר' לאחר מכן."
 
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/sidebar.rs:162
+#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/sidebar.rs:163
 msgid ""
 "When on, BigLace runs 'tailscale up' as soon as it launches, so you join the"
 " mesh without clicking Connect every time."
@@ -533,11 +535,11 @@ msgstr ""
 "כשמופעל, BigLace מריץ את 'tailscale up' מיד עם ההפעלה, כך שאתה מצטרף לרשת "
 "המשולבת מבלי ללחוץ על 'התחבר' בכל פעם."
 
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/sidebar.rs:170
+#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/sidebar.rs:171
 msgid "Toggle auto-connect on startup"
 msgstr "הפעל/כבה חיבור אוטומטי בעת ההפעלה"
 
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/sidebar.rs:181
+#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/sidebar.rs:201
 msgid ""
 "If the tunnel drops (network change, sleep, server hiccup), BigLace silently"
 " retries with growing delays instead of leaving you offline until you "
@@ -546,11 +548,11 @@ msgstr ""
 "אם המנהרה נופלת (שינוי רשת, שינה, תקלה בשרת), BigLace מנסה שוב בשקט עם "
 "השהיות הולכות וגדלות במקום להשאיר אותך מנותק עד שתשים לב."
 
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/sidebar.rs:190
+#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/sidebar.rs:210
 msgid "Toggle auto-reconnect"
 msgstr "הפעל/כבה חיבור מחדש אוטומטי"
 
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/sidebar.rs:201
+#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/sidebar.rs:221
 msgid ""
 "Send a desktop toast when another device on your network goes online or "
 "offline. Rapid bursts are coalesced into a single notification so you don't "
@@ -559,11 +561,11 @@ msgstr ""
 "שלח התראה שולחנית כאשר מכשיר אחר ברשת שלך מתחבר או מתנתק. התפרצויות מהירות "
 "מאוחדות להתראה אחת כדי שלא תוצף בהודעות במהלך חיבורים מחדש."
 
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/sidebar.rs:210
+#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/sidebar.rs:230
 msgid "Toggle peer-change notifications"
 msgstr "הפעל/כבה התראות על שינויי עמיתים"
 
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/sidebar.rs:225
+#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/sidebar.rs:245
 msgid ""
 "Join or leave the mesh network. When connected, this device becomes "
 "reachable by the other peers in your account."
@@ -655,24 +657,57 @@ msgstr "התחברות SSH (עקיפה)"
 msgid "Saved"
 msgstr "נשמר"
 
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/mod.rs:1031
+#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/mod.rs:1086
 msgid "(no device name)"
 msgstr "(ללא שם התקן)"
 
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/mod.rs:1345
+#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/mod.rs:1400
 #, rust-format
 msgid "{count} devices are online"
 msgstr "{count} התקנים מחוברים"
 
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/mod.rs:1346
+#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/mod.rs:1401
 #, rust-format
 msgid "{count} devices went offline"
 msgstr "{count} התקנים התנתקו"
 
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/mod.rs:1348
+#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/mod.rs:1403
 #, rust-format
 msgid "{on_count} online · {off_count} offline"
 msgstr "{on_count} מחוברים · {off_count} מנותקים"
+
+#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/tailscale.rs:650
+#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/mod.rs:814
+msgid "Enter the server URL before connecting."
+msgstr "הזן את כתובת ה-URL של השרת לפני ההתחברות."
+
+#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/mod.rs:682
+msgid "Enter the server URL before saving."
+msgstr "הזן את כתובת ה-URL של השרת לפני השמירה."
+
+#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/mod.rs:691
+msgid "Enter the pre-auth key before saving."
+msgstr "הזן את מפתח האימות המקדים לפני השמירה."
+
+#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/sidebar.rs:178
+msgid "Start BigLace with the session"
+msgstr "הפעל את BigLace עם ההפעלה"
+
+#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/sidebar.rs:179
+msgid "Open BigLace after you sign in to the desktop"
+msgstr "פתח את BigLace לאחר הכניסה לשולחן העבודה"
+
+#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/sidebar.rs:182
+msgid ""
+"Turn this on to add BigLace to your desktop session startup. Turn it off to "
+"remove it."
+msgstr ""
+"הפעל אפשרות זו כדי להוסיף את BigLace להפעלת שולחן העבודה שלך. כבה אותה כדי "
+"להסיר אותה."
+
+#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/sidebar.rs:190
+msgid "Toggle start with session"
+msgstr "החלף מצב הפעלה עם ההפעלה"
 
 #~ msgid "Device name"
 #~ msgstr "שם המכשיר"

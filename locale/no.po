@@ -14,7 +14,7 @@ msgstr ""
 
 #: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/tray/linux.rs:76
 #: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/tray/windows.rs:136
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/mod.rs:1059
+#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/mod.rs:1114
 msgid "Disconnect"
 msgstr "Koble fra"
 
@@ -22,15 +22,15 @@ msgstr "Koble fra"
 msgid "Main menu"
 msgstr "Hovedmeny"
 
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/mod.rs:580
+#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/mod.rs:590
 msgid "Sign in with panel account"
 msgstr "Logg inn med panelkonto"
 
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/mod.rs:582
+#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/mod.rs:592
 msgid "Make this user the tailscale operator"
 msgstr "Gjør denne brukeren til tailscale-operatør"
 
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/mod.rs:584
+#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/mod.rs:594
 msgid "About BigLace"
 msgstr "Om BigLace"
 
@@ -53,7 +53,8 @@ msgid "OK"
 msgstr "OK"
 
 #: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/dialogs.rs:387
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/mod.rs:907
+#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/mod.rs:729
+#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/mod.rs:962
 #, rust-format
 msgid "Error: {error}"
 msgstr "Feil: {error}"
@@ -99,7 +100,7 @@ msgstr "Fyll inn URL, brukernavn og passord."
 msgid "Start service"
 msgstr "Start tjeneste"
 
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/sidebar.rs:94
+#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/sidebar.rs:95
 msgid "Server URL"
 msgstr "Server-URL"
 
@@ -110,9 +111,9 @@ msgstr "Denne enheten"
 #: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/tray/linux.rs:83
 #: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/tray/windows.rs:81
 #: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/tray/windows.rs:136
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/sidebar.rs:220
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/mod.rs:1069
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/mod.rs:1074
+#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/mod.rs:1124
+#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/mod.rs:1129
+#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/sidebar.rs:240
 msgid "Connect"
 msgstr "Koble til"
 
@@ -129,7 +130,7 @@ msgstr "Kunne ikke kjøre tailscale"
 #: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/tailscale.rs:577
 #: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/tailscale.rs:610
 #: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/tailscale.rs:642
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/tailscale.rs:708
+#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/tailscale.rs:714
 msgid "Failed to connect — check the server URL and key."
 msgstr "Kunne ikke koble til – kontroller server-URL og nøkkel."
 
@@ -137,19 +138,19 @@ msgstr "Kunne ikke koble til – kontroller server-URL og nøkkel."
 msgid "Failed to run pkexec tailscale"
 msgstr "Kunne ikke kjøre pkexec tailscale"
 
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/tailscale.rs:775
+#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/tailscale.rs:781
 msgid "Could not determine the current user."
 msgstr "Kunne ikke fastslå gjeldende bruker."
 
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/tailscale.rs:781
+#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/tailscale.rs:787
 msgid "Failed to run pkexec tailscale set"
 msgstr "Kunne ikke kjøre pkexec tailscale set"
 
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/tailscale.rs:783
+#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/tailscale.rs:789
 msgid "Failed to set tailscale operator."
 msgstr "Kunne ikke angi tailscale-operator."
 
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/tailscale.rs:701
+#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/tailscale.rs:707
 msgid ""
 "The pre-auth key was rejected by the server. Generate a new key in the "
 "BigScale panel and try again."
@@ -157,40 +158,41 @@ msgstr ""
 "Forhåndsautentiseringsnøkkelen ble avvist av serveren. Generer en ny nøkkel "
 "i BigScale-panelet og prøv igjen."
 
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/tailscale.rs:704
+#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/tailscale.rs:710
 #, rust-format
 msgid "Login rejected by server: {detail}"
 msgstr "Pålogging avvist av serveren: {detail}"
 
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/sidebar.rs:137
+#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/sidebar.rs:138
 msgid "Apply manual setup"
 msgstr "Bruk manuell oppsett"
 
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/sidebar.rs:139
+#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/sidebar.rs:140
 msgid "Save"
 msgstr "Lagre"
 
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/sidebar.rs:158
+#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/sidebar.rs:159
 msgid "Connect automatically"
 msgstr "Koble til automatisk"
 
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/sidebar.rs:159
+#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/sidebar.rs:160
 msgid "Join the network when BigLace starts"
 msgstr "Bli med i nettverket når BigLace starter"
 
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/mod.rs:1024
+#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/mod.rs:1079
 msgid "Sign in or paste a pre-auth key"
 msgstr "Logg inn eller lim inn en forhåndsgodkjent nøkkel"
 
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/mod.rs:1036
+#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/mod.rs:1091
 msgid "Server not set"
 msgstr "Server ikke angitt"
 
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/mod.rs:683
+#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/mod.rs:711
 msgid "Setup saved"
 msgstr "Oppsett lagret"
 
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/mod.rs:759
+#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/tailscale.rs:653
+#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/mod.rs:805
 msgid "Sign in or paste a pre-auth key first."
 msgstr "Logg inn eller lim inn en forhåndsgodkjent nøkkel først."
 
@@ -214,8 +216,8 @@ msgstr "Trykk Koble til til venstre for å bli med i nettverket."
 
 #: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/content.rs:183
 #: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/dialogs.rs:259
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/mod.rs:971
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/mod.rs:1064
+#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/mod.rs:1026
+#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/mod.rs:1119
 msgid "Connecting…"
 msgstr "Kobler til…"
 
@@ -228,10 +230,10 @@ msgstr "Ingen andre enheter i nettverket ennå."
 msgid "Copy IP address"
 msgstr "Kopier IP-adresse"
 
+#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/mod.rs:888
 #: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/peer_row.rs:186
 #: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/peer_row.rs:271
 #: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/peer_row.rs:280
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/mod.rs:833
 msgid "IP address copied"
 msgstr "IP-adresse kopiert"
 
@@ -247,21 +249,21 @@ msgstr "Åpne terminal (SSH)"
 msgid "offline"
 msgstr "frakoblet"
 
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/mod.rs:968
+#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/mod.rs:1023
 msgid "Service stopped"
 msgstr "Tjeneste stoppet"
 
 #: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/tray/linux.rs:58
 #: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/tray/windows.rs:172
 #: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/content.rs:40
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/mod.rs:970
+#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/mod.rs:1025
 msgid "Disconnected"
 msgstr "Frakoblet"
 
 #: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/tray/linux.rs:53
 #: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/tray/windows.rs:167
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/mod.rs:898
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/mod.rs:972
+#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/mod.rs:953
+#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/mod.rs:1027
 msgid "Connected"
 msgstr "Tilkoblet"
 
@@ -273,16 +275,16 @@ msgstr "Oppdater"
 msgid "Signed in. Press Connect to join the network."
 msgstr "Logget inn. Trykk Koble til for å bli med i nettverket."
 
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/mod.rs:1185
+#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/mod.rs:1240
 msgid "no other devices"
 msgstr "ingen andre enheter"
 
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/mod.rs:1187
+#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/mod.rs:1242
 #, rust-format
 msgid "{online} online"
 msgstr "{online} online"
 
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/mod.rs:1189
+#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/mod.rs:1244
 #, rust-format
 msgid "{online} online · {offline} offline"
 msgstr "{online} online · {offline} frakoblet"
@@ -296,20 +298,20 @@ msgid "BigLace needs the tailscaled background service to manage the network."
 msgstr ""
 "BigLace trenger tailscaled-bakgrunnstjenesten for å administrere nettverket."
 
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/sidebar.rs:107
+#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/sidebar.rs:108
 msgid "Pre-auth key"
 msgstr "Forhåndsgodkjenningsnøkkel"
 
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/mod.rs:969
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/mod.rs:1023
+#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/mod.rs:1024
+#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/mod.rs:1078
 msgid "Not signed in"
 msgstr "Ikke pålogget"
 
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/sidebar.rs:80
+#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/sidebar.rs:81
 msgid "Advanced: use a pre-auth key"
 msgstr "Avansert: bruk en forhåndsgodkjent nøkkel"
 
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/sidebar.rs:81
+#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/sidebar.rs:82
 msgid "Already have a key from your administrator? Paste it here."
 msgstr "Har du allerede en nøkkel fra administratoren din? Lim den inn her."
 
@@ -328,7 +330,7 @@ msgstr ""
 " på med en annen konto."
 
 #: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/dialogs.rs:76
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/mod.rs:581
+#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/mod.rs:591
 msgid "Sign out"
 msgstr "Logg ut"
 
@@ -353,42 +355,42 @@ msgstr ""
 msgid "Copy"
 msgstr "Kopier"
 
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/sidebar.rs:177
+#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/sidebar.rs:197
 msgid "Reconnect on drop"
 msgstr "Gjenopprett ved frakobling"
 
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/sidebar.rs:178
+#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/sidebar.rs:198
 msgid "Retry with backoff when the connection is lost"
 msgstr "Prøv på nytt med backoff når tilkoblingen mistes"
 
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/sidebar.rs:197
+#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/sidebar.rs:217
 msgid "Notify on peer changes"
 msgstr "Varsle ved peer-endringer"
 
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/sidebar.rs:198
+#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/sidebar.rs:218
 msgid "Show a desktop notification when peers go online/offline"
 msgstr "Vis et skrivebordsvarsel når peers går online/offline"
 
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/mod.rs:583
+#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/mod.rs:593
 msgid "View tailscaled logs"
 msgstr "Vis tailscaled-logger"
 
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/mod.rs:989
+#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/mod.rs:1044
 msgid "Server unreachable"
 msgstr "Server utilgjengelig"
 
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/mod.rs:999
+#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/mod.rs:1054
 #, rust-format
 msgid "Update available: v{version}"
 msgstr "Oppdatering tilgjengelig: v{version}"
 
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/mod.rs:1343
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/mod.rs:1406
+#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/mod.rs:1398
+#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/mod.rs:1461
 msgid "is online"
 msgstr "er online"
 
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/mod.rs:1344
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/mod.rs:1408
+#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/mod.rs:1399
+#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/mod.rs:1463
 msgid "went offline"
 msgstr "gikk offline"
 
@@ -472,7 +474,7 @@ msgstr "Avslutt"
 msgid "Connected ·"
 msgstr "Tilkoblet ·"
 
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/sidebar.rs:53
+#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/sidebar.rs:54
 msgid ""
 "Your identity on this mesh — the device name shown to other peers and the "
 "network you're connected to."
@@ -480,11 +482,11 @@ msgstr ""
 "Din identitet i dette nettet — enhetsnavnet som vises for andre noder, og "
 "nettverket du er tilkoblet."
 
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/sidebar.rs:70
+#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/sidebar.rs:71
 msgid "Rename this device on the network"
 msgstr "Gi nytt navn til denne enheten i nettverket"
 
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/sidebar.rs:85
+#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/sidebar.rs:86
 msgid ""
 "Manual setup — expand to paste a server URL and pre-auth key when you "
 "already received them from your administrator. Most users should sign in "
@@ -495,7 +497,7 @@ msgstr ""
 "administratoren. De fleste brukere bør logge på via panelknappen ovenfor i "
 "stedet."
 
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/sidebar.rs:98
+#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/sidebar.rs:99
 msgid ""
 "Address of the coordination server (e.g. vpn.example.org). The https:// "
 "scheme is added automatically if you omit it."
@@ -503,7 +505,7 @@ msgstr ""
 "Adresse til koordineringsserveren (f.eks. vpn.example.org). Skjemaet "
 "https:// legges til automatisk hvis du utelater det."
 
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/sidebar.rs:110
+#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/sidebar.rs:111
 msgid ""
 "One-time or reusable key created on the server (starts with 'hskey-auth-'). "
 "Used to register this device automatically without opening a browser."
@@ -512,13 +514,13 @@ msgstr ""
 "auth-'). Brukes til å registrere denne enheten automatisk uten å åpne en "
 "nettleser."
 
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/sidebar.rs:123
 #: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/dialogs.rs:190
 #: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/dialogs.rs:418
+#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/sidebar.rs:124
 msgid "Device name on the network"
 msgstr "Enhetsnavn i nettverket"
 
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/sidebar.rs:126
+#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/sidebar.rs:127
 msgid ""
 "The name this device shows to other peers on the VPN — this is the Tailscale"
 " hostname, NOT your computer's name and NOT your user. Lowercase letters, "
@@ -528,7 +530,7 @@ msgstr ""
 "vertsnavnet, IKKE datamaskinens navn og IKKE brukeren din. Små bokstaver, "
 "sifre og bindestreker. Eksempel: 'tales-laptop', 'francois', 'office-pc'."
 
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/sidebar.rs:143
+#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/sidebar.rs:144
 msgid ""
 "Persist the server, key and device name above. Won't connect — press Connect"
 " afterwards."
@@ -536,7 +538,7 @@ msgstr ""
 "Lagre serveren, nøkkelen og enhetsnavnet ovenfor. Vil ikke koble til — trykk"
 " Koble til etterpå."
 
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/sidebar.rs:162
+#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/sidebar.rs:163
 msgid ""
 "When on, BigLace runs 'tailscale up' as soon as it launches, so you join the"
 " mesh without clicking Connect every time."
@@ -544,11 +546,11 @@ msgstr ""
 "Når på, kjører BigLace 'tailscale up' så snart den starter, slik at du blir "
 "med i nettet uten å klikke Koble til hver gang."
 
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/sidebar.rs:170
+#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/sidebar.rs:171
 msgid "Toggle auto-connect on startup"
 msgstr "Slå på/av automatisk tilkobling ved oppstart"
 
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/sidebar.rs:181
+#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/sidebar.rs:201
 msgid ""
 "If the tunnel drops (network change, sleep, server hiccup), BigLace silently"
 " retries with growing delays instead of leaving you offline until you "
@@ -558,11 +560,11 @@ msgstr ""
 "stille på nytt med økende forsinkelser i stedet for å la deg være frakoblet "
 "til du oppdager det."
 
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/sidebar.rs:190
+#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/sidebar.rs:210
 msgid "Toggle auto-reconnect"
 msgstr "Slå på/av automatisk gjenoppkobling"
 
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/sidebar.rs:201
+#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/sidebar.rs:221
 msgid ""
 "Send a desktop toast when another device on your network goes online or "
 "offline. Rapid bursts are coalesced into a single notification so you don't "
@@ -572,11 +574,11 @@ msgstr ""
 "eller offline. Raske utbrudd samles til ett enkelt varsel slik at du ikke "
 "blir oversvømmet under gjenoppkoblinger."
 
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/sidebar.rs:210
+#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/sidebar.rs:230
 msgid "Toggle peer-change notifications"
 msgstr "Slå på/av varsler om nodeendringer"
 
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/sidebar.rs:225
+#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/sidebar.rs:245
 msgid ""
 "Join or leave the mesh network. When connected, this device becomes "
 "reachable by the other peers in your account."
@@ -670,24 +672,57 @@ msgstr "SSH-pålogging (overstyr)"
 msgid "Saved"
 msgstr "Lagret"
 
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/mod.rs:1031
+#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/mod.rs:1086
 msgid "(no device name)"
 msgstr "(ingen enhetsnavn)"
 
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/mod.rs:1345
+#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/mod.rs:1400
 #, rust-format
 msgid "{count} devices are online"
 msgstr "{count} enheter er online"
 
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/mod.rs:1346
+#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/mod.rs:1401
 #, rust-format
 msgid "{count} devices went offline"
 msgstr "{count} enheter ble offline"
 
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/mod.rs:1348
+#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/mod.rs:1403
 #, rust-format
 msgid "{on_count} online · {off_count} offline"
 msgstr "{on_count} online · {off_count} offline"
+
+#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/tailscale.rs:650
+#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/mod.rs:814
+msgid "Enter the server URL before connecting."
+msgstr "Skriv inn server-URL-en før du kobler til."
+
+#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/mod.rs:682
+msgid "Enter the server URL before saving."
+msgstr "Skriv inn server-URL-en før du lagrer."
+
+#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/mod.rs:691
+msgid "Enter the pre-auth key before saving."
+msgstr "Skriv inn forhåndsgodkjenningsnøkkelen før du lagrer."
+
+#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/sidebar.rs:178
+msgid "Start BigLace with the session"
+msgstr "Start BigLace med økten"
+
+#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/sidebar.rs:179
+msgid "Open BigLace after you sign in to the desktop"
+msgstr "Åpne BigLace etter at du har logget på skrivebordet"
+
+#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/sidebar.rs:182
+msgid ""
+"Turn this on to add BigLace to your desktop session startup. Turn it off to "
+"remove it."
+msgstr ""
+"Slå på dette for å legge til BigLace i oppstarten av skrivebordsøkten. Slå "
+"det av for å fjerne det."
+
+#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/sidebar.rs:190
+msgid "Toggle start with session"
+msgstr "Veksle start med økt"
 
 #~ msgid "Device name"
 #~ msgstr "Enhetsnavn"

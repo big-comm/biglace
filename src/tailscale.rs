@@ -646,6 +646,12 @@ fn run_tailscale_with_fallback(args: &[&str]) -> Result<()> {
 }
 
 pub fn connect(server: &str, authkey: &str, hostname: &str) -> Result<()> {
+    if server.trim().is_empty() {
+        bail!(tr!("Enter the server URL before connecting."));
+    }
+    if authkey.trim().is_empty() {
+        bail!(tr!("Sign in or paste a pre-auth key first."));
+    }
     dbg(&format!(
         "connect: server={server:?} hostname={hostname:?} authkey={}",
         if authkey.is_empty() { "<empty>" } else { "<provided>" }

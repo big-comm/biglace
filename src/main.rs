@@ -1,3 +1,4 @@
+mod autostart;
 mod config;
 mod i18n;
 mod panel;
