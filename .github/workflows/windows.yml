@@ -235,7 +235,9 @@ jobs:
       # ── Build the MSI ────────────────────────────────────────────────────
       # `-C -dStageDir=...` passes the variable referenced inside the harvested
       # fragment (heat emitted Source attributes like `$(var.StageDir)\foo.dll`).
-      # `-L -ext WixUtilExtension` enables util:CloseApplication used in main.wxs.
+      # The generated `wix\runtime.wxs` lives in cargo-wix's default source
+      # folder, so cargo-wix includes it automatically. Passing it again with
+      # `-I` makes candle.exe generate a duplicate runtime.wixobj.
       - name: Build MSI
         shell: pwsh
         run: |
@@ -244,9 +246,7 @@ jobs:
               --nocapture `
               --target ${{ env.TARGET }} `
               -C "-dStageDir=target\wix-stage" `
-              -C "-arch x64" `
               -L "-ext" -L "WixUtilExtension" `
-              -I "wix\runtime.wxs" `
               --output "target\biglace-${{ steps.resolve.outputs.tag }}-x86_64.msi"
 
       - name: Upload MSI artifact
