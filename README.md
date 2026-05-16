@@ -223,10 +223,11 @@ them.
 
 End-user installer is built by GitHub Actions:
 
-- **Trigger:** push a tag matching `v*` (e.g. `git tag v1.0.0 && git push --tags`),
-  or run the **Windows MSI** workflow manually from the Actions tab.
+- **Trigger:** the `build-package` action publishes a release, then sends a
+  `windows-msi-build` repository dispatch to this repo. You can also run the
+  **Windows MSI** workflow manually from the Actions tab.
 - **Output:** `biglace-<version>-x86_64.msi` published as a workflow artifact
-  and (on tag push) attached to the GitHub Release.
+  and, when a tag is provided, attached to that GitHub Release.
 - **Install scope:** per-machine, into `C:\Program Files\BigLace`. Adds a
   Start Menu shortcut and uninstalls cleanly through *Settings → Apps*.
 
@@ -236,13 +237,15 @@ WiX `heat.exe`, and produces the MSI through `cargo wix`. See
 [`.github/workflows/windows.yml`](.github/workflows/windows.yml) and
 [`wix/main.wxs`](wix/main.wxs) for the full recipe.
 
-To experiment locally on a Windows host with WiX 3 + Rust MSVC + gvsbuild
-installed:
+To test the MSI path without waiting for the full `build-package` flow, run the
+**Windows MSI** workflow manually against a branch or tag. To test it locally,
+use a Windows VM/host with WiX 3, Rust MSVC, ImageMagick, and gvsbuild installed:
 
 ```powershell
 cargo build --release --no-default-features --target x86_64-pc-windows-msvc
 cargo install cargo-wix --locked --version 0.3.9
-cargo wix --no-build --target x86_64-pc-windows-msvc
+heat.exe dir target\wix-stage -cg RuntimeFiles -dr APPLICATIONFOLDER -gg -g1 -srd -sfrag -var var.StageDir -out wix\runtime.wxs
+cargo wix --no-build --nocapture --target x86_64-pc-windows-msvc -C "-dStageDir=target\wix-stage" -L "-ext" -L "WixUtilExtension"
 ```
 
 `--no-default-features` disables jemalloc, which has no Windows backend.
