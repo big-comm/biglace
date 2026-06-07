@@ -119,7 +119,7 @@ struct Ctx {
     refresh_tx: mpsc::Sender<()>,
 }
 
-pub fn build(app: &libadwaita::Application) {
+pub fn build(app: &libadwaita::Application, start_hidden: bool) {
     style::install();
 
     let win = libadwaita::ApplicationWindow::builder()
@@ -200,7 +200,14 @@ pub fn build(app: &libadwaita::Application) {
         });
     }
 
-    win.present();
+    // Start hidden in the tray when launched by the desktop-session autostart
+    // entry (`--hidden`). The tray icon is the live presence in that case, so
+    // there's nothing to show until the user clicks it. If the tray failed to
+    // register we'd otherwise leave the user with no window and no way to open
+    // one, so fall back to presenting normally whenever the tray is inactive.
+    if !(start_hidden && tray_active) {
+        win.present();
+    }
 
     refresh_state(&ctx);
 
@@ -453,7 +460,7 @@ fn spawn_reconnect_worker(ctx: &Ctx) {
         // any previous one (shouldn't happen — the outer 15s tick already
         // detected we were offline once — but be defensive).
         if let Some(old) = ctx2.pending_reconnect.borrow_mut().replace(id) {
-            let _ = old.remove();
+            old.remove();
         }
         glib::ControlFlow::Continue
     });
@@ -781,7 +788,7 @@ fn wire_signals(ctx: &Ctx) {
                 // user. Also reset the attempt counter so the next genuine drop
                 // starts fresh at 15s instead of mid-backoff.
                 if let Some(id) = ctx2.pending_reconnect.borrow_mut().take() {
-                    let _ = id.remove();
+                    id.remove();
                 }
                 *ctx2.reconnect_attempts.borrow_mut() = 0;
                 *ctx2.reconnect_was_online.borrow_mut() = false;
@@ -867,6 +874,10 @@ fn wire_signals(ctx: &Ctx) {
                     None => glib::ControlFlow::Continue,
                     Some(_) => {
                         btn3.set_sensitive(true);
+                        // The service state just changed under us; drop the
+                        // cached probe so this refresh reads the truth instead
+                        // of an up-to-2s-old "stopped".
+                        tailscale::invalidate_service_cache();
                         refresh_state(&ctx3);
                         glib::ControlFlow::Break
                     }
@@ -1330,11 +1341,11 @@ fn notify_peer_change(name: &str, online: bool) {
     }
 
     thread_local! {
-        static AGG: RefCell<Aggregator> = RefCell::new(Aggregator {
+        static AGG: RefCell<Aggregator> = const { RefCell::new(Aggregator {
             online:    Vec::new(),
             offline:   Vec::new(),
             scheduled: false,
-        });
+        }) };
     }
 
     // Enqueue (canceling the opposite state if present — a peer that

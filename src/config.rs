@@ -2,7 +2,7 @@ use anyhow::Result;
 use serde::{Deserialize, Serialize};
 use std::{collections::HashMap, fs, path::PathBuf};
 
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Debug, Clone, Default, Serialize, Deserialize)]
 pub struct Config {
     pub server_url:   String,
     pub authkey:      String,
@@ -47,23 +47,6 @@ pub struct Config {
     /// their actual account on that box.
     #[serde(default)]
     pub peer_overrides: HashMap<String, String>,
-}
-
-impl Default for Config {
-    fn default() -> Self {
-        Self {
-            server_url:     String::new(),
-            authkey:        String::new(),
-            auto_connect:   false,
-            hostname:       String::new(),
-            panel_url:      String::new(),
-            panel_username: String::new(),
-            favorites:      Vec::new(),
-            auto_reconnect: false,
-            notify_peer_changes: false,
-            peer_overrides: HashMap::new(),
-        }
-    }
 }
 
 impl Config {

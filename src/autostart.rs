@@ -53,12 +53,16 @@ fn set_enabled_impl(enabled: bool) -> Result<()> {
     }
 
     let exec = autostart_exec()?;
+    // `--hidden` makes the login-triggered launch come up directly in the tray
+    // instead of popping the window open every time the user logs in. A manual
+    // launch from the app menu (the installed .desktop without this flag) still
+    // opens the window normally.
     let data = format!(
         "[Desktop Entry]\n\
          Type=Application\n\
          Name={APP_NAME}\n\
          Comment=Connect your machine to the mesh network\n\
-         Exec={exec}\n\
+         Exec={exec} --hidden\n\
          Icon={APP_ID}\n\
          Terminal=false\n\
          Categories=Network;System;\n\
@@ -118,7 +122,10 @@ fn is_enabled_impl() -> bool {
 fn set_enabled_impl(enabled: bool) -> Result<()> {
     if enabled {
         let exe = std::env::current_exe().context("current executable")?;
-        let exe = exe.to_string_lossy().to_string();
+        // Quote the path (it can contain spaces, e.g. C:\Program Files\…) and
+        // append `--hidden` so the login launch starts in the tray instead of
+        // opening the window. The whole thing is one REG_SZ value.
+        let value = format!("\"{}\" --hidden", exe.to_string_lossy());
         let st = std::process::Command::new("reg")
             .args([
                 "add",
@@ -128,7 +135,7 @@ fn set_enabled_impl(enabled: bool) -> Result<()> {
                 "/t",
                 "REG_SZ",
                 "/d",
-                &exe,
+                &value,
                 "/f",
             ])
             .status()
@@ -194,7 +201,7 @@ fn set_enabled_impl(enabled: bool) -> Result<()> {
          <plist version=\"1.0\">\n\
          <dict>\n\
              <key>Label</key><string>{APP_ID}</string>\n\
-             <key>ProgramArguments</key><array><string>{exe}</string></array>\n\
+             <key>ProgramArguments</key><array><string>{exe}</string><string>--hidden</string></array>\n\
              <key>RunAtLoad</key><true/>\n\
          </dict>\n\
          </plist>\n"

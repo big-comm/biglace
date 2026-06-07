@@ -45,13 +45,33 @@ pub const APP_VERSION: &str = env!("CARGO_PKG_VERSION");
 fn main() {
     i18n::init();
 
+    // Autostart launch mode. The desktop-session autostart entry (Linux
+    // .desktop, Windows "Run" key, macOS LaunchAgent) appends `--hidden`, so a
+    // login-triggered launch comes up straight into the system tray without
+    // ever flashing the window. A manual launch from the app menu omits the
+    // flag and opens normally.
+    //
+    // We parse argv ourselves and hand GApplication a clean argv via
+    // `run_with_args`, so GTK's own option parser never sees `--hidden` and
+    // aborts with "Unknown option".
+    let start_hidden = std::env::args().skip(1).any(|a| a == "--hidden");
+
     let app = libadwaita::Application::builder()
         .application_id("org.communitybig.biglace")
         .build();
 
-    app.connect_activate(|app| {
-        window::build(app);
+    app.connect_activate(move |app| {
+        // Single-instance: launching biglace again (or the desktop entry being
+        // triggered a second time) re-emits `activate` on the already-running
+        // process. Don't build a second window + tray + worker set — just bring
+        // the existing window to the front. This also means clicking the app
+        // icon while we're hidden in the tray surfaces the window as expected.
+        if let Some(win) = app.windows().first() {
+            win.present();
+            return;
+        }
+        window::build(app, start_hidden);
     });
 
-    std::process::exit(app.run().into());
+    std::process::exit(app.run_with_args(&["biglace"]).into());
 }
