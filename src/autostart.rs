@@ -17,6 +17,26 @@ pub fn set_enabled(enabled: bool) -> Result<()> {
     set_enabled_impl(enabled)
 }
 
+/// Re-emit the autostart entry on startup when it's already enabled, so an
+/// in-place upgrade picks up the current entry format.
+///
+/// Older biglace versions wrote the autostart entry without the `--hidden`
+/// flag — the start-in-tray feature didn't exist yet. Installing a newer
+/// binary over such a setup leaves that stale `.desktop` / registry value in
+/// place (nothing rewrites it while the switch stays on), so the login launch
+/// keeps popping the window open instead of going to the tray. Rewriting the
+/// entry here migrates those files to the `--hidden` form on the first run of
+/// the new binary. No-op when start-at-login is off. Best-effort: any failure
+/// (read-only HOME, missing `reg`, …) is swallowed so app startup never breaks
+/// over an autostart housekeeping write.
+pub fn migrate_if_enabled() {
+    if is_enabled() {
+        if let Err(e) = set_enabled(true) {
+            eprintln!("[biglace] autostart: failed to refresh entry: {e}");
+        }
+    }
+}
+
 #[cfg(target_os = "linux")]
 fn autostart_path() -> PathBuf {
     let base = std::env::var("XDG_CONFIG_HOME")
