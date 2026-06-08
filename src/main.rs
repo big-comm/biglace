@@ -56,6 +56,11 @@ fn main() {
     // aborts with "Unknown option".
     let start_hidden = std::env::args().skip(1).any(|a| a == "--hidden");
 
+    // Migrate a stale autostart entry written by a pre-`--hidden` build, so an
+    // in-place upgrade actually starts in the tray at the next login instead of
+    // re-opening the window from an old entry that lacks the flag.
+    autostart::migrate_if_enabled();
+
     let app = libadwaita::Application::builder()
         .application_id("org.communitybig.biglace")
         .build();
