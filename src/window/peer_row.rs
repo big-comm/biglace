@@ -378,7 +378,9 @@ pub fn build(peer: &Peer, ctx: &PeerCtx) -> libadwaita::ExpanderRow {
                 // ToastOverlay/Rc into the thread (not Send), so the worker
                 // dumps its result into a Mutex<Option<...>> and a poller on
                 // the main loop picks it up to fire the toast + refresh.
-                let slot: Arc<Mutex<Option<(bool, Option<String>)>>> =
+                // (succeeded, error message) handed back from the worker thread.
+                type ExitNodeOutcome = (bool, Option<String>);
+                let slot: Arc<Mutex<Option<ExitNodeOutcome>>> =
                     Arc::new(Mutex::new(None));
                 let slot_t = slot.clone();
                 std::thread::spawn(move || {

@@ -270,8 +270,18 @@ fn tailscale_cmd() -> &'static str {
     }
 }
 
-#[cfg(unix)]
+/// Whether the tailscale CLI is present. The answer can't change while biglace
+/// is running — you don't install or remove tailscale mid-session — so we probe
+/// once and memoize. This keeps the `which`/`where` subprocess out of the
+/// per-refresh hot path (`get_status` / `get_status_and_peers` call this on
+/// every tick).
 pub fn is_installed() -> bool {
+    static INSTALLED: OnceLock<bool> = OnceLock::new();
+    *INSTALLED.get_or_init(detect_installed)
+}
+
+#[cfg(unix)]
+fn detect_installed() -> bool {
     Command::new("which")
         .arg("tailscale")
         .stdout(std::process::Stdio::null())
@@ -282,7 +292,7 @@ pub fn is_installed() -> bool {
 }
 
 #[cfg(windows)]
-pub fn is_installed() -> bool {
+fn detect_installed() -> bool {
     // `where.exe` is the Windows analogue of `which`. We also accept the
     // hard-coded Program Files path as "installed" so the official MSI works
     // for users who never opened a fresh shell after install (PATH update
@@ -301,8 +311,44 @@ pub fn is_installed() -> bool {
         .unwrap_or(false)
 }
 
-#[cfg(unix)]
+/// TTL for the service-active probe. Unlike `is_installed`, the daemon's running
+/// state *does* change at runtime (the Start-service button, a crash, a
+/// sleep/resume cycle), so we can't memoize it forever — but a short window
+/// collapses the burst of probes a single refresh and its background workers
+/// fire in overlapping order. Explicitly invalidated right after the
+/// Start-service action so its follow-up refresh sees the truth immediately.
+const SERVICE_CACHE_TTL: Duration = Duration::from_secs(2);
+
+fn service_cache() -> &'static Mutex<Option<(Instant, bool)>> {
+    static CACHE: OnceLock<Mutex<Option<(Instant, bool)>>> = OnceLock::new();
+    CACHE.get_or_init(|| Mutex::new(None))
+}
+
+/// Drop the cached service-active state so the next read re-probes. Called right
+/// after the Start-service flow, whose whole point is to flip this state.
+pub fn invalidate_service_cache() {
+    if let Ok(mut g) = service_cache().lock() {
+        *g = None;
+    }
+}
+
 pub fn is_service_active() -> bool {
+    if let Ok(g) = service_cache().lock() {
+        if let Some((when, active)) = g.as_ref() {
+            if when.elapsed() < SERVICE_CACHE_TTL {
+                return *active;
+            }
+        }
+    }
+    let active = detect_service_active();
+    if let Ok(mut g) = service_cache().lock() {
+        *g = Some((Instant::now(), active));
+    }
+    active
+}
+
+#[cfg(unix)]
+fn detect_service_active() -> bool {
     Command::new("systemctl")
         .args(["is-active", "--quiet", "tailscaled"])
         .status()
@@ -311,7 +357,7 @@ pub fn is_service_active() -> bool {
 }
 
 #[cfg(windows)]
-pub fn is_service_active() -> bool {
+fn detect_service_active() -> bool {
     // `sc query Tailscale` always exits 0 if the service is *defined* — we
     // need to look at the STATE line. "RUNNING" is what we want.
     let out = Command::new("sc").args(["query", "Tailscale"]).output();
