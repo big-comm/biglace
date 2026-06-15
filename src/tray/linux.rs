@@ -123,6 +123,16 @@ impl HandleImpl {
 /// Returns `None` if the D-Bus session bus is unreachable — common on
 /// headless systems and in some sandboxed flatpak runs. The app keeps
 /// working without a tray in that case.
+///
+/// `assume_sni_available(true)` is what makes the `--hidden` autostart launch
+/// behave at login: when biglace is started by the session before the panel /
+/// shell has registered a `StatusNotifierWatcher`, ksni would otherwise return
+/// `Error::Watcher`/`Error::WontShow` here, we'd report the tray as inactive,
+/// and the window would pop open instead of staying in the tray. With this
+/// flag a missing watcher is a soft error: `spawn()` succeeds and a background
+/// task re-registers the item automatically once the watcher appears moments
+/// later. A genuine hard D-Bus failure (no session bus at all) still returns
+/// `Err`, so the headless fallback of presenting the window is preserved.
 pub fn spawn() -> Option<(mpsc::Receiver<Command>, HandleImpl)> {
     let (tx, rx) = mpsc::channel();
     let tray = BigLaceTray {
@@ -130,7 +140,7 @@ pub fn spawn() -> Option<(mpsc::Receiver<Command>, HandleImpl)> {
         peer_count: 0,
         sender:     tx,
     };
-    match tray.spawn() {
+    match tray.assume_sni_available(true).spawn() {
         Ok(handle) => Some((rx, HandleImpl(handle))),
         Err(e) => {
             eprintln!("[biglace] tray: failed to register StatusNotifierItem: {e}");
