@@ -1,54 +1,59 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<!--
-  Symbolic tray icon: a hexagonal mesh (matches the full-color app icon).
-
-  Every part is a FILLED shape (circle/rect), never a stroke, so the host's
-  symbolic recoloring recolors the whole icon uniformly. Recoloring only ever
-  overrides `fill`: GTK hosts inject `circle,rect,path { fill: <fg> !important }`
-  and never touch `stroke` (nor select `<line>`). An earlier version drew the
-  spokes and perimeter with `stroke`, so on a dark panel only the filled nodes
-  turned light while the dark strokes stayed invisible — the icon read as a
-  "sun" (6 dots around a blob). Drawing the connections as thin filled rects
-  fixes that on light and dark panels alike.
-
-  Dual convention for broad host support:
-    - GTK hosts override `fill` via the !important rule above.
-    - KDE/Plasma hosts rewrite `.ColorScheme-Text { color: <fg> }`, picked up
-      here through `fill="currentColor"`.
--->
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16" width="16" height="16">
+  <!--
+    Symbolic tray icon: a hexagonal mesh (matches the full-color app icon).
+
+    Keep the `<svg>` tag right after the XML declaration: a large comment block
+    BEFORE it pushes `<svg>` deep into the file, and GdkPixbuf's format sniffing
+    (used by GTK / GNOME Shell to recolor symbolic icons) then fails to
+    recognize the file as SVG and falls back to a placeholder. librsvg
+    (rsvg-convert) loads it either way, which hides the problem. So this note
+    lives INSIDE the svg, not above it.
+
+    Every part is a FILLED shape (circle/rect), never a stroke or <ellipse>, so
+    the host's symbolic recoloring recolors the whole icon uniformly. Recoloring
+    only ever overrides `fill` on `rect, circle, path`: it never touches
+    `stroke`, `<line>` or `<ellipse>`. Drawing the spokes/perimeter with strokes
+    and the nodes with ellipses made them keep their literal dark color on a dark
+    panel and vanish, leaving the center dot as a "sun"; filled rects + circles
+    fix that on light and dark panels alike.
+
+    Dual recolor convention: GTK overrides `fill` via the !important rule above;
+    KDE/Plasma rewrites `.ColorScheme-Text { color: <fg> }`, picked up through
+    `fill="currentColor"`.
+  -->
   <defs>
     <style id="current-color-scheme" type="text/css">.ColorScheme-Text { color:#2e3436; }</style>
   </defs>
   <g class="ColorScheme-Text" fill="currentColor">
     <!-- spokes: center -> each of the 6 outer nodes -->
     <g>
-      <rect x="8" y="7.45" width="5.2" height="1.1" rx="0.55"/>
-      <rect x="8" y="7.45" width="5.2" height="1.1" rx="0.55" transform="rotate(60 8 8)"/>
-      <rect x="8" y="7.45" width="5.2" height="1.1" rx="0.55" transform="rotate(120 8 8)"/>
-      <rect x="8" y="7.45" width="5.2" height="1.1" rx="0.55" transform="rotate(180 8 8)"/>
-      <rect x="8" y="7.45" width="5.2" height="1.1" rx="0.55" transform="rotate(240 8 8)"/>
-      <rect x="8" y="7.45" width="5.2" height="1.1" rx="0.55" transform="rotate(300 8 8)"/>
+      <rect x="8" y="7.66" width="6.377" height="0.68" rx="0.34"/>
+      <rect x="8" y="7.66" width="6.377" height="0.68" rx="0.34" transform="rotate(180 8 8)"/>
+      <rect x="8" y="7.66" width="6.264" height="0.68" rx="0.34" transform="rotate(-59.42 8 8)"/>
+      <rect x="8" y="7.66" width="6.264" height="0.68" rx="0.34" transform="rotate(-120.58 8 8)"/>
+      <rect x="8" y="7.66" width="6.264" height="0.68" rx="0.34" transform="rotate(59.42 8 8)"/>
+      <rect x="8" y="7.66" width="6.264" height="0.68" rx="0.34" transform="rotate(120.58 8 8)"/>
     </g>
     <!-- perimeter: edges between adjacent nodes (the "lace") -->
-    <g opacity="0.6">
-      <rect x="13.2" y="7.55" width="5.2" height="0.9" rx="0.45" transform="rotate(120 13.2 8)"/>
-      <rect x="13.2" y="7.55" width="5.2" height="0.9" rx="0.45" transform="rotate(60 8 8) rotate(120 13.2 8)"/>
-      <rect x="13.2" y="7.55" width="5.2" height="0.9" rx="0.45" transform="rotate(120 8 8) rotate(120 13.2 8)"/>
-      <rect x="13.2" y="7.55" width="5.2" height="0.9" rx="0.45" transform="rotate(180 8 8) rotate(120 13.2 8)"/>
-      <rect x="13.2" y="7.55" width="5.2" height="0.9" rx="0.45" transform="rotate(240 8 8) rotate(120 13.2 8)"/>
-      <rect x="13.2" y="7.55" width="5.2" height="0.9" rx="0.45" transform="rotate(300 8 8) rotate(120 13.2 8)"/>
+    <g opacity="0.65">
+      <rect x="14.377" y="7.775" width="6.264" height="0.45" rx="0.225" transform="rotate(-120.58 14.377 8)"/>
+      <rect x="11.188" y="2.383" width="6.376" height="0.45" rx="0.225" transform="rotate(180 11.188 2.608)"/>
+      <rect x="4.812" y="2.383" width="6.264" height="0.45" rx="0.225" transform="rotate(120.58 4.812 2.608)"/>
+      <rect x="1.623" y="7.775" width="6.264" height="0.45" rx="0.225" transform="rotate(59.42 1.623 8)"/>
+      <rect x="4.812" y="13.167" width="6.376" height="0.45" rx="0.225" transform="rotate(0 4.812 13.392)"/>
+      <rect x="11.188" y="13.167" width="6.264" height="0.45" rx="0.225" transform="rotate(-59.42 11.188 13.392)"/>
     </g>
     <!-- outer nodes -->
     <g>
-      <circle cx="13.2" cy="8" r="1.5"/>
-      <circle cx="13.2" cy="8" r="1.5" transform="rotate(60 8 8)"/>
-      <circle cx="13.2" cy="8" r="1.5" transform="rotate(120 8 8)"/>
-      <circle cx="13.2" cy="8" r="1.5" transform="rotate(180 8 8)"/>
-      <circle cx="13.2" cy="8" r="1.5" transform="rotate(240 8 8)"/>
-      <circle cx="13.2" cy="8" r="1.5" transform="rotate(300 8 8)"/>
+      <circle cx="14.377" cy="8" r="1.357"/>
+      <circle cx="1.623" cy="8" r="1.357"/>
+      <circle cx="11.188" cy="2.608" r="1.357"/>
+      <circle cx="4.812" cy="2.608" r="1.357"/>
+      <circle cx="11.188" cy="13.392" r="1.357"/>
+      <circle cx="4.812" cy="13.392" r="1.357"/>
     </g>
     <!-- center node -->
-    <circle cx="8" cy="8" r="2.4"/>
+    <circle cx="8" cy="8" r="2.1"/>
   </g>
 </svg>
