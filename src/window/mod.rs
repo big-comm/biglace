@@ -6,7 +6,7 @@ mod style;
 
 use gtk4::{glib, prelude::*};
 use libadwaita::prelude::*;
-use std::cell::RefCell;
+use std::cell::{Cell, RefCell};
 use std::collections::{HashMap, HashSet};
 use std::hash::{Hash, Hasher};
 use std::rc::Rc;
@@ -28,6 +28,16 @@ enum AppState {
     Disconnected,
     Connecting,
     Connected,
+}
+
+/// Snapshot of tailscaled state gathered on a worker thread and handed back to
+/// the main loop. Both variants only carry `Send` plain-data types so the
+/// gather can happen off the GTK thread — a hung tailscaled (common after
+/// suspend/resume) then can't freeze the UI while `refresh_state` blocks on a
+/// subprocess.
+enum RefreshData {
+    ServiceStopped,
+    Live { status: Status, peers: Vec<Peer> },
 }
 
 #[derive(Clone)]
@@ -111,12 +121,34 @@ struct Ctx {
     /// hostname and calls `set_subtitle` on its row without touching the
     /// rest of the widget tree.
     peer_rows: Rc<RefCell<HashMap<String, libadwaita::ExpanderRow>>>,
-    /// Worker threads send `()` here to ask the main loop to call
-    /// `refresh_state`. A poller in `build()` drains the receiver. This is
-    /// our cross-thread bridge — the closure captured by `idle_add_once` only
-    /// needs to be `Send`-friendly types, and we never pass `Ctx` itself
-    /// across the thread boundary.
+    /// Worker threads send `()` here to ask the main loop to schedule a
+    /// refresh. A poller in `build()` drains the receiver and kicks a
+    /// background gather. This is our cross-thread bridge — workers only ever
+    /// send `Send`-friendly types, never `Ctx` itself.
     refresh_tx: mpsc::Sender<()>,
+    /// Result slot for the background gather started by `refresh_state`. The
+    /// gather thread stores the latest `RefreshData` here and signals
+    /// `refresh_done_tx`; the main-loop poller takes it and applies it.
+    refresh_slot: Arc<Mutex<Option<RefreshData>>>,
+    /// Signaled by a gather thread once `refresh_slot` holds a fresh snapshot.
+    refresh_done_tx: mpsc::Sender<()>,
+    /// True while an explicit connect/start-service action is in flight (the
+    /// UI is showing "Connecting…"). A background gather that snapshotted the
+    /// pre-connect state must not yank the UI back to "Disconnected" and
+    /// re-enable the button — that's how a user ends up firing two concurrent
+    /// `tailscale up`s. Main-thread only.
+    connect_in_flight: Rc<RefCell<bool>>,
+    /// Last (connected, peer_count) pushed to the tray. Used to skip redundant
+    /// `Handle::update` calls — each one blocks the GTK loop on a D-Bus
+    /// round-trip with the ksni service loop, so we only pay it on a real
+    /// change. Main-thread only.
+    tray_state: Rc<RefCell<Option<(bool, usize)>>>,
+    /// Whether the last applied state was Connected. Written by `apply_state`
+    /// (which runs on the main thread after a background gather). The reconnect
+    /// worker reads this instead of shelling out to `tailscale status` on the
+    /// GTK thread — that probe would block the main loop on a hung daemon. Main
+    /// thread only.
+    current_online: Rc<Cell<bool>>,
 }
 
 pub fn build(app: &libadwaita::Application, start_hidden: bool) {
@@ -157,6 +189,7 @@ pub fn build(app: &libadwaita::Application, start_hidden: bool) {
     };
 
     let (refresh_tx, refresh_rx) = mpsc::channel::<()>();
+    let (refresh_done_tx, refresh_done_rx) = mpsc::channel::<()>();
 
     let ctx = Ctx {
         ui:    ui.clone(),
@@ -175,6 +208,11 @@ pub fn build(app: &libadwaita::Application, start_hidden: bool) {
         last_peer_signature: Rc::new(RefCell::new(u64::MAX)),
         peer_rows: Rc::new(RefCell::new(HashMap::new())),
         refresh_tx,
+        refresh_slot: Arc::new(Mutex::new(None)),
+        refresh_done_tx,
+        connect_in_flight: Rc::new(RefCell::new(false)),
+        tray_state: Rc::new(RefCell::new(None)),
+        current_online: Rc::new(Cell::new(false)),
     };
 
     apply_config_to_widgets(&ui, &cfg.borrow());
@@ -183,18 +221,31 @@ pub fn build(app: &libadwaita::Application, start_hidden: bool) {
     let tray_active = setup_tray(&ctx);
     setup_close_to_tray(&ctx, tray_active);
 
-    // Drain refresh signals from background workers and apply on the main
-    // thread. Coalesce bursts (`while try_recv()`) so a flurry of pings only
-    // triggers one refresh.
+    // One poller drives the whole refresh cycle:
+    //   • a worker asked for a refresh (`refresh_rx`) → kick a background
+    //     gather (coalesced: a burst of pings triggers a single gather);
+    //   • a background gather finished (`refresh_done_rx`) → apply its snapshot
+    //     on the main thread.
+    // Keeping the subprocess + JSON parse off the GTK thread means a hung
+    // tailscaled can't freeze the UI.
     {
         let ctx2 = ctx.clone();
         glib::timeout_add_local(Duration::from_millis(200), move || {
-            let mut got = false;
+            let mut requested = false;
             while refresh_rx.try_recv().is_ok() {
-                got = true;
+                requested = true;
             }
-            if got {
+            if requested {
                 refresh_state(&ctx2);
+            }
+            let mut done = false;
+            while refresh_done_rx.try_recv().is_ok() {
+                done = true;
+            }
+            if done {
+                if let Some(data) = ctx2.refresh_slot.lock().ok().and_then(|mut g| g.take()) {
+                    apply_refresh(&ctx2, data);
+                }
             }
             glib::ControlFlow::Continue
         });
@@ -231,10 +282,29 @@ pub fn build(app: &libadwaita::Application, start_hidden: bool) {
 
     {
         let c = cfg.borrow().clone();
-        if c.auto_connect && has_connect_config(&c)
-            && tailscale::is_service_active() && !tailscale::get_status().online
-        {
-            do_connect(&ctx, c.server_url, c.authkey, c.hostname.clone());
+        if c.auto_connect && has_connect_config(&c) {
+            // Probe off-thread so a hung tailscaled at login can't freeze the
+            // just-shown window; fire do_connect from the main loop once the
+            // probe reports the daemon is up but not yet connected.
+            let ctx2 = ctx.clone();
+            let slot: Arc<Mutex<Option<bool>>> = Arc::new(Mutex::new(None));
+            let slot_t = slot.clone();
+            std::thread::spawn(move || {
+                let should = tailscale::is_service_active() && !tailscale::get_status().online;
+                if let Ok(mut g) = slot_t.lock() {
+                    *g = Some(should);
+                }
+            });
+            glib::timeout_add_local(Duration::from_millis(200), move || {
+                let Some(should) = slot.lock().ok().and_then(|mut g| g.take()) else {
+                    return glib::ControlFlow::Continue;
+                };
+                if should {
+                    let c = ctx2.cfg.borrow().clone();
+                    do_connect(&ctx2, c.server_url, c.authkey, c.hostname.clone());
+                }
+                glib::ControlFlow::Break
+            });
         }
     }
 }
@@ -259,6 +329,10 @@ fn setup_tray(ctx: &Ctx) -> bool {
                 Ok(cmd) => match cmd {
                     tray::Command::Show => {
                         ctx2.ui.win.present();
+                        // Re-sync immediately: latency pings pause while hidden
+                        // (see spawn_latency_worker), so the list could be
+                        // showing stale data the moment the window reappears.
+                        refresh_state(&ctx2);
                     }
                     tray::Command::Connect => {
                         if ctx2.ui.sidebar.btn_connect.is_sensitive()
@@ -293,9 +367,17 @@ fn setup_tray(ctx: &Ctx) -> bool {
 /// Push the current connection state into the tray indicator (tooltip + the
 /// connect/disconnect menu label flip). No-op when the tray failed to spawn.
 fn update_tray(ctx: &Ctx, connected: bool, peer_count: usize) {
+    // Skip when nothing changed. `Handle::update` blocks the GTK loop on a
+    // D-Bus round-trip with the ksni service loop; apply_state calls this on
+    // every refresh, so gating on a real change keeps a congested session bus
+    // (e.g. plasmashell restarting) from stalling the UI on no-op updates.
+    if *ctx.tray_state.borrow() == Some((connected, peer_count)) {
+        return;
+    }
     if let Some(h) = ctx.tray.borrow().as_ref() {
         h.update(connected, peer_count);
     }
+    *ctx.tray_state.borrow_mut() = Some((connected, peer_count));
 }
 
 /// Hijack the window's close button so it hides the window instead of
@@ -307,9 +389,11 @@ fn setup_close_to_tray(ctx: &Ctx, tray_active: bool) {
     if !tray_active {
         return;
     }
-    let win_w = ctx.ui.win.clone();
-    ctx.ui.win.connect_close_request(move |_| {
-        win_w.set_visible(false);
+    // Use the callback's own widget arg instead of capturing a strong clone of
+    // the window into a handler connected to that same window — the latter is a
+    // reference cycle GObject never breaks.
+    ctx.ui.win.connect_close_request(move |w| {
+        w.set_visible(false);
         glib::Propagation::Stop
     });
 }
@@ -331,7 +415,16 @@ fn spawn_latency_worker(ctx: &Ctx) {
 
     let latency = ctx.latency.clone();
     let tx = ctx.refresh_tx.clone();
+    let win = ctx.ui.win.clone();
     glib::timeout_add_seconds_local(20, move || {
+        // Skip entirely while hidden in the tray: latency is purely the peer
+        // rows' subtitle, which nobody's looking at. On a 30-peer tailnet this
+        // otherwise spawns up to 6 `tailscale ping` subprocesses (2s each)
+        // every 20s for a window that isn't visible — a real battery cost on
+        // laptops. A refresh_state on tray Show repopulates it on reappear.
+        if !win.is_visible() {
+            return glib::ControlFlow::Continue;
+        }
         // Snapshotting peers off the GTK thread keeps the main loop free
         // even if tailscaled is slow — we don't read the result here, the
         // background thread does the parsing + pinging + send().
@@ -425,7 +518,11 @@ fn spawn_reconnect_worker(ctx: &Ctx) {
         if !cfg.auto_reconnect || !has_connect_config(&cfg) {
             return glib::ControlFlow::Continue;
         }
-        let now_online = tailscale::is_service_active() && tailscale::get_status().online;
+        // Nudge a background gather so `current_online` stays fresh, then read
+        // the last gathered value — never probe tailscaled synchronously here,
+        // that would freeze the GTK loop when the daemon hangs.
+        let _ = ctx2.refresh_tx.send(());
+        let now_online = ctx2.current_online.get();
         let prev = *ctx2.reconnect_was_online.borrow();
         *ctx2.reconnect_was_online.borrow_mut() = now_online;
 
@@ -448,12 +545,16 @@ fn spawn_reconnect_worker(ctx: &Ctx) {
             // Drop our own SourceId slot first so a manual disconnect arriving
             // mid-flight doesn't try to remove a source that's already firing.
             ctx_inner.pending_reconnect.borrow_mut().take();
-            // Double-check we're still offline before firing.
-            if tailscale::is_service_active() && !tailscale::get_status().online {
-                let c = ctx_inner.cfg.borrow().clone();
-                if has_connect_config(&c) {
-                    do_connect(&ctx_inner, c.server_url, c.authkey, c.hostname.clone());
-                }
+            // Re-read config before firing: the user may have toggled
+            // auto-reconnect off (or disconnected manually) during the backoff
+            // wait. Without this re-check the app would reconnect itself
+            // minutes after the user explicitly told it not to.
+            let c = ctx_inner.cfg.borrow().clone();
+            if c.auto_reconnect
+                && has_connect_config(&c)
+                && !ctx_inner.current_online.get()
+            {
+                do_connect(&ctx_inner, c.server_url, c.authkey, c.hostname.clone());
             }
         });
         // Stash the SourceId so the disconnect handler can cancel us. Replace
@@ -681,8 +782,10 @@ fn wire_signals(ctx: &Ctx) {
             let server = dialogs::normalize_server_url(
                 &ctx2.ui.sidebar.entry_server.text(),
             );
-            let key    = ctx2.ui.sidebar.entry_key.text().to_string();
-            let host   = ctx2.ui.sidebar.entry_host.text().to_string();
+            // Trim the key: a trailing space/newline from paste would otherwise
+            // be persisted and rejected by the daemon as an "invalid key".
+            let key    = ctx2.ui.sidebar.entry_key.text().trim().to_string();
+            let host   = ctx2.ui.sidebar.entry_host.text().trim().to_string();
             if server.trim().is_empty() {
                 ctx2.ui.toast.add_toast(
                     libadwaita::Toast::builder()
@@ -733,7 +836,9 @@ fn wire_signals(ctx: &Ctx) {
                 Err(e) => {
                     toast.add_toast(
                         libadwaita::Toast::builder()
-                            .title(trf!("Error: {error}", "error" => e.to_string()))
+                            .title(glib::markup_escape_text(
+                                &trf!("Error: {error}", "error" => e.to_string()),
+                            ).as_str())
                             .timeout(5)
                             .build(),
                     );
@@ -755,11 +860,22 @@ fn wire_signals(ctx: &Ctx) {
 
     // ── Auto-reconnect switch ──
     {
-        let cfg2 = ctx.cfg.clone();
+        let ctx2 = ctx.clone();
         ctx.ui.sidebar.switch_auto_reconnect.connect_state_set(move |_, active| {
-            let mut c = cfg2.borrow_mut();
-            c.auto_reconnect = active;
-            config::save_or_warn(&c);
+            {
+                let mut c = ctx2.cfg.borrow_mut();
+                c.auto_reconnect = active;
+                config::save_or_warn(&c);
+            }
+            // Turning it off must also tear down any backoff already armed by
+            // the reconnect worker, otherwise a queued reconnect still fires
+            // once after the user disabled the feature.
+            if !active {
+                if let Some(id) = ctx2.pending_reconnect.borrow_mut().take() {
+                    id.remove();
+                }
+                *ctx2.reconnect_attempts.borrow_mut() = 0;
+            }
             glib::Propagation::Proceed
         });
     }
@@ -839,6 +955,9 @@ fn wire_signals(ctx: &Ctx) {
         ctx.ui.content.btn_start_service.connect_clicked(move |btn| {
             btn.set_sensitive(false);
             apply_state(&ctx2, AppState::Connecting, &Status::default(), &[]);
+            // Hold the Connecting state against background refreshes while the
+            // pkexec/sc prompt is up (see apply_refresh).
+            *ctx2.connect_in_flight.borrow_mut() = true;
 
             let slot: Arc<Mutex<Option<bool>>> = Arc::new(Mutex::new(None));
             let slot_t = slot.clone();
@@ -874,6 +993,7 @@ fn wire_signals(ctx: &Ctx) {
                     None => glib::ControlFlow::Continue,
                     Some(_) => {
                         btn3.set_sensitive(true);
+                        *ctx3.connect_in_flight.borrow_mut() = false;
                         // The service state just changed under us; drop the
                         // cached probe so this refresh reads the truth instead
                         // of an up-to-2s-old "stopped".
@@ -916,6 +1036,9 @@ fn do_connect(
         "[biglace] connect: button clicked (server={server:?} hostname={hostname:?})"
     );
     apply_state(ctx, AppState::Connecting, &Status::default(), &[]);
+    // Guard the Connecting state against concurrent background refreshes until
+    // this attempt resolves (see apply_refresh).
+    *ctx.connect_in_flight.borrow_mut() = true;
 
     let slot: Arc<Mutex<Option<Result<(), String>>>> = Arc::new(Mutex::new(None));
     let slot_t = slot.clone();
@@ -934,6 +1057,7 @@ fn do_connect(
         match slot.lock().ok().and_then(|mut g| g.take()) {
             None => glib::ControlFlow::Continue,
             Some(Ok(())) => {
+                *ctx2.connect_in_flight.borrow_mut() = false;
                 refresh_state(&ctx2);
                 // Push our $USER to the panel and refresh the peer→os_user
                 // cache right away so the SFTP/SSH buttons of the just-listed
@@ -968,9 +1092,16 @@ fn do_connect(
                 glib::ControlFlow::Break
             }
             Some(Err(e)) => {
+                *ctx2.connect_in_flight.borrow_mut() = false;
                 refresh_state(&ctx2);
                 let toast = libadwaita::Toast::builder()
-                    .title(trf!("Error: {error}", "error" => e))
+                    // Escape: the tailscale stderr embedded here can contain
+                    // `<`/`&` (URLs, hostnames), which AdwToast's markup-aware
+                    // title would otherwise swallow — hiding the very error the
+                    // user needs to read.
+                    .title(glib::markup_escape_text(
+                        &trf!("Error: {error}", "error" => e),
+                    ).as_str())
                     .timeout(6)
                     .build();
                 ctx2.ui.toast.add_toast(toast);
@@ -982,39 +1113,71 @@ fn do_connect(
 
 // ─── State refresh & UI binding ──────────────────────────────────────────────
 
+/// Request a refresh: gather tailscaled state on a worker thread, then let the
+/// main-loop poller apply it. Safe to call from any GTK callback — it never
+/// blocks on a subprocess itself. Overlapping calls just each produce a
+/// snapshot; the poller applies the most recent one.
 fn refresh_state(ctx: &Ctx) {
-    if !tailscale::is_service_active() {
-        apply_state(ctx, AppState::ServiceStopped, &Status::default(), &[]);
-        return;
-    }
-
-    // One subprocess + JSON parse covers both. Cuts the periodic-refresh
-    // tailscaled hit in half compared to separate get_status / get_peers.
-    let (status, mut peers) = tailscale::get_status_and_peers();
-    if !status.online {
-        peers.clear();
-    }
-
-    // Enrich peers with the OS user the panel knows for each hostname. Empty
-    // map = "panel hasn't been polled yet (or is unreachable)" — peer rows
-    // fall back to the hostname for SSH composition.
-    if let Ok(meta) = ctx.device_meta.lock() {
-        for p in peers.iter_mut() {
-            if let Some(u) = meta.get(&p.hostname) {
-                p.ssh_user = u.clone();
+    let slot = ctx.refresh_slot.clone();
+    let done = ctx.refresh_done_tx.clone();
+    let device_meta = ctx.device_meta.clone();
+    std::thread::spawn(move || {
+        let data = if !tailscale::is_service_active() {
+            RefreshData::ServiceStopped
+        } else {
+            // One subprocess + JSON parse covers both status and peers.
+            let (status, mut peers) = tailscale::get_status_and_peers();
+            if !status.online {
+                peers.clear();
             }
+            // Enrich peers with the OS user the panel knows for each hostname.
+            // Empty map = "panel not polled yet / unreachable" — peer rows fall
+            // back to the hostname for SSH composition.
+            if let Ok(meta) = device_meta.lock() {
+                for p in peers.iter_mut() {
+                    if let Some(u) = meta.get(&p.hostname) {
+                        p.ssh_user = u.clone();
+                    }
+                }
+            }
+            RefreshData::Live { status, peers }
+        };
+        if let Ok(mut g) = slot.lock() {
+            *g = Some(data);
+        }
+        let _ = done.send(());
+    });
+}
+
+/// Apply a gathered snapshot to the widgets. Runs on the main thread.
+fn apply_refresh(ctx: &Ctx, data: RefreshData) {
+    // While an explicit connect/start-service action is in flight the UI shows
+    // "Connecting…". A background gather that snapshotted the pre-connect state
+    // must not override it (which would re-enable Connect and allow a second
+    // `tailscale up`). Once the action's own poller resolves it clears the flag
+    // and the next gather paints the real state.
+    let busy = *ctx.connect_in_flight.borrow();
+    match data {
+        RefreshData::ServiceStopped => {
+            if busy {
+                return;
+            }
+            apply_state(ctx, AppState::ServiceStopped, &Status::default(), &[]);
+        }
+        RefreshData::Live { status, peers } => {
+            if busy && !status.online {
+                return;
+            }
+            let state = if status.online {
+                AppState::Connected
+            } else if !has_connect_config(&ctx.cfg.borrow()) {
+                AppState::NotSignedIn
+            } else {
+                AppState::Disconnected
+            };
+            apply_state(ctx, state, &status, &peers);
         }
     }
-
-    let state = if status.online {
-        AppState::Connected
-    } else if !has_connect_config(&ctx.cfg.borrow()) {
-        AppState::NotSignedIn
-    } else {
-        AppState::Disconnected
-    };
-
-    apply_state(ctx, state, &status, &peers);
 }
 
 fn apply_state(
@@ -1025,6 +1188,9 @@ fn apply_state(
 ) {
     let ui = &ctx.ui;
     let cfg_snap = ctx.cfg.borrow().clone();
+
+    // Record online state for the reconnect worker to read off-thread.
+    ctx.current_online.set(state == AppState::Connected);
 
     // ── Status dot + label in content header ──
     for c in ["idle", "connected", "connecting", "error"] {
@@ -1148,7 +1314,9 @@ fn apply_state(
         let display = status.display_name();
         let title = if display.is_empty() { "—".to_string() } else { display };
         let ip = status.ip.as_deref().unwrap_or("—");
-        ui.content.self_row.set_title(&title);
+        // display_name is network-derived (DNS/hostname); escape before it
+        // lands in AdwActionRow's markup-aware title.
+        ui.content.self_row.set_title(&glib::markup_escape_text(&title));
         ui.content.self_row.set_subtitle(ip);
 
         // Diff against previous render to fire libnotify on transitions.

@@ -26,7 +26,7 @@ use tray_icon::{
 };
 
 use super::Command;
-use crate::tr;
+use crate::{tr, trf};
 
 /// Status update pushed from the GTK loop to the tray worker thread.
 #[derive(Debug, Clone, Copy)]
@@ -153,6 +153,13 @@ fn run_tray_thread(
                 // GTK loop has dropped the receiver — app is shutting down.
                 return;
             }
+            // On Quit, return now so `tray` drops here and tray-icon's Drop
+            // fires Shell_NotifyIcon(NIM_DELETE) — otherwise the process exits
+            // via std::process::exit (no destructors) and the icon lingers as a
+            // ghost until the user hovers over it.
+            if matches!(cmd, Command::Quit) {
+                return;
+            }
         }
 
         // 50 ms is brisk enough that menu clicks feel instant while keeping
@@ -166,7 +173,10 @@ fn tooltip_text(connected: bool, peer_count: usize) -> String {
         match peer_count {
             0 => format!("BigLace — {}", tr!("Connected")),
             1 => format!("BigLace — {}", tr!("Connected · 1 peer")),
-            n => format!("BigLace — {} {} peers", tr!("Connected ·"), n),
+            // Use the same msgid as the Linux backend so pt-BR (and word
+            // orders that differ) translate the whole phrase, not just the
+            // prefix with "peers" hardcoded in English.
+            n => format!("BigLace — {}", trf!("Connected · {n} peers", "n" => n)),
         }
     } else {
         format!("BigLace — {}", tr!("Disconnected"))

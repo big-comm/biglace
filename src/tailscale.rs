@@ -1,7 +1,7 @@
 use anyhow::{bail, Context, Result};
 use serde::Deserialize;
 use std::process::Command;
-use std::sync::{Mutex, OnceLock};
+use std::sync::{Arc, Mutex, OnceLock};
 use std::time::{Duration, Instant};
 
 use crate::{tr, trf};
@@ -14,8 +14,12 @@ use crate::{tr, trf};
 /// already explicitly invalidates the cache via `invalidate_status_cache()`.
 const STATUS_CACHE_TTL: Duration = Duration::from_millis(500);
 
-fn status_cache() -> &'static Mutex<Option<(Instant, TsStatus)>> {
-    static CACHE: OnceLock<Mutex<Option<(Instant, TsStatus)>>> = OnceLock::new();
+/// Fetch time + the shared parsed payload. `Arc` so cache reads are refcount
+/// bumps, never deep copies of a payload that runs to hundreds of KB.
+type CachedStatus = (Instant, Arc<TsStatus>);
+
+fn status_cache() -> &'static Mutex<Option<CachedStatus>> {
+    static CACHE: OnceLock<Mutex<Option<CachedStatus>>> = OnceLock::new();
     CACHE.get_or_init(|| Mutex::new(None))
 }
 
@@ -27,11 +31,14 @@ fn status_cache() -> &'static Mutex<Option<(Instant, TsStatus)>> {
 /// status --json`. Multiple workers (latency, panel, health, refresh) hit it
 /// in overlapping windows; routing them through this cache collapses an
 /// occasional 4-5x burst of subprocesses into a single one.
-fn cached_ts_status() -> Option<TsStatus> {
+fn cached_ts_status() -> Option<Arc<TsStatus>> {
     {
         let g = status_cache().lock().ok()?;
         if let Some((when, ts)) = g.as_ref() {
             if when.elapsed() < STATUS_CACHE_TTL {
+                // Cloning the Arc is a refcount bump — the (potentially
+                // hundreds-of-KB) TsStatus is shared, never deep-copied, even
+                // though ~5 workers read it per refresh tick.
                 return Some(ts.clone());
             }
         }
@@ -43,6 +50,7 @@ fn cached_ts_status() -> Option<TsStatus> {
         return None;
     }
     let ts: TsStatus = serde_json::from_slice(&out.stdout).ok()?;
+    let ts = Arc::new(ts);
     if let Ok(mut g) = status_cache().lock() {
         *g = Some((Instant::now(), ts.clone()));
     }
@@ -71,8 +79,26 @@ pub(crate) fn dbg(msg: &str) {
     eprintln!("[biglace] {msg}");
 }
 
+/// Join CLI args for logging with any secret-bearing flag value masked.
+/// `--authkey=tskey-…` MUST never reach stderr/journald: those logs land in
+/// `journalctl --user` / `~/.xsession-errors`, readable by other local
+/// processes, and a reusable pre-auth key there lets anyone register a node
+/// on the tailnet as the user.
+fn redact_args(args: &[&str]) -> String {
+    args.iter()
+        .map(|a| {
+            if a.starts_with("--authkey=") {
+                "--authkey=<redacted>".to_string()
+            } else {
+                (*a).to_string()
+            }
+        })
+        .collect::<Vec<_>>()
+        .join(" ")
+}
+
 fn dbg_output(label: &str, args: &[&str], status: i32, stdout: &str, stderr: &str) {
-    eprintln!("[biglace] {label} exit={status} args={args:?}");
+    eprintln!("[biglace] {label} exit={status} args=[{}]", redact_args(args));
     if debug_enabled() {
         if !stdout.trim().is_empty() {
             for line in stdout.lines() {
@@ -282,8 +308,13 @@ pub fn is_installed() -> bool {
 
 #[cfg(unix)]
 fn detect_installed() -> bool {
-    Command::new("which")
-        .arg("tailscale")
+    // Probe the CLI directly rather than shelling out to `which`, which isn't
+    // guaranteed present in minimal environments (stripped containers, NixOS).
+    // A false negative here would wrongly claim "tailscale not installed" and
+    // is memoized for the whole session, so the probe must not depend on an
+    // optional helper binary.
+    Command::new(tailscale_cmd())
+        .arg("version")
         .stdout(std::process::Stdio::null())
         .stderr(std::process::Stdio::null())
         .status()
@@ -293,17 +324,17 @@ fn detect_installed() -> bool {
 
 #[cfg(windows)]
 fn detect_installed() -> bool {
-    // `where.exe` is the Windows analogue of `which`. We also accept the
-    // hard-coded Program Files path as "installed" so the official MSI works
-    // for users who never opened a fresh shell after install (PATH update
-    // doesn't propagate to existing processes).
+    // Accept the hard-coded Program Files path as "installed" so the official
+    // MSI works for users who never opened a fresh shell after install (PATH
+    // updates don't propagate to existing processes). Otherwise probe the CLI
+    // directly instead of relying on `where.exe`.
     if std::path::Path::new(r"C:\Program Files\Tailscale\tailscale.exe").exists()
         || std::path::Path::new(r"C:\Program Files (x86)\Tailscale\tailscale.exe").exists()
     {
         return true;
     }
-    Command::new("where")
-        .arg("tailscale")
+    Command::new(tailscale_cmd())
+        .arg("version")
         .stdout(std::process::Stdio::null())
         .stderr(std::process::Stdio::null())
         .status()
@@ -347,10 +378,27 @@ pub fn is_service_active() -> bool {
     active
 }
 
-#[cfg(unix)]
+#[cfg(all(unix, not(target_os = "macos")))]
 fn detect_service_active() -> bool {
     Command::new("systemctl")
         .args(["is-active", "--quiet", "tailscaled"])
+        .status()
+        .map(|s| s.success())
+        .unwrap_or(false)
+}
+
+#[cfg(target_os = "macos")]
+fn detect_service_active() -> bool {
+    // macOS has no systemctl. The tailscaled daemon (a launchd job on the
+    // open-source build, or the network extension on the App Store build) is
+    // "active" whenever the CLI can reach it: `tailscale status` connects and
+    // exits 0 even while logged out or stopped, and only fails when the daemon
+    // itself isn't running. Without this branch the whole UI would be pinned to
+    // the "service stopped" screen on macOS regardless of the real state.
+    Command::new(tailscale_cmd())
+        .args(["status", "--json"])
+        .stdout(std::process::Stdio::null())
+        .stderr(std::process::Stdio::null())
         .status()
         .map(|s| s.success())
         .unwrap_or(false)
@@ -390,13 +438,13 @@ pub fn panel_peer_ip() -> Option<String> {
         .filter(|s| !s.is_empty())?;
     let target = format!("panel.{suffix}");
 
-    let peers = ts.peers?;
-    for n in peers.into_values() {
+    let peers = ts.peers.as_ref()?;
+    for n in peers.values() {
         let dns = n.dns_name.as_deref().unwrap_or("").trim_end_matches('.');
         if dns == target {
             // Prefer IPv4 — some hosts have v6 disabled and `connect()` to a
             // [::1]-style URL would fail before TLS even starts.
-            let ips = n.ips.unwrap_or_default();
+            let ips = n.ips.clone().unwrap_or_default();
             if let Some(v4) = ips.iter().find(|i| !i.contains(':')) {
                 return Some(v4.clone());
             }
@@ -413,7 +461,7 @@ pub fn panel_peer_ip() -> Option<String> {
 /// — the failure only shows up here. Login-related messages are prioritized.
 pub fn get_health_issue() -> Option<String> {
     let ts = cached_ts_status()?;
-    let health = ts.health?;
+    let health = ts.health.as_ref()?;
     if health.is_empty() {
         return None;
     }
@@ -474,7 +522,7 @@ pub fn get_status_and_peers() -> (Status, Vec<Peer>) {
         return (Status::default(), vec![]);
     };
     let status = build_status(&ts);
-    let peers = build_peers(ts);
+    let peers = build_peers(&ts);
     (status, peers)
 }
 
@@ -492,16 +540,17 @@ fn build_status(ts: &TsStatus) -> Status {
 
 pub fn get_peers() -> Vec<Peer> {
     match cached_ts_status() {
-        Some(ts) => build_peers(ts),
+        Some(ts) => build_peers(&ts),
         None => vec![],
     }
 }
 
-fn build_peers(ts: TsStatus) -> Vec<Peer> {
+fn build_peers(ts: &TsStatus) -> Vec<Peer> {
     // Tailscale's UserMap is keyed by stringified user-id. Build a quick
     // id → login lookup, stripping any trailing "@github" / "@bigscale.net"
     // tail so it matches the local SSH username on the peer.
-    let users = ts.users.unwrap_or_default();
+    let empty_users = std::collections::HashMap::new();
+    let users = ts.users.as_ref().unwrap_or(&empty_users);
     let resolve_user = |uid: Option<i64>| -> String {
         let uid = match uid {
             Some(v) if v > 0 => v,
@@ -523,8 +572,11 @@ fn build_peers(ts: TsStatus) -> Vec<Peer> {
         .map(|s| s.trim_end_matches('.').to_string())
         .filter(|s| !s.is_empty());
 
-    let is_reserved = |n: &TsNode| -> bool {
-        if RESERVED_OWNERS.contains(&resolve_user(n.user_id).as_str()) {
+    // `user` is resolved once per peer and reused for both the reserved-owner
+    // check and the Peer we build, so we don't stringify the uid + clone the
+    // login twice on every refresh tick.
+    let is_reserved = |n: &TsNode, user: &str| -> bool {
+        if RESERVED_OWNERS.contains(&user) {
             return true;
         }
         let dns = n.dns_name.as_deref().unwrap_or("").trim_end_matches('.');
@@ -548,36 +600,39 @@ fn build_peers(ts: TsStatus) -> Vec<Peer> {
 
     let mut peers: Vec<Peer> = ts
         .peers
-        .unwrap_or_default()
-        .into_values()
-        .filter(|n| !is_reserved(n))
-        .map(|n| {
-            let ips = n.ips.unwrap_or_default();
+        .iter()
+        .flat_map(|m| m.values())
+        .filter_map(|n| {
+            let user = resolve_user(n.user_id);
+            if is_reserved(n, &user) {
+                return None;
+            }
+            let ips = n.ips.clone().unwrap_or_default();
             let ipv4 = ips.iter().find(|i| !i.contains(':')).cloned().unwrap_or_default();
             let ipv6 = ips.iter().find(|i| i.contains(':')).cloned().unwrap_or_default();
             let ip = ips.first().cloned().unwrap_or_default();
-            let tags: Vec<String> = n.tags.unwrap_or_default()
+            let tags: Vec<String> = n.tags.clone().unwrap_or_default()
                 .into_iter()
                 .map(|t| t.strip_prefix("tag:").unwrap_or(&t).to_string())
                 .collect();
-            Peer {
-                hostname: n.hostname.unwrap_or_default(),
+            Some(Peer {
+                hostname: n.hostname.clone().unwrap_or_default(),
                 ip,
                 ipv4,
                 ipv6,
-                dns_name: n.dns_name.map(|d| d.trim_end_matches('.').to_string()).unwrap_or_default(),
+                dns_name: n.dns_name.clone().map(|d| d.trim_end_matches('.').to_string()).unwrap_or_default(),
                 online:   n.online.unwrap_or(false),
-                os:       n.os.unwrap_or_default(),
-                user:     resolve_user(n.user_id),
+                os:       n.os.clone().unwrap_or_default(),
+                user,
                 // Filled in by the window layer from the panel's device-meta
                 // cache — empty here means "not known yet"; callers fall back
                 // to using the peer's hostname as the SSH login.
                 ssh_user: String::new(),
-                last_seen: n.last_seen.unwrap_or_default(),
+                last_seen: n.last_seen.clone().unwrap_or_default(),
                 tags,
                 exit_node_offered: n.exit_node_option,
                 exit_node_active:  n.exit_node,
-            }
+            })
         })
         .collect();
 
@@ -596,7 +651,7 @@ fn build_peers(ts: TsStatus) -> Vec<Peer> {
 /// password at all.
 #[cfg(unix)]
 fn run_tailscale_with_fallback(args: &[&str]) -> Result<()> {
-    dbg(&format!("running: tailscale {}", args.join(" ")));
+    dbg(&format!("running: tailscale {}", redact_args(args)));
     let out = Command::new(tailscale_cmd())
         .args(args)
         .output()
@@ -637,7 +692,7 @@ fn run_tailscale_with_fallback(args: &[&str]) -> Result<()> {
     let mut sh_args: Vec<&str> = vec!["sh", "-c", script, &user];
     sh_args.extend_from_slice(args);
 
-    dbg(&format!("running: pkexec sh -c '<set-operator + exec tailscale>' {} {}", user, args.join(" ")));
+    dbg(&format!("running: pkexec sh -c '<set-operator + exec tailscale>' {} {}", user, redact_args(args)));
     let pk = Command::new("pkexec")
         .args(&sh_args)
         .output()
@@ -669,7 +724,7 @@ fn run_tailscale_with_fallback(args: &[&str]) -> Result<()> {
 /// running biglace as administrator (recorded in the README).
 #[cfg(windows)]
 fn run_tailscale_with_fallback(args: &[&str]) -> Result<()> {
-    dbg(&format!("running: tailscale {}", args.join(" ")));
+    dbg(&format!("running: tailscale {}", redact_args(args)));
     let out = Command::new(tailscale_cmd())
         .args(args)
         .output()
@@ -692,10 +747,17 @@ fn run_tailscale_with_fallback(args: &[&str]) -> Result<()> {
 }
 
 pub fn connect(server: &str, authkey: &str, hostname: &str) -> Result<()> {
-    if server.trim().is_empty() {
+    // Trim once up front so a pasted key/URL with a trailing space or newline
+    // (the usual copy-paste artifact) doesn't reach `tailscale up` verbatim and
+    // get rejected with an opaque "invalid key". Everything below uses the
+    // trimmed values.
+    let server = server.trim();
+    let authkey = authkey.trim();
+    let hostname = hostname.trim();
+    if server.is_empty() {
         bail!(tr!("Enter the server URL before connecting."));
     }
-    if authkey.trim().is_empty() {
+    if authkey.is_empty() {
         bail!(tr!("Sign in or paste a pre-auth key first."));
     }
     dbg(&format!(
@@ -1158,8 +1220,12 @@ pub fn headscale_healthy(server_url: &str) -> bool {
         return false;
     }
     let endpoint = format!("{url}/health");
-    let agent = ureq::AgentBuilder::new()
-        .timeout(std::time::Duration::from_secs(5))
-        .build();
+    // Reuse the shared TLS-configured agent. Building a bare `ureq::Agent` with
+    // no `.tls_connector()` (as this did before) has NO TLS backend under our
+    // `default-features = false` + `native-tls` setup, so every `https://`
+    // health probe failed outright — the badge showed a healthy Headscale as
+    // permanently unreachable. Reusing the agent also shares the connection
+    // pool instead of allocating a fresh TlsConnector every 60s.
+    let Ok(agent) = crate::panel::shared_agent() else { return false; };
     matches!(agent.get(&endpoint).call(), Ok(r) if (200..300).contains(&r.status()))
 }
