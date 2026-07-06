@@ -14,6 +14,17 @@ use crate::trf;
 
 use super::sidebar::Sidebar;
 
+/// Outcome of the background rename worker (see `show_rename_device`), so the
+/// online probe + `tailscale set --hostname` both run off the GTK thread.
+enum RenameResult {
+    /// Tunnel down — config saved, nothing pushed to the daemon.
+    SavedOffline,
+    /// `tailscale set --hostname` succeeded.
+    Renamed,
+    /// `tailscale set --hostname` failed with this message.
+    Failed(String),
+}
+
 pub fn show_about(parent: &libadwaita::ApplicationWindow) {
     let about = libadwaita::AboutWindow::builder()
         .transient_for(parent)
@@ -32,18 +43,37 @@ pub fn show_about(parent: &libadwaita::ApplicationWindow) {
 }
 
 pub fn show_set_operator(parent: &libadwaita::ApplicationWindow) {
-    let result = tailscale::set_operator_current_user();
-    let body = match &result {
-        Ok(()) => tr!("Done. You will no longer need a password to connect or disconnect."),
-        Err(e) => trf!("Failed: {error}", "error" => e.to_string()),
-    };
-    let dlg = libadwaita::MessageDialog::new(
-        Some(parent),
-        Some(&tr!("Tailscale operator")),
-        Some(&body),
-    );
-    dlg.add_response("ok", &tr!("OK"));
-    dlg.present();
+    // `set_operator_current_user()` runs `pkexec tailscale set --operator=…`,
+    // which blocks until the user answers the polkit prompt (up to minutes).
+    // Run it on a worker thread and show the result via a main-loop poller so
+    // the whole window doesn't freeze while the prompt is up.
+    let slot: Arc<Mutex<Option<Result<(), String>>>> = Arc::new(Mutex::new(None));
+    let slot_t = slot.clone();
+    std::thread::spawn(move || {
+        let r = tailscale::set_operator_current_user().map_err(|e| e.to_string());
+        if let Ok(mut g) = slot_t.lock() {
+            *g = Some(r);
+        }
+    });
+
+    let parent_w = parent.clone();
+    glib::timeout_add_local(Duration::from_millis(200), move || {
+        let Some(result) = slot.lock().ok().and_then(|mut g| g.take()) else {
+            return glib::ControlFlow::Continue;
+        };
+        let body = match &result {
+            Ok(()) => tr!("Done. You will no longer need a password to connect or disconnect."),
+            Err(e) => trf!("Failed: {error}", "error" => e),
+        };
+        let dlg = libadwaita::MessageDialog::new(
+            Some(&parent_w),
+            Some(&tr!("Tailscale operator")),
+            Some(&body),
+        );
+        dlg.add_response("ok", &tr!("OK"));
+        dlg.present();
+        glib::ControlFlow::Break
+    });
 }
 
 /// Confirm with the user, then tear down the current session.
@@ -211,13 +241,35 @@ pub fn show_panel_login(
             config::os_user()
         };
         er_node.set_text(&default_node);
-        // Pre-fill the password from the OS keyring if we've seen this user
-        // on this panel before. Falls back to empty silently when no keyring
-        // backend is available.
-        if !c.panel_url.is_empty() && !c.panel_username.is_empty() {
-            if let Some(pw) = secrets::load(&c.panel_url, &c.panel_username) {
-                er_pass.set_text(&pw);
-            }
+    }
+
+    // Pre-fill the password from the OS keyring off the main thread: a locked
+    // keyring can block on a D-Bus unlock prompt, which would freeze the dialog
+    // the moment it opens. Load on a worker and fill via a one-shot poller.
+    {
+        let (panel_url, username) = {
+            let c = cfg.borrow();
+            (c.panel_url.clone(), c.panel_username.clone())
+        };
+        if !panel_url.is_empty() && !username.is_empty() {
+            let slot: Arc<Mutex<Option<Option<String>>>> = Arc::new(Mutex::new(None));
+            let slot_t = slot.clone();
+            std::thread::spawn(move || {
+                let pw = secrets::load(&panel_url, &username);
+                if let Ok(mut g) = slot_t.lock() {
+                    *g = Some(pw);
+                }
+            });
+            let er_pass_w = er_pass.clone();
+            glib::timeout_add_local(Duration::from_millis(150), move || {
+                let Some(pw) = slot.lock().ok().and_then(|mut g| g.take()) else {
+                    return glib::ControlFlow::Continue;
+                };
+                if let Some(pw) = pw {
+                    er_pass_w.set_text(&pw);
+                }
+                glib::ControlFlow::Break
+            });
         }
     }
 
@@ -268,6 +320,23 @@ pub fn show_panel_login(
 
     dlg.set_content(Some(&outer));
 
+    // Block the header-bar close button while a sign-in is in flight. Cancel
+    // is already disabled during the request, but the window's own close
+    // button isn't — closing there would leave the 300ms poller running
+    // against a destroyed dialog (its error would land on a dead label) and
+    // let the user reopen and fire a second concurrent request.
+    let busy = Rc::new(RefCell::new(false));
+    {
+        let busy_w = busy.clone();
+        dlg.connect_close_request(move |_| {
+            if *busy_w.borrow() {
+                glib::Propagation::Stop
+            } else {
+                glib::Propagation::Proceed
+            }
+        });
+    }
+
     {
         let dlg2 = dlg.clone();
         btn_cancel.connect_clicked(move |_| dlg2.close());
@@ -289,6 +358,7 @@ pub fn show_panel_login(
         let ok_idle_w = ok_label_idle.clone();
         let ok_busy_w = ok_busy_box.clone();
         let ok_spinner_w = ok_spinner.clone();
+        let busy_c = busy.clone();
 
         btn_ok.connect_clicked(move |_| {
             lbl_err2.set_text("");
@@ -310,11 +380,13 @@ pub fn show_panel_login(
                 return;
             }
 
-            // Visual busy state: disable OK + Cancel, swap label for spinner.
+            // Visual busy state: disable OK + Cancel, swap label for spinner,
+            // and block the window close button (see `busy` above).
             btn_ok_w.set_sensitive(false);
             btn_cancel_w.set_sensitive(false);
             btn_ok_w.set_child(Some(&ok_busy_w));
             ok_spinner_w.start();
+            *busy_c.borrow_mut() = true;
 
             let slot: Arc<Mutex<Option<Result<panel::PreAuthResponse, String>>>> =
                 Arc::new(Mutex::new(None));
@@ -335,6 +407,7 @@ pub fn show_panel_login(
             let btn_cancel_w2 = btn_cancel_w.clone();
             let ok_idle_w2 = ok_idle_w.clone();
             let ok_spinner_w2 = ok_spinner_w.clone();
+            let busy_p = busy_c.clone();
             let panel_url = creds.url.clone();
             let username  = creds.username.clone();
             let password  = creds.password.clone();
@@ -343,6 +416,10 @@ pub fn show_panel_login(
                 match slot.lock().ok().and_then(|mut g| g.take()) {
                     None => glib::ControlFlow::Continue,
                     Some(Ok(resp)) => {
+                        // Clear busy before close() — the close-request guard
+                        // returns Stop while busy and would otherwise block our
+                        // own dlg3.close() below.
+                        *busy_p.borrow_mut() = false;
                         // The server may return a loopback (127.0.0.1) URL
                         // when its public_url isn't configured — fall back
                         // to whatever the user actually typed in panel URL.
@@ -384,6 +461,7 @@ pub fn show_panel_login(
                         glib::ControlFlow::Break
                     }
                     Some(Err(e)) => {
+                        *busy_p.borrow_mut() = false;
                         lbl_err3.set_text(&trf!("Error: {error}", "error" => e));
                         // Restore the idle button state so the user can retry.
                         ok_spinner_w2.stop();
@@ -452,8 +530,38 @@ pub fn show_rename_device(
     dlg.set_close_response("cancel");
     dlg.set_extra_child(Some(&outer));
 
+    // Validate live and gate the Save response on validity, so an invalid name
+    // simply can't be submitted. The old code let Save fire on an invalid
+    // value, then closed the dialog and only toasted the error — throwing away
+    // whatever the user had typed. Now the dialog stays open until it's valid.
+    let validate: Rc<dyn Fn(&str)> = {
+        let dlg_w  = dlg.clone();
+        let lbl_w  = lbl_err.clone();
+        Rc::new(move |text: &str| match validate_hostname(text.trim()) {
+            Ok(()) => {
+                lbl_w.set_visible(false);
+                dlg_w.set_response_enabled("save", true);
+            }
+            Err(msg) => {
+                dlg_w.set_response_enabled("save", false);
+                // Empty is "not valid yet", not worth a red banner; only show
+                // the message once the user has typed something wrong.
+                if text.trim().is_empty() {
+                    lbl_w.set_visible(false);
+                } else {
+                    lbl_w.set_text(&msg);
+                    lbl_w.set_visible(true);
+                }
+            }
+        })
+    };
+    validate(entry.text().as_str());
+    {
+        let validate2 = validate.clone();
+        entry.connect_changed(move |e| validate2(e.text().as_str()));
+    }
+
     let entry_w  = entry.clone();
-    let lbl_w    = lbl_err.clone();
     let cfg_w    = cfg.clone();
     let parent_w = parent.clone();
     let overlay_w = overlay.clone();
@@ -463,22 +571,9 @@ pub fn show_rename_device(
             return;
         }
         let new_name = entry_w.text().trim().to_string();
-        if let Err(msg) = validate_hostname(&new_name) {
-            lbl_w.set_text(&msg);
-            lbl_w.set_visible(true);
-            // Don't close — let the user fix the value and click Save again.
-            // MessageDialog auto-closes on response, so we have to re-present.
-            // Easiest path: open a fresh dialog by recursing — but that loses
-            // the typed text. Instead, just toast the error and keep the
-            // dialog state by re-presenting *this* dialog before it closes.
-            // Since we don't have a hook to cancel close, fall back to a toast
-            // on the parent and stop here; the dialog closes, user reopens.
-            overlay_w.add_toast(
-                libadwaita::Toast::builder()
-                    .title(msg)
-                    .timeout(4)
-                    .build(),
-            );
+        // Save is only enabled when the value validates (see `validate` above),
+        // so this is a defensive guard, not the primary check.
+        if validate_hostname(&new_name).is_err() {
             dlg.close();
             return;
         }
@@ -492,35 +587,45 @@ pub fn show_rename_device(
             config::save_or_warn(&c);
         }
 
-        // If the tunnel is up, push the rename to the daemon now. Otherwise
-        // there's nothing to do — the next `tailscale up` (next connect) will
-        // pick up the new value from config.
-        let online = tailscale::is_service_active() && tailscale::get_status().online;
-        if !online {
-            overlay_w.add_toast(
-                libadwaita::Toast::builder()
-                    .title(tr!("Saved. The new name will take effect the next time you connect."))
-                    .timeout(3)
-                    .build(),
-            );
-            gtk4::prelude::WidgetExt::activate_action(&parent_w, "win.refresh", None).ok();
-            return;
-        }
-
+        // Probe online state AND push the rename on a worker thread: the
+        // is_service_active/get_status probe is a subprocess that would freeze
+        // the GTK loop on a hung daemon if done here. If the tunnel is up we
+        // apply now; otherwise the next `tailscale up` carries the new value.
         let name_t = new_name.clone();
-        let slot: Arc<Mutex<Option<Result<(), String>>>> = Arc::new(Mutex::new(None));
+        let slot: Arc<Mutex<Option<RenameResult>>> = Arc::new(Mutex::new(None));
         let slot_t = slot.clone();
         std::thread::spawn(move || {
-            let r = tailscale::set_hostname(&name_t).map_err(|e| e.to_string());
-            if let Ok(mut g) = slot_t.lock() { *g = Some(r); }
+            let online = tailscale::is_service_active() && tailscale::get_status().online;
+            let outcome = if !online {
+                RenameResult::SavedOffline
+            } else {
+                match tailscale::set_hostname(&name_t) {
+                    Ok(()) => RenameResult::Renamed,
+                    Err(e) => RenameResult::Failed(e.to_string()),
+                }
+            };
+            if let Ok(mut g) = slot_t.lock() {
+                *g = Some(outcome);
+            }
         });
 
         let parent_t  = parent_w.clone();
         let overlay_t = overlay_w.clone();
-        glib::timeout_add_local(Duration::from_millis(250), move || {
-            match slot.lock().ok().and_then(|mut g| g.take()) {
-                None => glib::ControlFlow::Continue,
-                Some(Ok(())) => {
+        glib::timeout_add_local(Duration::from_millis(200), move || {
+            let Some(outcome) = slot.lock().ok().and_then(|mut g| g.take()) else {
+                return glib::ControlFlow::Continue;
+            };
+            match outcome {
+                RenameResult::SavedOffline => {
+                    overlay_t.add_toast(
+                        libadwaita::Toast::builder()
+                            .title(tr!("Saved. The new name will take effect the next time you connect."))
+                            .timeout(3)
+                            .build(),
+                    );
+                    gtk4::prelude::WidgetExt::activate_action(&parent_t, "win.refresh", None).ok();
+                }
+                RenameResult::Renamed => {
                     overlay_t.add_toast(
                         libadwaita::Toast::builder()
                             .title(tr!("Device renamed."))
@@ -528,18 +633,21 @@ pub fn show_rename_device(
                             .build(),
                     );
                     gtk4::prelude::WidgetExt::activate_action(&parent_t, "win.refresh", None).ok();
-                    glib::ControlFlow::Break
                 }
-                Some(Err(e)) => {
+                RenameResult::Failed(e) => {
                     overlay_t.add_toast(
                         libadwaita::Toast::builder()
-                            .title(trf!("Rename failed: {error}", "error" => e))
+                            // Escape tailscale stderr before it hits the
+                            // markup-aware toast title.
+                            .title(glib::markup_escape_text(
+                                &trf!("Rename failed: {error}", "error" => e),
+                            ).as_str())
                             .timeout(6)
                             .build(),
                     );
-                    glib::ControlFlow::Break
                 }
             }
+            glib::ControlFlow::Break
         });
     });
     dlg.present();

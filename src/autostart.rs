@@ -85,7 +85,7 @@ fn set_enabled_impl(enabled: bool) -> Result<()> {
          Exec={exec} --hidden\n\
          Icon={APP_ID}\n\
          Terminal=false\n\
-         Categories=Network;System;\n\
+         Categories=Network;\n\
          X-GNOME-Autostart-enabled=true\n"
     );
 
@@ -113,6 +113,10 @@ fn escape_desktop_exec(value: &str) -> String {
     let mut out = String::with_capacity(value.len());
     for ch in value.chars() {
         match ch {
+            // Per the Desktop Entry spec a literal `%` in `Exec=` must be
+            // doubled — otherwise `%f`/`%u`/`%t` in a path (e.g. a dir named
+            // `100%test`) are interpreted as field codes and break the launch.
+            '%' => out.push_str("%%"),
             '\\' | ' ' | '\t' | '\n' | '"' | '\'' | '>' | '<' | '~' | '|' | '&' | ';' | '$'
             | '*' | '?' | '#' | '(' | ')' | '`' => {
                 out.push('\\');
