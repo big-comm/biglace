@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Framework Material theme (no ActionBar) so we don't pull the
+         com.google.android.material AAR — all real styling is done in Compose
+         (see ui/theme). Dark window background avoids a white flash on launch. -->
+    <style name="Theme.BigLace" parent="android:Theme.Material.NoActionBar">
+        <item name="android:windowBackground">@color/biglace_bg</item>
+        <item name="android:statusBarColor">@android:color/transparent</item>
+        <item name="android:navigationBarColor">@android:color/transparent</item>
+    </style>
+</resources>

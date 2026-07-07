@@ -319,9 +319,12 @@ jobs:
           MSI_VERSION: ${{ steps.msiver.outputs.version }}
         run: |
           # -C passes flags to candle (compiler), -L to light (linker).
-          # main.wxs uses util:CloseApplication, so WixUtilExtension must be
-          # loaded for BOTH — passing it only to light (as before) makes candle
-          # fail with "unhandled extension element", breaking every MSI build.
+          # main.wxs uses util:CloseApplication, so candle needs WixUtilExtension
+          # explicitly (candle gets no default extensions). light must NOT be given
+          # it again: cargo-wix already links light with WixUtilExtension by
+          # default, so a second `-ext WixUtilExtension` makes light fail with
+          # LGHT0126 (the extension's EventManifest table collides with the already
+          # loaded copy). Hence -C only, no -L for the util extension.
           # --install-version overrides the Cargo.toml 1.0.0 with the numeric
           # version derived from the tag so upgrades actually replace in place.
           cargo wix `
@@ -331,7 +334,6 @@ jobs:
               --install-version $env:MSI_VERSION `
               -C "-ext" -C "WixUtilExtension" `
               -C "-dStageDir=target\wix-stage" `
-              -L "-ext" -L "WixUtilExtension" `
               --output "target\biglace-$env:TAG-x86_64.msi"
 
       - name: Upload MSI artifact

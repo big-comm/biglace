@@ -48,6 +48,17 @@ SFTP browser. That is the core difference — and most of the work.
 | [UI-DESIGN.md](UI-DESIGN.md) | Screen inventory, wireframes, terminal & file-manager design, theming |
 | [ROADMAP.md](ROADMAP.md) | Milestones M0–M5 with acceptance criteria |
 
+## Implementation
+
+The Android project lives in **[android/](android/)** — see
+[android/README.md](android/README.md) for build instructions and the
+per-milestone status. The current cut (M0 + M1 foundation) is a buildable,
+runnable app: the full Compose UI shell, the `MeshBackend` seam with a fake
+backend, the peers list with persisted favorites, the settings/connection form,
+and a `PanelClient` implementing the exact desktop panel contract. Terminal
+(M2), the SFTP file manager (M3), and the embedded mesh (M4) are scaffolded
+behind their interfaces.
+
 ## Key decisions (summary)
 
 - **Kotlin + Jetpack Compose + Material 3**, MVVM, coroutines. No cross-platform

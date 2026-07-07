@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Adaptive-icon foreground: the mesh from the official desktop SVG
+     (usr/share/icons/hicolor/scalable/apps/org.communitybig.biglace.svg) —
+     6 spokes + hexagonal "lace" perimeter + outer nodes + brand-blue center.
+     Native 128 coords; the mesh sits in the center ~44%, well inside the
+     adaptive safe zone. -->
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="108dp"
+    android:height="108dp"
+    android:viewportWidth="128"
+    android:viewportHeight="128">
+
+    <!-- spokes: center → 6 outer nodes -->
+    <path
+        android:strokeColor="#FFFFFF"
+        android:strokeWidth="3"
+        android:strokeLineCap="round"
+        android:pathData="M64,64 L92,64 M64,64 L36,64 M64,64 L78,40 M64,64 L50,40 M64,64 L78,88 M64,64 L50,88" />
+
+    <!-- perimeter ("lace") -->
+    <path
+        android:strokeColor="#FFFFFF"
+        android:strokeWidth="2"
+        android:strokeAlpha="0.65"
+        android:strokeLineCap="round"
+        android:pathData="M92,64 L78,40 L50,40 L36,64 L50,88 L78,88 Z" />
+
+    <!-- outer nodes (r=6) -->
+    <path
+        android:fillColor="#FFFFFF"
+        android:pathData="M86,64 a6,6 0 1,0 12,0 a6,6 0 1,0 -12,0
+                          M30,64 a6,6 0 1,0 12,0 a6,6 0 1,0 -12,0
+                          M72,40 a6,6 0 1,0 12,0 a6,6 0 1,0 -12,0
+                          M44,40 a6,6 0 1,0 12,0 a6,6 0 1,0 -12,0
+                          M72,88 a6,6 0 1,0 12,0 a6,6 0 1,0 -12,0
+                          M44,88 a6,6 0 1,0 12,0 a6,6 0 1,0 -12,0" />
+
+    <!-- center node: white ring + brand-blue dot -->
+    <path
+        android:fillColor="#FFFFFF"
+        android:pathData="M55,64 a9,9 0 1,0 18,0 a9,9 0 1,0 -18,0" />
+    <path
+        android:fillColor="#1a5fb4"
+        android:pathData="M60,64 a4,4 0 1,0 8,0 a4,4 0 1,0 -8,0" />
+</vector>
