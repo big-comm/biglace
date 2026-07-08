@@ -54,7 +54,10 @@ fn main() {
     // We parse argv ourselves and hand GApplication a clean argv via
     // `run_with_args`, so GTK's own option parser never sees `--hidden` and
     // aborts with "Unknown option".
-    let start_hidden = std::env::args().skip(1).any(|a| a == "--hidden");
+    // args_os, not args: the latter panics mid-iteration on any non-UTF-8
+    // argument, which would crash biglace before a single window appears if a
+    // launcher passed odd bytes. OsString compares against &str directly.
+    let start_hidden = std::env::args_os().skip(1).any(|a| a == "--hidden");
 
     // Migrate a stale autostart entry written by a pre-`--hidden` build, so an
     // in-place upgrade actually starts in the tray at the next login instead of

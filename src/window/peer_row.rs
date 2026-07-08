@@ -61,7 +61,10 @@ pub fn compose_subtitle(
 pub fn build(peer: &Peer, ctx: &PeerCtx) -> libadwaita::ExpanderRow {
     let row = libadwaita::ExpanderRow::new();
     let display = peer.display_name();
-    row.set_title(if display.is_empty() { "—" } else { &display });
+    // display_name comes from the peer's DNS/hostname (network-controlled);
+    // escape before it hits AdwExpanderRow's markup-aware title.
+    let title = if display.is_empty() { "—".to_string() } else { display };
+    row.set_title(&glib::markup_escape_text(&title));
 
     // ── Subtitle: IP · OS · offline · latency ──
     row.set_subtitle(&compose_subtitle(peer, &ctx.latency));
@@ -371,8 +374,14 @@ pub fn build(peer: &Peer, ctx: &PeerCtx) -> libadwaita::ExpanderRow {
             let host = peer.hostname.clone();
             let refresh = ctx.refresh.clone();
             let toast = ctx.toast.clone();
-            switch.connect_state_set(move |_, active| {
+            switch.connect_state_set(move |sw, active| {
                 let target = if active { Some(host.clone()) } else { None };
+                // Disable the switch until the operation resolves. Without this,
+                // rapid toggles spawn concurrent `tailscale set --exit-node`
+                // calls whose results land out of order, leaving the switch
+                // desynced from the real routing state until the next rebuild.
+                sw.set_sensitive(false);
+                let sw_poll = sw.clone();
                 // Run `tailscale set --exit-node=...` off the GTK thread so
                 // pkexec prompts don't freeze the UI. We can't capture
                 // ToastOverlay/Rc into the thread (not Send), so the worker
@@ -399,6 +408,7 @@ pub fn build(peer: &Peer, ctx: &PeerCtx) -> libadwaita::ExpanderRow {
                     let Some((ok, err)) = slot.lock().ok().and_then(|mut g| g.take()) else {
                         return glib::ControlFlow::Continue;
                     };
+                    sw_poll.set_sensitive(true);
                     let label = if ok {
                         if active { tr!("Exit node enabled") } else { tr!("Exit node disabled") }
                     } else {
@@ -406,7 +416,9 @@ pub fn build(peer: &Peer, ctx: &PeerCtx) -> libadwaita::ExpanderRow {
                     };
                     toast_t.add_toast(
                         libadwaita::Toast::builder()
-                            .title(&label)
+                            // `label` can embed tailscale stderr on failure —
+                            // escape so `<`/`&` don't corrupt the markup title.
+                            .title(glib::markup_escape_text(&label).as_str())
                             .timeout(3)
                             .build(),
                     );
@@ -425,7 +437,10 @@ pub fn build(peer: &Peer, ctx: &PeerCtx) -> libadwaita::ExpanderRow {
 fn detail_row(icon: &str, label: &str, value: &str) -> libadwaita::ActionRow {
     let r = libadwaita::ActionRow::new();
     r.set_title(label);
-    r.set_subtitle(value);
+    // `value` is network-derived (DNS name, tags, owner); escape it so a `<`
+    // or `&` can't corrupt AdwActionRow's markup-aware subtitle. `label` is
+    // always one of our own literals, so it needs none.
+    r.set_subtitle(&glib::markup_escape_text(value));
     let img = gtk4::Image::from_icon_name(icon);
     img.set_pixel_size(18);
     img.add_css_class("dim-label");
