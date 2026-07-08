@@ -129,6 +129,9 @@ pub struct Status {
     pub ip:       Option<String>,
     pub hostname: Option<String>,
     pub dns_name: Option<String>,
+    /// True when tailscaled already holds a node registration on disk
+    /// (BackendState Running/Stopped/Starting) — so we can reconnect without a key.
+    pub registered: bool,
 }
 
 #[derive(Debug, Clone)]
@@ -204,6 +207,10 @@ fn first_dns_label(dns: &str) -> Option<String> {
 struct TsStatus {
     #[serde(rename = "Self")]
     self_node: Option<TsNode>,
+    /// Daemon state: "Running" | "Stopped" | "Starting" mean the node holds a
+    /// registration on disk; "NeedsLogin" | "NoState" mean it must (re)auth.
+    #[serde(rename = "BackendState")]
+    backend_state: Option<String>,
     #[serde(rename = "Peer")]
     peers: Option<std::collections::HashMap<String, TsNode>>,
     #[serde(rename = "Health")]
@@ -535,6 +542,10 @@ fn build_status(ts: &TsStatus) -> Status {
         dns_name: node
             .and_then(|n| n.dns_name.clone())
             .map(|d| d.trim_end_matches('.').to_string()),
+        registered: matches!(
+            ts.backend_state.as_deref(),
+            Some("Running") | Some("Stopped") | Some("Starting")
+        ),
     }
 }
 
@@ -757,24 +768,42 @@ pub fn connect(server: &str, authkey: &str, hostname: &str) -> Result<()> {
     if server.is_empty() {
         bail!(tr!("Enter the server URL before connecting."));
     }
-    if authkey.is_empty() {
-        bail!(tr!("Sign in or paste a pre-auth key first."));
-    }
     dbg(&format!(
         "connect: server={server:?} hostname={hostname:?} authkey={}",
         if authkey.is_empty() { "<empty>" } else { "<provided>" }
     ));
     let pre_status = get_status();
     dbg(&format!(
-        "connect: pre-status online={} hostname={:?} ip={:?}",
-        pre_status.online, pre_status.hostname, pre_status.ip
+        "connect: pre-status online={} registered={} hostname={:?} ip={:?}",
+        pre_status.online, pre_status.registered, pre_status.hostname, pre_status.ip
     ));
-    // Always try with the user-provided authkey first. If it succeeds, great.
-    // If it fails because the key was consumed/expired, fall back to a
-    // keyless attempt that relies on cached registration on disk.
-    let first = try_connect(server, authkey, hostname);
-    if let Err(e) = first {
-        dbg(&format!("connect: first attempt failed: {e}"));
+
+    // Prefer a KEYLESS reconnect when this machine already holds a registration.
+    // tailscale keeps the node key on disk across a `down`, so coming back up
+    // needs no key and no re-auth. This makes everyday reconnects independent of
+    // the pre-auth key's lifetime and — crucially — avoids the `--force-reauth`
+    // that would re-register the node on every connect (which is what let a
+    // one-time key expire the node between sessions). The key is only needed to
+    // (re)register: first login, a logged-out/expired node, or a new server.
+    if pre_status.registered {
+        dbg("connect: cached registration present — trying keyless reconnect");
+        if try_connect(server, "", hostname).is_ok() && wait_until_online() {
+            dbg("connect: reconnected via cached registration (no key needed)");
+            return Ok(());
+        }
+        dbg("connect: keyless reconnect didn't take — (re)authenticating with the key");
+    }
+
+    // From here we need the key to register / re-authenticate.
+    if authkey.is_empty() {
+        if pre_status.registered {
+            bail!(tr!("The pre-auth key was rejected by the server. Generate a new key in the BigScale panel and try again."));
+        }
+        bail!(tr!("Sign in or paste a pre-auth key first."));
+    }
+
+    if let Err(e) = try_connect(server, authkey, hostname) {
+        dbg(&format!("connect: key attempt failed: {e}"));
         let msg = e.to_string().to_lowercase();
         let auth_failed = msg.contains("auth-key")
             || msg.contains("authkey")
@@ -782,27 +811,19 @@ pub fn connect(server: &str, authkey: &str, hostname: &str) -> Result<()> {
             || msg.contains("expired")
             || msg.contains("already used")
             || msg.contains("invalid key");
-        if authkey.is_empty() || !auth_failed {
-            return Err(e);
+        if auth_failed {
+            bail!(tr!("The pre-auth key was rejected by the server. Generate a new key in the BigScale panel and try again."));
         }
-        dbg("connect: retrying without authkey (cached registration)");
-        try_connect(server, "", hostname)?;
+        return Err(e);
     }
 
-    // `tailscale up` exits 0 even when the coordinator rejects the key.
-    // The real failure only appears in Self.Online and the Health array.
-    // Wait briefly for the daemon to settle, then verify. Bypass the status
-    // cache on every iteration so we don't spin at the cache TTL granularity
-    // while waiting for the daemon to flip Online.
-    for _ in 0..10 {
-        invalidate_status_cache();
+    // `tailscale up` exits 0 even when the coordinator rejects the key. The real
+    // failure only shows up in Self.Online and the Health array — verify.
+    if wait_until_online() {
         let post = get_status();
-        if post.online {
-            dbg(&format!("connect: post-status online=true hostname={:?} ip={:?}",
-                post.hostname, post.ip));
-            return Ok(());
-        }
-        std::thread::sleep(std::time::Duration::from_millis(300));
+        dbg(&format!("connect: post-status online=true hostname={:?} ip={:?}",
+            post.hostname, post.ip));
+        return Ok(());
     }
 
     let post = get_status();
@@ -822,6 +843,20 @@ pub fn connect(server: &str, authkey: &str, hostname: &str) -> Result<()> {
     bail!(tr!("Failed to connect — check the server URL and key."))
 }
 
+/// Poll for tailscaled to flip Online after an `up`, bypassing the status cache
+/// each tick so we don't spin at cache-TTL granularity. True once online, false
+/// after ~3s.
+fn wait_until_online() -> bool {
+    for _ in 0..10 {
+        invalidate_status_cache();
+        if get_status().online {
+            return true;
+        }
+        std::thread::sleep(std::time::Duration::from_millis(300));
+    }
+    false
+}
+
 fn try_connect(server: &str, authkey: &str, hostname: &str) -> Result<()> {
     let user = std::env::var("USER").unwrap_or_default();
     // `--reset` clears any pref cached from a previous `tailscale up`/`set`
@@ -831,7 +866,13 @@ fn try_connect(server: &str, authkey: &str, hostname: &str) -> Result<()> {
     // set`) left a flag enabled that the current biglace doesn't pass —
     // e.g. --ssh, --shields-up, --advertise-routes. BigLace owns the full
     // user-facing config, so resetting on each up is the right call.
-    let mut args = vec!["up", "--reset", "--accept-routes"];
+    // --timeout bounds how long `tailscale up` waits to reach Running. Without
+    // it, a rejected/expired key sends the daemon into a NeedsLogin state where
+    // `up` blocks forever waiting for an interactive browser login — which BigLace
+    // never provides, so the whole connect thread hangs and the UI is stuck on
+    // "Connecting…". With the bound it fails in seconds and we surface a clear
+    // "key expired, generate a new one" message.
+    let mut args = vec!["up", "--reset", "--accept-routes", "--timeout=10s"];
 
     let s_arg;
     let a_arg;
