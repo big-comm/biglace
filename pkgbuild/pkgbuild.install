@@ -9,10 +9,10 @@ cyan="\e[1;38;5;45m"         # Bold cyan
 white="\e[1;97m"             # Bold white
 reset="\e[0m"                # Reset text formatting
 
-# Print status messages - CHANGE 'PACKAGE_NAME' to your actual package name
+# Print status messages
 printMsg() {
     local message=$1
-    echo -e "${blueDark}[${lightBlue}PACKAGE_NAME${blueDark}]${reset} ${cyan}→${reset} ${white}${message}${reset}"
+    echo -e "${blueDark}[${lightBlue}biglace${blueDark}]${reset} ${cyan}→${reset} ${white}${message}${reset}"
 }
 
 # Function executed before package installation
@@ -25,19 +25,51 @@ printMsg() {
 #     # fi
 # }
 
+# Enable (and, on a live system, start) the SSH server. BigLace reaches this
+# machine over the mesh via SSH/SFTP, so sshd must be running. openssh is a hard
+# dependency, so sshd.service is already present when this runs.
+enable_sshd() {
+    # Enable at boot. Prefer systemctl; if it fails or is ignored (e.g. inside an
+    # ISO build chroot), drop the wants symlink manually so it's enabled anyway.
+    if ! systemctl enable sshd.service &>/dev/null; then
+        local unit="/usr/lib/systemd/system/sshd.service"
+        if [ -e "$unit" ]; then
+            install -d /etc/systemd/system/multi-user.target.wants
+            ln -sf "$unit" /etc/systemd/system/multi-user.target.wants/sshd.service
+        fi
+    fi
+    printMsg "SSH server enabled at boot (sshd)."
+
+    # Only start when there's a running systemd (skips chroot/image builds so the
+    # scriptlet never fails the install); leave an already-running sshd untouched.
+    if [ -d /run/systemd/system ]; then
+        if systemctl is-active --quiet sshd.service; then
+            printMsg "SSH server already running."
+        elif systemctl start sshd.service &>/dev/null; then
+            printMsg "SSH server started."
+        else
+            printMsg "sshd enabled but not started. Run: sudo systemctl start sshd"
+        fi
+    fi
+}
+
+# Auto-enable sshd EXACTLY ONCE, tracked by a stamp file. Called from both
+# post_install and post_upgrade so it reaches fresh installs, the ISO build, AND
+# the existing user base (which — with date-based pkgver — only ever runs
+# post_upgrade). The stamp means a later `systemctl disable sshd` by the admin is
+# respected on all subsequent upgrades instead of being reverted every update.
+SSHD_STAMP="/var/lib/biglace/sshd-setup-done"
+setup_sshd_once() {
+    [ -e "${SSHD_STAMP}" ] && return 0
+    enable_sshd
+    install -d "$(dirname "${SSHD_STAMP}")"
+    : > "${SSHD_STAMP}"
+}
+
 # Function executed after package installation
-# post_install() {
-#     printMsg "Configuring the package after installation..."
-#     # Example: Create a configuration directory
-#     # mkdir -p /etc/mypackage
-#     # chmod 755 /etc/mypackage
-#     # printMsg "Created configuration directory"
-#
-#     # Example: Start a service
-#     # systemctl enable myservice.service
-#     # systemctl start myservice.service
-#     # printMsg "Service enabled and started"
-# }
+post_install() {
+    setup_sshd_once
+}
 
 # Function executed before package upgrade
 # pre_upgrade() {
@@ -48,18 +80,10 @@ printMsg() {
 # }
 
 # Function executed after package upgrade
-# post_upgrade() {
-#     printMsg "Finalizing package upgrade..."
-#     # Usually, post_install is called here to ensure
-#     # all post-installation configurations are applied
-#     # post_install
-#
-#     # Example: Check and update configuration files
-#     # if [ -f /etc/mypackage/config.conf.pacnew ]; then
-#     #     printMsg "New configuration file available. Please review /etc/mypackage/config.conf.pacnew"
-#     # fi
-#     # printMsg "Upgrade completed successfully"
-# }
+post_upgrade() {
+    # Catch the existing install base once (they never re-run post_install).
+    setup_sshd_once
+}
 
 # Function executed before package removal
 # pre_remove() {
@@ -71,12 +95,10 @@ printMsg() {
 # }
 
 # Function executed after package removal
-# post_remove() {
-#     printMsg "Cleaning up after package removal..."
-#     # Example: Remove data directories created by the package
-#     # rm -rf /var/lib/mypackage
-#     # printMsg "Package directories removed"
-#
-#     # printMsg "If you want to remove all user data, run:"
-#     # printMsg "rm -rf /home/*/mypackage_data"
-# }
+post_remove() {
+    # Drop the one-time marker so a later reinstall behaves like a fresh install
+    # (re-enables sshd). We deliberately do NOT disable sshd here — other things
+    # may rely on it, and turning it off on removal would be surprising.
+    rm -f "${SSHD_STAMP}"
+    rmdir --ignore-fail-on-non-empty /var/lib/biglace 2>/dev/null || true
+}

@@ -9,7 +9,7 @@ use std::time::Duration;
 /// a single instance for the lifetime of the app. The OnceLock holds a
 /// Result so a failed TLS init can still be surfaced to each caller without
 /// retrying the (unlikely-to-recover) initialization.
-fn shared_agent() -> Result<ureq::Agent> {
+pub(crate) fn shared_agent() -> Result<ureq::Agent> {
     static AGENT: OnceLock<std::result::Result<ureq::Agent, String>> = OnceLock::new();
     let cell = AGENT.get_or_init(|| {
         let tls = native_tls::TlsConnector::new()
@@ -164,7 +164,15 @@ pub fn fetch_device_meta() -> Result<HashMap<String, String>> {
 
     let resp = agent.get(&endpoint).set("Accept", "application/json").call();
     match resp {
-        Ok(r) => Ok(r.into_json::<HashMap<String, String>>().unwrap_or_default()),
+        // A 200 whose body isn't the expected map means the panel changed its
+        // response shape (e.g. an upgrade) — degrade to the hostname-as-login
+        // fallback like the empty-map cases, but log it so this is diagnosable
+        // without a packet capture (the 401/404 fallbacks below are deliberate
+        // and stay quiet; a malformed 200 is not).
+        Ok(r) => Ok(r.into_json::<HashMap<String, String>>().unwrap_or_else(|e| {
+            eprintln!("[biglace] panel: os-users response wasn't the expected JSON map: {e}");
+            HashMap::new()
+        })),
         // 401 on this endpoint means "panel doesn't recognize me as a tailnet
         // peer" — typically because the panel is older than this client.
         // Silent fallback keeps biglace usable.

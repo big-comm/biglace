@@ -1,0 +1,161 @@
+package org.communitybig.biglace.service
+
+import android.app.Notification
+import android.app.NotificationChannel
+import android.app.NotificationManager
+import android.app.PendingIntent
+import android.app.Service
+import android.content.Context
+import android.content.Intent
+import android.content.pm.ServiceInfo
+import android.os.Build
+import android.os.IBinder
+import androidx.core.app.NotificationCompat
+import androidx.core.app.ServiceCompat
+import androidx.core.content.ContextCompat
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.SupervisorJob
+import kotlinx.coroutines.cancel
+import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.launch
+import org.communitybig.biglace.BigLaceApplication
+import org.communitybig.biglace.MainActivity
+import org.communitybig.biglace.R
+import org.communitybig.biglace.core.mesh.MeshState
+
+/**
+ * Foreground service that owns the embedded tsnet tunnel. Running as a
+ * foreground service (with a persistent notification) is what keeps the mesh
+ * connected after the Activity is closed, and puts the status-bar icon up top.
+ */
+class MeshService : Service() {
+
+    private val scope = CoroutineScope(SupervisorJob() + Dispatchers.Main)
+    private lateinit var app: BigLaceApplication
+    private var observeJob: Job? = null
+
+    override fun onCreate() {
+        super.onCreate()
+        app = application as BigLaceApplication
+        createChannel()
+    }
+
+    override fun onBind(intent: Intent?): IBinder? = null
+
+    override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
+        when (intent?.action) {
+            ACTION_DISCONNECT -> {
+                scope.launch { app.container.activeBackend.value.disconnect() }
+                stopService()
+                return START_NOT_STICKY
+            }
+            else -> {
+                // Go foreground immediately (required within a few seconds of
+                // startForegroundService), then connect + track state.
+                goForeground(getString(R.string.svc_connecting))
+                observeState()
+                val c = app.container
+                scope.launch {
+                    c.activeBackend.value.connect(
+                        c.settings.serverUrl,
+                        c.secrets.authKey,
+                        c.settings.hostname,
+                    )
+                }
+            }
+        }
+        return START_STICKY
+    }
+
+    private fun observeState() {
+        observeJob?.cancel()
+        val backend = app.container.activeBackend.value
+        // The backend starts Disconnected; don't stop the service on that initial
+        // value — only once it has actually been active and then drops.
+        var wasActive = false
+        observeJob = scope.launch {
+            combine(backend.state, backend.peers) { s, p -> s to p }.collect { (state, peers) ->
+                when (state) {
+                    is MeshState.Up -> {
+                        wasActive = true
+                        val online = peers.count { it.online }
+                        goForeground(resources.getQuantityString(R.plurals.svc_connected, online, online))
+                    }
+                    MeshState.Connecting -> {
+                        wasActive = true
+                        goForeground(getString(R.string.svc_connecting))
+                    }
+                    is MeshState.Error -> {
+                        wasActive = true
+                        goForeground(getString(R.string.svc_error, state.message.take(80)))
+                    }
+                    MeshState.Disconnected -> if (wasActive) stopService()
+                }
+            }
+        }
+    }
+
+    private fun goForeground(text: String) {
+        val type = if (Build.VERSION.SDK_INT >= 34) ServiceInfo.FOREGROUND_SERVICE_TYPE_SPECIAL_USE else 0
+        ServiceCompat.startForeground(this, NOTIF_ID, buildNotification(text), type)
+    }
+
+    private fun buildNotification(text: String): Notification {
+        val open = PendingIntent.getActivity(
+            this, 0, Intent(this, MainActivity::class.java),
+            PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE,
+        )
+        val disconnect = PendingIntent.getService(
+            this, 1, Intent(this, MeshService::class.java).setAction(ACTION_DISCONNECT),
+            PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE,
+        )
+        return NotificationCompat.Builder(this, CHANNEL_ID)
+            .setSmallIcon(R.drawable.ic_stat_mesh)
+            .setContentTitle(getString(R.string.app_name))
+            .setContentText(text)
+            .setContentIntent(open)
+            .setOngoing(true)
+            .setOnlyAlertOnce(true)
+            .setCategory(NotificationCompat.CATEGORY_SERVICE)
+            .addAction(0, getString(R.string.settings_disconnect), disconnect)
+            .build()
+    }
+
+    private fun stopService() {
+        observeJob?.cancel()
+        ServiceCompat.stopForeground(this, ServiceCompat.STOP_FOREGROUND_REMOVE)
+        stopSelf()
+    }
+
+    private fun createChannel() {
+        val nm = getSystemService(NotificationManager::class.java)
+        val ch = NotificationChannel(CHANNEL_ID, getString(R.string.svc_channel_name), NotificationManager.IMPORTANCE_LOW)
+        ch.description = getString(R.string.svc_channel_desc)
+        nm.createNotificationChannel(ch)
+    }
+
+    override fun onDestroy() {
+        scope.cancel()
+        super.onDestroy()
+    }
+
+    companion object {
+        const val ACTION_CONNECT = "org.communitybig.biglace.CONNECT"
+        const val ACTION_DISCONNECT = "org.communitybig.biglace.DISCONNECT"
+        private const val CHANNEL_ID = "mesh"
+        private const val NOTIF_ID = 1
+
+        /** Start the tunnel via a foreground service (survives app close). */
+        fun connect(context: Context) {
+            val i = Intent(context, MeshService::class.java).setAction(ACTION_CONNECT)
+            ContextCompat.startForegroundService(context, i)
+        }
+
+        fun disconnect(context: Context) {
+            val i = Intent(context, MeshService::class.java).setAction(ACTION_DISCONNECT)
+            context.startService(i)
+        }
+    }
+}

@@ -110,10 +110,31 @@ fn path() -> PathBuf {
 
 pub fn load() -> Config {
     let p = path();
-    fs::read_to_string(&p)
-        .ok()
-        .and_then(|s| toml::from_str(&s).ok())
-        .unwrap_or_default()
+    let s = match fs::read_to_string(&p) {
+        Ok(s) => s,
+        // Missing file is the normal first-run case — start with defaults.
+        Err(_) => return Config::default(),
+    };
+    match toml::from_str(&s) {
+        Ok(cfg) => cfg,
+        Err(e) => {
+            // The file exists but doesn't parse (interrupted write, full disk,
+            // hand-edit typo). Previously we silently returned defaults, and
+            // the first save_or_warn() then OVERWROTE the file — destroying the
+            // user's server/key/favorites without a trace. Preserve the original
+            // as `.bak` so nothing is lost, and log loudly.
+            let bak = p.with_extension("toml.bak");
+            eprintln!(
+                "[biglace] config: {} is invalid ({e}); preserving it as {} and starting fresh",
+                p.display(),
+                bak.display(),
+            );
+            if let Err(re) = fs::rename(&p, &bak) {
+                eprintln!("[biglace] config: could not back up the invalid config: {re}");
+            }
+            Config::default()
+        }
+    }
 }
 
 pub fn save(cfg: &Config) -> Result<()> {
@@ -121,8 +142,41 @@ pub fn save(cfg: &Config) -> Result<()> {
     if let Some(parent) = p.parent() {
         fs::create_dir_all(parent)?;
     }
-    fs::write(&p, toml::to_string(cfg)?)?;
+    let data = toml::to_string(cfg)?;
+    // Write to a sibling temp file then rename over the target: an interrupted
+    // write (crash, power loss, ENOSPC) can't truncate the live config to
+    // garbage — the old file stays intact until the atomic rename swaps it.
+    let tmp = p.with_extension("toml.tmp");
+    write_private(&tmp, data.as_bytes())?;
+    fs::rename(&tmp, &p)?;
     Ok(())
+}
+
+/// Write `data` to `path`, creating the file 0600 (owner-only) on Unix. The
+/// config holds the pre-auth key in plaintext; the default umask would make it
+/// world-readable (0644), so on a shared machine another local user could read
+/// the key and register a node on the tailnet as the victim.
+#[cfg(unix)]
+fn write_private(path: &std::path::Path, data: &[u8]) -> std::io::Result<()> {
+    use std::io::Write;
+    use std::os::unix::fs::{OpenOptionsExt, PermissionsExt};
+    let mut f = fs::OpenOptions::new()
+        .write(true)
+        .create(true)
+        .truncate(true)
+        .mode(0o600)
+        .open(path)?;
+    // `mode(0o600)` only applies when *creating* the file. Force it on the
+    // handle too so a leftover temp from a previous crash (possibly created
+    // with a laxer mode) can't carry world-readable perms into the renamed
+    // config that holds the pre-auth key.
+    f.set_permissions(fs::Permissions::from_mode(0o600))?;
+    f.write_all(data)
+}
+
+#[cfg(not(unix))]
+fn write_private(path: &std::path::Path, data: &[u8]) -> std::io::Result<()> {
+    fs::write(path, data)
 }
 
 /// Best-effort wrapper used by signal handlers that have no good way to

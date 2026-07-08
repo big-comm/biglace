@@ -1,0 +1,118 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  Base (English) strings. Regional catalogues live in values-<lang>/strings.xml.
+  The long-term plan (mobile/ROADMAP.md M5) is to generate these from the same
+  locale/*.po catalogues the desktop app uses, so both clients stay in sync.
+-->
+<resources>
+    <string name="app_name">BigLace</string>
+
+    <!-- Bottom navigation -->
+    <string name="tab_peers">Peers</string>
+    <string name="tab_terminal">Terminal</string>
+    <string name="tab_files">Files</string>
+    <string name="tab_settings">Settings</string>
+
+    <!-- Peers screen -->
+    <string name="peers_title">Devices on the network</string>
+    <string name="peers_this_device">This device</string>
+    <string name="peers_favorites">Favorites</string>
+    <string name="peers_all">All peers</string>
+    <string name="peers_empty">Connected — but no other devices are visible to this account. Check your ACL rules on BigScale: the user this phone joined as needs access to some peer. A defined group isn\'t enough; it must be used in an \"accept\" rule. Then pull to refresh.</string>
+    <string name="peers_disconnected_hint">Not connected. Go to Settings, enter your server + pre-auth key, and tap Connect.</string>
+    <string name="peers_offline">offline</string>
+    <string name="peers_disconnected">Disconnected</string>
+    <string name="peers_connected">Connected</string>
+    <string name="peers_connecting">Connecting…</string>
+    <string name="action_refresh">Refresh</string>
+    <string name="action_terminal">Open terminal (SSH)</string>
+    <string name="action_files">Open files (SFTP)</string>
+    <string name="action_pin">Pin to top</string>
+    <string name="action_unpin">Unpin</string>
+    <string name="action_copy_ip">Copy IP</string>
+    <string name="peers_configure">Set your server URL and pre-auth key in Settings, then connect.</string>
+    <string name="peers_connecting_hint">Joining your tailnet — this can take a few seconds…</string>
+    <string name="peers_error_title">Couldn\'t connect</string>
+    <string name="peers_retry">Try again</string>
+    <string name="peers_count">%1$d online · %2$d total</string>
+    <string name="peer_dns">DNS name</string>
+    <string name="peer_owner">Owner</string>
+    <string name="peer_tags">Tags</string>
+    <string name="peer_last_seen">Last seen</string>
+    <string name="peer_ssh_override">SSH login (override)</string>
+    <string name="peer_ssh_override_hint">Leave empty to use %1$s</string>
+    <string name="action_copy">Copy</string>
+    <string name="action_save">Save</string>
+    <string name="copied">Copied</string>
+    <string name="peer_login_saved">SSH login set to</string>
+    <string name="peer_login_cleared">Cleared — using default (%1$s)</string>
+
+    <!-- Terminal / Files -->
+    <string name="ssh_host">Host / tailnet IP</string>
+    <string name="ssh_port">Port</string>
+    <string name="ssh_command">Command</string>
+    <string name="ssh_send">Send</string>
+    <string name="ssh_type_hint">Type here — buttons above for Tab, arrows, Ctrl</string>
+    <string name="ssh_auth_mode">Authentication</string>
+    <string name="ssh_mode_auto">Auto</string>
+    <string name="ssh_mode_key">Key</string>
+    <string name="ssh_mode_password">Password</string>
+    <string name="ssh_test">Test</string>
+    <string name="ssh_auth_ok">Connection OK</string>
+    <string name="ssh_auth_failed">Couldn\'t authenticate</string>
+    <string name="action_ok">OK</string>
+
+    <!-- File manager -->
+    <string name="files_actions">Actions</string>
+    <string name="files_open">Open on phone</string>
+    <string name="files_rename">Rename</string>
+    <string name="files_move">Move</string>
+    <string name="files_move_hint">New path (or /full/path)</string>
+    <string name="files_delete">Delete</string>
+    <string name="files_delete_confirm">Delete \"%1$s\"? This can\'t be undone.</string>
+    <string name="files_new_folder">New folder</string>
+    <string name="files_create">Create</string>
+    <string name="files_upload">Upload file…</string>
+    <string name="ssh_pick_peer">Open the Peers tab and tap a device\'s terminal or files button — or enter a host below.</string>
+    <string name="ssh_connecting">Connecting…</string>
+    <string name="ssh_section">SSH key</string>
+    <string name="ssh_generate">Generate SSH key</string>
+    <string name="ssh_generating">Generating…</string>
+    <string name="ssh_public_key">Public key (add it to a server\'s ~/.ssh/authorized_keys)</string>
+    <string name="ssh_regenerate">Regenerate</string>
+    <string name="ssh_key_info">With a key set, terminal/SFTP try key auth first, then the password.</string>
+    <string name="action_share">Share</string>
+
+    <!-- Settings screen -->
+    <string name="settings_connection">Connection</string>
+    <string name="settings_server_url">Server URL</string>
+    <string name="settings_authkey">Pre-auth key (yours)</string>
+    <string name="settings_device_name">Device name on the network</string>
+    <string name="settings_auto_connect">Connect when app opens</string>
+    <string name="settings_connect_on_boot">Connect on boot</string>
+    <string name="settings_connect_on_boot_desc">Join the mesh automatically when the phone starts.</string>
+    <string name="settings_background_note">Once connected, the mesh stays up in the background — a notification shows it. Use Disconnect to stop.</string>
+    <string name="svc_channel_name">Mesh connection</string>
+    <string name="svc_channel_desc">Keeps your tailnet connection alive in the background.</string>
+    <string name="svc_connecting">Connecting to your mesh…</string>
+    <string name="svc_error">Connection error: %1$s</string>
+    <string name="settings_save">Save</string>
+    <string name="settings_connect">Connect</string>
+    <string name="settings_disconnect">Disconnect</string>
+    <string name="settings_saved">Setup saved</string>
+    <string name="settings_panel_signin">Sign in with panel account</string>
+    <string name="settings_panel_url">Panel URL</string>
+    <string name="settings_username">Username</string>
+    <string name="settings_password">Password</string>
+    <string name="settings_appearance">Appearance</string>
+    <string name="settings_about">About</string>
+    <string name="dialog_cancel">Cancel</string>
+    <string name="dialog_signin">Sign in</string>
+    <string name="panel_signing_in">Signing in…</string>
+    <string name="panel_fill_fields">Fill in URL, username and password.</string>
+    <string name="about_status">BigLace Mobile · early build. It joins your BigScale / Headscale / Tailscale network in-app (embedded userspace tsnet — no separate VPN app) and opens a colour SSH terminal + an SFTP file manager on your peers. See mobile/ROADMAP.md.</string>
+    <plurals name="svc_connected">
+        <item quantity="one">Connected · %d device online</item>
+        <item quantity="other">Connected · %d devices online</item>
+    </plurals>
+</resources>

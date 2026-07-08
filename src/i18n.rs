@@ -17,6 +17,17 @@ fn locale_dir() -> String {
     }
     if let Ok(exe) = std::env::current_exe() {
         if let Some(parent) = exe.parent() {
+            // Windows/portable layout: the MSI installs the catalogues next to
+            // biglace.exe (Program Files\BigLace\share\locale). Check this
+            // first — `../share/locale` from that path escapes the install dir
+            // (Program Files\share\locale) and never resolves.
+            let beside = parent.join("share/locale");
+            if beside.exists() {
+                if let Some(s) = beside.to_str() {
+                    return s.to_string();
+                }
+            }
+            // Unix prefix layout: /usr/bin/biglace → /usr/share/locale.
             let candidate = parent.join("../share/locale");
             if candidate.exists() {
                 if let Some(s) = candidate.to_str() {
