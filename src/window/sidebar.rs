@@ -5,19 +5,19 @@ use crate::tr;
 
 #[derive(Clone)]
 pub struct Sidebar {
-    pub toolbar:                libadwaita::ToolbarView,
-    pub identity_row:           libadwaita::ActionRow,
-    pub btn_edit_host:          gtk4::Button,
-    pub expander_manual:        libadwaita::ExpanderRow,
-    pub entry_server:           libadwaita::EntryRow,
-    pub entry_key:              libadwaita::EntryRow,
-    pub entry_host:             libadwaita::EntryRow,
-    pub btn_save_manual:        gtk4::Button,
-    pub switch_auto:            gtk4::Switch,
-    pub switch_start_at_login:  gtk4::Switch,
-    pub switch_auto_reconnect:  gtk4::Switch,
-    pub switch_notify:          gtk4::Switch,
-    pub btn_connect:            gtk4::Button,
+    pub toolbar: libadwaita::ToolbarView,
+    pub identity_row: libadwaita::ActionRow,
+    pub btn_edit_host: gtk4::Button,
+    pub expander_manual: libadwaita::ExpanderRow,
+    pub entry_server: libadwaita::EntryRow,
+    pub entry_key: libadwaita::EntryRow,
+    pub entry_host: libadwaita::EntryRow,
+    pub btn_save_manual: gtk4::Button,
+    pub switch_auto: gtk4::Switch,
+    pub switch_start_at_login: gtk4::Switch,
+    pub switch_auto_reconnect: gtk4::Switch,
+    pub switch_notify: gtk4::Switch,
+    pub btn_connect: gtk4::Button,
 }
 
 pub fn build() -> Sidebar {
@@ -79,7 +79,9 @@ pub fn build() -> Sidebar {
     // login button above, which generates a key automatically.
     let expander_manual = libadwaita::ExpanderRow::builder()
         .title(tr!("Advanced: use a pre-auth key"))
-        .subtitle(tr!("Already have a key from your administrator? Paste it here."))
+        .subtitle(tr!(
+            "Already have a key from your administrator? Paste it here."
+        ))
         .expanded(false)
         .build();
     expander_manual.set_tooltip_text(Some(&tr!(
@@ -215,7 +217,9 @@ pub fn build() -> Sidebar {
 
     let notify_row = libadwaita::ActionRow::builder()
         .title(tr!("Notify on peer changes"))
-        .subtitle(tr!("Show a desktop notification when peers go online/offline"))
+        .subtitle(tr!(
+            "Show a desktop notification when peers go online/offline"
+        ))
         .build();
     notify_row.set_tooltip_text(Some(&tr!(
         "Send a desktop toast when another device on your network goes \

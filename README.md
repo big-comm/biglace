@@ -7,7 +7,7 @@
 **Mesh VPN client with a graphical interface for Headscale and BigScale.**
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
-[![Platform](https://img.shields.io/badge/platform-Linux%20%7C%20Windows-blue)](#platforms)
+[![Platform](https://img.shields.io/badge/platform-Linux%20%7C%20Windows%20%7C%20Android-blue)](#platforms)
 [![Built with Rust](https://img.shields.io/badge/Built%20with-Rust-orange?logo=rust&logoColor=white)](https://www.rust-lang.org)
 [![GTK4 · Libadwaita](https://img.shields.io/badge/GTK4-Libadwaita-blueviolet?logo=gnome&logoColor=white)](https://gtk.org)
 [![Latest release](https://img.shields.io/github/v/release/big-comm/biglace?label=release&color=brightgreen)](https://github.com/big-comm/biglace/releases)
@@ -16,22 +16,25 @@
 
 ---
 
-BigLace wraps the `tailscale` CLI in a polished GTK4 + libadwaita interface so
-end users can join a **BigScale** mesh (or any plain Headscale server) in a
-few clicks: paste a server URL and a personal pre-auth key, or sign in with a
-BigScale panel account and the key is generated for you.
+BigLace provides native desktop and Android clients for joining a **BigScale**
+mesh (or any plain Headscale server). The GTK4 desktop app drives the local
+`tailscale` CLI; the Kotlin/Compose Android app embeds `tsnet` and includes its
+own SSH terminal and SFTP file manager.
 
 ## Table of contents
 
 - [Highlights](#highlights)
 - [Platforms](#platforms)
+- [Android app](#android-app)
 - [Concepts: server, panel, and your personal key](#concepts-server-panel-and-your-personal-key)
 - [Two ways to fill the form](#two-ways-to-fill-the-form)
 - [Build](#build)
 - [Privileges (Linux)](#privileges-linux)
 - [Run locally](#run-locally)
 - [Configuration file](#configuration-file)
+- [Security and reliability](#security-and-reliability)
 - [Translations](#translations)
+- [Validation](#validation)
 - [Source layout](#source-layout)
 - [License](#license)
 
@@ -62,6 +65,13 @@ BigScale panel account and the key is generated for you.
   es, de, fr, it, …).
 - **Native credential storage** for panel passwords via the OS keyring
   (Secret Service on Linux, Windows Credential Manager, Apple Keychain).
+- **Android client with embedded `tsnet`**, a VT-style SSH terminal, a full
+  SFTP browser, foreground connectivity, and optional connect-on-boot.
+- **Concurrent Android sessions**: terminals and file browsers remain connected
+  in independent per-device tabs; `+` opens a manual session and closing a tab
+  disconnects only that SSH/SFTP client.
+- **Hardened secrets and SSH trust**: desktop enrollment keys use the OS
+  keyring; Android secrets use Keystore-backed AES-GCM and host keys use TOFU.
 
 ---
 
@@ -71,11 +81,40 @@ BigScale panel account and the key is generated for you.
 |---|---|---|
 | **Linux** (Arch / BigCommunity, Fedora, Debian — anywhere with GTK4 + libadwaita 1.4) | Primary target. | `pkgbuild/PKGBUILD` ships `/usr/bin/biglace`, the `.desktop` entry, icons, and compiled `.mo` catalogues. |
 | **Windows 10 / 11 (x64)** | Supported. | `.github/workflows/windows.yml` produces a single signed-ready MSI (`biglace-<version>-x86_64.msi`) bundling biglace.exe + the gvsbuild GTK4 runtime. |
+| **Android 8+ (API 26, ARM64)** | Native app, current mobile version `0.9.0`. | Debug-signed test APKs live in `mobile/dist/`; Gradle also builds ARMv7, x86, and x86_64 splits. |
 | **macOS** | Code compiles (config path, keyring, and `Command::new` calls are cfg-gated), but no installer is shipped yet. | Build from source with `cargo build --release`. |
 
-The codebase is one Rust crate; platform differences are gated behind
-`#[cfg(target_os = …)]` blocks. Linux binaries from `cargo build` are
-unaffected by the Windows port.
+The desktop codebase is one Rust crate; platform differences are gated behind
+`#[cfg(target_os = …)]` blocks. Android lives under `mobile/` and combines a
+Kotlin/Compose application with a small Go bridge compiled to an AAR.
+
+---
+
+## Android app
+
+The Android client joins the tailnet inside the app through `tsnet`. It does
+not require a separately installed Tailscale app and only forwards BigLace's
+own SSH/SFTP sockets; it is not a device-wide `VpnService`.
+
+Current mobile features:
+
+- Real peer list, online state, favorites, per-peer SSH login overrides, panel
+  enrollment, foreground connection status, auto-connect, and connect-on-boot.
+- Embedded SSH terminal with UTF-8 handling, VT screen state, resize-aware PTY,
+  pinch zoom, extra keys, key/password/keyboard-interactive authentication, and
+  automatic fallback.
+- Independent terminal tabs, so several peers can remain connected at once.
+- SFTP browsing with independent per-peer tabs, search, name/size/type sorting,
+  upload, download/open/share, rename, move, recursive delete, and new folders.
+- Generated SSH keys, encrypted per-host passwords and usernames, and TOFU host
+  fingerprints with an explicit reset action for rotated server keys.
+- Android Keystore-backed encryption, bounded temporary files and HTTP bodies,
+  strict panel URL validation, and cancellation-safe service/bridge lifecycle.
+- Adaptive launcher/monochrome icon and a dedicated six-node notification icon.
+
+The current ARM64 test build is
+[`mobile/dist/biglace-mobile-0.9.0-vc27-debug.apk`](mobile/dist/biglace-mobile-0.9.0-vc27-debug.apk).
+It is debug-signed for testing, not a store/release signing configuration.
 
 ---
 
@@ -151,7 +190,8 @@ Best for end users who received a key from the admin.
 - **Server URL**: required. E.g. `https://bigscale.example.com` (production) or
   `http://localhost:18080` (local dev with the override).
 - **Pre-auth key (yours)**: the key the admin sent you.
-- **Device name**: anything — what other peers will see, e.g. `alice-laptop`.
+- **Device name**: a lowercase DNS-safe label, e.g. `alice-laptop`. The clients
+  normalize spaces, accents, and unsupported characters to hyphens.
 
 Click **Save**, then **Connect**.
 
@@ -219,6 +259,37 @@ and are produced by the project's external translation pipeline from the
 `.po` files in `locale/` — neither the PKGBUILD nor `cargo build` regenerates
 them.
 
+### Android
+
+Requirements: JDK 17, Android SDK/platform 36, and an Android NDK. The committed
+`tsbridge.aar` is sufficient for normal app builds:
+
+```bash
+cd mobile/android
+./gradlew testDebugUnitTest lintDebug assembleDebug
+```
+
+Gradle creates ABI-specific APKs under
+`mobile/android/app/build/outputs/apk/debug/`. The ARM64 output is
+`app-arm64-v8a-debug.apk`. Release builds enable R8/resource shrinking but are
+unsigned until a signing configuration is supplied:
+
+```bash
+./gradlew assembleRelease
+```
+
+Rebuild the embedded Go/`tsnet` AAR after changing `mobile/tsbridge`:
+
+```bash
+cd mobile/tsbridge
+./build-aar.sh
+```
+
+The script builds `libgojni.so` for ARM64, ARMv7, x86, and x86_64, strips the
+native binaries, and requests 16 KiB ELF page alignment. It discovers the SDK
+from `ANDROID_HOME`, `ANDROID_SDK_ROOT`, or Android's `local.properties` and
+uses the newest installed NDK unless `ANDROID_NDK_HOME` is set.
+
 ### Windows (MSI)
 
 End-user installer is built by GitHub Actions:
@@ -244,8 +315,8 @@ use a Windows VM/host with WiX 3, Rust MSVC, ImageMagick, and gvsbuild installed
 ```powershell
 cargo build --release --no-default-features --target x86_64-pc-windows-msvc
 cargo install cargo-wix --locked --version 0.3.9
-heat.exe dir target\wix-stage -cg RuntimeFiles -dr APPLICATIONFOLDER -gg -g1 -srd -sfrag -var var.StageDir -out wix\runtime.wxs
-cargo wix --no-build --nocapture --target x86_64-pc-windows-msvc -C "-dStageDir=target\wix-stage" -L "-ext" -L "WixUtilExtension"
+heat.exe dir target\wix-stage -cg RuntimeFiles -dr APPLICATIONFOLDER -ag -srd -sfrag -var var.StageDir -out wix\runtime.wxs
+cargo wix --no-build --nocapture --target x86_64-pc-windows-msvc -C "-ext" -C "WixUtilExtension" -C "-dStageDir=target\wix-stage"
 ```
 
 `--no-default-features` disables jemalloc, which has no Windows backend.
@@ -304,15 +375,45 @@ each platform's convention:
 
 ```toml
 server_url   = "https://bigscale.example.com"
-authkey      = "..."   # the user's personal pre-auth key
 hostname     = "alice-laptop"
 auto_connect = false
+enrolled     = true
 panel_url    = "https://bigscale.example.com"   # optional, used by the panel-login menu
+panel_username = "alice"
 ```
 
-You may edit the file directly or use the UI; both are equivalent. Panel
-passwords are stored in the OS keyring; pre-auth keys are persisted in this
-TOML file.
+You may edit non-secret settings directly or use the UI. Panel passwords and
+enrollment/pre-auth keys are stored in the OS keyring and are never serialized
+to TOML. Existing plaintext `authkey` fields are migrated when a usable server
+URL is available. The durable `enrolled` marker records that the local
+Tailscale state is registered after the disposable enrollment key is cleared.
+
+---
+
+## Security and reliability
+
+- Desktop config writes use a same-directory temporary file, file and parent
+  directory sync, and atomic rename. Invalid config is preserved as a backup;
+  BigLace refuses to overwrite data it could not read or back up.
+- Desktop panel/update HTTP uses native TLS, redirect blocking, response-size
+  limits, and deadlines. Remote credential endpoints require HTTPS; loopback
+  HTTP remains available for local development.
+- Tailscale CLI workers have timeouts and bounded output, status refresh is
+  single-flight with a short cache, and reconnect retries use exponential
+  backoff until success or an explicit disconnect.
+- Android secrets use an AES-GCM key held by Android Keystore. Existing
+  plaintext preferences migrate transparently; corrupt encrypted values are
+  discarded rather than returned as credentials.
+- Android SSH verifies host fingerprints with trust-on-first-use. Concurrent
+  terminal writes are serialized, UTF-8 is decoded incrementally, and SFTP
+  operations are mutex-protected with bounded recursive deletion and isolated
+  temporary staging directories.
+- Panel clients reject malformed authorities/userinfo, cap response bodies,
+  disable redirects, and allow plaintext HTTP only for loopback or explicit
+  tailnet endpoints where the source-IP-authenticated panel API requires it.
+- The Go bridge makes startup cancellable, handles stop/start races, bounds
+  status/log work, and closes one-shot forwarding listeners after the SSH
+  transport connects.
 
 ---
 
@@ -341,11 +442,51 @@ instead of `/usr/share/locale`.
 
 ---
 
+## Validation
+
+Run the desktop checks from the repository root:
+
+```bash
+cargo fmt --all -- --check
+cargo test --all-targets --locked
+cargo clippy --all-targets --locked -- -D warnings
+cargo audit --deny warnings
+```
+
+Run Android and Go checks with:
+
+```bash
+cd mobile/android
+./gradlew testDebugUnitTest lintDebug assembleDebug
+
+cd ../tsbridge
+go test -race ./...
+go mod verify
+```
+
+Packaging sources can additionally be checked with `shellcheck`, `namcap`,
+`desktop-file-validate`, `xmllint`, and `msgfmt -c`. Android APKs/AARs are built
+as per-ABI artifacts; release candidates should be checked with Android
+Build-Tools `zipalign -c -P 16 4` before signing.
+
+---
+
 ## Source layout
 
 ```
 biglace/
 ├── Cargo.toml
+├── mobile/
+│   ├── android/                            # Kotlin + Compose Android app
+│   │   └── app/src/
+│   │       ├── main/java/org/communitybig/biglace/
+│   │       │   ├── core/                   # data, mesh, panel, SSH sessions
+│   │       │   ├── feature/                # peers, terminal, files, settings
+│   │       │   ├── service/                # foreground mesh + boot receiver
+│   │       │   └── ui/                     # navigation, session tabs, theme
+│   │       └── test/                       # JVM unit tests
+│   ├── tsbridge/                           # Go tsnet bridge + AAR build script
+│   └── dist/                               # versioned test APK + SHA-256
 ├── usr/                                  # literal mirror of /usr at install time
 │   └── share/
 │       ├── applications/

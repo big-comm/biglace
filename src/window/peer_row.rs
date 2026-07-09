@@ -13,8 +13,8 @@ use crate::tr;
 /// mutates config and the exit-node button kicks off `tailscale set` in a
 /// background thread; both need a way to ask the window to re-render afterwards.
 pub struct PeerCtx {
-    pub toast:   libadwaita::ToastOverlay,
-    pub cfg:     Rc<RefCell<Config>>,
+    pub toast: libadwaita::ToastOverlay,
+    pub cfg: Rc<RefCell<Config>>,
     /// Latency in ms, indexed by hostname. `None` means "still measuring",
     /// missing key means "no data yet". Updated from a background poll —
     /// `Arc<Mutex<…>>` so the worker thread can write while the UI reads.
@@ -63,7 +63,11 @@ pub fn build(peer: &Peer, ctx: &PeerCtx) -> libadwaita::ExpanderRow {
     let display = peer.display_name();
     // display_name comes from the peer's DNS/hostname (network-controlled);
     // escape before it hits AdwExpanderRow's markup-aware title.
-    let title = if display.is_empty() { "—".to_string() } else { display };
+    let title = if display.is_empty() {
+        "—".to_string()
+    } else {
+        display
+    };
     row.set_title(&glib::markup_escape_text(&title));
 
     // ── Subtitle: IP · OS · offline · latency ──
@@ -124,7 +128,11 @@ pub fn build(peer: &Peer, ctx: &PeerCtx) -> libadwaita::ExpanderRow {
         .icon_name("starred-symbolic")
         .css_classes(["flat"])
         .valign(gtk4::Align::Center)
-        .tooltip_text(if is_fav { tr!("Unpin from top") } else { tr!("Pin to top") })
+        .tooltip_text(if is_fav {
+            tr!("Unpin from top")
+        } else {
+            tr!("Pin to top")
+        })
         .build();
     if is_fav {
         btn_pin.add_css_class("accent");
@@ -228,14 +236,19 @@ pub fn build(peer: &Peer, ctx: &PeerCtx) -> libadwaita::ExpanderRow {
         let ip_files = ip_fallback.clone();
         let ssh_user_files = ssh_user.clone();
         let btn_files = gtk4::Button::builder()
-            .icon_name("folder-remote-symbolic")
+            .icon_name("folder-symbolic")
             .css_classes(["flat"])
             .valign(gtk4::Align::Center)
             .tooltip_text(tr!("Open files (SFTP)"))
             .build();
         btn_files.connect_clicked(move |_| {
-            let target = tailscale::pick_target(&host_files, &ip_files);
-            tailscale::open_files(&target, &ssh_user_files);
+            let host = host_files.clone();
+            let ip = ip_files.clone();
+            let user = ssh_user_files.clone();
+            std::thread::spawn(move || {
+                let target = tailscale::pick_target(&host, &ip);
+                tailscale::open_files(&target, &user);
+            });
         });
         row.add_suffix(&btn_files);
 
@@ -249,8 +262,13 @@ pub fn build(peer: &Peer, ctx: &PeerCtx) -> libadwaita::ExpanderRow {
             .tooltip_text(tr!("Open terminal (SSH)"))
             .build();
         btn_term.connect_clicked(move |_| {
-            let target = tailscale::pick_target(&host_term, &ip_term);
-            tailscale::open_terminal(&target, &ssh_user_term);
+            let host = host_term.clone();
+            let ip = ip_term.clone();
+            let user = ssh_user_term.clone();
+            std::thread::spawn(move || {
+                let target = tailscale::pick_target(&host, &ip);
+                tailscale::open_terminal(&target, &user);
+            });
         });
         row.add_suffix(&btn_term);
     }
@@ -284,7 +302,11 @@ pub fn build(peer: &Peer, ctx: &PeerCtx) -> libadwaita::ExpanderRow {
         ));
     }
     if !peer.user.is_empty() {
-        row.add_row(&detail_row("avatar-default-symbolic", &tr!("Owner"), &peer.user));
+        row.add_row(&detail_row(
+            "avatar-default-symbolic",
+            &tr!("Owner"),
+            &peer.user,
+        ));
     }
 
     // ── SSH login override row ──
@@ -330,7 +352,8 @@ pub fn build(peer: &Peer, ctx: &PeerCtx) -> libadwaita::ExpanderRow {
                 if value.trim().is_empty() {
                     c.peer_overrides.remove(&host);
                 } else {
-                    c.peer_overrides.insert(host.clone(), value.trim().to_string());
+                    c.peer_overrides
+                        .insert(host.clone(), value.trim().to_string());
                 }
                 config::save_or_warn(&c);
             }
@@ -346,7 +369,11 @@ pub fn build(peer: &Peer, ctx: &PeerCtx) -> libadwaita::ExpanderRow {
     }
 
     if !peer.tags.is_empty() {
-        row.add_row(&detail_row("emblem-system-symbolic", &tr!("Tags"), &peer.tags.join(", ")));
+        row.add_row(&detail_row(
+            "emblem-system-symbolic",
+            &tr!("Tags"),
+            &peer.tags.join(", "),
+        ));
     }
     if !peer.last_seen.is_empty() && !peer.online {
         row.add_row(&detail_row(
@@ -389,8 +416,7 @@ pub fn build(peer: &Peer, ctx: &PeerCtx) -> libadwaita::ExpanderRow {
                 // the main loop picks it up to fire the toast + refresh.
                 // (succeeded, error message) handed back from the worker thread.
                 type ExitNodeOutcome = (bool, Option<String>);
-                let slot: Arc<Mutex<Option<ExitNodeOutcome>>> =
-                    Arc::new(Mutex::new(None));
+                let slot: Arc<Mutex<Option<ExitNodeOutcome>>> = Arc::new(Mutex::new(None));
                 let slot_t = slot.clone();
                 std::thread::spawn(move || {
                     let r = tailscale::set_exit_node(target.as_deref());
@@ -410,9 +436,17 @@ pub fn build(peer: &Peer, ctx: &PeerCtx) -> libadwaita::ExpanderRow {
                     };
                     sw_poll.set_sensitive(true);
                     let label = if ok {
-                        if active { tr!("Exit node enabled") } else { tr!("Exit node disabled") }
+                        if active {
+                            tr!("Exit node enabled")
+                        } else {
+                            tr!("Exit node disabled")
+                        }
                     } else {
-                        format!("{}: {}", tr!("Failed to update exit node"), err.unwrap_or_default())
+                        format!(
+                            "{}: {}",
+                            tr!("Failed to update exit node"),
+                            err.unwrap_or_default()
+                        )
                     };
                     toast_t.add_toast(
                         libadwaita::Toast::builder()
@@ -467,12 +501,7 @@ fn detail_row_with_copy(
     let msg = copied_msg.to_string();
     btn.connect_clicked(move |b| {
         b.display().clipboard().set_text(&value_owned);
-        toast_clone.add_toast(
-            libadwaita::Toast::builder()
-                .title(&msg)
-                .timeout(2)
-                .build(),
-        );
+        toast_clone.add_toast(libadwaita::Toast::builder().title(&msg).timeout(2).build());
     });
     r.add_suffix(&btn);
     r
@@ -486,7 +515,10 @@ fn humanize_last_seen(iso: &str) -> String {
     if let Some(t_idx) = iso.find('T') {
         let date = &iso[..t_idx];
         let after_t = &iso[t_idx + 1..];
-        let time_end = after_t.find('.').or_else(|| after_t.find('Z')).unwrap_or(after_t.len());
+        let time_end = after_t
+            .find('.')
+            .or_else(|| after_t.find('Z'))
+            .unwrap_or(after_t.len());
         let time = &after_t[..time_end];
         return format!("{date} {time} UTC");
     }
@@ -495,7 +527,7 @@ fn humanize_last_seen(iso: &str) -> String {
 
 fn os_icon_name(os: &str) -> &'static str {
     match os.to_lowercase().as_str() {
-        "android" | "ios" | "iphone" | "ipad"  => "phone-symbolic",
+        "android" | "ios" | "iphone" | "ipad" => "phone-symbolic",
         "linux" | "windows" | "macos" | "darwin" | "" => "computer-symbolic",
         _ => "network-server-symbolic",
     }
@@ -503,13 +535,13 @@ fn os_icon_name(os: &str) -> &'static str {
 
 fn friendly_os(os: &str) -> String {
     match os.to_lowercase().as_str() {
-        ""              => String::new(),
-        "android"       => "Android".into(),
+        "" => String::new(),
+        "android" => "Android".into(),
         "ios" | "iphone" | "ipad" => "iOS".into(),
-        "linux"         => "Linux".into(),
-        "windows"       => "Windows".into(),
+        "linux" => "Linux".into(),
+        "windows" => "Windows".into(),
         "macos" | "darwin" => "macOS".into(),
-        _               => os.to_string(),
+        _ => os.to_string(),
     }
 }
 

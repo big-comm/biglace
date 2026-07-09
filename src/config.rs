@@ -1,12 +1,19 @@
-use anyhow::Result;
+use anyhow::{bail, Result};
 use serde::{Deserialize, Serialize};
 use std::{collections::HashMap, fs, path::PathBuf};
 
 #[derive(Debug, Clone, Default, Serialize, Deserialize)]
 pub struct Config {
-    pub server_url:   String,
-    pub authkey:      String,
+    pub server_url: String,
+    /// Loaded from the OS keyring; never serialized to TOML.
+    #[serde(default, skip_serializing)]
+    pub authkey: String,
     pub auto_connect: bool,
+
+    /// The local tailscaled state contains a registered node key. This is the
+    /// durable session marker; the enrollment key is cleared after first use.
+    #[serde(default)]
+    pub enrolled: bool,
 
     /// Tailscale hostname for this device — the BigScale account identifier
     /// (e.g. `tales`), which becomes the device's DNS name (`tales.bigscale.net`).
@@ -14,10 +21,10 @@ pub struct Config {
     /// separately via a `tag:user-…` ACL tag so peers can compose the SSH
     /// login `<os_user>@<hostname>.bigscale.net` from the two.
     #[serde(default)]
-    pub hostname:     String,
+    pub hostname: String,
 
     #[serde(default)]
-    pub panel_url:      String,
+    pub panel_url: String,
     // Last-used panel username, pre-filled in the login dialog so the user
     // doesn't retype it each time. Password is intentionally NOT persisted.
     #[serde(default)]
@@ -27,7 +34,7 @@ pub struct Config {
     /// of the list regardless of online/offline state — handy when you have
     /// a frota of clients and only care about a handful day-to-day.
     #[serde(default)]
-    pub favorites:    Vec<String>,
+    pub favorites: Vec<String>,
 
     /// When true, biglace will keep retrying connect() with exponential
     /// backoff after the daemon reports a drop. Independent of `auto_connect`,
@@ -47,6 +54,11 @@ pub struct Config {
     /// their actual account on that box.
     #[serde(default)]
     pub peer_overrides: HashMap<String, String>,
+
+    /// Prevents a later UI save from overwriting a config that could not be
+    /// read or backed up safely during startup.
+    #[serde(skip)]
+    pub recovery_blocked: bool,
 }
 
 impl Config {
@@ -87,8 +99,13 @@ pub fn os_user() -> String {
 /// ~/Library on macOS).
 #[cfg(target_os = "linux")]
 fn path() -> PathBuf {
-    let home = std::env::var("HOME").unwrap_or_else(|_| ".".into());
-    PathBuf::from(home).join(".config/biglace/config.toml")
+    let base = std::env::var("XDG_CONFIG_HOME")
+        .map(PathBuf::from)
+        .unwrap_or_else(|_| {
+            let home = std::env::var("HOME").unwrap_or_else(|_| ".".into());
+            PathBuf::from(home).join(".config")
+        });
+    base.join("biglace/config.toml")
 }
 
 #[cfg(target_os = "windows")]
@@ -113,10 +130,39 @@ pub fn load() -> Config {
     let s = match fs::read_to_string(&p) {
         Ok(s) => s,
         // Missing file is the normal first-run case — start with defaults.
-        Err(_) => return Config::default(),
+        Err(e) if e.kind() == std::io::ErrorKind::NotFound => return Config::default(),
+        Err(e) => {
+            eprintln!("[biglace] config: could not read {}: {e}", p.display());
+            return Config {
+                recovery_blocked: true,
+                ..Config::default()
+            };
+        }
     };
-    match toml::from_str(&s) {
-        Ok(cfg) => cfg,
+    match toml::from_str::<Config>(&s) {
+        Ok(mut cfg) => {
+            let legacy_key = cfg.authkey.clone();
+            if !legacy_key.is_empty() {
+                cfg.enrolled = true;
+                if cfg.server_url.trim().is_empty() {
+                    eprintln!(
+                        "[biglace] secrets: deferring authkey migration until a server URL is set"
+                    );
+                } else {
+                    match crate::secrets::save_authkey(&cfg.server_url, &legacy_key) {
+                        Ok(()) => {
+                            if let Err(e) = write_config_file(&cfg) {
+                                eprintln!("[biglace] config: could not remove migrated plaintext key: {e}");
+                            }
+                        }
+                        Err(e) => eprintln!("[biglace] secrets: authkey migration failed: {e}"),
+                    }
+                }
+            } else {
+                cfg.authkey = crate::secrets::load_authkey(&cfg.server_url).unwrap_or_default();
+            }
+            cfg
+        }
         Err(e) => {
             // The file exists but doesn't parse (interrupted write, full disk,
             // hand-edit typo). Previously we silently returned defaults, and
@@ -129,8 +175,12 @@ pub fn load() -> Config {
                 p.display(),
                 bak.display(),
             );
-            if let Err(re) = fs::rename(&p, &bak) {
+            if let Err(re) = fs::copy(&p, &bak) {
                 eprintln!("[biglace] config: could not back up the invalid config: {re}");
+                return Config {
+                    recovery_blocked: true,
+                    ..Config::default()
+                };
             }
             Config::default()
         }
@@ -138,6 +188,19 @@ pub fn load() -> Config {
 }
 
 pub fn save(cfg: &Config) -> Result<()> {
+    if cfg.recovery_blocked {
+        bail!("refusing to overwrite an unreadable configuration file");
+    }
+    if !cfg.authkey.trim().is_empty() {
+        if cfg.server_url.trim().is_empty() {
+            bail!("cannot store a pre-auth key without a server URL");
+        }
+        crate::secrets::save_authkey(&cfg.server_url, &cfg.authkey)?;
+    }
+    write_config_file(cfg)
+}
+
+fn write_config_file(cfg: &Config) -> Result<()> {
     let p = path();
     if let Some(parent) = p.parent() {
         fs::create_dir_all(parent)?;
@@ -149,13 +212,26 @@ pub fn save(cfg: &Config) -> Result<()> {
     let tmp = p.with_extension("toml.tmp");
     write_private(&tmp, data.as_bytes())?;
     fs::rename(&tmp, &p)?;
+    sync_parent(&p)?;
     Ok(())
 }
 
-/// Write `data` to `path`, creating the file 0600 (owner-only) on Unix. The
-/// config holds the pre-auth key in plaintext; the default umask would make it
-/// world-readable (0644), so on a shared machine another local user could read
-/// the key and register a node on the tailnet as the victim.
+#[cfg(unix)]
+fn sync_parent(path: &std::path::Path) -> std::io::Result<()> {
+    if let Some(parent) = path.parent() {
+        fs::File::open(parent)?.sync_all()?;
+    }
+    Ok(())
+}
+
+#[cfg(not(unix))]
+fn sync_parent(_path: &std::path::Path) -> std::io::Result<()> {
+    Ok(())
+}
+
+/// Write `data` to `path`, creating the file 0600 (owner-only) on Unix. Config
+/// still contains private network metadata even though enrollment keys live in
+/// the OS keyring.
 #[cfg(unix)]
 fn write_private(path: &std::path::Path, data: &[u8]) -> std::io::Result<()> {
     use std::io::Write;
@@ -171,7 +247,8 @@ fn write_private(path: &std::path::Path, data: &[u8]) -> std::io::Result<()> {
     // with a laxer mode) can't carry world-readable perms into the renamed
     // config that holds the pre-auth key.
     f.set_permissions(fs::Permissions::from_mode(0o600))?;
-    f.write_all(data)
+    f.write_all(data)?;
+    f.sync_all()
 }
 
 #[cfg(not(unix))]
@@ -188,5 +265,24 @@ fn write_private(path: &std::path::Path, data: &[u8]) -> std::io::Result<()> {
 pub fn save_or_warn(cfg: &Config) {
     if let Err(e) = save(cfg) {
         eprintln!("[biglace] config save failed: {e}");
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn enrollment_key_is_never_serialized() {
+        let cfg = Config {
+            server_url: "https://vpn.example.org".into(),
+            authkey: "tskey-secret".into(),
+            enrolled: true,
+            ..Config::default()
+        };
+        let serialized = toml::to_string(&cfg).unwrap();
+        assert!(!serialized.contains("tskey-secret"));
+        assert!(!serialized.contains("authkey"));
+        assert!(serialized.contains("enrolled = true"));
     }
 }

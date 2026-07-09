@@ -33,8 +33,7 @@ static GLOBAL: tikv_jemallocator::Jemalloc = tikv_jemallocator::Jemalloc;
 #[cfg(all(feature = "jemalloc", any(target_os = "linux", target_os = "macos")))]
 #[allow(non_upper_case_globals)]
 #[export_name = "malloc_conf"]
-pub static MALLOC_CONF: &[u8] =
-    b"background_thread:true,dirty_decay_ms:1000,muzzy_decay_ms:0\0";
+pub static MALLOC_CONF: &[u8] = b"background_thread:true,dirty_decay_ms:1000,muzzy_decay_ms:0\0";
 
 /// Single source of truth for the app version. Wired to `Cargo.toml` via
 /// `CARGO_PKG_VERSION` so a `cargo set-version` (or manual bump) flows
