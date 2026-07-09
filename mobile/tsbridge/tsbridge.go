@@ -5,7 +5,7 @@
 //
 // It's built into an Android AAR with gomobile:
 //
-//	gomobile bind -target=android/arm64,android/arm -androidapi 26 \
+//	gomobile bind -target=android -androidapi 26 \
 //	  -o mobile/android/app/libs/tsbridge.aar biglace.community/tsbridge
 //
 // The Kotlin side calls Start/StatusJSON/ForwardTo/Stop.
@@ -28,9 +28,18 @@ import (
 )
 
 var (
-	mu  sync.Mutex
-	srv *tsnet.Server
-	lc  *tailscale.LocalClient
+	mu          sync.Mutex
+	srv         *tsnet.Server
+	lc          *tailscale.LocalClient
+	starting    bool
+	startCancel context.CancelFunc
+	pending     *tsnet.Server
+	generation  uint64
+	listeners   = make(map[net.Listener]struct{})
+
+	interfaceMu    sync.RWMutex
+	interfaces     []netmon.Interface
+	interfacesOnce sync.Once
 
 	logMu  sync.Mutex
 	logBuf []string
@@ -43,7 +52,8 @@ func appendLog(format string, args ...any) {
 	logMu.Lock()
 	logBuf = append(logBuf, line)
 	if len(logBuf) > 300 {
-		logBuf = logBuf[len(logBuf)-300:]
+		copy(logBuf, logBuf[len(logBuf)-300:])
+		logBuf = logBuf[:300]
 	}
 	logMu.Unlock()
 }
@@ -110,30 +120,82 @@ func SetInterfaces(jsonData string) (err error) {
 		}
 		ifs = append(ifs, netmon.Interface{Interface: ni, AltAddrs: addrs})
 	}
-	netmon.RegisterInterfaceGetter(func() ([]netmon.Interface, error) { return ifs, nil })
+	interfaceMu.Lock()
+	interfaces = ifs
+	interfaceMu.Unlock()
+	interfacesOnce.Do(func() {
+		netmon.RegisterInterfaceGetter(func() ([]netmon.Interface, error) {
+			interfaceMu.RLock()
+			defer interfaceMu.RUnlock()
+			return append([]netmon.Interface(nil), interfaces...), nil
+		})
+	})
 	return nil
 }
 
 // Start joins the tailnet and blocks until it's up (or fails). Safe to call
 // again while running (no-op). stateDir must be a writable, app-private dir.
 func Start(controlURL, authKey, hostname, stateDir string) (err error) {
+	var startServer *tsnet.Server
 	// A Go panic in tsnet startup would abort the whole process (the app just
 	// closes). Recover it into an error so the UI can show what happened.
 	defer func() {
 		if r := recover(); r != nil {
+			if startServer != nil {
+				_ = startServer.Close()
+			}
 			err = fmt.Errorf("tsbridge Start panic: %v", r)
 		}
 	}()
+	controlURL = strings.TrimSpace(controlURL)
+	if controlURL == "" {
+		return fmt.Errorf("tsbridge: control URL is required")
+	}
+	if stateDir == "" {
+		return fmt.Errorf("tsbridge: state directory is required")
+	}
+
 	mu.Lock()
-	defer mu.Unlock()
 	if srv != nil {
+		mu.Unlock()
 		return nil
 	}
+	if starting {
+		mu.Unlock()
+		return fmt.Errorf("tsbridge: start already in progress")
+	}
+	starting = true
+	generation++
+	startGeneration := generation
+	ctx, cancel := context.WithTimeout(context.Background(), 60*time.Second)
+	startCancel = cancel
+	mu.Unlock()
+
+	defer func() {
+		cancel()
+		mu.Lock()
+		if generation == startGeneration {
+			starting = false
+			startCancel = nil
+		}
+		if pending != nil && pending == startServer {
+			pending = nil
+		}
+		mu.Unlock()
+	}()
+
 	// Tailscale's logpolicy panics with "no safe place found to store log
 	// state" on Android because os.UserConfigDir() & friends aren't writable.
 	// LogsDir() honors TS_LOGS_DIR first, so point it at our writable app dir.
-	_ = os.MkdirAll(stateDir, 0o700)
-	_ = os.Setenv("TS_LOGS_DIR", stateDir)
+	if err := os.MkdirAll(stateDir, 0o700); err != nil {
+		return fmt.Errorf("create state directory: %w", err)
+	}
+	if err := os.Setenv("TS_LOGS_DIR", stateDir); err != nil {
+		return fmt.Errorf("set log directory: %w", err)
+	}
+	logMu.Lock()
+	logBuf = logBuf[:0]
+	logMu.Unlock()
 	s := &tsnet.Server{
 		Dir:        stateDir,
 		Hostname:   hostname,
@@ -143,11 +205,18 @@ func Start(controlURL, authKey, hostname, stateDir string) (err error) {
 		Logf:       appendLog,
 		UserLogf:   appendLog,
 	}
+	startServer = s
+	mu.Lock()
+	if generation != startGeneration || !starting {
+		mu.Unlock()
+		return context.Canceled
+	}
+	pending = s
+	mu.Unlock()
 	if err := s.Start(); err != nil {
+		_ = s.Close()
 		return err
 	}
-	ctx, cancel := context.WithTimeout(context.Background(), 60*time.Second)
-	defer cancel()
 	if _, err := s.Up(ctx); err != nil {
 		_ = s.Close()
 		return err
@@ -157,22 +226,48 @@ func Start(controlURL, authKey, hostname, stateDir string) (err error) {
 		_ = s.Close()
 		return err
 	}
-	srv = s
-	lc = c
+	mu.Lock()
+	if generation != startGeneration || !starting {
+		mu.Unlock()
+		_ = s.Close()
+		return context.Canceled
+	}
+	srv, lc, pending = s, c, nil
+	mu.Unlock()
 	return nil
 }
 
 // Stop tears down the tunnel.
 func Stop() error {
 	mu.Lock()
-	defer mu.Unlock()
-	if srv == nil {
-		return nil
+	generation++
+	if startCancel != nil {
+		startCancel()
 	}
-	err := srv.Close()
+	startCancel = nil
+	starting = false
+	s := srv
+	p := pending
 	srv = nil
+	pending = nil
 	lc = nil
-	return err
+	toClose := make([]net.Listener, 0, len(listeners))
+	for ln := range listeners {
+		toClose = append(toClose, ln)
+		delete(listeners, ln)
+	}
+	mu.Unlock()
+
+	for _, ln := range toClose {
+		_ = ln.Close()
+	}
+	if p != nil && p != s {
+		_ = p.Close()
+	}
+	if s != nil {
+		return s.Close()
+	}
+	return nil
 }
 
 // Running reports whether the tunnel is up.
@@ -196,7 +291,9 @@ func StatusJSON() (out string, err error) {
 	if c == nil {
 		return "", fmt.Errorf("tsbridge: not started")
 	}
-	st, err := c.Status(context.Background())
+	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+	defer cancel()
+	st, err := c.Status(ctx)
 	if err != nil {
 		return "", err
 	}
@@ -228,25 +325,42 @@ func ForwardTo(hostPort string) (port int, err error) {
 	if err != nil {
 		return 0, err
 	}
+	mu.Lock()
+	if srv != s {
+		mu.Unlock()
+		_ = ln.Close()
+		return 0, fmt.Errorf("tsbridge: stopped while creating forward")
+	}
+	listeners[ln] = struct{}{}
+	mu.Unlock()
+
 	go func() {
-		for {
-			local, err := ln.Accept()
-			if err != nil {
-				return
-			}
-			go func(local net.Conn) {
-				defer local.Close()
-				dctx, cancel := context.WithTimeout(context.Background(), 20*time.Second)
-				remote, err := s.Dial(dctx, "tcp", hostPort)
-				cancel()
-				if err != nil {
-					return
-				}
-				defer remote.Close()
-				go func() { _, _ = io.Copy(remote, local) }()
-				_, _ = io.Copy(local, remote)
-			}(local)
+		defer func() {
+			_ = ln.Close()
+			mu.Lock()
+			delete(listeners, ln)
+			mu.Unlock()
+		}()
+		// SSH/SFTP opens one transport connection per forward. Closing the
+		// listener after the first accept prevents a permanent listener leak.
+		local, err := ln.Accept()
+		if err != nil {
+			return
 		}
+		_ = ln.Close()
+		mu.Lock()
+		delete(listeners, ln)
+		mu.Unlock()
+		defer local.Close()
+		dctx, cancel := context.WithTimeout(context.Background(), 20*time.Second)
+		remote, err := s.Dial(dctx, "tcp", hostPort)
+		cancel()
+		if err != nil {
+			return
+		}
+		defer remote.Close()
+		go func() { _, _ = io.Copy(remote, local) }()
+		_, _ = io.Copy(local, remote)
 	}()
 	return ln.Addr().(*net.TCPAddr).Port, nil
 }

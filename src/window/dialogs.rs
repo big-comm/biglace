@@ -86,10 +86,10 @@ pub fn show_set_operator(parent: &libadwaita::ApplicationWindow) {
 pub fn confirm_sign_out(
     parent: &libadwaita::ApplicationWindow,
     overlay: &libadwaita::ToastOverlay,
-    cfg:    &Rc<RefCell<config::Config>>,
+    cfg: &Rc<RefCell<config::Config>>,
     sidebar: &Sidebar,
 ) {
-    if cfg.borrow().authkey.is_empty() {
+    if !cfg.borrow().enrolled && cfg.borrow().authkey.is_empty() {
         return;
     }
 
@@ -108,9 +108,9 @@ pub fn confirm_sign_out(
     dlg.set_default_response(Some("cancel"));
     dlg.set_close_response("cancel");
 
-    let parent_w  = parent.clone();
+    let parent_w = parent.clone();
     let overlay_w = overlay.clone();
-    let cfg_w     = cfg.clone();
+    let cfg_w = cfg.clone();
     let sidebar_w = sidebar.clone();
     dlg.connect_response(None, move |dlg, resp| {
         if resp != "ok" {
@@ -130,51 +130,81 @@ pub fn confirm_sign_out(
 fn sign_out(
     parent: &libadwaita::ApplicationWindow,
     overlay: &libadwaita::ToastOverlay,
-    cfg:    &Rc<RefCell<config::Config>>,
+    cfg: &Rc<RefCell<config::Config>>,
     _sidebar: &Sidebar,
 ) {
-    // Sign-out drops the credentials: keyring password AND the saved authkey.
-    // `signed_in` is gated on `!authkey.is_empty()` (see mod.rs apply_state),
-    // so leaving the key behind would make the UI think we were still signed
-    // in even after `tailscale logout` deregistered us server-side.
-    //
-    // Pre-auth keys are single-use server-side anyway, so hoarding the value
-    // locally only delays the inevitable "auth-key not found" toast on the
-    // next reconnect. Disconnect (`tailscale down`) is the path that
-    // preserves the key — that's where you keep the credential around for a
-    // quick re-up.
-    let (panel_url, panel_username) = {
+    let (server_url, panel_url, panel_username) = {
         let c = cfg.borrow();
-        (c.panel_url.clone(), c.panel_username.clone())
+        (
+            c.server_url.clone(),
+            c.panel_url.clone(),
+            c.panel_username.clone(),
+        )
     };
-    secrets::clear(&panel_url, &panel_username);
-
-    {
-        let mut c = cfg.borrow_mut();
-        c.authkey.clear();
-        config::save_or_warn(&c);
-    }
-
-    std::thread::spawn(|| {
-        let _ = tailscale::logout();
+    let slot: Arc<Mutex<Option<Result<(), String>>>> = Arc::new(Mutex::new(None));
+    let slot_t = slot.clone();
+    std::thread::spawn(move || {
+        let result = tailscale::logout().map_err(|e| e.to_string());
+        if let Ok(mut guard) = slot_t.lock() {
+            *guard = Some(result);
+        }
     });
 
-    overlay.add_toast(
-        libadwaita::Toast::builder()
-            .title(tr!("Signed out."))
-            .timeout(3)
-            .build(),
-    );
-
-    // Refresh so the sidebar flips to the "not signed in" layout, exposing
-    // both the manual-key expander and the panel-login button.
-    gtk4::prelude::WidgetExt::activate_action(parent, "win.refresh", None).ok();
+    let parent_w = parent.clone();
+    let overlay_w = overlay.clone();
+    let cfg_w = cfg.clone();
+    glib::timeout_add_local(Duration::from_millis(200), move || {
+        let Some(result) = slot.lock().ok().and_then(|mut guard| guard.take()) else {
+            return glib::ControlFlow::Continue;
+        };
+        match result {
+            Ok(()) => {
+                let mut updated = cfg_w.borrow().clone();
+                updated.authkey.clear();
+                updated.enrolled = false;
+                if let Err(error) = config::save(&updated) {
+                    overlay_w.add_toast(
+                        libadwaita::Toast::builder()
+                            .title(
+                                glib::markup_escape_text(&trf!("Error: {error}", "error" => error))
+                                    .as_str(),
+                            )
+                            .timeout(6)
+                            .build(),
+                    );
+                    return glib::ControlFlow::Break;
+                }
+                *cfg_w.borrow_mut() = updated;
+                secrets::clear(&panel_url, &panel_username);
+                secrets::clear_authkey(&server_url);
+                overlay_w.add_toast(
+                    libadwaita::Toast::builder()
+                        .title(tr!("Signed out."))
+                        .timeout(3)
+                        .build(),
+                );
+                gtk4::prelude::WidgetExt::activate_action(&parent_w, "win.refresh", None).ok();
+            }
+            Err(error) => {
+                overlay_w.add_toast(
+                    libadwaita::Toast::builder()
+                        .title(
+                            glib::markup_escape_text(&trf!("Error: {error}", "error" => error))
+                                .as_str(),
+                        )
+                        .timeout(6)
+                        .build(),
+                );
+            }
+        }
+        glib::ControlFlow::Break
+    });
 }
 
 pub fn show_panel_login(
     parent: &libadwaita::ApplicationWindow,
     overlay: &libadwaita::ToastOverlay,
-    cfg:    &Rc<RefCell<config::Config>>,
+    cfg: &Rc<RefCell<config::Config>>,
     sidebar: &Sidebar,
 ) {
     let dlg = libadwaita::Window::builder()
@@ -207,11 +237,15 @@ pub fn show_panel_login(
         "Address of your BigScale panel (e.g. panel.example.org). \
          The https:// scheme is added automatically if you omit it."
     )));
-    let er_user = libadwaita::EntryRow::builder().title(tr!("Username")).build();
+    let er_user = libadwaita::EntryRow::builder()
+        .title(tr!("Username"))
+        .build();
     er_user.set_tooltip_text(Some(&tr!(
         "Your panel username — the one you use to sign in to the web panel."
     )));
-    let er_pass = libadwaita::PasswordEntryRow::builder().title(tr!("Password")).build();
+    let er_pass = libadwaita::PasswordEntryRow::builder()
+        .title(tr!("Password"))
+        .build();
     er_pass.set_tooltip_text(Some(&tr!(
         "Your panel password. Stored in the OS keyring (libsecret on Linux, \
          Keychain on macOS, Credential Manager on Windows)."
@@ -219,6 +253,13 @@ pub fn show_panel_login(
     let er_node = libadwaita::EntryRow::builder()
         .title(tr!("Device name on the network"))
         .build();
+    er_node.connect_changed(|entry| {
+        let clean = sanitize_hostname(&entry.text());
+        if clean != entry.text().as_str() {
+            entry.set_text(&clean);
+            entry.set_position(-1);
+        }
+    });
     er_node.set_tooltip_text(Some(&tr!(
         "The name this device shows to other peers on the VPN — this is the \
          Tailscale hostname, NOT your computer's name and NOT your user. \
@@ -363,19 +404,31 @@ pub fn show_panel_login(
         btn_ok.connect_clicked(move |_| {
             lbl_err2.set_text("");
 
-            let node_text = er_node2.text().to_string();
+            let node_text = sanitize_hostname(&er_node2.text());
+            if let Err(message) = validate_hostname(&node_text) {
+                lbl_err2.set_text(&message);
+                return;
+            }
+            er_node2.set_text(&node_text);
+            let panel_url = match panel::normalize_panel_url(&er_url2.text()) {
+                Ok(url) => url,
+                Err(e) => {
+                    lbl_err2.set_text(&e.to_string());
+                    return;
+                }
+            };
             let creds = PanelCredentials {
-                url:      er_url2.text().to_string(),
-                username: er_user2.text().to_string(),
+                url: panel_url,
+                username: er_user2.text().trim().to_string(),
                 password: er_pass2.text().to_string(),
-                node:     node_text.clone(),
+                node: node_text.clone(),
                 // Tailscale hostname is the BigScale identifier the user
                 // chose — what becomes `<hostname>.bigscale.net`. The OS user
                 // is propagated separately via a `tag:user-…` ACL tag.
                 hostname: node_text,
             };
 
-            if creds.url.is_empty() || creds.username.is_empty() || creds.password.is_empty() {
+            if creds.username.is_empty() || creds.password.is_empty() || creds.node.is_empty() {
                 lbl_err2.set_text(&tr!("Fill in URL, username and password."));
                 return;
             }
@@ -394,7 +447,9 @@ pub fn show_panel_login(
             let creds_t = creds.clone();
             std::thread::spawn(move || {
                 let r = panel::request_preauth(&creds_t).map_err(|e| e.to_string());
-                if let Ok(mut g) = slot_t.lock() { *g = Some(r); }
+                if let Ok(mut g) = slot_t.lock() {
+                    *g = Some(r);
+                }
             });
 
             let dlg3 = dlg2.clone();
@@ -409,8 +464,8 @@ pub fn show_panel_login(
             let ok_spinner_w2 = ok_spinner_w.clone();
             let busy_p = busy_c.clone();
             let panel_url = creds.url.clone();
-            let username  = creds.username.clone();
-            let password  = creds.password.clone();
+            let username = creds.username.clone();
+            let password = creds.password.clone();
 
             glib::timeout_add_local(Duration::from_millis(300), move || {
                 match slot.lock().ok().and_then(|mut g| g.take()) {
@@ -423,10 +478,7 @@ pub fn show_panel_login(
                         // The server may return a loopback (127.0.0.1) URL
                         // when its public_url isn't configured — fall back
                         // to whatever the user actually typed in panel URL.
-                        let server_url = sanitize_server_url(
-                            &resp.server_url,
-                            &panel_url,
-                        );
+                        let server_url = sanitize_server_url(&resp.server_url, &panel_url);
                         sidebar3.entry_server.set_text(&server_url);
                         sidebar3.entry_key.set_text(&resp.authkey);
                         sidebar3.entry_host.set_text(&creds.hostname);
@@ -435,11 +487,12 @@ pub fn show_panel_login(
                         sidebar3.expander_manual.set_expanded(false);
                         {
                             let mut c = cfg3.borrow_mut();
-                            c.panel_url      = panel_url.clone();
+                            c.panel_url = panel_url.clone();
                             c.panel_username = username.clone();
-                            c.server_url     = server_url.clone();
-                            c.authkey        = resp.authkey.clone();
-                            c.hostname       = creds.hostname.clone();
+                            c.server_url = server_url.clone();
+                            c.authkey = resp.authkey.clone();
+                            c.hostname = creds.hostname.clone();
+                            c.enrolled = true;
                             config::save_or_warn(&c);
                         }
                         // Stash the password in the OS-native keyring so the
@@ -455,9 +508,7 @@ pub fn show_panel_login(
                         // Force the sidebar / status to re-read config now —
                         // otherwise the UI keeps showing the "not signed in"
                         // layout until the next 30s refresh tick.
-                        gtk4::prelude::WidgetExt::activate_action(
-                            &win3, "win.refresh", None,
-                        ).ok();
+                        gtk4::prelude::WidgetExt::activate_action(&win3, "win.refresh", None).ok();
                         glib::ControlFlow::Break
                     }
                     Some(Err(e)) => {
@@ -486,16 +537,16 @@ pub fn show_panel_login(
 /// we just save the config and the next `tailscale up` will carry the new
 /// hostname through.
 pub fn show_rename_device(
-    parent:  &libadwaita::ApplicationWindow,
+    parent: &libadwaita::ApplicationWindow,
     overlay: &libadwaita::ToastOverlay,
-    cfg:     &Rc<RefCell<config::Config>>,
+    cfg: &Rc<RefCell<config::Config>>,
 ) {
     let current = cfg.borrow().hostname.clone();
 
     let entry = libadwaita::EntryRow::builder()
         .title(tr!("Device name on the network"))
         .build();
-    entry.set_text(&current);
+    entry.set_text(&sanitize_hostname(&current));
     let host_icon = gtk4::Image::from_icon_name("computer-symbolic");
     host_icon.set_pixel_size(18);
     entry.add_prefix(&host_icon);
@@ -524,7 +575,7 @@ pub fn show_rename_device(
         )),
     );
     dlg.add_response("cancel", &tr!("Cancel"));
-    dlg.add_response("save",   &tr!("Save & apply"));
+    dlg.add_response("save", &tr!("Save & apply"));
     dlg.set_response_appearance("save", libadwaita::ResponseAppearance::Suggested);
     dlg.set_default_response(Some("save"));
     dlg.set_close_response("cancel");
@@ -535,8 +586,8 @@ pub fn show_rename_device(
     // value, then closed the dialog and only toasted the error — throwing away
     // whatever the user had typed. Now the dialog stays open until it's valid.
     let validate: Rc<dyn Fn(&str)> = {
-        let dlg_w  = dlg.clone();
-        let lbl_w  = lbl_err.clone();
+        let dlg_w = dlg.clone();
+        let lbl_w = lbl_err.clone();
         Rc::new(move |text: &str| match validate_hostname(text.trim()) {
             Ok(()) => {
                 lbl_w.set_visible(false);
@@ -558,11 +609,18 @@ pub fn show_rename_device(
     validate(entry.text().as_str());
     {
         let validate2 = validate.clone();
-        entry.connect_changed(move |e| validate2(e.text().as_str()));
+        entry.connect_changed(move |e| {
+            let clean = sanitize_hostname(&e.text());
+            if clean != e.text().as_str() {
+                e.set_text(&clean);
+                e.set_position(-1);
+            }
+            validate2(&clean);
+        });
     }
 
-    let entry_w  = entry.clone();
-    let cfg_w    = cfg.clone();
+    let entry_w = entry.clone();
+    let cfg_w = cfg.clone();
     let parent_w = parent.clone();
     let overlay_w = overlay.clone();
     dlg.connect_response(None, move |dlg, resp| {
@@ -609,7 +667,7 @@ pub fn show_rename_device(
             }
         });
 
-        let parent_t  = parent_w.clone();
+        let parent_t = parent_w.clone();
         let overlay_t = overlay_w.clone();
         glib::timeout_add_local(Duration::from_millis(200), move || {
             let Some(outcome) = slot.lock().ok().and_then(|mut g| g.take()) else {
@@ -619,7 +677,9 @@ pub fn show_rename_device(
                 RenameResult::SavedOffline => {
                     overlay_t.add_toast(
                         libadwaita::Toast::builder()
-                            .title(tr!("Saved. The new name will take effect the next time you connect."))
+                            .title(tr!(
+                                "Saved. The new name will take effect the next time you connect."
+                            ))
                             .timeout(3)
                             .build(),
                     );
@@ -639,9 +699,12 @@ pub fn show_rename_device(
                         libadwaita::Toast::builder()
                             // Escape tailscale stderr before it hits the
                             // markup-aware toast title.
-                            .title(glib::markup_escape_text(
-                                &trf!("Rename failed: {error}", "error" => e),
-                            ).as_str())
+                            .title(
+                                glib::markup_escape_text(
+                                    &trf!("Rename failed: {error}", "error" => e),
+                                )
+                                .as_str(),
+                            )
                             .timeout(6)
                             .build(),
                     );
@@ -656,7 +719,7 @@ pub fn show_rename_device(
 /// Validate the user-typed hostname against the same charset tailscale enforces
 /// as a DNS leaf. Returns the localized error to display when the value is
 /// rejected, or Ok with the trimmed name when it's good to apply.
-fn validate_hostname(s: &str) -> Result<(), String> {
+pub(super) fn validate_hostname(s: &str) -> Result<(), String> {
     if s.is_empty() {
         return Err(tr!("The device name can't be empty."));
     }
@@ -667,12 +730,33 @@ fn validate_hostname(s: &str) -> Result<(), String> {
     if bytes[0] == b'-' || bytes[bytes.len() - 1] == b'-' {
         return Err(tr!("The device name can't start or end with a hyphen."));
     }
-    if !s.chars().all(|c| c.is_ascii_lowercase() || c.is_ascii_digit() || c == '-') {
+    if !s
+        .chars()
+        .all(|c| c.is_ascii_lowercase() || c.is_ascii_digit() || c == '-')
+    {
         return Err(tr!(
             "Only lowercase letters, digits and hyphens are allowed."
         ));
     }
     Ok(())
+}
+
+pub(super) fn sanitize_hostname(input: &str) -> String {
+    let mut output = String::with_capacity(input.len().min(63));
+    let mut hyphen = false;
+    for c in input.chars().flat_map(char::to_lowercase) {
+        if output.len() >= 63 {
+            break;
+        }
+        if c.is_ascii_lowercase() || c.is_ascii_digit() {
+            output.push(c);
+            hyphen = false;
+        } else if !output.is_empty() && !hyphen {
+            output.push('-');
+            hyphen = true;
+        }
+    }
+    output.trim_matches('-').to_string()
 }
 
 /// If the server returned a loopback URL (because its `server_url` config is
@@ -682,7 +766,7 @@ fn validate_hostname(s: &str) -> Result<(), String> {
 /// that URL is also the right `--login-server` for tailscale.
 fn sanitize_server_url(server_from_response: &str, panel_url_typed: &str) -> String {
     let s = server_from_response.trim();
-    let is_loopback = s.contains("127.0.0.1") || s.contains("localhost") || s.contains("0.0.0.0");
+    let is_loopback = panel::url_is_local_server_response(s);
     let chosen = if s.is_empty() || is_loopback {
         panel_url_typed
     } else {
@@ -705,5 +789,30 @@ pub(super) fn normalize_server_url(input: &str) -> String {
         s.to_string()
     } else {
         format!("https://{s}")
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn device_name_is_a_dns_label() {
+        assert_eq!(sanitize_hostname(" Office PC__01 "), "office-pc-01");
+        assert_eq!(sanitize_hostname("---PHONE---"), "phone");
+        assert!(validate_hostname(&"a".repeat(63)).is_ok());
+        assert!(validate_hostname(&"a".repeat(64)).is_err());
+    }
+
+    #[test]
+    fn loopback_fallback_checks_the_url_host() {
+        assert_eq!(
+            sanitize_server_url("http://127.0.0.1:8080", "https://panel.example.org"),
+            "https://panel.example.org",
+        );
+        assert_eq!(
+            sanitize_server_url("https://example.org/localhost", "https://panel.example.org"),
+            "https://example.org/localhost",
+        );
     }
 }

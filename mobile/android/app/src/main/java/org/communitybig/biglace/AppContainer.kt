@@ -1,9 +1,16 @@
 package org.communitybig.biglace
 
 import android.content.Context
+import android.net.ConnectivityManager
+import android.net.Network
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.channels.Channel
+import kotlinx.coroutines.launch
 import org.communitybig.biglace.core.data.SecretStore
 import org.communitybig.biglace.core.data.SettingsStore
 import org.communitybig.biglace.core.mesh.MeshBackend
@@ -25,9 +32,10 @@ class AppContainer(context: Context) {
 
     val settings = SettingsStore(context)
     val secrets = SecretStore(context)
-    val panel = PanelClient()
+    val panel = PanelClient(context)
 
-    private val tsnet = TsnetMeshBackend(context.filesDir.resolve("tsnet").absolutePath)
+    private val tsnet = TsnetMeshBackend(context, context.filesDir.resolve("tsnet").absolutePath)
+    private val appScope = CoroutineScope(SupervisorJob() + Dispatchers.IO)
 
     val activeBackend: StateFlow<MeshBackend> = MutableStateFlow<MeshBackend>(tsnet).asStateFlow()
 
@@ -36,14 +44,35 @@ class AppContainer(context: Context) {
 
     /** Set by a peer row's terminal/files button; read by the target tab. */
     val pendingTarget = MutableStateFlow<PendingTarget?>(null)
+    internal val connectRequests = Channel<Unit>(Channel.CONFLATED)
+
+    init {
+        val connectivity = appContext.getSystemService(ConnectivityManager::class.java)
+        connectivity.registerDefaultNetworkCallback(
+            object : ConnectivityManager.NetworkCallback() {
+                override fun onAvailable(network: Network) = updateNetworkInterfaces()
+                override fun onLost(network: Network) = updateNetworkInterfaces()
+                override fun onCapabilitiesChanged(
+                    network: Network,
+                    networkCapabilities: android.net.NetworkCapabilities,
+                ) = updateNetworkInterfaces()
+            },
+        )
+    }
+
+    private fun updateNetworkInterfaces() {
+        appScope.launch { tsnet.updateInterfaces() }
+    }
 
     fun hasConnectConfig(): Boolean =
-        settings.serverUrl.isNotBlank() && secrets.authKey.isNotBlank()
+        settings.serverUrl.isNotBlank() && (secrets.authKey.isNotBlank() || tsnet.hasPersistedState())
 
     /** Connect through the foreground service so the tunnel survives app close. */
     fun requestConnect() {
-        if (hasConnectConfig()) MeshService.connect(appContext)
+        if (hasConnectConfig()) connectRequests.trySend(Unit)
     }
+
+    internal fun connectNow() = MeshService.connect(appContext)
 
     fun requestDisconnect() = MeshService.disconnect(appContext)
 }

@@ -1,14 +1,16 @@
 package org.communitybig.biglace.core.mesh
 
+import android.content.Context
 import community.biglace.tsbridge.Tsbridge
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.delay
+import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.withContext
 import org.json.JSONArray
 import org.json.JSONObject
+import org.communitybig.biglace.R
 import java.net.NetworkInterface
 import java.util.Collections
 
@@ -22,7 +24,8 @@ import java.util.Collections
  *
  * @param stateDir app-private, writable dir where tsnet persists node keys.
  */
-class TsnetMeshBackend(private val stateDir: String) : MeshBackend {
+class TsnetMeshBackend(context: Context, private val stateDir: String) : MeshBackend {
+    private val appContext = context.applicationContext
     override val id = "tsnet"
 
     private val _state = MutableStateFlow<MeshState>(MeshState.Disconnected)
@@ -30,27 +33,23 @@ class TsnetMeshBackend(private val stateDir: String) : MeshBackend {
 
     private val _peers = MutableStateFlow<List<Peer>>(emptyList())
     override val peers: StateFlow<List<Peer>> = _peers.asStateFlow()
+    private var refreshFailures = 0
 
     override suspend fun connect(server: String, authKey: String?, hostname: String) {
+        require(server.isNotBlank()) { "Server URL is required" }
+        refreshFailures = 0
         _state.value = MeshState.Connecting
         try {
             withContext(Dispatchers.IO) {
-                // Android 11+ blocks Go's net.Interfaces(); feed the list from
-                // Java first, or tsnet startup dies with "netlinkrib: permission
-                // denied". MUST be before start().
-                Tsbridge.setInterfaces(interfacesJson())
-                Tsbridge.start(server, authKey ?: "", hostname, stateDir)
+                updateInterfacesBlocking()
+                Tsbridge.start(server.trim(), authKey?.trim().orEmpty(), hostname, stateDir)
             }
             refresh()
             if (_state.value is MeshState.Connecting) {
                 _state.value = MeshState.Up(hostname.ifEmpty { "this-phone" }, null)
             }
-            // The netmap (peer list) can land a moment after we're Up. Re-poll a
-            // few times so peers appear without the user tapping refresh.
-            repeat(3) {
-                delay(2500)
-                if (_state.value is MeshState.Up) refresh()
-            }
+        } catch (e: CancellationException) {
+            throw e
         } catch (e: Throwable) {
             // Throwable, not Exception: a failed native-lib load throws
             // UnsatisfiedLinkError (an Error), and a Go panic surfaces here too;
@@ -60,13 +59,20 @@ class TsnetMeshBackend(private val stateDir: String) : MeshBackend {
     }
 
     override suspend fun disconnect() {
-        withContext(Dispatchers.IO) { runCatching { Tsbridge.stop() } }
+        withContext(Dispatchers.IO) { Tsbridge.stop() }
         _state.value = MeshState.Disconnected
         _peers.value = emptyList()
+        refreshFailures = 0
     }
 
     override suspend fun refresh() {
-        if (!isRunning()) return
+        if (!isRunning()) {
+            if (_state.value != MeshState.Disconnected) {
+                _peers.value = emptyList()
+                _state.value = MeshState.Error(appContext.getString(R.string.mesh_engine_stopped))
+            }
+            return
+        }
         try {
             val json = withContext(Dispatchers.IO) { Tsbridge.statusJSON() }
             val status = JSONObject(json)
@@ -75,8 +81,13 @@ class TsnetMeshBackend(private val stateDir: String) : MeshBackend {
             val selfName = self?.let { firstLabel(it.optString("DNSName")) } ?: ""
             val selfIp = self?.optJSONArray("TailscaleIPs")?.optString(0)
             _state.value = MeshState.Up(selfName.ifEmpty { "this-phone" }, selfIp)
+            refreshFailures = 0
         } catch (e: Throwable) {
-            _state.value = MeshState.Error(describe(e))
+            if (e is CancellationException) throw e
+            refreshFailures++
+            if (_state.value is MeshState.Connecting || refreshFailures >= 3) {
+                _state.value = MeshState.Error(describe(e))
+            }
         }
     }
 
@@ -92,7 +103,16 @@ class TsnetMeshBackend(private val stateDir: String) : MeshBackend {
 
     /** Open a local port that tunnels to `host:port` over the tailnet. */
     suspend fun forward(host: String, port: Int): Int =
-        withContext(Dispatchers.IO) { Tsbridge.forwardTo("$host:$port").toInt() }
+        withContext(Dispatchers.IO) {
+            require(host.isNotBlank()) { "Host is required" }
+            require(port in 1..65535) { "Port must be between 1 and 65535" }
+            val address = if (':' in host && !host.startsWith('[')) "[$host]:$port" else "$host:$port"
+            Tsbridge.forwardTo(address).toInt()
+        }
+
+    fun hasPersistedState(): Boolean = java.io.File(stateDir, "tailscaled.state").isFile
+
+    suspend fun updateInterfaces() = withContext(Dispatchers.IO) { updateInterfacesBlocking() }
 
     /** True once the embedded engine is up (safe: never throws). */
     fun isRunning(): Boolean = runCatching { Tsbridge.running() }.getOrDefault(false)
@@ -104,8 +124,10 @@ class TsnetMeshBackend(private val stateDir: String) : MeshBackend {
         for (key in peerMap.keys()) {
             val n = peerMap.optJSONObject(key) ?: continue
             val dns = n.optString("DNSName").trimEnd('.')
-            // Skip the panel/infra peer, like the desktop does.
-            if (firstLabel(dns) == "panel") continue
+            val suffix = status.optString("MagicDNSSuffix")
+                .ifBlank { status.optJSONObject("CurrentTailnet")?.optString("MagicDNSSuffix").orEmpty() }
+                .trimEnd('.')
+            if (firstLabel(dns) == "panel" && suffix.isNotBlank() && dns.removePrefix("panel.") == suffix) continue
             val ips = n.optJSONArray("TailscaleIPs")
             var ipv4: String? = null
             var ipv6: String? = null
@@ -118,6 +140,9 @@ class TsnetMeshBackend(private val stateDir: String) : MeshBackend {
             }
             val tags = ArrayList<String>()
             n.optJSONArray("Tags")?.let { for (i in 0 until it.length()) tags.add(it.optString(i).removePrefix("tag:")) }
+            val sshUser = tags.firstOrNull { it.startsWith("user-") }
+                ?.removePrefix("user-")
+                ?.takeIf { it.isNotBlank() }
             out.add(
                 Peer(
                     hostname = n.optString("HostName"),
@@ -127,6 +152,7 @@ class TsnetMeshBackend(private val stateDir: String) : MeshBackend {
                     online = n.optBoolean("Online", false),
                     os = n.optString("OS"),
                     owner = resolveUser(users, n.optLong("UserID", 0)),
+                    sshUser = sshUser,
                     lastSeen = n.optString("LastSeen").takeIf { it.isNotEmpty() && !it.startsWith("0001") },
                     tags = tags,
                     exitNodeOffered = n.optBoolean("ExitNodeOption", false),
@@ -151,6 +177,10 @@ class TsnetMeshBackend(private val stateDir: String) : MeshBackend {
      * (which Android permits, unlike Go's net.Interfaces on API 30+) and hand
      * them to the Go engine as JSON. See [Tsbridge.setInterfaces].
      */
+    private fun updateInterfacesBlocking() {
+        Tsbridge.setInterfaces(interfacesJson())
+    }
+
     private fun interfacesJson(): String {
         val arr = JSONArray()
         try {
@@ -172,7 +202,8 @@ class TsnetMeshBackend(private val stateDir: String) : MeshBackend {
                 obj.put("addrs", addrs)
                 arr.put(obj)
             }
-        } catch (_: Exception) {
+        } catch (e: Exception) {
+            throw IllegalStateException("Unable to inspect Android network interfaces", e)
         }
         return arr.toString()
     }

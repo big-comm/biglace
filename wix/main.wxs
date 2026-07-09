@@ -47,8 +47,8 @@
              "file in use" prompts when a user upgrades while biglace.exe is
              still running (we'll kill it via util:CloseApplication below). -->
         <!-- AllowSameVersionUpgrades: the CI passes a numeric ProductVersion
-             derived from the (date-based) release tag via `cargo wix
-             --install-version`. Distinct releases already differ, but this also
+             derived from the (date-based) release tag via cargo-wix's
+             install-version option. Distinct releases already differ, but this also
              lets a rebuild of the same version replace in place instead of
              producing two "BigLace" entries in Apps & features. -->
         <MajorUpgrade Schedule="afterInstallInitialize"
@@ -65,6 +65,8 @@
         <util:CloseApplication Id="CloseBigLace"
                                Target="biglace.exe"
                                CloseMessage="yes"
+                               Timeout="10"
+                               TerminateProcess="0"
                                RebootPrompt="no"/>
 
         <!-- ── Directory layout ──────────────────────────────────────────── -->

@@ -18,7 +18,7 @@ use super::Command;
 use crate::{tr, trf};
 
 pub struct BigLaceTray {
-    pub connected:  bool,
+    pub connected: bool,
     pub peer_count: usize,
     sender: mpsc::Sender<Command>,
 }
@@ -136,9 +136,9 @@ impl HandleImpl {
 pub fn spawn() -> Option<(mpsc::Receiver<Command>, HandleImpl)> {
     let (tx, rx) = mpsc::channel();
     let tray = BigLaceTray {
-        connected:  false,
+        connected: false,
         peer_count: 0,
-        sender:     tx,
+        sender: tx,
     };
     match tray.assume_sni_available(true).spawn() {
         Ok(handle) => Some((rx, HandleImpl(handle))),

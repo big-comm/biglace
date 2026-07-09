@@ -1,4 +1,4 @@
-//! Native OS credential storage for the BigScale panel password.
+//! Native OS credential storage for panel passwords and enrollment keys.
 //!
 //! Backed by the `keyring` crate, which speaks to whatever the user's OS
 //! provides: Windows Credential Manager, macOS Keychain, or any D-Bus Secret
@@ -11,6 +11,7 @@
 use keyring::Entry;
 
 const SERVICE: &str = "biglace";
+const AUTHKEY_SERVICE: &str = "biglace-authkey";
 
 fn account_id(panel_url: &str, username: &str) -> String {
     // Compose the panel URL + username so a user with multiple BigScale
@@ -23,6 +24,43 @@ fn entry(panel_url: &str, username: &str) -> Option<Entry> {
         return None;
     }
     Entry::new(SERVICE, &account_id(panel_url, username)).ok()
+}
+
+fn authkey_entry(server_url: &str) -> Option<Entry> {
+    let server = server_url.trim().trim_end_matches('/');
+    if server.is_empty() {
+        return None;
+    }
+    Entry::new(AUTHKEY_SERVICE, server).ok()
+}
+
+pub fn save_authkey(server_url: &str, authkey: &str) -> keyring::Result<()> {
+    let Some(entry) = authkey_entry(server_url) else {
+        return Ok(());
+    };
+    entry.set_password(authkey.trim())
+}
+
+pub fn load_authkey(server_url: &str) -> Option<String> {
+    let entry = authkey_entry(server_url)?;
+    match entry.get_password() {
+        Ok(value) => Some(value),
+        Err(keyring::Error::NoEntry) => None,
+        Err(err) => {
+            eprintln!("[biglace] secrets: authkey load failed: {err}");
+            None
+        }
+    }
+}
+
+pub fn clear_authkey(server_url: &str) {
+    let Some(entry) = authkey_entry(server_url) else {
+        return;
+    };
+    match entry.delete_credential() {
+        Ok(()) | Err(keyring::Error::NoEntry) => {}
+        Err(err) => eprintln!("[biglace] secrets: authkey clear failed: {err}"),
+    }
 }
 
 /// Persist `password` for the given panel/user. Errors (no keyring daemon,

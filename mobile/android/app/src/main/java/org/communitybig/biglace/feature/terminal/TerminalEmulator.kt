@@ -16,10 +16,14 @@ import androidx.compose.ui.text.withStyle
  * render correctly instead of scattering characters.
  */
 class TerminalEmulator(
-    val rows: Int = 24,
-    val cols: Int = 80,
+    rows: Int = 24,
+    cols: Int = 80,
     private val scrollbackMax: Int = 800,
 ) {
+    var rows: Int = rows.coerceAtLeast(2)
+        private set
+    var cols: Int = cols.coerceAtLeast(8)
+        private set
     private class Cell(val ch: Char, val fg: Long, val bg: Long, val bold: Boolean)
 
     private var screen = blankGrid()
@@ -275,6 +279,42 @@ class TerminalEmulator(
 
     @Synchronized
     fun clear() = reset()
+
+    @Synchronized
+    fun resize(newRows: Int, newCols: Int) {
+        val targetRows = newRows.coerceIn(2, 200)
+        val targetCols = newCols.coerceIn(8, 300)
+        if (targetRows == rows && targetCols == cols) return
+
+        fun resizedRow(source: Array<Cell>): Array<Cell> =
+            Array(targetCols) { c -> source.getOrNull(c) ?: blank() }
+
+        fun resized(source: Array<Array<Cell>>): Array<Array<Cell>> {
+            val result = Array(targetRows) { Array(targetCols) { blank() } }
+            for (r in 0 until minOf(source.size, targetRows)) {
+                for (c in 0 until minOf(source[r].size, targetCols)) {
+                    result[r][c] = source[r][c]
+                }
+            }
+            return result
+        }
+
+        screen = resized(screen)
+        mainScreen = mainScreen?.let(::resized)
+        val resizedScrollback = ArrayDeque<Array<Cell>>(scrollback.size)
+        scrollback.forEach { resizedScrollback.addLast(resizedRow(it)) }
+        scrollback.clear()
+        scrollback.addAll(resizedScrollback)
+        rows = targetRows
+        cols = targetCols
+        cr = cr.coerceIn(0, rows - 1)
+        cc = cc.coerceIn(0, cols - 1)
+        savedR = savedR.coerceIn(0, rows - 1)
+        savedC = savedC.coerceIn(0, cols - 1)
+        top = 0
+        bottom = rows - 1
+        wrap = false
+    }
 
     // ── Rendering ─────────────────────────────────────────────────────────────
 

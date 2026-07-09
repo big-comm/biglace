@@ -1,5 +1,6 @@
 package org.communitybig.biglace.core.mesh
 
+import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -52,6 +53,8 @@ class CompanionMeshBackend(
             _peers.value = map.map { (host, user) ->
                 Peer(hostname = host, owner = user, sshUser = user, online = false)
             }.sortedBy { it.hostname }
+        } catch (e: CancellationException) {
+            throw e
         } catch (e: Exception) {
             _state.value = MeshState.Error(e.message ?: "panel unreachable")
         }

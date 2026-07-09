@@ -1,12 +1,15 @@
 package org.communitybig.biglace.core.ssh
 
+import android.content.Context
 import net.schmizz.sshj.SSHClient
 import net.schmizz.sshj.userauth.method.AuthKeyboardInteractive
+import net.schmizz.sshj.userauth.method.AuthMethod
 import net.schmizz.sshj.userauth.method.AuthPassword
 import net.schmizz.sshj.userauth.method.AuthPublickey
 import net.schmizz.sshj.userauth.method.PasswordResponseProvider
 import net.schmizz.sshj.userauth.password.PasswordFinder
 import net.schmizz.sshj.userauth.password.PasswordUtils
+import org.communitybig.biglace.R
 
 /** Carries a human-readable auth transcript so the UI can show what happened. */
 class SshAuthException(message: String) : Exception(message)
@@ -23,30 +26,34 @@ object SshAuth {
         user: String,
         password: String,
         privateKeyPem: String,
-        mode: AuthMode = AuthMode.AUTO,
+        mode: AuthMode,
+        context: Context,
     ): String {
         val log = StringBuilder()
-        val tryKey = mode != AuthMode.PASSWORD
-        val tryPassword = mode != AuthMode.KEY
+        if (mode == AuthMode.AUTO) {
+            return authenticateAuto(ssh, user, password, privateKeyPem, log, context)
+        }
+
+        val tryKey = mode == AuthMode.KEY
+        val tryPassword = mode == AuthMode.PASSWORD
 
         if (tryKey) {
             when {
                 privateKeyPem.isBlank() -> {
                     if (mode == AuthMode.KEY) {
                         throw SshAuthException(
-                            "No SSH key configured.\nGenerate one in Settings → SSH key, then add its " +
-                                "public key to the server's ~/.ssh/authorized_keys.",
+                            context.getString(R.string.ssh_no_key_configured),
                         )
                     }
-                    log.append("• no SSH key configured\n")
+                    log.append(context.getString(R.string.ssh_no_key_log)).append('\n')
                 }
                 else -> try {
                     val keys = ssh.loadKeys(privateKeyPem, null as String?, null as PasswordFinder?)
                     ssh.auth(user, AuthPublickey(keys))
                     return "publickey"
                 } catch (e: Exception) {
-                    log.append("• publickey rejected: ${e.message}\n")
-                    if (mode == AuthMode.KEY) throw failure(ssh, user, log, keyHint = true)
+                    log.append(context.getString(R.string.ssh_publickey_rejected, e.message)).append('\n')
+                    if (mode == AuthMode.KEY) throw failure(ssh, user, log, keyHint = true, context)
                 }
             }
         }
@@ -54,8 +61,10 @@ object SshAuth {
         if (tryPassword) {
             when {
                 password.isBlank() -> {
-                    if (mode == AuthMode.PASSWORD) throw SshAuthException("No password entered.")
-                    log.append("• no password entered\n")
+                    if (mode == AuthMode.PASSWORD) {
+                        throw SshAuthException(context.getString(R.string.ssh_no_password))
+                    }
+                    log.append(context.getString(R.string.ssh_no_password_log)).append('\n')
                 }
                 else -> try {
                     ssh.auth(
@@ -67,26 +76,82 @@ object SshAuth {
                     )
                     return "password"
                 } catch (e: Exception) {
-                    log.append("• password rejected: ${e.message}\n")
+                    log.append(context.getString(R.string.ssh_password_rejected, e.message)).append('\n')
                 }
             }
         }
 
-        throw failure(ssh, user, log, keyHint = mode == AuthMode.KEY)
+        throw failure(ssh, user, log, keyHint = mode == AuthMode.KEY, context)
     }
 
-    private fun failure(ssh: SSHClient, user: String, log: StringBuilder, keyHint: Boolean): SshAuthException {
+    /** Negotiate all available methods in one SSH user-auth session. */
+    private fun authenticateAuto(
+        ssh: SSHClient,
+        user: String,
+        password: String,
+        privateKeyPem: String,
+        log: StringBuilder,
+        context: Context,
+    ): String {
+        val methods = mutableListOf<AuthMethod>()
+        var lastMethod = "auto"
+
+        fun tracked(method: AuthMethod): AuthMethod = object : AuthMethod by method {
+            override fun request() {
+                lastMethod = method.name
+                method.request()
+            }
+        }
+
+        if (privateKeyPem.isBlank()) {
+            log.append(context.getString(R.string.ssh_no_key_log)).append('\n')
+        } else {
+            try {
+                val keys = ssh.loadKeys(privateKeyPem, null as String?, null as PasswordFinder?)
+                methods += tracked(AuthPublickey(keys))
+            } catch (e: Exception) {
+                log.append(context.getString(R.string.ssh_publickey_rejected, e.message)).append('\n')
+            }
+        }
+
+        if (password.isBlank()) {
+            log.append(context.getString(R.string.ssh_no_password_log)).append('\n')
+        } else {
+            methods += tracked(AuthPassword(PasswordUtils.createOneOff(password.toCharArray())))
+            methods += tracked(
+                AuthKeyboardInteractive(
+                    PasswordResponseProvider(PasswordUtils.createOneOff(password.toCharArray())),
+                ),
+            )
+        }
+
+        if (methods.isEmpty()) throw failure(ssh, user, log, keyHint = false, context)
+
+        try {
+            ssh.auth(user, methods)
+            return lastMethod
+        } catch (e: Exception) {
+            log.append(context.getString(R.string.ssh_auto_rejected, e.message)).append('\n')
+            throw failure(ssh, user, log, keyHint = false, context)
+        }
+    }
+
+    private fun failure(
+        ssh: SSHClient,
+        user: String,
+        log: StringBuilder,
+        keyHint: Boolean,
+        context: Context,
+    ): SshAuthException {
         val allowed = runCatching { ssh.userAuth?.allowedMethods?.joinToString(", ") }
-            .getOrNull()?.ifBlank { "(none)" } ?: "?"
+            .getOrNull()?.ifBlank { context.getString(R.string.ssh_none) } ?: "?"
         return SshAuthException(
             buildString {
-                append("Authentication failed for \"$user\".\n\n")
-                append("Server accepts: [$allowed]\n\n")
+                append(context.getString(R.string.ssh_auth_failed_for, user)).append("\n\n")
+                append(context.getString(R.string.ssh_server_accepts, allowed)).append("\n\n")
                 append(log)
                 if (keyHint) {
-                    append("\nFor key auth the server needs your public key on ONE line of ")
-                    append("~/.ssh/authorized_keys — with a space before the comment — and ")
-                    append("perms 700 on ~/.ssh and 600 on authorized_keys.")
+                    append('\n').append(context.getString(R.string.ssh_key_auth_hint))
                 }
             },
         )
