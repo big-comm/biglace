@@ -10,8 +10,8 @@ pub struct Config {
     pub authkey: String,
     pub auto_connect: bool,
 
-    /// The local tailscaled state contains a registered node key. This is the
-    /// durable session marker; the enrollment key is cleared after first use.
+    /// Local tailscaled state contains a registered node key. This remains a
+    /// durable reconnect marker even when no enrollment key is available.
     #[serde(default)]
     pub enrolled: bool,
 

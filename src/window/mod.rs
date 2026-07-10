@@ -732,6 +732,19 @@ fn has_connect_config(c: &config::Config) -> bool {
     !c.server_url.trim().is_empty() && (c.enrolled || !c.authkey.trim().is_empty())
 }
 
+fn has_visible_identity(state: AppState, c: &config::Config) -> bool {
+    state == AppState::Connected || has_connect_config(c)
+}
+
+fn should_show_manual_setup(state: AppState, c: &config::Config) -> bool {
+    state != AppState::Connected && !has_connect_config(c)
+}
+
+fn mark_enrolled(mut c: config::Config) -> config::Config {
+    c.enrolled = true;
+    c
+}
+
 // ─── Menu (hamburger) ────────────────────────────────────────────────────────
 
 fn setup_menu(ctx: &Ctx) {
@@ -1127,15 +1140,10 @@ fn do_connect(ctx: &Ctx, server: String, authkey: String, hostname: String) {
         match slot.lock().ok().and_then(|mut g| g.take()) {
             None => glib::ControlFlow::Continue,
             Some(Ok(())) => {
-                let mut updated = ctx2.cfg.borrow().clone();
-                let server_url = updated.server_url.clone();
-                updated.authkey.clear();
-                updated.enrolled = true;
+                let updated = mark_enrolled(ctx2.cfg.borrow().clone());
                 let persist_error = match config::save(&updated) {
                     Ok(()) => {
-                        crate::secrets::clear_authkey(&server_url);
                         *ctx2.cfg.borrow_mut() = updated;
-                        ctx2.ui.sidebar.entry_key.set_text("");
                         None
                     }
                     Err(error) => Some(error.to_string()),
@@ -1349,17 +1357,36 @@ fn apply_state(ctx: &Ctx, state: AppState, status: &Status, peers: &[Peer]) {
     ui.content.stack.set_visible_child_name(page);
 
     // ── Identity card ──
-    let signed_in = has_connect_config(&cfg_snap);
+    let configured = has_connect_config(&cfg_snap);
+    let has_identity = has_visible_identity(state, &cfg_snap);
+    let show_manual_setup = should_show_manual_setup(state, &cfg_snap);
     // Pencil button is only useful once we have an identity to rename, so it
-    // stays hidden on the signed-out layout (which doesn't show the manual
-    // expander either when `signed_in` is true).
-    ui.sidebar.btn_edit_host.set_visible(signed_in);
-    if !signed_in {
+    // stays hidden without saved config. Manual enrollment is only relevant
+    // while offline; an active tunnel already has a usable network identity.
+    ui.sidebar.btn_edit_host.set_visible(configured);
+    ui.sidebar.expander_manual.set_visible(show_manual_setup);
+    if !show_manual_setup {
+        ui.sidebar.expander_manual.set_expanded(false);
+    }
+    if state == AppState::Connected {
+        let title = match status.display_name() {
+            name if !name.is_empty() => name,
+            _ if !cfg_snap.hostname.is_empty() => cfg_snap.hostname.clone(),
+            _ => tr!("(no device name)"),
+        };
+        let subtitle = status
+            .ip
+            .clone()
+            .filter(|ip| !ip.is_empty())
+            .or_else(|| (!cfg_snap.server_url.is_empty()).then(|| cfg_snap.server_url.clone()))
+            .unwrap_or_else(|| tr!("Connected"));
+        ui.sidebar.identity_row.set_title(&title);
+        ui.sidebar.identity_row.set_subtitle(&subtitle);
+    } else if !has_identity {
         ui.sidebar.identity_row.set_title(&tr!("Not signed in"));
         ui.sidebar
             .identity_row
             .set_subtitle(&tr!("Sign in or paste a pre-auth key"));
-        ui.sidebar.expander_manual.set_visible(true);
     } else {
         // Show the BigScale identifier the user picked (or a placeholder if
         // they haven't typed one yet). The OS user is intentionally not shown
@@ -1376,8 +1403,6 @@ fn apply_state(ctx: &Ctx, state: AppState, status: &Status, peers: &[Peer]) {
         };
         ui.sidebar.identity_row.set_title(&host);
         ui.sidebar.identity_row.set_subtitle(&url);
-        ui.sidebar.expander_manual.set_visible(false);
-        ui.sidebar.expander_manual.set_expanded(false);
     }
 
     // ── Menu items: gate by sign-in state ──
@@ -1386,14 +1411,14 @@ fn apply_state(ctx: &Ctx, state: AppState, status: &Status, peers: &[Peer]) {
         .lookup_action("panel-login")
         .and_downcast::<gtk4::gio::SimpleAction>()
     {
-        act.set_enabled(!signed_in);
+        act.set_enabled(!configured);
     }
     if let Some(act) = ui
         .win
         .lookup_action("sign-out")
         .and_downcast::<gtk4::gio::SimpleAction>()
     {
-        act.set_enabled(signed_in);
+        act.set_enabled(configured);
     }
 
     // ── Connect / Disconnect button ──
@@ -1785,3 +1810,35 @@ fn notify_peer_change(name: &str, online: bool) {
 /// transition still updates the UI; we just don't emit a system toast.
 #[cfg(not(any(target_os = "linux", target_os = "windows")))]
 fn notify_peer_change(_name: &str, _online: bool) {}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn active_network_has_visible_identity_without_saved_config() {
+        let cfg = config::Config::default();
+
+        assert!(has_visible_identity(AppState::Connected, &cfg));
+        assert!(!has_visible_identity(AppState::NotSignedIn, &cfg));
+        assert!(!should_show_manual_setup(AppState::Connected, &cfg));
+        assert!(should_show_manual_setup(AppState::NotSignedIn, &cfg));
+    }
+
+    #[test]
+    fn successful_enrollment_preserves_connection_credentials() {
+        let cfg = config::Config {
+            server_url: "https://vpn.example.org".into(),
+            authkey: "hskey-auth-secret".into(),
+            hostname: "workstation".into(),
+            ..config::Config::default()
+        };
+
+        let enrolled = mark_enrolled(cfg);
+
+        assert!(enrolled.enrolled);
+        assert_eq!(enrolled.server_url, "https://vpn.example.org");
+        assert_eq!(enrolled.authkey, "hskey-auth-secret");
+        assert_eq!(enrolled.hostname, "workstation");
+    }
+}
