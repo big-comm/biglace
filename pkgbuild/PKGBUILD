@@ -1,4 +1,4 @@
-# Maintainer: BigCommunity <contato@biglinux.com.br>
+#Maintainer: Tales A. Mendonça <talesam@gmail.com>
 
 pkgname=biglace
 pkgdesc="Mesh VPN client with a graphical interface for Headscale/Tailscale"
@@ -15,25 +15,32 @@ makedepends=(
     'git'
     'rust'
     'cargo'
+    'openssl'
     'pkgconf'
 )
-pkgver=1.0.0
-pkgrel=1
+pkgver=$(date +%y.%m.%d)
+pkgrel=$(date +%H%M)
 arch=('x86_64' 'aarch64')
 license=('MIT')
 url="https://github.com/big-comm/${pkgname}"
 source=("git+${url}.git")
-sha256sums=('SKIP')
-install=pkgbuild.install
+md5sums=('SKIP')
+
+# Automatically detect and use the correct install file
+if [ -e "${pkgname}.install" ]; then
+    install=${pkgname}.install
+elif [ -e "pkgbuild.install" ]; then
+    install=pkgbuild.install
+fi
 
 prepare() {
-    cd "${srcdir}/${pkgname}" || return
+    cd "${srcdir}/${pkgname}"
     export RUSTUP_TOOLCHAIN=stable
-    cargo fetch --locked
+    cargo fetch --locked 2>/dev/null || cargo fetch
 }
 
 build() {
-    cd "${srcdir}/${pkgname}" || return
+    cd "${srcdir}/${pkgname}"
     export RUSTUP_TOOLCHAIN=stable
     # --no-default-features disables the bundled jemalloc allocator.
     # Arch's hardened LLD link (with -Wl,--gc-sections -nodefaultlibs -pie)
@@ -41,34 +48,41 @@ build() {
     # fall back to glibc's malloc here. The non-allocator optimizations
     # (status cache, diff-based UI refresh, ureq agent reuse) carry most of
     # the RSS savings — jemalloc just smooths long-idle drift.
-    cargo build --release --locked --no-default-features
+    cargo build --release --locked --no-default-features 2>/dev/null \
+        || cargo build --release --no-default-features
 }
 
 package() {
-    cd "${srcdir}/${pkgname}" || return
-    local source_root="${srcdir}/${pkgname}"
+    cd "${srcdir}/${pkgname}"
+
+    # Determine the correct source directory
+    if [ -d "${pkgname}" ]; then
+        srcdir="${srcdir}/${pkgname}/${pkgname}"
+    else
+        srcdir="${srcdir}/${pkgname}"
+    fi
 
     # Install files (mirrors of /usr, /etc, /opt living in the repo)
     local dirs=("usr" "etc" "opt")
     for dir in "${dirs[@]}"; do
-        if [ -d "${source_root}/${dir}" ]; then
-            cp -a "${source_root}/${dir}" "${pkgdir}/"
+        if [ -d "${srcdir}/${dir}" ]; then
+            cp -a "${srcdir}/${dir}" "${pkgdir}/"
         fi
     done
 
     # Rust binary
-    install -Dm755 "${source_root}/target/release/${pkgname}" \
+    install -Dm755 "${srcdir}/target/release/${pkgname}" \
         "${pkgdir}/usr/bin/${pkgname}"
 
     # Install license file if present
-    if [ -f "${source_root}/LICENSE" ]; then
-        install -Dm644 "${source_root}/LICENSE" \
+    if [ -f "${srcdir}/LICENSE" ]; then
+        install -Dm644 "${srcdir}/LICENSE" \
             "${pkgdir}/usr/share/licenses/${pkgname}/LICENSE"
     fi
 
     # Install documentation if present
-    if [ -f "${source_root}/README.md" ]; then
-        install -Dm644 "${source_root}/README.md" \
+    if [ -f "${srcdir}/README.md" ]; then
+        install -Dm644 "${srcdir}/README.md" \
             "${pkgdir}/usr/share/doc/${pkgname}/README.md"
     fi
 }
