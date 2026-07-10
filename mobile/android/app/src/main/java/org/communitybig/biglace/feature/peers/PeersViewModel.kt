@@ -50,8 +50,7 @@ class PeersViewModel(private val container: AppContainer) : ViewModel() {
     }
 
     /** Whether there's enough saved config to attempt a connect. */
-    fun canConnect(): Boolean =
-        container.settings.serverUrl.isNotBlank() && container.secrets.authKey.isNotBlank()
+    fun canConnect(): Boolean = container.hasConnectConfig()
 
     // Connect/disconnect via the foreground service so the tunnel survives the
     // app being closed and shows a persistent notification.

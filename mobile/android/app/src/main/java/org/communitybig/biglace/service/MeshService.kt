@@ -74,9 +74,9 @@ class MeshService : Service() {
                         c.settings.hostname,
                     )
                     if (c.activeBackend.value.state.value is MeshState.Up) {
-                        // The node key in tsnet's state store is enough for future
-                        // reconnects; do not retain a reusable enrollment secret.
-                        c.secrets.authKey = ""
+                        // Keep the enrollment key available in Settings. It is
+                        // encrypted by Android Keystore and may be reusable if
+                        // the local tsnet state ever needs to be recreated.
                         startRefreshLoop()
                     } else if (c.activeBackend.value.state.value is MeshState.Error) {
                         try {
