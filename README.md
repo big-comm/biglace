@@ -386,7 +386,8 @@ You may edit non-secret settings directly or use the UI. Panel passwords and
 enrollment/pre-auth keys are stored in the OS keyring and are never serialized
 to TOML. Existing plaintext `authkey` fields are migrated when a usable server
 URL is available. The durable `enrolled` marker records that the local
-Tailscale state is registered after the disposable enrollment key is cleared.
+Tailscale state is registered and can reconnect if the enrollment key is
+temporarily unavailable. The encrypted key itself remains in the OS keyring.
 
 ---
 
