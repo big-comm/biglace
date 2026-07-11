@@ -18,7 +18,6 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.unit.dp
 import kotlinx.coroutines.launch
 import org.communitybig.biglace.R
@@ -38,11 +37,12 @@ fun PanelLoginDialog(
 ) {
     val scope = rememberCoroutineScope()
     val fillFieldsMsg = stringResource(R.string.panel_fill_fields)
+    val signInFailedMsg = stringResource(R.string.panel_signin_failed)
 
     var url by remember { mutableStateOf(vm.initialPanelUrl()) }
     var user by remember { mutableStateOf(vm.initialPanelUsername()) }
     var password by remember { mutableStateOf("") }
-    var node by remember { mutableStateOf(vm.initialHostname()) }
+    var node by remember { mutableStateOf(sanitizeDeviceName(vm.initialHostname())) }
     var busy by remember { mutableStateOf(false) }
     var error by remember { mutableStateOf<String?>(null) }
 
@@ -57,7 +57,7 @@ fun PanelLoginDialog(
                     label = { Text(stringResource(R.string.settings_username)) })
                 PasswordField(password, { password = it }, stringResource(R.string.settings_password),
                     modifier = Modifier.fillMaxWidth(), enabled = !busy)
-                OutlinedTextField(node, { node = it }, enabled = !busy, singleLine = true,
+                OutlinedTextField(node, { node = sanitizeDeviceName(it) }, enabled = !busy, singleLine = true,
                     label = { Text(stringResource(R.string.settings_device_name)) })
                 error?.let { Text(it, color = MaterialTheme.colorScheme.error) }
                 if (busy) {
@@ -70,7 +70,7 @@ fun PanelLoginDialog(
             TextButton(
                 enabled = !busy,
                 onClick = {
-                    if (url.isBlank() || user.isBlank() || password.isBlank()) {
+                    if (url.isBlank() || user.isBlank() || password.isBlank() || node.isBlank()) {
                         error = fillFieldsMsg
                         return@TextButton
                     }
@@ -79,7 +79,7 @@ fun PanelLoginDialog(
                     scope.launch {
                         vm.panelSignIn(url, user, password, node)
                             .onSuccess { busy = false; onSuccess() }
-                            .onFailure { busy = false; error = it.message ?: "sign-in failed" }
+                            .onFailure { busy = false; error = it.message ?: signInFailedMsg }
                     }
                 },
             ) { Text(stringResource(R.string.dialog_signin)) }

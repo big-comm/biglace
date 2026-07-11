@@ -1,57 +1,241 @@
-<?xml version="1.0" encoding="UTF-8"?>
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128" width="128" height="128">
-  <defs>
-    <linearGradient id="bg" x1="0" y1="0" x2="0" y2="1">
-      <stop offset="0%"   stop-color="#3584e4"/>
-      <stop offset="100%" stop-color="#1a5fb4"/>
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<svg
+   viewBox="0 0 128 128"
+   width="128"
+   height="128"
+   version="1.1"
+   id="svg27"
+   sodipodi:docname="org.communitybig.biglace.svg"
+   inkscape:version="1.4.4 (dcaf3e7d9e, 2026-05-05)"
+   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
+   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:svg="http://www.w3.org/2000/svg">
+  <sodipodi:namedview
+     id="namedview27"
+     pagecolor="#ffffff"
+     bordercolor="#000000"
+     borderopacity="0.25"
+     inkscape:showpageshadow="2"
+     inkscape:pageopacity="0.0"
+     inkscape:pagecheckerboard="0"
+     inkscape:deskcolor="#d1d1d1"
+     inkscape:zoom="6.828125"
+     inkscape:cx="64"
+     inkscape:cy="64"
+     inkscape:window-width="1920"
+     inkscape:window-height="1125"
+     inkscape:window-x="0"
+     inkscape:window-y="0"
+     inkscape:window-maximized="1"
+     inkscape:current-layer="svg27" />
+  <defs
+     id="defs6">
+    <linearGradient
+       id="bg"
+       x1="0"
+       y1="0"
+       x2="0"
+       y2="1">
+      <stop
+         offset="0%"
+         stop-color="#3584e4"
+         id="stop1" />
+      <stop
+         offset="100%"
+         stop-color="#1a5fb4"
+         id="stop2" />
     </linearGradient>
-    <radialGradient id="topGlow" cx="50%" cy="0%" r="80%">
-      <stop offset="0%"  stop-color="#ffffff" stop-opacity="0.28"/>
-      <stop offset="60%" stop-color="#ffffff" stop-opacity="0"/>
+    <radialGradient
+       id="topGlow"
+       cx="50%"
+       cy="0%"
+       r="80%">
+      <stop
+         offset="0%"
+         stop-color="#ffffff"
+         stop-opacity="0.28"
+         id="stop3" />
+      <stop
+         offset="60%"
+         stop-color="#ffffff"
+         stop-opacity="0"
+         id="stop4" />
     </radialGradient>
-    <radialGradient id="centerHalo" cx="50%" cy="50%" r="50%">
-      <stop offset="0%"   stop-color="#ffffff" stop-opacity="0.55"/>
-      <stop offset="100%" stop-color="#ffffff" stop-opacity="0"/>
+    <radialGradient
+       id="centerHalo"
+       cx="50%"
+       cy="50%"
+       r="50%">
+      <stop
+         offset="0%"
+         stop-color="#ffffff"
+         stop-opacity="0.55"
+         id="stop5" />
+      <stop
+         offset="100%"
+         stop-color="#ffffff"
+         stop-opacity="0"
+         id="stop6" />
     </radialGradient>
   </defs>
-
   <!-- rounded square (Adwaita style) -->
-  <rect x="6" y="6" width="116" height="116" rx="24" ry="24" fill="url(#bg)"/>
-  <rect x="6" y="6" width="116" height="116" rx="24" ry="24" fill="url(#topGlow)"/>
-
+  <rect
+     x="6"
+     y="6"
+     width="116"
+     height="116"
+     rx="24"
+     ry="24"
+     fill="url(#bg)"
+     id="rect6" />
+  <rect
+     x="6"
+     y="6"
+     width="116"
+     height="116"
+     rx="24"
+     ry="24"
+     fill="url(#topGlow)"
+     id="rect7" />
   <!-- mesh: hexagonal pattern around a highlighted center node -->
-  <g stroke="#ffffff" stroke-linecap="round" fill="none">
+  <g
+     stroke="#ffffff"
+     stroke-linecap="round"
+     fill="none"
+     id="g19">
     <!-- spokes: center → 6 outer nodes -->
-    <line x1="64" y1="64" x2="92" y2="64" stroke-width="3"/>
-    <line x1="64" y1="64" x2="36" y2="64" stroke-width="3"/>
-    <line x1="64" y1="64" x2="78" y2="40" stroke-width="3"/>
-    <line x1="64" y1="64" x2="50" y2="40" stroke-width="3"/>
-    <line x1="64" y1="64" x2="78" y2="88" stroke-width="3"/>
-    <line x1="64" y1="64" x2="50" y2="88" stroke-width="3"/>
-
+    <line
+       x1="64"
+       y1="64"
+       x2="92"
+       y2="64"
+       stroke-width="3"
+       id="line7" />
+    <line
+       x1="64"
+       y1="64"
+       x2="36"
+       y2="64"
+       stroke-width="3"
+       id="line8" />
+    <line
+       x1="64"
+       y1="64"
+       x2="78"
+       y2="40"
+       stroke-width="3"
+       id="line9" />
+    <line
+       x1="64"
+       y1="64"
+       x2="50"
+       y2="40"
+       stroke-width="3"
+       id="line10" />
+    <line
+       x1="64"
+       y1="64"
+       x2="78"
+       y2="88"
+       stroke-width="3"
+       id="line11" />
+    <line
+       x1="64"
+       y1="64"
+       x2="50"
+       y2="88"
+       stroke-width="3"
+       id="line12" />
     <!-- perimeter (the "lace") -->
-    <g stroke-width="2" opacity="0.65">
-      <line x1="92" y1="64" x2="78" y2="40"/>
-      <line x1="78" y1="40" x2="50" y2="40"/>
-      <line x1="50" y1="40" x2="36" y2="64"/>
-      <line x1="36" y1="64" x2="50" y2="88"/>
-      <line x1="50" y1="88" x2="78" y2="88"/>
-      <line x1="78" y1="88" x2="92" y2="64"/>
+    <g
+       stroke-width="2"
+       opacity="0.65"
+       id="g18">
+      <line
+         x1="92"
+         y1="64"
+         x2="78"
+         y2="40"
+         id="line13" />
+      <line
+         x1="78"
+         y1="40"
+         x2="50"
+         y2="40"
+         id="line14" />
+      <line
+         x1="50"
+         y1="40"
+         x2="36"
+         y2="64"
+         id="line15" />
+      <line
+         x1="36"
+         y1="64"
+         x2="50"
+         y2="88"
+         id="line16" />
+      <line
+         x1="50"
+         y1="88"
+         x2="78"
+         y2="88"
+         id="line17" />
+      <line
+         x1="78"
+         y1="88"
+         x2="92"
+         y2="64"
+         id="line18" />
     </g>
   </g>
-
   <!-- outer nodes -->
-  <g fill="#ffffff">
-    <circle cx="92" cy="64" r="6"/>
-    <circle cx="36" cy="64" r="6"/>
-    <circle cx="78" cy="40" r="6"/>
-    <circle cx="50" cy="40" r="6"/>
-    <circle cx="78" cy="88" r="6"/>
-    <circle cx="50" cy="88" r="6"/>
+  <g
+     fill="#ffffff"
+     id="g24">
+    <circle
+       cx="92"
+       cy="64"
+       r="6"
+       id="circle19" />
+    <circle
+       cx="36"
+       cy="64"
+       r="6"
+       id="circle20" />
+    <circle
+       cx="78"
+       cy="40"
+       r="6"
+       id="circle21" />
+    <circle
+       cx="50"
+       cy="40"
+       r="6"
+       id="circle22" />
+    <circle
+       cx="78"
+       cy="88"
+       r="6"
+       id="circle23" />
+    <circle
+       cx="50"
+       cy="88"
+       r="6"
+       id="circle24" />
   </g>
-
   <!-- center node: halo + ring + dot in brand blue -->
-  <circle cx="64" cy="64" r="16" fill="url(#centerHalo)"/>
-  <circle cx="64" cy="64" r="9"  fill="#ffffff"/>
-  <circle cx="64" cy="64" r="4"  fill="#1a5fb4"/>
+  <circle
+     cx="64"
+     cy="64"
+     r="16"
+     fill="url(#centerHalo)"
+     id="circle25" />
+  <circle
+     cx="64"
+     cy="64"
+     r="9"
+     fill="#ffffff"
+     id="circle26" />
 </svg>

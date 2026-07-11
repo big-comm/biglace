@@ -1,6 +1,7 @@
 package org.communitybig.biglace.core.data
 
 import android.content.Context
+import androidx.core.content.edit
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -9,7 +10,7 @@ import org.json.JSONObject
 /**
  * Non-secret app settings, persisted in SharedPreferences (the framework store
  * — no extra dependency). Mirrors the desktop config.toml fields. Secrets (the
- * pre-auth key, panel password) live in [SecretStore], not here.
+ * pre-auth and SSH keys/passwords) live in [SecretStore], not here.
  *
  * `favorites` is exposed as a StateFlow so the peer list re-sorts reactively;
  * the rest are plain get/set read on demand by the settings screen.
@@ -19,28 +20,28 @@ class SettingsStore(context: Context) {
 
     var serverUrl: String
         get() = prefs.getString(KEY_SERVER, "").orEmpty()
-        set(v) = prefs.edit().putString(KEY_SERVER, v).apply()
+        set(v) = prefs.edit { putString(KEY_SERVER, v) }
 
     var hostname: String
         get() = prefs.getString(KEY_HOST, "").orEmpty()
-        set(v) = prefs.edit().putString(KEY_HOST, v).apply()
+        set(v) = prefs.edit { putString(KEY_HOST, v) }
 
     var panelUrl: String
         get() = prefs.getString(KEY_PANEL_URL, "").orEmpty()
-        set(v) = prefs.edit().putString(KEY_PANEL_URL, v).apply()
+        set(v) = prefs.edit { putString(KEY_PANEL_URL, v) }
 
     var panelUsername: String
         get() = prefs.getString(KEY_PANEL_USER, "").orEmpty()
-        set(v) = prefs.edit().putString(KEY_PANEL_USER, v).apply()
+        set(v) = prefs.edit { putString(KEY_PANEL_USER, v) }
 
     var autoConnect: Boolean
         get() = prefs.getBoolean(KEY_AUTO_CONNECT, false)
-        set(v) = prefs.edit().putBoolean(KEY_AUTO_CONNECT, v).apply()
+        set(v) = prefs.edit { putBoolean(KEY_AUTO_CONNECT, v) }
 
     /** Connect on device boot (via BootReceiver). */
     var connectOnBoot: Boolean
         get() = prefs.getBoolean(KEY_CONNECT_ON_BOOT, false)
-        set(v) = prefs.edit().putBoolean(KEY_CONNECT_ON_BOOT, v).apply()
+        set(v) = prefs.edit { putBoolean(KEY_CONNECT_ON_BOOT, v) }
 
     private val _favorites = MutableStateFlow(
         prefs.getStringSet(KEY_FAVORITES, emptySet())!!.toSet(),
@@ -54,7 +55,7 @@ class SettingsStore(context: Context) {
             if (!add(hostname)) remove(hostname)
         }
         _favorites.value = next
-        prefs.edit().putStringSet(KEY_FAVORITES, next).apply()
+        prefs.edit { putStringSet(KEY_FAVORITES, next) }
     }
 
     // ── Per-peer SSH login overrides (hostname → login), like desktop ─────────
@@ -69,7 +70,7 @@ class SettingsStore(context: Context) {
         _overrides.value = next
         val json = JSONObject()
         next.forEach { (k, v) -> json.put(k, v) }
-        prefs.edit().putString(KEY_OVERRIDES, json.toString()).apply()
+        prefs.edit { putString(KEY_OVERRIDES, json.toString()) }
     }
 
     private fun loadOverrides(): Map<String, String> {

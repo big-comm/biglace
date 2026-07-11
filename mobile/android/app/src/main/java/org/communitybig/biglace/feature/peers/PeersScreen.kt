@@ -43,11 +43,12 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import android.widget.Toast
-import androidx.compose.ui.platform.LocalClipboardManager
+import android.content.ClipData
+import androidx.compose.ui.platform.ClipEntry
+import androidx.compose.ui.platform.LocalClipboard
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
@@ -56,6 +57,8 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.lifecycle.viewmodel.initializer
 import androidx.lifecycle.viewmodel.viewModelFactory
+import androidx.compose.runtime.rememberCoroutineScope
+import kotlinx.coroutines.launch
 import org.communitybig.biglace.AppContainer
 import org.communitybig.biglace.PendingTarget
 import org.communitybig.biglace.R
@@ -67,9 +70,9 @@ import org.communitybig.biglace.ui.theme.Online
 @Composable
 fun PeersScreen(
     container: AppContainer,
+    modifier: Modifier = Modifier,
     onOpenTerminal: () -> Unit = {},
     onOpenFiles: () -> Unit = {},
-    modifier: Modifier = Modifier,
 ) {
     val vm: PeersViewModel = viewModel(
         factory = viewModelFactory { initializer { PeersViewModel(container) } },
@@ -286,7 +289,8 @@ private fun PeerCard(
 
 @Composable
 private fun DetailRow(label: String, value: String, copyable: Boolean = false) {
-    val clipboard = LocalClipboardManager.current
+    val clipboard = LocalClipboard.current
+    val scope = rememberCoroutineScope()
     Row(
         Modifier.fillMaxWidth().padding(start = 14.dp, end = 4.dp, top = 8.dp, bottom = 8.dp),
         verticalAlignment = Alignment.CenterVertically,
@@ -296,7 +300,11 @@ private fun DetailRow(label: String, value: String, copyable: Boolean = false) {
             Text(value, style = MaterialTheme.typography.bodyMedium, fontFamily = FontFamily.Monospace)
         }
         if (copyable) {
-            IconButton(onClick = { clipboard.setText(AnnotatedString(value)) }) {
+            IconButton(onClick = {
+                scope.launch {
+                    clipboard.setClipEntry(ClipEntry(ClipData.newPlainText(label, value)))
+                }
+            }) {
                 Icon(painterResource(R.drawable.ic_copy), contentDescription = stringResource(R.string.action_copy),
                     tint = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f))
             }

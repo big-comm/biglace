@@ -15,17 +15,28 @@ android {
         applicationId = "org.communitybig.biglace"
         minSdk = 26
         targetSdk = 36
-        versionCode = 23
-        versionName = "0.7.5"
+        versionCode = 29
+        versionName = "0.9.2"
+        testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
 
     buildTypes {
         release {
-            isMinifyEnabled = false
+            isMinifyEnabled = true
+            isShrinkResources = true
             proguardFiles(
                 getDefaultProguardFile("proguard-android-optimize.txt"),
                 "proguard-rules.pro",
             )
+        }
+    }
+
+    splits {
+        abi {
+            isEnable = true
+            reset()
+            include("armeabi-v7a", "arm64-v8a", "x86", "x86_64")
+            isUniversalApk = false
         }
     }
 
@@ -39,6 +50,13 @@ android {
     }
 }
 
+tasks.register<Exec>("buildTsbridge") {
+    group = "build"
+    description = "Rebuild the embedded tsnet AAR for every Android ABI."
+    workingDir(rootProject.projectDir.resolve("../tsbridge"))
+    commandLine("bash", "build-aar.sh")
+}
+
 kotlin {
     compilerOptions {
         jvmTarget.set(JvmTarget.JVM_17)
@@ -49,10 +67,10 @@ kotlin {
 // graph mutually consistent, and Material/lifecycle/activity are on stable
 // releases that pair with it.
 dependencies {
-    implementation("androidx.core:core-ktx:1.15.0")
-    implementation("androidx.activity:activity-compose:1.9.3")
+    implementation("androidx.core:core-ktx:1.17.0")
+    implementation("androidx.activity:activity-compose:1.13.0")
 
-    implementation(platform("androidx.compose:compose-bom:2024.12.01"))
+    implementation(platform("androidx.compose:compose-bom:2026.06.01"))
     implementation("androidx.compose.ui:ui")
     implementation("androidx.compose.ui:ui-graphics")
     implementation("androidx.compose.ui:ui-tooling-preview")
@@ -60,22 +78,23 @@ dependencies {
     implementation("androidx.compose.material3:material3")
     implementation("androidx.compose.material:material-icons-core")
 
-    implementation("androidx.lifecycle:lifecycle-runtime-compose:2.8.7")
-    implementation("androidx.lifecycle:lifecycle-viewmodel-compose:2.8.7")
+    implementation("androidx.lifecycle:lifecycle-runtime-compose:2.10.0")
+    implementation("androidx.lifecycle:lifecycle-viewmodel-compose:2.10.0")
 
-    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-android:1.9.0")
+    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-android:1.11.0")
 
     // Embedded Tailscale (tsnet) engine, built from mobile/tsbridge via gomobile.
-    // Self-contained AAR (arm64-v8a + armeabi-v7a native libs) — real devices
-    // only; x86 emulators lack the .so.
+    // Self-contained AAR for physical devices and x86/x86_64 emulators.
     implementation(files("libs/tsbridge.aar"))
 
     // SSH + SFTP for the terminal and file manager.
-    implementation("com.hierynomus:sshj:0.38.0")
-    implementation("org.slf4j:slf4j-nop:2.0.13")
+    implementation("com.hierynomus:sshj:0.40.0")
+    implementation("org.slf4j:slf4j-nop:2.0.18")
     // Full BouncyCastle: Android's built-in "BC" provider is stripped and lacks
     // X25519 etc.; the app swaps in this one at startup (BigLaceApplication).
-    implementation("org.bouncycastle:bcprov-jdk18on:1.78.1")
+    implementation("org.bouncycastle:bcprov-jdk18on:1.84")
+    implementation("org.bouncycastle:bcpkix-jdk18on:1.84")
 
     debugImplementation("androidx.compose.ui:ui-tooling")
+    testImplementation("junit:junit:4.13.2")
 }

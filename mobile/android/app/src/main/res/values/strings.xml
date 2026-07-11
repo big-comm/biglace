@@ -14,13 +14,7 @@
     <string name="tab_settings">Settings</string>
 
     <!-- Peers screen -->
-    <string name="peers_title">Devices on the network</string>
-    <string name="peers_this_device">This device</string>
-    <string name="peers_favorites">Favorites</string>
-    <string name="peers_all">All peers</string>
     <string name="peers_empty">Connected — but no other devices are visible to this account. Check your ACL rules on BigScale: the user this phone joined as needs access to some peer. A defined group isn\'t enough; it must be used in an \"accept\" rule. Then pull to refresh.</string>
-    <string name="peers_disconnected_hint">Not connected. Go to Settings, enter your server + pre-auth key, and tap Connect.</string>
-    <string name="peers_offline">offline</string>
     <string name="peers_disconnected">Disconnected</string>
     <string name="peers_connected">Connected</string>
     <string name="peers_connecting">Connecting…</string>
@@ -29,12 +23,10 @@
     <string name="action_files">Open files (SFTP)</string>
     <string name="action_pin">Pin to top</string>
     <string name="action_unpin">Unpin</string>
-    <string name="action_copy_ip">Copy IP</string>
     <string name="peers_configure">Set your server URL and pre-auth key in Settings, then connect.</string>
     <string name="peers_connecting_hint">Joining your tailnet — this can take a few seconds…</string>
     <string name="peers_error_title">Couldn\'t connect</string>
     <string name="peers_retry">Try again</string>
-    <string name="peers_count">%1$d online · %2$d total</string>
     <string name="peer_dns">DNS name</string>
     <string name="peer_owner">Owner</string>
     <string name="peer_tags">Tags</string>
@@ -43,15 +35,12 @@
     <string name="peer_ssh_override_hint">Leave empty to use %1$s</string>
     <string name="action_copy">Copy</string>
     <string name="action_save">Save</string>
-    <string name="copied">Copied</string>
     <string name="peer_login_saved">SSH login set to</string>
     <string name="peer_login_cleared">Cleared — using default (%1$s)</string>
 
     <!-- Terminal / Files -->
     <string name="ssh_host">Host / tailnet IP</string>
     <string name="ssh_port">Port</string>
-    <string name="ssh_command">Command</string>
-    <string name="ssh_send">Send</string>
     <string name="ssh_type_hint">Type here — buttons above for Tab, arrows, Ctrl</string>
     <string name="ssh_auth_mode">Authentication</string>
     <string name="ssh_mode_auto">Auto</string>
@@ -60,7 +49,22 @@
     <string name="ssh_test">Test</string>
     <string name="ssh_auth_ok">Connection OK</string>
     <string name="ssh_auth_failed">Couldn\'t authenticate</string>
+    <string name="ssh_no_key_configured">No SSH key is configured.\nGenerate one in Settings → SSH key, then add its public key to the server’s ~/.ssh/authorized_keys.</string>
+    <string name="ssh_no_key_log">• no SSH key configured</string>
+    <string name="ssh_publickey_rejected">• public key rejected: %1$s</string>
+    <string name="ssh_no_password">No password entered.</string>
+    <string name="ssh_no_password_log">• no password entered</string>
+    <string name="ssh_password_rejected">• password rejected: %1$s</string>
+    <string name="ssh_auto_rejected">• automatic authentication failed: %1$s</string>
+    <string name="ssh_none">(none)</string>
+    <string name="ssh_auth_failed_for">Authentication failed for “%1$s”.</string>
+    <string name="ssh_server_accepts">Server accepts: [%1$s]</string>
+    <string name="ssh_key_auth_hint">For key authentication, the server needs your public key on one line of ~/.ssh/authorized_keys, with a space before the comment, permissions 700 on ~/.ssh and 600 on authorized_keys.</string>
+    <string name="ssh_authenticated_via">[BigLace] authenticated via %1$s</string>
     <string name="action_ok">OK</string>
+    <string name="session_new">New</string>
+    <string name="session_add">New connection tab</string>
+    <string name="session_close">Close and disconnect this tab</string>
 
     <!-- File manager -->
     <string name="files_actions">Actions</string>
@@ -73,15 +77,52 @@
     <string name="files_new_folder">New folder</string>
     <string name="files_create">Create</string>
     <string name="files_upload">Upload file…</string>
-    <string name="ssh_pick_peer">Open the Peers tab and tap a device\'s terminal or files button — or enter a host below.</string>
+    <string name="files_search">Search this folder</string>
+    <string name="files_clear_search">Clear search</string>
+    <string name="files_no_search_results">No files match your search.</string>
+    <string name="files_sort">Sort files</string>
+    <string name="files_sort_name">Name</string>
+    <string name="files_sort_size">Size</string>
+    <string name="files_sort_type">Type</string>
+    <string name="files_sort_ascending">Ascending order</string>
+    <string name="files_sort_descending">Descending order</string>
+    <string name="sftp_connection_failed">SFTP connection failed.</string>
+    <string name="ssh_connection_failed">Connection failed.</string>
+    <string name="ssh_probe_success">Connected to %1$s@%2$s.\nAuthenticated via %3$s.</string>
+    <string name="files_listing_failed">Couldn’t list this folder.</string>
+    <string name="files_busy_renaming">Renaming…</string>
+    <string name="files_busy_moving">Moving…</string>
+    <string name="files_busy_deleting">Deleting…</string>
+    <string name="files_busy_creating_folder">Creating folder…</string>
+    <string name="files_busy_downloading">Downloading %1$s…</string>
+    <string name="files_busy_uploading">Uploading…</string>
+    <string name="files_invalid_name">Invalid name.</string>
+    <string name="files_invalid_filename">Invalid filename.</string>
+    <string name="files_renamed_to">Renamed to %1$s.</string>
+    <string name="files_moved_to">Moved to %1$s.</string>
+    <string name="files_deleted">Deleted %1$s.</string>
+    <string name="files_folder_created">Folder created.</string>
+    <string name="files_cannot_read_file">Can’t read the selected file.</string>
+    <string name="files_uploaded">Uploaded %1$s.</string>
+    <string name="files_tree_too_deep">The directory tree is too deep.</string>
+    <string name="files_operation_failed">File operation failed.</string>
+    <string name="files_no_viewer">No app can open this file type.</string>
+    <string name="ssh_pick_peer">Open the Peers tab and tap a device\'s terminal or files button — or enter a host below. Use + to keep multiple connections open in separate tabs.</string>
     <string name="ssh_connecting">Connecting…</string>
     <string name="ssh_section">SSH key</string>
     <string name="ssh_generate">Generate SSH key</string>
     <string name="ssh_generating">Generating…</string>
+    <string name="ssh_key_generation_failed">Couldn’t generate the SSH key.</string>
     <string name="ssh_public_key">Public key (add it to a server\'s ~/.ssh/authorized_keys)</string>
+    <string name="ssh_show_key">Show public key</string>
+    <string name="ssh_hide_key">Hide public key</string>
     <string name="ssh_regenerate">Regenerate</string>
     <string name="ssh_key_info">With a key set, terminal/SFTP try key auth first, then the password.</string>
+    <string name="ssh_forget_trusted_hosts">Forget trusted SSH hosts</string>
+    <string name="ssh_forget_trusted_hosts_confirm">Forget all saved SSH host fingerprints? You’ll be asked to trust each host again on its next connection.</string>
     <string name="action_share">Share</string>
+    <string name="action_forget">Forget</string>
+    <string name="ssh_share_title">SSH public key</string>
 
     <!-- Settings screen -->
     <string name="settings_connection">Connection</string>
@@ -96,23 +137,31 @@
     <string name="svc_channel_desc">Keeps your tailnet connection alive in the background.</string>
     <string name="svc_connecting">Connecting to your mesh…</string>
     <string name="svc_error">Connection error: %1$s</string>
+    <string name="mesh_engine_stopped">The embedded mesh engine stopped unexpectedly.</string>
     <string name="settings_save">Save</string>
     <string name="settings_connect">Connect</string>
     <string name="settings_disconnect">Disconnect</string>
-    <string name="settings_saved">Setup saved</string>
     <string name="settings_panel_signin">Sign in with panel account</string>
     <string name="settings_panel_url">Panel URL</string>
     <string name="settings_username">Username</string>
     <string name="settings_password">Password</string>
-    <string name="settings_appearance">Appearance</string>
     <string name="settings_about">About</string>
     <string name="dialog_cancel">Cancel</string>
     <string name="dialog_signin">Sign in</string>
     <string name="panel_signing_in">Signing in…</string>
     <string name="panel_fill_fields">Fill in URL, username and password.</string>
+    <string name="panel_signin_failed">Sign-in failed.</string>
+    <string name="panel_https_required">Enter a valid HTTPS panel URL. HTTP is allowed only for localhost.</string>
+    <string name="panel_missing_authkey">The panel response did not include a pre-auth key.</string>
+    <string name="panel_credentials_too_long">The panel credentials are too long.</string>
+    <string name="panel_device_name_too_long">The device name is too long.</string>
+    <string name="panel_invalid_url">The panel URL is invalid.</string>
+    <string name="panel_response_too_large">The panel response is too large.</string>
+    <string name="settings_device_name_required">The device name is required.</string>
     <string name="about_status">BigLace Mobile · early build. It joins your BigScale / Headscale / Tailscale network in-app (embedded userspace tsnet — no separate VPN app) and opens a colour SSH terminal + an SFTP file manager on your peers. See mobile/ROADMAP.md.</string>
     <plurals name="svc_connected">
         <item quantity="one">Connected · %d device online</item>
+        <item quantity="many">Connected · %d devices online</item>
         <item quantity="other">Connected · %d devices online</item>
     </plurals>
 </resources>

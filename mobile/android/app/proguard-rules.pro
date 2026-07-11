@@ -1,3 +1,13 @@
-# Keep Compose + Kotlin metadata defaults. Release minification is off for now
-# (see build.gradle.kts); add app-specific keep rules here when it's turned on
-# — e.g. models parsed reflectively, or SSH library entry points once wired.
+# Gomobile JNI entry points are resolved by name.
+-keep class go.** { *; }
+-keep class community.biglace.** { *; }
+
+# SSHJ loads crypto implementations and algorithms reflectively.
+-keep class net.schmizz.sshj.** { *; }
+-keep class org.bouncycastle.** { *; }
+-dontwarn org.bouncycastle.**
+
+# Optional desktop-only SSHJ authentication providers are absent on Android.
+-dontwarn javax.security.auth.login.**
+-dontwarn org.ietf.jgss.**
+-dontwarn sun.security.x509.**

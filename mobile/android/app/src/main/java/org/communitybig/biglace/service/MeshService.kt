@@ -18,6 +18,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.cancel
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.launch
 import org.communitybig.biglace.BigLaceApplication
@@ -35,6 +36,8 @@ class MeshService : Service() {
     private val scope = CoroutineScope(SupervisorJob() + Dispatchers.Main)
     private lateinit var app: BigLaceApplication
     private var observeJob: Job? = null
+    private var connectionJob: Job? = null
+    private var refreshJob: Job? = null
 
     override fun onCreate() {
         super.onCreate()
@@ -47,26 +50,49 @@ class MeshService : Service() {
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
         when (intent?.action) {
             ACTION_DISCONNECT -> {
-                scope.launch { app.container.activeBackend.value.disconnect() }
-                stopService()
+                connectionJob?.cancel()
+                connectionJob = scope.launch {
+                    try {
+                        app.container.activeBackend.value.disconnect()
+                    } finally {
+                        stopService()
+                    }
+                }
                 return START_NOT_STICKY
             }
-            else -> {
+            ACTION_CONNECT -> {
                 // Go foreground immediately (required within a few seconds of
                 // startForegroundService), then connect + track state.
                 goForeground(getString(R.string.svc_connecting))
                 observeState()
+                if (connectionJob?.isActive == true) return START_REDELIVER_INTENT
                 val c = app.container
-                scope.launch {
+                connectionJob = scope.launch {
                     c.activeBackend.value.connect(
                         c.settings.serverUrl,
                         c.secrets.authKey,
                         c.settings.hostname,
                     )
+                    if (c.activeBackend.value.state.value is MeshState.Up) {
+                        // Keep the enrollment key available in Settings. It is
+                        // encrypted by Android Keystore and may be reusable if
+                        // the local tsnet state ever needs to be recreated.
+                        startRefreshLoop()
+                    } else if (c.activeBackend.value.state.value is MeshState.Error) {
+                        try {
+                            c.activeBackend.value.disconnect()
+                        } finally {
+                            stopService()
+                        }
+                    }
                 }
             }
+            else -> {
+                stopSelf(startId)
+                return START_NOT_STICKY
+            }
         }
-        return START_STICKY
+        return START_REDELIVER_INTENT
     }
 
     private fun observeState() {
@@ -90,9 +116,28 @@ class MeshService : Service() {
                     is MeshState.Error -> {
                         wasActive = true
                         goForeground(getString(R.string.svc_error, state.message.take(80)))
+                        if (connectionJob?.isCompleted == true) {
+                            try {
+                                backend.disconnect()
+                            } finally {
+                                stopService()
+                            }
+                        }
                     }
                     MeshState.Disconnected -> if (wasActive) stopService()
                 }
+            }
+        }
+    }
+
+    private fun startRefreshLoop() {
+        refreshJob?.cancel()
+        refreshJob = scope.launch {
+            while (true) {
+                delay(15_000)
+                val backend = app.container.activeBackend.value
+                if (backend.state.value !is MeshState.Up) return@launch
+                backend.refresh()
             }
         }
     }
@@ -113,6 +158,7 @@ class MeshService : Service() {
         )
         return NotificationCompat.Builder(this, CHANNEL_ID)
             .setSmallIcon(R.drawable.ic_stat_mesh)
+            .setColor(ContextCompat.getColor(this, R.color.biglace_brand_blue))
             .setContentTitle(getString(R.string.app_name))
             .setContentText(text)
             .setContentIntent(open)
@@ -125,6 +171,7 @@ class MeshService : Service() {
 
     private fun stopService() {
         observeJob?.cancel()
+        refreshJob?.cancel()
         ServiceCompat.stopForeground(this, ServiceCompat.STOP_FOREGROUND_REMOVE)
         stopSelf()
     }
@@ -137,6 +184,9 @@ class MeshService : Service() {
     }
 
     override fun onDestroy() {
+        observeJob?.cancel()
+        refreshJob?.cancel()
+        connectionJob?.cancel()
         scope.cancel()
         super.onDestroy()
     }

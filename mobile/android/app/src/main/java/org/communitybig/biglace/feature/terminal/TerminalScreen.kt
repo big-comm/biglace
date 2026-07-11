@@ -34,15 +34,19 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableFloatStateOf
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.saveable.rememberSaveableStateHolder
+import androidx.compose.runtime.snapshotFlow
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.focus.onFocusChanged
+import androidx.compose.ui.layout.onSizeChanged
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.res.painterResource
@@ -56,6 +60,7 @@ import androidx.compose.ui.text.input.KeyboardCapitalization
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.compose.ui.platform.LocalDensity
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.lifecycle.viewmodel.initializer
@@ -63,41 +68,82 @@ import androidx.lifecycle.viewmodel.viewModelFactory
 import org.communitybig.biglace.AppContainer
 import org.communitybig.biglace.R
 import org.communitybig.biglace.core.ssh.AuthMode
+import org.communitybig.biglace.core.ssh.SshSessionTab
+import org.communitybig.biglace.core.ssh.SshSessionTabsViewModel
 import org.communitybig.biglace.ui.AuthDialog
 import org.communitybig.biglace.ui.PasswordField
+import org.communitybig.biglace.ui.SessionTabs
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.flow.distinctUntilChanged
 
 @Composable
 fun TerminalScreen(container: AppContainer, modifier: Modifier = Modifier) {
+    val tabsVm: SshSessionTabsViewModel = viewModel(key = "terminal-tabs")
+    val tabs by tabsVm.tabs.collectAsStateWithLifecycle()
+    val activeId by tabsVm.activeId.collectAsStateWithLifecycle()
+    val pending by container.pendingTarget.collectAsStateWithLifecycle()
+    val stateHolder = rememberSaveableStateHolder()
+
+    LaunchedEffect(pending) {
+        pending?.takeIf { !it.wantFiles }?.let { target ->
+            tabsVm.openPeer(
+                target.host,
+                container.secrets.sshUser(target.host) ?: target.user,
+                container.secrets.sshPassword(target.host).orEmpty(),
+            )
+            container.pendingTarget.value = null
+        }
+    }
+
+    val active = tabs.firstOrNull { it.id == activeId } ?: return
     val vm: TerminalViewModel = viewModel(
+        key = "terminal-session-${active.id}",
         factory = viewModelFactory { initializer { TerminalViewModel(container) } },
     )
+
+    Column(modifier.fillMaxSize()) {
+        SessionTabs(
+            tabs = tabs,
+            activeId = active.id,
+            onSelect = tabsVm::select,
+            onAdd = tabsVm::add,
+            onCloseActive = {
+                vm.disconnect()
+                stateHolder.removeState(active.id)
+                tabsVm.close(active.id)
+            },
+        )
+        stateHolder.SaveableStateProvider(active.id) {
+            TerminalSessionScreen(
+                container = container,
+                tab = active,
+                vm = vm,
+                onUpdate = { transform -> tabsVm.update(active.id, transform) },
+                modifier = Modifier.weight(1f),
+            )
+        }
+    }
+}
+
+@Composable
+private fun TerminalSessionScreen(
+    container: AppContainer,
+    tab: SshSessionTab,
+    vm: TerminalViewModel,
+    onUpdate: ((SshSessionTab) -> SshSessionTab) -> Unit,
+    modifier: Modifier = Modifier,
+) {
     val status by vm.status.collectAsStateWithLifecycle()
     val screen by vm.screen.collectAsStateWithLifecycle()
     val testing by vm.testing.collectAsStateWithLifecycle()
     val probe by vm.probe.collectAsStateWithLifecycle()
-    val pending by container.pendingTarget.collectAsStateWithLifecycle()
 
-    var host by rememberSaveable { mutableStateOf("") }
-    var port by rememberSaveable { mutableStateOf("22") }
-    var user by rememberSaveable { mutableStateOf("") }
-    var fromPeer by rememberSaveable { mutableStateOf(false) }
-    var password by remember { mutableStateOf("") }
-    var mode by rememberSaveable { mutableStateOf(AuthMode.AUTO) }
-
-    LaunchedEffect(pending) {
-        pending?.takeIf { !it.wantFiles }?.let {
-            host = it.host; fromPeer = true
-            // Prefer the login that actually worked before for this host.
-            user = container.secrets.sshUser(it.host) ?: it.user
-            password = container.secrets.sshPassword(it.host) ?: ""
-            container.pendingTarget.value = null
-        }
-    }
     // Prefill the saved password whenever the host is known and none is typed yet.
-    LaunchedEffect(host) {
-        if (host.isNotBlank() && password.isBlank()) {
-            container.secrets.sshPassword(host)?.let { password = it }
+    LaunchedEffect(tab.host) {
+        if (tab.host.isNotBlank() && tab.password.isBlank()) {
+            container.secrets.sshPassword(tab.host)?.let { saved ->
+                onUpdate { it.copy(password = saved) }
+            }
         }
     }
 
@@ -107,22 +153,43 @@ fun TerminalScreen(container: AppContainer, modifier: Modifier = Modifier) {
             onRaw = vm::sendRaw,
             onCtrl = vm::sendCtrl,
             onKey = { vm.sendBytes(it) },
+            onResize = vm::resize,
             onDisconnect = { vm.disconnect() },
             modifier = modifier,
         )
     } else {
         ConnectForm(
             iconRes = R.drawable.ic_terminal,
-            host = host, onHost = { host = it; fromPeer = false },
-            port = port, onPort = { port = it },
-            user = user, onUser = { user = it },
-            password = password, onPassword = { password = it },
-            fromPeer = fromPeer,
+            host = tab.host,
+            onHost = { value ->
+                onUpdate {
+                    it.copy(
+                        host = value,
+                        password = if (value == it.host) it.password else "",
+                        fromPeer = false,
+                    )
+                }
+            },
+            port = tab.port, onPort = { value -> onUpdate { it.copy(port = value) } },
+            user = tab.user, onUser = { value -> onUpdate { it.copy(user = value) } },
+            password = tab.password,
+            onPassword = { value -> onUpdate { it.copy(password = value) } },
+            fromPeer = tab.fromPeer,
             connecting = status == TermStatus.Connecting,
             testing = testing,
-            mode = mode, onMode = { mode = it },
-            onConnect = { vm.connect(host.trim(), port.toIntOrNull() ?: 22, user.trim(), password, mode) },
-            onTest = { vm.probe(host.trim(), port.toIntOrNull() ?: 22, user.trim(), password, mode) },
+            mode = tab.mode, onMode = { value -> onUpdate { it.copy(mode = value) } },
+            onConnect = {
+                vm.connect(
+                    tab.host.trim(), tab.port.toIntOrNull() ?: 22,
+                    tab.user.trim(), tab.password, tab.mode,
+                )
+            },
+            onTest = {
+                vm.probe(
+                    tab.host.trim(), tab.port.toIntOrNull() ?: 22,
+                    tab.user.trim(), tab.password, tab.mode,
+                )
+            },
             modifier = modifier,
         )
     }
@@ -256,19 +323,39 @@ private fun TerminalView(
     onRaw: (String) -> Unit,
     onCtrl: (String) -> Unit,
     onKey: (Int) -> Unit,
+    onResize: (Int, Int) -> Unit,
     onDisconnect: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
     val vScroll = rememberScrollState()
     val hScroll = rememberScrollState()
     val scope = rememberCoroutineScope()
-    var fontSize by remember { mutableFloatStateOf(13f) }
-    var ctrl by remember { mutableStateOf(false) }
-    var buffer by remember { mutableStateOf("") }
+    var fontSize by rememberSaveable { mutableFloatStateOf(13f) }
+    var ctrl by rememberSaveable { mutableStateOf(false) }
+    var buffer by rememberSaveable { mutableStateOf("") }
+    var viewportWidth by remember { mutableIntStateOf(0) }
+    var viewportHeight by remember { mutableIntStateOf(0) }
+    val density = LocalDensity.current
 
-    // Keep the newest line (the prompt) in view: when little output, it sits at
-    // the top; when it overflows, we follow the bottom.
-    LaunchedEffect(screen) { vScroll.scrollTo(vScroll.maxValue) }
+    LaunchedEffect(viewportWidth, viewportHeight, fontSize, density) {
+        if (viewportWidth > 0 && viewportHeight > 0) {
+            val charPx = with(density) { fontSize.sp.toPx() } * 0.61f
+            val linePx = with(density) { (fontSize * 1.25f).sp.toPx() }
+            onResize(
+                (viewportHeight / linePx).toInt().coerceAtLeast(2),
+                (viewportWidth / charPx).toInt().coerceAtLeast(8),
+            )
+        }
+    }
+
+    // Follow layout growth, not every character. Long-running TUIs update the
+    // same rows frequently; restarting a scroll coroutine for each update makes
+    // keyboard input progressively less responsive.
+    LaunchedEffect(vScroll) {
+        snapshotFlow { vScroll.maxValue }
+            .distinctUntilChanged()
+            .collect { vScroll.scrollTo(it) }
+    }
 
     Column(
         modifier.fillMaxSize().padding(horizontal = 8.dp, vertical = 4.dp),
@@ -289,6 +376,10 @@ private fun TerminalView(
                 .fillMaxWidth()
                 .clip(RoundedCornerShape(10.dp))
                 .background(TerminalBg)
+                .onSizeChanged {
+                    viewportWidth = it.width
+                    viewportHeight = it.height
+                }
                 .pinchZoom { factor -> fontSize = (fontSize * factor).coerceIn(7f, 30f) }
                 .verticalScroll(vScroll)
                 .horizontalScroll(hScroll)

@@ -4,7 +4,9 @@ import androidx.compose.ui.text.AnnotatedString
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.Job
+import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -14,12 +16,14 @@ import kotlinx.coroutines.launch
 import net.schmizz.sshj.DefaultConfig
 import net.schmizz.sshj.SSHClient
 import net.schmizz.sshj.connection.channel.direct.Session
-import net.schmizz.sshj.transport.verification.PromiscuousVerifier
+import net.schmizz.sshj.connection.channel.direct.SessionChannel
 import org.communitybig.biglace.AppContainer
+import org.communitybig.biglace.R
 import org.communitybig.biglace.core.ssh.AuthMode
 import org.communitybig.biglace.core.ssh.ProbeResult
 import org.communitybig.biglace.core.ssh.SshAuth
-import java.io.OutputStream
+import org.communitybig.biglace.core.ssh.TofuHostKeyVerifier
+import java.io.InputStreamReader
 
 sealed interface TermStatus {
     data object Idle : TermStatus
@@ -53,14 +57,18 @@ class TerminalViewModel(private val container: AppContainer) : ViewModel() {
 
     private var ssh: SSHClient? = null
     private var session: Session? = null
-    private var outStream: OutputStream? = null
+    private var sessionChannel: SessionChannel? = null
+    private var input: Channel<ByteArray>? = null
+    private var writerJob: Job? = null
     private var renderJob: Job? = null
+    @Volatile private var disconnecting = false
 
     @Volatile private var dirty = false
 
     fun connect(host: String, port: Int, user: String, password: String, mode: AuthMode) {
         if (_status.value == TermStatus.Connecting || _status.value == TermStatus.Connected) return
         _status.value = TermStatus.Connecting
+        disconnecting = false
         emulator.clear()
         _screen.value = AnnotatedString("")
         startRenderPump()
@@ -68,30 +76,47 @@ class TerminalViewModel(private val container: AppContainer) : ViewModel() {
             try {
                 val local = container.forward(host, port)
                 val c = SSHClient(DefaultConfig())
-                c.addHostKeyVerifier(PromiscuousVerifier())
+                ssh = c
+                c.addHostKeyVerifier(TofuHostKeyVerifier(host, container.secrets))
                 c.connect("127.0.0.1", local)
-                val method = SshAuth.authenticate(c, user, password, container.secrets.sshPrivateKey, mode)
+                val method = SshAuth.authenticate(
+                    c, user, password, container.secrets.sshPrivateKey, mode, container.appContext,
+                )
                 if (password.isNotBlank() && mode != AuthMode.KEY) container.secrets.setSshPassword(host, password)
                 if (user.isNotBlank()) container.secrets.setSshUser(host, user)
                 val s = c.startSession()
                 s.allocatePTY("xterm-256color", COLS, ROWS, 0, 0, emptyMap())
                 val shell = s.startShell()
-                ssh = c; session = s; outStream = shell.outputStream
-                emulator.feed("\u001B[90m[BigLace] authenticated via $method\u001B[0m\r\n")
+                session = s
+                sessionChannel = s as? SessionChannel
+                val writes = Channel<ByteArray>(Channel.BUFFERED)
+                input = writes
+                writerJob = viewModelScope.launch(Dispatchers.IO) {
+                    for (bytes in writes) {
+                        shell.outputStream.write(bytes)
+                        shell.outputStream.flush()
+                    }
+                }
+                emulator.feed(
+                    "\u001B[90m${text(R.string.ssh_authenticated_via, method)}\u001B[0m\r\n",
+                )
                 dirty = true
                 _status.value = TermStatus.Connected
 
-                val buf = ByteArray(8192)
-                val ins = shell.inputStream
+                val buf = CharArray(4096)
+                val reader = InputStreamReader(shell.inputStream, Charsets.UTF_8)
                 while (true) {
-                    val n = ins.read(buf)
+                    val n = reader.read(buf)
                     if (n < 0) break
-                    emulator.feed(String(buf, 0, n, Charsets.UTF_8))
+                    emulator.feed(String(buf, 0, n))
                     dirty = true
                 }
                 _status.value = TermStatus.Idle
+            } catch (e: CancellationException) {
+                throw e
             } catch (e: Exception) {
-                _status.value = TermStatus.Error(e.message ?: "SSH connection failed")
+                _status.value = if (disconnecting) TermStatus.Idle
+                else TermStatus.Error(e.message ?: text(R.string.ssh_connection_failed))
             } finally {
                 closeQuietly()
             }
@@ -107,14 +132,18 @@ class TerminalViewModel(private val container: AppContainer) : ViewModel() {
             try {
                 val local = container.forward(host, port)
                 c = SSHClient(DefaultConfig())
-                c.addHostKeyVerifier(PromiscuousVerifier())
+                c.addHostKeyVerifier(TofuHostKeyVerifier(host, container.secrets))
                 c.connect("127.0.0.1", local)
-                val method = SshAuth.authenticate(c, user, password, container.secrets.sshPrivateKey, mode)
+                val method = SshAuth.authenticate(
+                    c, user, password, container.secrets.sshPrivateKey, mode, container.appContext,
+                )
                 if (password.isNotBlank() && mode != AuthMode.KEY) container.secrets.setSshPassword(host, password)
                 if (user.isNotBlank()) container.secrets.setSshUser(host, user)
-                _probe.value = ProbeResult(true, "Connected to $user@$host.\nAuthenticated via $method.")
-            } catch (e: Throwable) {
-                _probe.value = ProbeResult(false, e.message ?: "Connection failed.")
+                _probe.value = ProbeResult(true, text(R.string.ssh_probe_success, user, host, method))
+            } catch (e: CancellationException) {
+                throw e
+            } catch (e: Exception) {
+                _probe.value = ProbeResult(false, e.message ?: text(R.string.ssh_connection_failed))
             } finally {
                 runCatching { c?.disconnect() }
                 _testing.value = false
@@ -126,34 +155,28 @@ class TerminalViewModel(private val container: AppContainer) : ViewModel() {
 
     fun dismissError() { if (_status.value is TermStatus.Error) _status.value = TermStatus.Idle }
 
-    /** 30 fps render pump: rebuild the coloured screen only when new bytes arrived. */
+    /** Bounded render pump: coalesce output and keep text work off the UI thread. */
     private fun startRenderPump() {
         renderJob?.cancel()
-        renderJob = viewModelScope.launch {
+        renderJob = viewModelScope.launch(Dispatchers.Default) {
             while (isActive) {
                 if (dirty) {
                     dirty = false
-                    _screen.value = emulator.render()
+                    _screen.value = emulator.render(RENDER_SCROLLBACK_ROWS)
                 }
-                delay(33)
+                delay(RENDER_FRAME_MS)
             }
         }
     }
 
     /** Send raw text straight to the shell (used for typed characters). */
     fun sendRaw(text: String) {
-        val os = outStream ?: return
-        viewModelScope.launch(Dispatchers.IO) {
-            runCatching { os.write(text.toByteArray(Charsets.UTF_8)); os.flush() }
-        }
+        input?.trySend(text.toByteArray(Charsets.UTF_8))
     }
 
     fun sendBytes(vararg bytes: Int) {
-        val os = outStream ?: return
         val arr = ByteArray(bytes.size) { bytes[it].toByte() }
-        viewModelScope.launch(Dispatchers.IO) {
-            runCatching { os.write(arr); os.flush() }
-        }
+        input?.trySend(arr)
     }
 
     /** Turn a typed character into its Ctrl-modified control code (Ctrl-C, …). */
@@ -168,7 +191,19 @@ class TerminalViewModel(private val container: AppContainer) : ViewModel() {
         sendBytes(ctrl and 0x7F)
     }
 
+    fun resize(rows: Int, cols: Int) {
+        emulator.resize(rows, cols)
+        dirty = true
+        val channel = sessionChannel ?: return
+        viewModelScope.launch(Dispatchers.IO) {
+            runCatching { channel.changeWindowDimensions(cols, rows, 0, 0) }
+        }
+    }
+
     fun disconnect() {
+        disconnecting = true
+        input?.close()
+        writerJob?.cancel()
         viewModelScope.launch(Dispatchers.IO) { closeQuietly() }
         renderJob?.cancel()
         _status.value = TermStatus.Idle
@@ -177,7 +212,9 @@ class TerminalViewModel(private val container: AppContainer) : ViewModel() {
     private fun closeQuietly() {
         runCatching { session?.close() }
         runCatching { ssh?.disconnect() }
-        session = null; ssh = null; outStream = null
+        input?.close()
+        writerJob?.cancel()
+        session = null; sessionChannel = null; ssh = null; input = null; writerJob = null
     }
 
     override fun onCleared() {
@@ -185,8 +222,12 @@ class TerminalViewModel(private val container: AppContainer) : ViewModel() {
         closeQuietly()
     }
 
+    private fun text(id: Int, vararg args: Any): String = container.appContext.getString(id, *args)
+
     private companion object {
         const val COLS = 80
         const val ROWS = 24
+        const val RENDER_SCROLLBACK_ROWS = 200
+        const val RENDER_FRAME_MS = 50L
     }
 }

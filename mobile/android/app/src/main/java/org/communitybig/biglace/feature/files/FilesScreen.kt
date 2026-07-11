@@ -1,6 +1,7 @@
 package org.communitybig.biglace.feature.files
 
 import android.content.Context
+import android.content.ClipData
 import android.content.Intent
 import android.webkit.MimeTypeMap
 import androidx.activity.compose.rememberLauncherForActivityResult
@@ -19,7 +20,9 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.MoreVert
+import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.Refresh
+import androidx.compose.material.icons.filled.Search
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.DropdownMenu
@@ -38,9 +41,11 @@ import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.saveable.rememberSaveableStateHolder
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -57,53 +62,126 @@ import androidx.lifecycle.viewmodel.viewModelFactory
 import org.communitybig.biglace.AppContainer
 import org.communitybig.biglace.R
 import org.communitybig.biglace.core.ssh.AuthMode
+import org.communitybig.biglace.core.ssh.SshSessionTab
+import org.communitybig.biglace.core.ssh.SshSessionTabsViewModel
 import org.communitybig.biglace.feature.terminal.ConnectForm
 import org.communitybig.biglace.ui.AuthDialog
+import org.communitybig.biglace.ui.SessionTabs
 import java.io.File
+import java.util.Locale
+
+internal enum class FileSort { NAME, SIZE, TYPE }
+
+internal fun filterAndSortEntries(
+    entries: List<RemoteFile>,
+    query: String,
+    sort: FileSort,
+    ascending: Boolean,
+): List<RemoteFile> {
+    val filtered = entries.filter { it.name.contains(query.trim(), ignoreCase = true) }
+    val comparator = when (sort) {
+        FileSort.NAME -> compareBy<RemoteFile> { it.name.lowercase(Locale.ROOT) }
+        FileSort.SIZE -> compareBy<RemoteFile> { it.size }.thenBy { it.name.lowercase(Locale.ROOT) }
+        FileSort.TYPE -> compareBy<RemoteFile> {
+            it.name.substringAfterLast('.', "").lowercase(Locale.ROOT)
+        }.thenBy { it.name.lowercase(Locale.ROOT) }
+    }
+    return filtered.sortedWith(
+        compareByDescending<RemoteFile> { it.isDir }
+            .then(if (ascending) comparator else comparator.reversed()),
+    )
+}
 
 @Composable
 fun FilesScreen(container: AppContainer, modifier: Modifier = Modifier) {
+    val tabsVm: SshSessionTabsViewModel = viewModel(key = "files-tabs")
+    val tabs by tabsVm.tabs.collectAsStateWithLifecycle()
+    val activeId by tabsVm.activeId.collectAsStateWithLifecycle()
+    val pending by container.pendingTarget.collectAsStateWithLifecycle()
+    val stateHolder = rememberSaveableStateHolder()
+
+    LaunchedEffect(pending) {
+        pending?.takeIf { it.wantFiles }?.let { target ->
+            tabsVm.openPeer(
+                target.host,
+                container.secrets.sshUser(target.host) ?: target.user,
+                container.secrets.sshPassword(target.host).orEmpty(),
+            )
+            container.pendingTarget.value = null
+        }
+    }
+
+    val active = tabs.firstOrNull { it.id == activeId } ?: return
     val vm: FilesViewModel = viewModel(
+        key = "files-session-${active.id}",
         factory = viewModelFactory { initializer { FilesViewModel(container) } },
     )
+
+    Column(modifier.fillMaxSize()) {
+        SessionTabs(
+            tabs = tabs,
+            activeId = active.id,
+            onSelect = tabsVm::select,
+            onAdd = tabsVm::add,
+            onCloseActive = {
+                vm.disconnect()
+                stateHolder.removeState(active.id)
+                tabsVm.close(active.id)
+            },
+        )
+        stateHolder.SaveableStateProvider(active.id) {
+            FilesSessionScreen(
+                container = container,
+                tab = active,
+                vm = vm,
+                onUpdate = { transform -> tabsVm.update(active.id, transform) },
+                modifier = Modifier.weight(1f),
+            )
+        }
+    }
+}
+
+@Composable
+private fun FilesSessionScreen(
+    container: AppContainer,
+    tab: SshSessionTab,
+    vm: FilesViewModel,
+    onUpdate: ((SshSessionTab) -> SshSessionTab) -> Unit,
+    modifier: Modifier = Modifier,
+) {
     val status by vm.status.collectAsStateWithLifecycle()
     val path by vm.path.collectAsStateWithLifecycle()
     val entries by vm.entries.collectAsStateWithLifecycle()
     val busy by vm.busy.collectAsStateWithLifecycle()
     val testing by vm.testing.collectAsStateWithLifecycle()
     val probe by vm.probe.collectAsStateWithLifecycle()
-    val pending by container.pendingTarget.collectAsStateWithLifecycle()
     val context = androidx.compose.ui.platform.LocalContext.current
     val snackbar = remember { SnackbarHostState() }
-
-    var host by rememberSaveable { mutableStateOf("") }
-    var port by rememberSaveable { mutableStateOf("22") }
-    var user by rememberSaveable { mutableStateOf("") }
-    var fromPeer by rememberSaveable { mutableStateOf(false) }
-    var password by remember { mutableStateOf("") }
-    var mode by rememberSaveable { mutableStateOf(AuthMode.AUTO) }
+    val noViewerMessage = stringResource(R.string.files_no_viewer)
 
     // Dialog targets.
     var renameTarget by remember { mutableStateOf<RemoteFile?>(null) }
     var moveTarget by remember { mutableStateOf<RemoteFile?>(null) }
     var deleteTarget by remember { mutableStateOf<RemoteFile?>(null) }
     var showMkdir by remember { mutableStateOf(false) }
+    var query by rememberSaveable { mutableStateOf("") }
+    var sort by rememberSaveable { mutableStateOf(FileSort.NAME) }
+    var ascending by rememberSaveable { mutableStateOf(true) }
+    val visibleEntries by remember(entries, query, sort, ascending) {
+        derivedStateOf {
+            filterAndSortEntries(entries, query, sort, ascending)
+        }
+    }
 
     val uploadPicker = rememberLauncherForActivityResult(ActivityResultContracts.GetContent()) { uri ->
         uri?.let { vm.upload(it) }
     }
 
-    LaunchedEffect(pending) {
-        pending?.takeIf { it.wantFiles }?.let {
-            host = it.host; fromPeer = true
-            user = container.secrets.sshUser(it.host) ?: it.user
-            password = container.secrets.sshPassword(it.host) ?: ""
-            container.pendingTarget.value = null
-        }
-    }
-    LaunchedEffect(host) {
-        if (host.isNotBlank() && password.isBlank()) {
-            container.secrets.sshPassword(host)?.let { password = it }
+    LaunchedEffect(tab.host) {
+        if (tab.host.isNotBlank() && tab.password.isBlank()) {
+            container.secrets.sshPassword(tab.host)?.let { saved ->
+                onUpdate { it.copy(password = saved) }
+            }
         }
     }
 
@@ -111,8 +189,12 @@ fun FilesScreen(container: AppContainer, modifier: Modifier = Modifier) {
         vm.events.collect { event ->
             when (event) {
                 is FilesEvent.Message -> snackbar.showSnackbar(event.text)
-                is FilesEvent.OpenFile -> openFile(context, event.file, share = false)
-                is FilesEvent.ShareFile -> openFile(context, event.file, share = true)
+                is FilesEvent.OpenFile -> if (!openFile(context, event.file, share = false)) {
+                    snackbar.showSnackbar(noViewerMessage)
+                }
+                is FilesEvent.ShareFile -> if (!openFile(context, event.file, share = true)) {
+                    snackbar.showSnackbar(noViewerMessage)
+                }
             }
         }
     }
@@ -144,8 +226,43 @@ fun FilesScreen(container: AppContainer, modifier: Modifier = Modifier) {
                             )
                         }
                     }
+                    Row(
+                        Modifier.fillMaxWidth().padding(horizontal = 8.dp, vertical = 6.dp),
+                        verticalAlignment = Alignment.CenterVertically,
+                    ) {
+                        OutlinedTextField(
+                            value = query,
+                            onValueChange = { query = it },
+                            singleLine = true,
+                            label = { Text(stringResource(R.string.files_search)) },
+                            leadingIcon = { Icon(Icons.Filled.Search, contentDescription = null) },
+                            trailingIcon = if (query.isNotEmpty()) {
+                                {
+                                    IconButton(onClick = { query = "" }) {
+                                        Icon(Icons.Filled.Close, contentDescription = stringResource(R.string.files_clear_search))
+                                    }
+                                }
+                            } else null,
+                            modifier = Modifier.weight(1f),
+                        )
+                        SortMenu(
+                            sort = sort,
+                            ascending = ascending,
+                            onSort = { sort = it },
+                            onDirection = { ascending = !ascending },
+                        )
+                    }
                     LazyColumn(Modifier.fillMaxSize()) {
-                        items(entries, key = { it.name }) { entry ->
+                        if (visibleEntries.isEmpty() && query.isNotBlank()) {
+                            item {
+                                Text(
+                                    stringResource(R.string.files_no_search_results),
+                                    modifier = Modifier.padding(16.dp),
+                                    color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f),
+                                )
+                            }
+                        }
+                        items(visibleEntries, key = { it.name }) { entry ->
                             FileRow(
                                 entry = entry,
                                 onOpen = { vm.open(entry) },
@@ -160,7 +277,7 @@ fun FilesScreen(container: AppContainer, modifier: Modifier = Modifier) {
                 }
                 if (busy != null) {
                     Box(
-                        Modifier.fillMaxSize().clickable(enabled = false) {}
+                        Modifier.fillMaxSize().clickable(onClick = {})
                             .background(Color(0x99000000)),
                         contentAlignment = Alignment.Center,
                     ) {
@@ -180,16 +297,36 @@ fun FilesScreen(container: AppContainer, modifier: Modifier = Modifier) {
     } else {
         ConnectForm(
             iconRes = R.drawable.ic_folder,
-            host = host, onHost = { host = it; fromPeer = false },
-            port = port, onPort = { port = it },
-            user = user, onUser = { user = it },
-            password = password, onPassword = { password = it },
-            fromPeer = fromPeer,
+            host = tab.host,
+            onHost = { value ->
+                onUpdate {
+                    it.copy(
+                        host = value,
+                        password = if (value == it.host) it.password else "",
+                        fromPeer = false,
+                    )
+                }
+            },
+            port = tab.port, onPort = { value -> onUpdate { it.copy(port = value) } },
+            user = tab.user, onUser = { value -> onUpdate { it.copy(user = value) } },
+            password = tab.password,
+            onPassword = { value -> onUpdate { it.copy(password = value) } },
+            fromPeer = tab.fromPeer,
             connecting = status == FilesStatus.Loading,
             testing = testing,
-            mode = mode, onMode = { mode = it },
-            onConnect = { vm.connect(host.trim(), port.toIntOrNull() ?: 22, user.trim(), password, mode) },
-            onTest = { vm.probe(host.trim(), port.toIntOrNull() ?: 22, user.trim(), password, mode) },
+            mode = tab.mode, onMode = { value -> onUpdate { it.copy(mode = value) } },
+            onConnect = {
+                vm.connect(
+                    tab.host.trim(), tab.port.toIntOrNull() ?: 22,
+                    tab.user.trim(), tab.password, tab.mode,
+                )
+            },
+            onTest = {
+                vm.probe(
+                    tab.host.trim(), tab.port.toIntOrNull() ?: 22,
+                    tab.user.trim(), tab.password, tab.mode,
+                )
+            },
             modifier = modifier,
         )
     }
@@ -259,6 +396,47 @@ fun FilesScreen(container: AppContainer, modifier: Modifier = Modifier) {
 }
 
 @Composable
+private fun SortMenu(
+    sort: FileSort,
+    ascending: Boolean,
+    onSort: (FileSort) -> Unit,
+    onDirection: () -> Unit,
+) {
+    var expanded by remember { mutableStateOf(false) }
+    Box {
+        IconButton(onClick = { expanded = true }) {
+            Icon(
+                painterResource(R.drawable.ic_sort),
+                contentDescription = stringResource(R.string.files_sort),
+            )
+        }
+        DropdownMenu(expanded = expanded, onDismissRequest = { expanded = false }) {
+            FileSort.entries.forEach { option ->
+                val label = when (option) {
+                    FileSort.NAME -> R.string.files_sort_name
+                    FileSort.SIZE -> R.string.files_sort_size
+                    FileSort.TYPE -> R.string.files_sort_type
+                }
+                DropdownMenuItem(
+                    text = { Text(stringResource(label)) },
+                    onClick = { onSort(option); expanded = false },
+                    leadingIcon = if (sort == option) {
+                        { Text("✓") }
+                    } else null,
+                )
+            }
+            HorizontalDivider()
+            DropdownMenuItem(
+                text = {
+                    Text(stringResource(if (ascending) R.string.files_sort_descending else R.string.files_sort_ascending))
+                },
+                onClick = { onDirection(); expanded = false },
+            )
+        }
+    }
+}
+
+@Composable
 private fun FileRow(
     entry: RemoteFile,
     onOpen: () -> Unit,
@@ -267,6 +445,7 @@ private fun FileRow(
     onDelete: () -> Unit,
     onShare: () -> Unit,
 ) {
+    val context = androidx.compose.ui.platform.LocalContext.current
     var menu by remember { mutableStateOf(false) }
     Row(
         Modifier.fillMaxWidth().clickable { onOpen() }.padding(horizontal = 12.dp, vertical = 12.dp),
@@ -281,7 +460,7 @@ private fun FileRow(
         Text(entry.name, modifier = Modifier.padding(start = 14.dp).weight(1f))
         if (!entry.isDir) {
             Text(
-                humanSize(entry.size),
+                android.text.format.Formatter.formatShortFileSize(context, entry.size),
                 style = MaterialTheme.typography.bodySmall,
                 color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.5f),
                 modifier = Modifier.padding(end = 4.dp),
@@ -357,7 +536,7 @@ private fun TextPromptDialog(
 }
 
 /** Download-and-hand-off: expose the cached file via FileProvider to a viewer/share sheet. */
-private fun openFile(context: Context, file: File, share: Boolean) {
+private fun openFile(context: Context, file: File, share: Boolean): Boolean {
     val uri = FileProvider.getUriForFile(context, context.packageName + ".fileprovider", file)
     val ext = file.extension.lowercase()
     val mime = MimeTypeMap.getSingleton().getMimeTypeFromExtension(ext) ?: "*/*"
@@ -365,19 +544,13 @@ private fun openFile(context: Context, file: File, share: Boolean) {
         Intent(Intent.ACTION_SEND).apply {
             type = mime
             putExtra(Intent.EXTRA_STREAM, uri)
+            clipData = ClipData.newRawUri(file.name, uri)
         }
     } else {
         Intent(Intent.ACTION_VIEW).apply { setDataAndType(uri, mime) }
     }
     intent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION or Intent.FLAG_ACTIVITY_NEW_TASK)
-    runCatching {
+    return runCatching {
         context.startActivity(Intent.createChooser(intent, file.name).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK))
-    }
-}
-
-private fun humanSize(bytes: Long): String = when {
-    bytes < 1024 -> "$bytes B"
-    bytes < 1024 * 1024 -> "${bytes / 1024} KB"
-    bytes < 1024 * 1024 * 1024 -> "${bytes / (1024 * 1024)} MB"
-    else -> "${bytes / (1024 * 1024 * 1024)} GB"
+    }.isSuccess
 }

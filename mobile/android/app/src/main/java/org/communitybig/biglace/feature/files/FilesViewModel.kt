@@ -5,6 +5,7 @@ import android.provider.OpenableColumns
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharedFlow
@@ -12,15 +13,19 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.sync.Mutex
+import kotlinx.coroutines.sync.withLock
 import net.schmizz.sshj.DefaultConfig
 import net.schmizz.sshj.SSHClient
 import net.schmizz.sshj.sftp.SFTPClient
-import net.schmizz.sshj.transport.verification.PromiscuousVerifier
 import org.communitybig.biglace.AppContainer
+import org.communitybig.biglace.R
 import org.communitybig.biglace.core.ssh.AuthMode
 import org.communitybig.biglace.core.ssh.ProbeResult
 import org.communitybig.biglace.core.ssh.SshAuth
+import org.communitybig.biglace.core.ssh.TofuHostKeyVerifier
 import java.io.File
+import java.util.UUID
 
 sealed interface FilesStatus {
     data object Idle : FilesStatus
@@ -70,24 +75,42 @@ class FilesViewModel(private val container: AppContainer) : ViewModel() {
 
     private var ssh: SSHClient? = null
     private var sftp: SFTPClient? = null
+    private val operations = Mutex()
+    @Volatile private var disconnecting = false
+
+    init {
+        val cleanupBefore = System.currentTimeMillis()
+        viewModelScope.launch(Dispatchers.IO) {
+            stageDir().listFiles()
+                ?.filter { it.lastModified() < cleanupBefore }
+                ?.forEach { it.deleteRecursively() }
+        }
+    }
 
     fun connect(host: String, port: Int, user: String, password: String, mode: AuthMode) {
         if (_status.value == FilesStatus.Loading || _status.value == FilesStatus.Connected) return
+        disconnecting = false
         _status.value = FilesStatus.Loading
         viewModelScope.launch(Dispatchers.IO) {
             try {
                 val local = container.forward(host, port)
                 val c = SSHClient(DefaultConfig())
-                c.addHostKeyVerifier(PromiscuousVerifier())
+                ssh = c
+                c.addHostKeyVerifier(TofuHostKeyVerifier(host, container.secrets))
                 c.connect("127.0.0.1", local)
-                SshAuth.authenticate(c, user, password, container.secrets.sshPrivateKey, mode)
+                SshAuth.authenticate(
+                    c, user, password, container.secrets.sshPrivateKey, mode, container.appContext,
+                )
                 if (password.isNotBlank() && mode != AuthMode.KEY) container.secrets.setSshPassword(host, password)
                 if (user.isNotBlank()) container.secrets.setSshUser(host, user)
                 val f = c.newSFTPClient()
-                ssh = c; sftp = f
+                sftp = f
                 loadInto(".")
+            } catch (e: CancellationException) {
+                throw e
             } catch (e: Exception) {
-                _status.value = FilesStatus.Error(e.message ?: "SFTP connection failed")
+                _status.value = FilesStatus.Error(e.message ?: text(R.string.sftp_connection_failed))
+                closeQuietly()
             }
         }
     }
@@ -101,14 +124,18 @@ class FilesViewModel(private val container: AppContainer) : ViewModel() {
             try {
                 val local = container.forward(host, port)
                 c = SSHClient(DefaultConfig())
-                c.addHostKeyVerifier(PromiscuousVerifier())
+                c.addHostKeyVerifier(TofuHostKeyVerifier(host, container.secrets))
                 c.connect("127.0.0.1", local)
-                val method = SshAuth.authenticate(c, user, password, container.secrets.sshPrivateKey, mode)
+                val method = SshAuth.authenticate(
+                    c, user, password, container.secrets.sshPrivateKey, mode, container.appContext,
+                )
                 if (password.isNotBlank() && mode != AuthMode.KEY) container.secrets.setSshPassword(host, password)
                 if (user.isNotBlank()) container.secrets.setSshUser(host, user)
-                _probe.value = ProbeResult(true, "Connected to $user@$host.\nAuthenticated via $method.")
-            } catch (e: Throwable) {
-                _probe.value = ProbeResult(false, e.message ?: "Connection failed.")
+                _probe.value = ProbeResult(true, text(R.string.ssh_probe_success, user, host, method))
+            } catch (e: CancellationException) {
+                throw e
+            } catch (e: Exception) {
+                _probe.value = ProbeResult(false, e.message ?: text(R.string.ssh_connection_failed))
             } finally {
                 runCatching { c?.disconnect() }
                 _testing.value = false
@@ -132,88 +159,103 @@ class FilesViewModel(private val container: AppContainer) : ViewModel() {
     fun refresh() = list(_path.value.ifBlank { "." })
 
     private fun list(p: String) {
-        viewModelScope.launch(Dispatchers.IO) { loadInto(p) }
+        viewModelScope.launch(Dispatchers.IO) {
+            try {
+                operations.withLock { loadInto(p) }
+            } catch (e: CancellationException) {
+                throw e
+            } catch (e: Exception) {
+                _events.tryEmit(FilesEvent.Message(e.message ?: text(R.string.files_listing_failed)))
+            }
+        }
     }
 
     private fun loadInto(p: String) {
         val f = sftp ?: return
-        try {
-            val real = f.canonicalize(p)
-            val listing = f.ls(real)
-                .asSequence()
-                .filter { it.name != "." && it.name != ".." }
-                .map { RemoteFile(it.name, it.isDirectory, it.attributes.size) }
-                .sortedWith(compareByDescending<RemoteFile> { it.isDir }.thenBy { it.name.lowercase() })
-                .toList()
-            _path.value = real
-            _entries.value = listing
-            _status.value = FilesStatus.Connected
-        } catch (e: Exception) {
-            _status.value = FilesStatus.Error(e.message ?: "listing failed")
-        }
+        val real = f.canonicalize(p)
+        val listing = f.ls(real)
+            .asSequence()
+            .filter { it.name != "." && it.name != ".." }
+            .map { RemoteFile(it.name, it.isDirectory, it.attributes.size) }
+            .sortedWith(compareByDescending<RemoteFile> { it.isDir }.thenBy { it.name.lowercase() })
+            .toList()
+        _path.value = real
+        _entries.value = listing
+        _status.value = FilesStatus.Connected
     }
 
     // ── Operations ──────────────────────────────────────────────────────────
 
-    fun rename(entry: RemoteFile, newName: String) = op("Renaming…") { f ->
+    fun rename(entry: RemoteFile, newName: String) = op(text(R.string.files_busy_renaming)) { f ->
         val clean = newName.trim()
-        require(clean.isNotBlank() && '/' !in clean) { "Invalid name" }
+        require(clean.isNotBlank() && '/' !in clean && clean.none(Char::isISOControl)) {
+            text(R.string.files_invalid_name)
+        }
         f.rename(child(entry.name), child(clean))
-        msg("Renamed to $clean")
+        msg(text(R.string.files_renamed_to, clean))
     }
 
     /** Move to another path. [dest] may be an absolute path or a directory. */
-    fun move(entry: RemoteFile, dest: String) = op("Moving…") { f ->
+    fun move(entry: RemoteFile, dest: String) = op(text(R.string.files_busy_moving)) { f ->
         val target = resolveDest(dest.trim(), entry.name)
+        require(target.none(Char::isISOControl)) { text(R.string.files_invalid_name) }
         f.rename(child(entry.name), target)
-        msg("Moved to $target")
+        msg(text(R.string.files_moved_to, target))
     }
 
-    fun delete(entry: RemoteFile) = op("Deleting…") { f ->
-        rmRecursive(f, child(entry.name), entry.isDir)
-        msg("Deleted ${entry.name}")
+    fun delete(entry: RemoteFile) = op(text(R.string.files_busy_deleting)) { f ->
+        rmRecursive(f, child(entry.name), entry.isDir, 0)
+        msg(text(R.string.files_deleted, entry.name))
     }
 
-    fun mkdir(name: String) = op("Creating folder…") { f ->
+    fun mkdir(name: String) = op(text(R.string.files_busy_creating_folder)) { f ->
         val clean = name.trim()
-        require(clean.isNotBlank() && '/' !in clean) { "Invalid name" }
+        require(clean.isNotBlank() && '/' !in clean && clean.none(Char::isISOControl)) {
+            text(R.string.files_invalid_name)
+        }
         f.mkdir(child(clean))
-        msg("Folder created")
+        msg(text(R.string.files_folder_created))
     }
 
-    fun openFile(entry: RemoteFile) = op("Downloading ${entry.name}…") { f ->
+    fun openFile(entry: RemoteFile) = op(text(R.string.files_busy_downloading, entry.name)) { f ->
         val local = download(f, entry)
         _events.tryEmit(FilesEvent.OpenFile(local))
     }
 
-    fun shareFile(entry: RemoteFile) = op("Downloading ${entry.name}…") { f ->
+    fun shareFile(entry: RemoteFile) = op(text(R.string.files_busy_downloading, entry.name)) { f ->
         val local = download(f, entry)
         _events.tryEmit(FilesEvent.ShareFile(local))
     }
 
-    fun upload(uri: Uri) = op("Uploading…") { f ->
+    fun upload(uri: Uri) = op(text(R.string.files_busy_uploading)) { f ->
         val cr = container.appContext.contentResolver
-        val name = displayName(uri)
-        val tmp = File(stageDir(), name)
-        cr.openInputStream(uri).use { input ->
-            requireNotNull(input) { "Can't read picked file" }
-            tmp.outputStream().use { input.copyTo(it) }
+        val name = sanitizeStagedFilename(displayName(uri), text(R.string.files_invalid_filename))
+        val tmp = stageFile(name)
+        try {
+            cr.openInputStream(uri).use { input ->
+                requireNotNull(input) { text(R.string.files_cannot_read_file) }
+                tmp.outputStream().use { input.copyTo(it) }
+            }
+            f.put(tmp.absolutePath, child(name))
+        } finally {
+            tmp.parentFile?.deleteRecursively()
         }
-        f.put(tmp.absolutePath, child(name))
-        tmp.delete()
-        msg("Uploaded $name")
+        msg(text(R.string.files_uploaded, name))
     }
 
     private fun download(f: SFTPClient, entry: RemoteFile): File {
-        val local = File(stageDir(), entry.name)
+        val local = stageFile(
+            sanitizeStagedFilename(entry.name, text(R.string.files_invalid_filename)),
+        )
         f.get(child(entry.name), local.absolutePath)
         return local
     }
 
-    private fun rmRecursive(f: SFTPClient, path: String, isDir: Boolean) {
+    private fun rmRecursive(f: SFTPClient, path: String, isDir: Boolean, depth: Int) {
+        require(depth <= MAX_DELETE_DEPTH) { text(R.string.files_tree_too_deep) }
         if (isDir) {
             f.ls(path).filter { it.name != "." && it.name != ".." }
-                .forEach { rmRecursive(f, it.path, it.isDirectory) }
+                .forEach { rmRecursive(f, it.path, it.isDirectory, depth + 1) }
             f.rmdir(path)
         } else {
             f.rm(path)
@@ -226,15 +268,28 @@ class FilesViewModel(private val container: AppContainer) : ViewModel() {
      */
     private fun op(label: String, block: (SFTPClient) -> Unit) {
         val f = sftp ?: return
+        if (_busy.value != null) return
+        _busy.value = label
         viewModelScope.launch(Dispatchers.IO) {
-            _busy.value = label
             try {
-                block(f)
+                operations.withLock { block(f) }
+            } catch (e: CancellationException) {
+                throw e
             } catch (e: Exception) {
-                _events.tryEmit(FilesEvent.Message(e.message ?: "Operation failed"))
+                _events.tryEmit(FilesEvent.Message(e.message ?: text(R.string.files_operation_failed)))
             } finally {
+                if (!disconnecting) {
+                    try {
+                        operations.withLock { loadInto(_path.value.ifBlank { "." }) }
+                    } catch (e: CancellationException) {
+                        throw e
+                    } catch (e: Exception) {
+                        _events.tryEmit(
+                            FilesEvent.Message(e.message ?: text(R.string.files_listing_failed)),
+                        )
+                    }
+                }
                 _busy.value = null
-                runCatching { loadInto(_path.value.ifBlank { "." }) }
             }
         }
     }
@@ -263,11 +318,21 @@ class FilesViewModel(private val container: AppContainer) : ViewModel() {
 
     private fun stageDir(): File = File(container.appContext.cacheDir, "sftp").apply { mkdirs() }
 
+    private fun stageFile(name: String): File {
+        val dir = File(stageDir(), UUID.randomUUID().toString()).apply { mkdirs() }
+        val file = File(dir, name)
+        check(file.canonicalPath.startsWith(dir.canonicalPath + File.separator)) { "Invalid local filename" }
+        return file
+    }
+
     fun disconnect() {
-        viewModelScope.launch(Dispatchers.IO) { closeQuietly() }
-        _status.value = FilesStatus.Idle
-        _entries.value = emptyList()
-        _path.value = ""
+        disconnecting = true
+        viewModelScope.launch(Dispatchers.IO) {
+            operations.withLock { closeQuietly() }
+            _status.value = FilesStatus.Idle
+            _entries.value = emptyList()
+            _path.value = ""
+        }
     }
 
     private fun closeQuietly() {
@@ -279,4 +344,20 @@ class FilesViewModel(private val container: AppContainer) : ViewModel() {
     override fun onCleared() {
         closeQuietly()
     }
+
+    private companion object {
+        const val MAX_DELETE_DEPTH = 128
+    }
+
+    private fun text(id: Int, vararg args: Any): String = container.appContext.getString(id, *args)
+}
+
+internal fun sanitizeStagedFilename(input: String, invalidMessage: String = "Invalid filename"): String {
+    val name = input.substringAfterLast('/').substringAfterLast('\\')
+        .filter { !it.isISOControl() }
+        .trim()
+    require(name.isNotBlank() && name != "." && name != "..") { invalidMessage }
+    val safe = name.take(180).trimEnd('.', ' ')
+    require(safe.isNotBlank()) { invalidMessage }
+    return safe
 }

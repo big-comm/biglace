@@ -16,10 +16,14 @@ import androidx.compose.ui.text.withStyle
  * render correctly instead of scattering characters.
  */
 class TerminalEmulator(
-    val rows: Int = 24,
-    val cols: Int = 80,
+    rows: Int = 24,
+    cols: Int = 80,
     private val scrollbackMax: Int = 800,
 ) {
+    var rows: Int = rows.coerceAtLeast(2)
+        private set
+    var cols: Int = cols.coerceAtLeast(8)
+        private set
     private class Cell(val ch: Char, val fg: Long, val bg: Long, val bold: Boolean)
 
     private var screen = blankGrid()
@@ -276,12 +280,51 @@ class TerminalEmulator(
     @Synchronized
     fun clear() = reset()
 
+    @Synchronized
+    fun resize(newRows: Int, newCols: Int) {
+        val targetRows = newRows.coerceIn(2, 200)
+        val targetCols = newCols.coerceIn(8, 300)
+        if (targetRows == rows && targetCols == cols) return
+
+        fun resizedRow(source: Array<Cell>): Array<Cell> =
+            Array(targetCols) { c -> source.getOrNull(c) ?: blank() }
+
+        fun resized(source: Array<Array<Cell>>): Array<Array<Cell>> {
+            val result = Array(targetRows) { Array(targetCols) { blank() } }
+            for (r in 0 until minOf(source.size, targetRows)) {
+                for (c in 0 until minOf(source[r].size, targetCols)) {
+                    result[r][c] = source[r][c]
+                }
+            }
+            return result
+        }
+
+        screen = resized(screen)
+        mainScreen = mainScreen?.let(::resized)
+        val resizedScrollback = ArrayDeque<Array<Cell>>(scrollback.size)
+        scrollback.forEach { resizedScrollback.addLast(resizedRow(it)) }
+        scrollback.clear()
+        scrollback.addAll(resizedScrollback)
+        rows = targetRows
+        cols = targetCols
+        cr = cr.coerceIn(0, rows - 1)
+        cc = cc.coerceIn(0, cols - 1)
+        savedR = savedR.coerceIn(0, rows - 1)
+        savedC = savedC.coerceIn(0, cols - 1)
+        top = 0
+        bottom = rows - 1
+        wrap = false
+    }
+
     // ── Rendering ─────────────────────────────────────────────────────────────
 
     @Synchronized
-    fun render(): AnnotatedString = buildAnnotatedString {
+    fun render(scrollbackLimit: Int = DEFAULT_RENDER_SCROLLBACK): AnnotatedString = buildAnnotatedString {
         val out = ArrayList<Pair<Array<Cell>, Int>>() // line + cursor col (-1 = none)
-        if (!inAlt) for (row in scrollback) out.add(row to -1)
+        if (!inAlt) {
+            val skip = (scrollback.size - scrollbackLimit.coerceAtLeast(0)).coerceAtLeast(0)
+            scrollback.asSequence().drop(skip).forEach { out.add(it to -1) }
+        }
         // Only render screen rows down to the last non-blank row (or the cursor):
         // otherwise the 24-row grid's trailing blank lines push the prompt off the
         // top when we auto-scroll to the bottom.
@@ -337,6 +380,7 @@ class TerminalEmulator(
         private const val OSC = 3
         private const val OSC_ST = 4
         private const val CHARSET = 5
+        private const val DEFAULT_RENDER_SCROLLBACK = 200
 
         private const val ESCC = '\u001B'
         private const val BEL = '\u0007'

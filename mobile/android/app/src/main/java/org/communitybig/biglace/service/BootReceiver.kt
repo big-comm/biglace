@@ -10,8 +10,7 @@ class BootReceiver : BroadcastReceiver() {
     override fun onReceive(context: Context, intent: Intent) {
         if (intent.action != Intent.ACTION_BOOT_COMPLETED) return
         val container = (context.applicationContext as BigLaceApplication).container
-        val configured = container.settings.serverUrl.isNotBlank() && container.secrets.authKey.isNotBlank()
-        if (container.settings.connectOnBoot && configured) {
+        if (container.settings.connectOnBoot && container.hasConnectConfig()) {
             MeshService.connect(context)
         }
     }
