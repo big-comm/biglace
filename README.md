@@ -312,6 +312,10 @@ To test the MSI path without waiting for the full `build-package` flow, run the
 **Windows MSI** workflow manually against a branch or tag. To test it locally,
 use a Windows VM/host with WiX 3, Rust MSVC, ImageMagick, and gvsbuild installed:
 
+Testing-channel builds do not send the stable release dispatch. Before promotion,
+run the workflow manually against the development branch with the tag left empty;
+the MSI is uploaded as an Actions artifact without modifying a GitHub Release.
+
 ```powershell
 cargo build --release --no-default-features --target x86_64-pc-windows-msvc
 cargo install cargo-wix --locked --version 0.3.9
