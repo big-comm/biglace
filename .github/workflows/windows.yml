@@ -35,12 +35,8 @@ env:
   # release. Bump deliberately (read the gvsbuild release notes — sometimes
   # they break ABI). Latest known-good as of 2026-05.
   GVSBUILD_VERSION: '2026.4.1'
-  # SHA-256 of GTK4_Gvsbuild_<version>_x64.zip. These DLLs are redistributed
-  # to end users inside the MSI, so a re-tagged/compromised upstream release
-  # would ship tainted binaries. Fill this in when bumping GVSBUILD_VERSION
-  # (compute with `Get-FileHash` / `sha256sum` on the downloaded zip); left
-  # empty the download step only warns instead of failing.
-  GVSBUILD_SHA256: ''
+  # SHA-256 must be updated with GVSBUILD_VERSION before the runtime is shipped.
+  GVSBUILD_SHA256: 'a6c3e4b222a5a699f2f33140635033124d70f5ca21f9e9fc845d76e5337530ab'
   # Rust target. Use MSVC over GNU because gvsbuild ships MSVC import libs.
   TARGET: 'x86_64-pc-windows-msvc'
 
@@ -139,15 +135,14 @@ jobs:
           Invoke-WebRequest -Uri $url -OutFile gtk4.zip -UseBasicParsing
           # Verify the archive before we trust its DLLs in the shipped MSI.
           $expected = "${{ env.GVSBUILD_SHA256 }}"
-          if ($expected) {
-              $actual = (Get-FileHash gtk4.zip -Algorithm SHA256).Hash
-              if ($actual -ne $expected.ToUpper()) {
-                  throw "gvsbuild checksum mismatch: expected $expected, got $actual"
-              }
-              Write-Host "gvsbuild checksum verified."
-          } else {
-              Write-Host "::warning::GVSBUILD_SHA256 not set; skipping checksum verification of the redistributed GTK runtime."
+          if (-not ($expected -match '^[0-9a-fA-F]{64}$')) {
+              throw "GVSBUILD_SHA256 must contain the pinned archive SHA-256."
           }
+          $actual = (Get-FileHash gtk4.zip -Algorithm SHA256).Hash
+          if ($actual -ne $expected.ToUpper()) {
+              throw "gvsbuild checksum mismatch: expected $expected, got $actual"
+          }
+          Write-Host "gvsbuild checksum verified."
           Expand-Archive -Path gtk4.zip -DestinationPath C:\gtk-build\gtk\x64\release -Force
           Remove-Item gtk4.zip
 
@@ -181,20 +176,17 @@ jobs:
       - name: Build biglace.exe
         shell: pwsh
         run: |
-          cargo build --release --no-default-features --target ${{ env.TARGET }}
+          cargo build --release --locked --no-default-features --target ${{ env.TARGET }}
 
       # ── Stage runtime alongside the .exe ─────────────────────────────────
-      # Copy biglace.exe + every DLL + glib schemas + locale dir into a single
-      # tree. heat.exe will harvest this tree into a WiX fragment so each file
-      # ends up as a Component in the installer.
+      # Copy runtime DLLs, schemas and locales into one harvested tree. The main
+      # executable is declared separately in wix/main.wxs.
       - name: Stage MSI tree
         shell: pwsh
         run: |
           $stage = "target\wix-stage"
+          Remove-Item $stage -Recurse -Force -ErrorAction SilentlyContinue
           New-Item -ItemType Directory -Path $stage -Force | Out-Null
-
-          # Main binary.
-          Copy-Item "target\${{ env.TARGET }}\release\biglace.exe" "$stage\biglace.exe"
 
           # GTK runtime: all DLLs the loader will resolve at startup. We copy
           # the entire bin/*.dll because picking transitive deps by hand is
@@ -302,7 +294,7 @@ jobs:
           & $heat dir "target\wix-stage" `
               -cg RuntimeFiles `
               -dr APPLICATIONFOLDER `
-              -gg -g1 -srd -sfrag `
+              -ag -srd -sfrag `
               -var var.StageDir `
               -out "wix\runtime.wxs"
 

@@ -1,7 +1,8 @@
 use anyhow::{bail, Context, Result};
 use serde::Deserialize;
-use std::process::Command;
-use std::sync::{Arc, Mutex, OnceLock};
+use std::io::{self, Read};
+use std::process::{Command, Output, Stdio};
+use std::sync::{Arc, Condvar, Mutex, OnceLock};
 use std::time::{Duration, Instant};
 
 use crate::{tr, trf};
@@ -18,9 +19,15 @@ const STATUS_CACHE_TTL: Duration = Duration::from_millis(500);
 /// bumps, never deep copies of a payload that runs to hundreds of KB.
 type CachedStatus = (Instant, Arc<TsStatus>);
 
-fn status_cache() -> &'static Mutex<Option<CachedStatus>> {
-    static CACHE: OnceLock<Mutex<Option<CachedStatus>>> = OnceLock::new();
-    CACHE.get_or_init(|| Mutex::new(None))
+#[derive(Default)]
+struct StatusCache {
+    value: Option<CachedStatus>,
+    fetching: bool,
+}
+
+fn status_cache() -> &'static (Mutex<StatusCache>, Condvar) {
+    static CACHE: OnceLock<(Mutex<StatusCache>, Condvar)> = OnceLock::new();
+    CACHE.get_or_init(|| (Mutex::new(StatusCache::default()), Condvar::new()))
 }
 
 /// Run `tailscale status --json` and return the parsed payload, reusing the
@@ -32,37 +39,112 @@ fn status_cache() -> &'static Mutex<Option<CachedStatus>> {
 /// in overlapping windows; routing them through this cache collapses an
 /// occasional 4-5x burst of subprocesses into a single one.
 fn cached_ts_status() -> Option<Arc<TsStatus>> {
-    {
-        let g = status_cache().lock().ok()?;
-        if let Some((when, ts)) = g.as_ref() {
-            if when.elapsed() < STATUS_CACHE_TTL {
-                // Cloning the Arc is a refcount bump — the (potentially
-                // hundreds-of-KB) TsStatus is shared, never deep-copied, even
-                // though ~5 workers read it per refresh tick.
-                return Some(ts.clone());
-            }
+    let (lock, ready) = status_cache();
+    let mut state = lock.lock().ok()?;
+    if let Some((when, ts)) = state.value.as_ref() {
+        if when.elapsed() < STATUS_CACHE_TTL {
+            return Some(ts.clone());
         }
     }
-    // Fetch outside the lock so a slow tailscaled doesn't block other
-    // callers from reading a still-valid cached value.
-    let out = Command::new(tailscale_cmd()).args(["status", "--json"]).output().ok()?;
-    if !out.status.success() {
-        return None;
+
+    // Collapse concurrent misses into one subprocess. Waiters reuse the fresh
+    // value, or the stale value if the fetch failed or exceeded five seconds.
+    if state.fetching {
+        let deadline = Instant::now() + Duration::from_secs(5);
+        while state.fetching {
+            let Some(remaining) = deadline.checked_duration_since(Instant::now()) else {
+                break;
+            };
+            let (next, timeout) = ready.wait_timeout(state, remaining).ok()?;
+            state = next;
+            if timeout.timed_out() {
+                break;
+            }
+        }
+        return state.value.as_ref().map(|(_, ts)| ts.clone());
     }
-    let ts: TsStatus = serde_json::from_slice(&out.stdout).ok()?;
-    let ts = Arc::new(ts);
-    if let Ok(mut g) = status_cache().lock() {
-        *g = Some((Instant::now(), ts.clone()));
+    state.fetching = true;
+    drop(state);
+
+    let mut command = Command::new(tailscale_cmd());
+    command.args(["status", "--json"]);
+    let fetched = command_output_timeout(&mut command, Duration::from_secs(10))
+        .ok()
+        .filter(|out| out.status.success())
+        .and_then(|out| serde_json::from_slice::<TsStatus>(&out.stdout).ok())
+        .map(Arc::new);
+
+    let mut state = lock.lock().ok()?;
+    state.fetching = false;
+    if let Some(ts) = fetched.as_ref() {
+        state.value = Some((Instant::now(), ts.clone()));
     }
-    Some(ts)
+    ready.notify_all();
+    fetched.or_else(|| state.value.as_ref().map(|(_, ts)| ts.clone()))
+}
+
+fn command_output_timeout(command: &mut Command, timeout: Duration) -> io::Result<Output> {
+    let mut child = command
+        .stdout(Stdio::piped())
+        .stderr(Stdio::piped())
+        .spawn()?;
+    let stdout = child
+        .stdout
+        .take()
+        .map(|mut pipe| std::thread::spawn(move || read_capped(&mut pipe)));
+    let stderr = child
+        .stderr
+        .take()
+        .map(|mut pipe| std::thread::spawn(move || read_capped(&mut pipe)));
+    let deadline = Instant::now() + timeout;
+    let status = loop {
+        if let Some(status) = child.try_wait()? {
+            break status;
+        }
+        if Instant::now() >= deadline {
+            let _ = child.kill();
+            let _ = child.wait();
+            if let Some(reader) = stdout {
+                let _ = reader.join();
+            }
+            if let Some(reader) = stderr {
+                let _ = reader.join();
+            }
+            return Err(io::Error::new(io::ErrorKind::TimedOut, "command timed out"));
+        }
+        std::thread::sleep(Duration::from_millis(20));
+    };
+    Ok(Output {
+        status,
+        stdout: stdout
+            .and_then(|reader| reader.join().ok())
+            .unwrap_or_default(),
+        stderr: stderr
+            .and_then(|reader| reader.join().ok())
+            .unwrap_or_default(),
+    })
+}
+
+fn read_capped(reader: &mut impl Read) -> Vec<u8> {
+    const MAX_CAPTURE: usize = 16 * 1024 * 1024;
+    let mut captured = Vec::new();
+    let mut buffer = [0_u8; 8192];
+    while let Ok(read) = reader.read(&mut buffer) {
+        if read == 0 {
+            break;
+        }
+        let keep = read.min(MAX_CAPTURE.saturating_sub(captured.len()));
+        captured.extend_from_slice(&buffer[..keep]);
+    }
+    captured
 }
 
 /// Drop the cached status so the next read does a fresh fetch. Called after
 /// `connect()`, `disconnect()`, `logout()` and `set_exit_node()` because the
 /// post-action UI refresh would otherwise see ≤500 ms of stale state.
 pub fn invalidate_status_cache() {
-    if let Ok(mut g) = status_cache().lock() {
-        *g = None;
+    if let Ok(mut state) = status_cache().0.lock() {
+        state.value = None;
     }
 }
 
@@ -72,7 +154,9 @@ pub fn invalidate_status_cache() {
 // stdout/stderr of every tailscale invocation.
 
 fn debug_enabled() -> bool {
-    std::env::var("BIGLACE_DEBUG").map(|v| !v.is_empty() && v != "0").unwrap_or(false)
+    std::env::var("BIGLACE_DEBUG")
+        .map(|v| !v.is_empty() && v != "0")
+        .unwrap_or(false)
 }
 
 pub(crate) fn dbg(msg: &str) {
@@ -98,7 +182,10 @@ fn redact_args(args: &[&str]) -> String {
 }
 
 fn dbg_output(label: &str, args: &[&str], status: i32, stdout: &str, stderr: &str) {
-    eprintln!("[biglace] {label} exit={status} args=[{}]", redact_args(args));
+    eprintln!(
+        "[biglace] {label} exit={status} args=[{}]",
+        redact_args(args)
+    );
     if debug_enabled() {
         if !stdout.trim().is_empty() {
             for line in stdout.lines() {
@@ -125,8 +212,8 @@ fn dbg_output(label: &str, args: &[&str], status: i32, stdout: &str, stderr: &st
 
 #[derive(Debug, Clone, Default)]
 pub struct Status {
-    pub online:   bool,
-    pub ip:       Option<String>,
+    pub online: bool,
+    pub ip: Option<String>,
     pub hostname: Option<String>,
     pub dns_name: Option<String>,
     /// True when tailscaled already holds a node registration on disk
@@ -139,15 +226,15 @@ pub struct Peer {
     pub hostname: String,
     /// First TailscaleIP — kept as `ip` for backwards compatibility with the
     /// existing UI. Same value as `ipv4` whenever the peer has one.
-    pub ip:       String,
-    pub ipv4:     String,
-    pub ipv6:     String,
+    pub ip: String,
+    pub ipv4: String,
+    pub ipv6: String,
     pub dns_name: String,
-    pub online:   bool,
-    pub os:       String,
+    pub online: bool,
+    pub os: String,
     /// BigScale account that owns the device (e.g. `tales`). Shown in the UI
     /// as "Owner".
-    pub user:     String,
+    pub user: String,
     /// OS login on the peer's machine — the right-hand side of `ssh user@host`.
     /// Extracted from a `tag:user-<name>` ACL tag advertised by the peer on
     /// connect (see `connect()`). Empty when the peer didn't advertise the
@@ -157,7 +244,7 @@ pub struct Peer {
     /// peer never came online since the daemon started).
     pub last_seen: String,
     /// Tags advertised by the peer (ACL tags), with the leading `tag:` stripped.
-    pub tags:     Vec<String>,
+    pub tags: Vec<String>,
     /// True when this peer currently advertises itself as an exit node.
     pub exit_node_offered: bool,
     /// True when biglace is using this peer as its exit node.
@@ -198,7 +285,11 @@ impl Status {
 fn first_dns_label(dns: &str) -> Option<String> {
     let trimmed = dns.trim_end_matches('.');
     let label = trimmed.split('.').next()?;
-    if label.is_empty() { None } else { Some(label.to_string()) }
+    if label.is_empty() {
+        None
+    } else {
+        Some(label.to_string())
+    }
 }
 
 // ─── Tailscale JSON structs ───────────────────────────────────────────────────
@@ -320,13 +411,10 @@ fn detect_installed() -> bool {
     // A false negative here would wrongly claim "tailscale not installed" and
     // is memoized for the whole session, so the probe must not depend on an
     // optional helper binary.
-    Command::new(tailscale_cmd())
-        .arg("version")
-        .stdout(std::process::Stdio::null())
-        .stderr(std::process::Stdio::null())
-        .status()
-        .map(|s| s.success())
-        .unwrap_or(false)
+    let mut command = Command::new(tailscale_cmd());
+    command.arg("version");
+    command_output_timeout(&mut command, Duration::from_secs(5))
+        .is_ok_and(|out| out.status.success())
 }
 
 #[cfg(windows)]
@@ -340,13 +428,10 @@ fn detect_installed() -> bool {
     {
         return true;
     }
-    Command::new(tailscale_cmd())
-        .arg("version")
-        .stdout(std::process::Stdio::null())
-        .stderr(std::process::Stdio::null())
-        .status()
-        .map(|s| s.success())
-        .unwrap_or(false)
+    let mut command = Command::new(tailscale_cmd());
+    command.arg("version");
+    command_output_timeout(&mut command, Duration::from_secs(5))
+        .is_ok_and(|out| out.status.success())
 }
 
 /// TTL for the service-active probe. Unlike `is_installed`, the daemon's running
@@ -387,11 +472,10 @@ pub fn is_service_active() -> bool {
 
 #[cfg(all(unix, not(target_os = "macos")))]
 fn detect_service_active() -> bool {
-    Command::new("systemctl")
-        .args(["is-active", "--quiet", "tailscaled"])
-        .status()
-        .map(|s| s.success())
-        .unwrap_or(false)
+    let mut command = Command::new("systemctl");
+    command.args(["is-active", "--quiet", "tailscaled"]);
+    command_output_timeout(&mut command, Duration::from_secs(5))
+        .is_ok_and(|out| out.status.success())
 }
 
 #[cfg(target_os = "macos")]
@@ -402,24 +486,24 @@ fn detect_service_active() -> bool {
     // exits 0 even while logged out or stopped, and only fails when the daemon
     // itself isn't running. Without this branch the whole UI would be pinned to
     // the "service stopped" screen on macOS regardless of the real state.
-    Command::new(tailscale_cmd())
-        .args(["status", "--json"])
-        .stdout(std::process::Stdio::null())
-        .stderr(std::process::Stdio::null())
-        .status()
-        .map(|s| s.success())
-        .unwrap_or(false)
+    let mut command = Command::new(tailscale_cmd());
+    command.args(["status", "--json"]);
+    command_output_timeout(&mut command, Duration::from_secs(10))
+        .is_ok_and(|out| out.status.success())
 }
 
 #[cfg(windows)]
 fn detect_service_active() -> bool {
     // `sc query Tailscale` always exits 0 if the service is *defined* — we
     // need to look at the STATE line. "RUNNING" is what we want.
-    let out = Command::new("sc").args(["query", "Tailscale"]).output();
+    let mut command = Command::new("sc");
+    command.args(["query", "Tailscale"]);
+    let out = command_output_timeout(&mut command, Duration::from_secs(5));
     match out {
         Ok(o) if o.status.success() => {
             let s = String::from_utf8_lossy(&o.stdout);
-            s.lines().any(|l| l.trim().to_ascii_uppercase().contains("RUNNING"))
+            s.lines()
+                .any(|l| l.trim().to_ascii_uppercase().contains("RUNNING"))
         }
         _ => false,
     }
@@ -440,7 +524,11 @@ pub fn panel_peer_ip() -> Option<String> {
     let suffix = ts
         .magic_dns_suffix
         .clone()
-        .or_else(|| ts.current_tailnet.as_ref().and_then(|c| c.magic_dns_suffix.clone()))
+        .or_else(|| {
+            ts.current_tailnet
+                .as_ref()
+                .and_then(|c| c.magic_dns_suffix.clone())
+        })
         .map(|s| s.trim_end_matches('.').to_string())
         .filter(|s| !s.is_empty())?;
     let target = format!("panel.{suffix}");
@@ -536,8 +624,8 @@ pub fn get_status_and_peers() -> (Status, Vec<Peer>) {
 fn build_status(ts: &TsStatus) -> Status {
     let node = ts.self_node.as_ref();
     Status {
-        online:   node.and_then(|n| n.online).unwrap_or(false),
-        ip:       node.and_then(|n| n.ips.as_ref()?.first().cloned()),
+        online: node.and_then(|n| n.online).unwrap_or(false),
+        ip: node.and_then(|n| n.ips.as_ref()?.first().cloned()),
         hostname: node.and_then(|n| n.hostname.clone()),
         dns_name: node
             .and_then(|n| n.dns_name.clone())
@@ -579,7 +667,11 @@ fn build_peers(ts: &TsStatus) -> Vec<Peer> {
     let suffix = ts
         .magic_dns_suffix
         .clone()
-        .or_else(|| ts.current_tailnet.as_ref().and_then(|c| c.magic_dns_suffix.clone()))
+        .or_else(|| {
+            ts.current_tailnet
+                .as_ref()
+                .and_then(|c| c.magic_dns_suffix.clone())
+        })
         .map(|s| s.trim_end_matches('.').to_string())
         .filter(|s| !s.is_empty());
 
@@ -619,10 +711,21 @@ fn build_peers(ts: &TsStatus) -> Vec<Peer> {
                 return None;
             }
             let ips = n.ips.clone().unwrap_or_default();
-            let ipv4 = ips.iter().find(|i| !i.contains(':')).cloned().unwrap_or_default();
-            let ipv6 = ips.iter().find(|i| i.contains(':')).cloned().unwrap_or_default();
+            let ipv4 = ips
+                .iter()
+                .find(|i| !i.contains(':'))
+                .cloned()
+                .unwrap_or_default();
+            let ipv6 = ips
+                .iter()
+                .find(|i| i.contains(':'))
+                .cloned()
+                .unwrap_or_default();
             let ip = ips.first().cloned().unwrap_or_default();
-            let tags: Vec<String> = n.tags.clone().unwrap_or_default()
+            let tags: Vec<String> = n
+                .tags
+                .clone()
+                .unwrap_or_default()
                 .into_iter()
                 .map(|t| t.strip_prefix("tag:").unwrap_or(&t).to_string())
                 .collect();
@@ -631,9 +734,13 @@ fn build_peers(ts: &TsStatus) -> Vec<Peer> {
                 ip,
                 ipv4,
                 ipv6,
-                dns_name: n.dns_name.clone().map(|d| d.trim_end_matches('.').to_string()).unwrap_or_default(),
-                online:   n.online.unwrap_or(false),
-                os:       n.os.clone().unwrap_or_default(),
+                dns_name: n
+                    .dns_name
+                    .clone()
+                    .map(|d| d.trim_end_matches('.').to_string())
+                    .unwrap_or_default(),
+                online: n.online.unwrap_or(false),
+                os: n.os.clone().unwrap_or_default(),
                 user,
                 // Filled in by the window layer from the panel's device-meta
                 // cache — empty here means "not known yet"; callers fall back
@@ -642,7 +749,7 @@ fn build_peers(ts: &TsStatus) -> Vec<Peer> {
                 last_seen: n.last_seen.clone().unwrap_or_default(),
                 tags,
                 exit_node_offered: n.exit_node_option,
-                exit_node_active:  n.exit_node,
+                exit_node_active: n.exit_node,
             })
         })
         .collect();
@@ -663,14 +770,20 @@ fn build_peers(ts: &TsStatus) -> Vec<Peer> {
 #[cfg(unix)]
 fn run_tailscale_with_fallback(args: &[&str]) -> Result<()> {
     dbg(&format!("running: tailscale {}", redact_args(args)));
-    let out = Command::new(tailscale_cmd())
-        .args(args)
-        .output()
+    let mut command = Command::new(tailscale_cmd());
+    command.args(args);
+    let out = command_output_timeout(&mut command, Duration::from_secs(30))
         .with_context(|| tr!("Failed to run tailscale"))?;
 
     let stderr = String::from_utf8_lossy(&out.stderr);
     let stdout = String::from_utf8_lossy(&out.stdout);
-    dbg_output("tailscale", args, out.status.code().unwrap_or(-1), &stdout, &stderr);
+    dbg_output(
+        "tailscale",
+        args,
+        out.status.code().unwrap_or(-1),
+        &stdout,
+        &stderr,
+    );
 
     if out.status.success() {
         return Ok(());
@@ -697,21 +810,30 @@ fn run_tailscale_with_fallback(args: &[&str]) -> Result<()> {
     // We use `sh -c` with positional args to avoid shell-escaping pitfalls:
     // `$0` is the username, `"$@"` expands to the original tailscale args.
     let user = std::env::var("USER").unwrap_or_default();
-    let script =
-        "tailscale set --operator=\"$0\" >/dev/null 2>&1 || true; exec tailscale \"$@\"";
+    let script = "tailscale set --operator=\"$0\" >/dev/null 2>&1 || true; exec tailscale \"$@\"";
 
     let mut sh_args: Vec<&str> = vec!["sh", "-c", script, &user];
     sh_args.extend_from_slice(args);
 
-    dbg(&format!("running: pkexec sh -c '<set-operator + exec tailscale>' {} {}", user, redact_args(args)));
-    let pk = Command::new("pkexec")
-        .args(&sh_args)
-        .output()
+    dbg(&format!(
+        "running: pkexec sh -c '<set-operator + exec tailscale>' {} {}",
+        user,
+        redact_args(args)
+    ));
+    let mut command = Command::new("pkexec");
+    command.args(&sh_args);
+    let pk = command_output_timeout(&mut command, Duration::from_secs(120))
         .with_context(|| tr!("Failed to run pkexec tailscale"))?;
 
     let pk_err = String::from_utf8_lossy(&pk.stderr);
     let pk_out = String::from_utf8_lossy(&pk.stdout);
-    dbg_output("pkexec tailscale", args, pk.status.code().unwrap_or(-1), &pk_out, &pk_err);
+    dbg_output(
+        "pkexec tailscale",
+        args,
+        pk.status.code().unwrap_or(-1),
+        &pk_out,
+        &pk_err,
+    );
 
     if pk.status.success() {
         return Ok(());
@@ -736,14 +858,20 @@ fn run_tailscale_with_fallback(args: &[&str]) -> Result<()> {
 #[cfg(windows)]
 fn run_tailscale_with_fallback(args: &[&str]) -> Result<()> {
     dbg(&format!("running: tailscale {}", redact_args(args)));
-    let out = Command::new(tailscale_cmd())
-        .args(args)
-        .output()
+    let mut command = Command::new(tailscale_cmd());
+    command.args(args);
+    let out = command_output_timeout(&mut command, Duration::from_secs(30))
         .with_context(|| tr!("Failed to run tailscale"))?;
 
     let stderr = String::from_utf8_lossy(&out.stderr);
     let stdout = String::from_utf8_lossy(&out.stdout);
-    dbg_output("tailscale", args, out.status.code().unwrap_or(-1), &stdout, &stderr);
+    dbg_output(
+        "tailscale",
+        args,
+        out.status.code().unwrap_or(-1),
+        &stdout,
+        &stderr,
+    );
 
     if out.status.success() {
         return Ok(());
@@ -770,7 +898,11 @@ pub fn connect(server: &str, authkey: &str, hostname: &str) -> Result<()> {
     }
     dbg(&format!(
         "connect: server={server:?} hostname={hostname:?} authkey={}",
-        if authkey.is_empty() { "<empty>" } else { "<provided>" }
+        if authkey.is_empty() {
+            "<empty>"
+        } else {
+            "<provided>"
+        }
     ));
     let pre_status = get_status();
     dbg(&format!(
@@ -785,9 +917,9 @@ pub fn connect(server: &str, authkey: &str, hostname: &str) -> Result<()> {
     // that would re-register the node on every connect (which is what let a
     // one-time key expire the node between sessions). The key is only needed to
     // (re)register: first login, a logged-out/expired node, or a new server.
-    if pre_status.registered {
+    if pre_status.registered && authkey.is_empty() {
         dbg("connect: cached registration present — trying keyless reconnect");
-        if try_connect(server, "", hostname).is_ok() && wait_until_online() {
+        if try_reconnect().is_ok() && wait_until_online() {
             dbg("connect: reconnected via cached registration (no key needed)");
             return Ok(());
         }
@@ -802,7 +934,7 @@ pub fn connect(server: &str, authkey: &str, hostname: &str) -> Result<()> {
         bail!(tr!("Sign in or paste a pre-auth key first."));
     }
 
-    if let Err(e) = try_connect(server, authkey, hostname) {
+    if let Err(e) = try_connect_with_key(server, authkey, hostname) {
         dbg(&format!("connect: key attempt failed: {e}"));
         let msg = e.to_string().to_lowercase();
         let auth_failed = msg.contains("auth-key")
@@ -821,14 +953,18 @@ pub fn connect(server: &str, authkey: &str, hostname: &str) -> Result<()> {
     // failure only shows up in Self.Online and the Health array — verify.
     if wait_until_online() {
         let post = get_status();
-        dbg(&format!("connect: post-status online=true hostname={:?} ip={:?}",
-            post.hostname, post.ip));
+        dbg(&format!(
+            "connect: post-status online=true hostname={:?} ip={:?}",
+            post.hostname, post.ip
+        ));
         return Ok(());
     }
 
     let post = get_status();
-    dbg(&format!("connect: post-status online={} hostname={:?} ip={:?}",
-        post.online, post.hostname, post.ip));
+    dbg(&format!(
+        "connect: post-status online={} hostname={:?} ip={:?}",
+        post.online, post.hostname, post.ip
+    ));
     if let Some(h) = get_health_issue() {
         dbg(&format!("connect: tailscaled health: {h}"));
         let lower = h.to_lowercase();
@@ -857,15 +993,20 @@ fn wait_until_online() -> bool {
     false
 }
 
-fn try_connect(server: &str, authkey: &str, hostname: &str) -> Result<()> {
+/// Resume an existing registration without changing any stored preferences.
+/// A bare `tailscale up` preserves exit-node, DNS, SSH, shields-up, and route
+/// settings configured by BigLace or another Tailscale client.
+fn try_reconnect() -> Result<()> {
+    run_tailscale_with_fallback(&["up", "--timeout=10s"])
+}
+
+/// Enroll or deliberately re-authenticate against a control server. Reset is
+/// limited to this explicit key-bearing path because changing login servers
+/// requires a complete preference set; ordinary reconnects use `try_reconnect`.
+fn try_connect_with_key(server: &str, authkey: &str, hostname: &str) -> Result<()> {
     let user = std::env::var("USER").unwrap_or_default();
-    // `--reset` clears any pref cached from a previous `tailscale up`/`set`
-    // run that we don't explicitly carry over here. Without it, tailscale
-    // aborts with "changing settings via 'tailscale up' requires mentioning
-    // all non-default flags" whenever an old biglace (or a manual `tailscale
-    // set`) left a flag enabled that the current biglace doesn't pass —
-    // e.g. --ssh, --shields-up, --advertise-routes. BigLace owns the full
-    // user-facing config, so resetting on each up is the right call.
+    // Enrollment intentionally starts from a complete preference set. Normal
+    // reconnects use the bare `tailscale up` path above and preserve prefs.
     // --timeout bounds how long `tailscale up` waits to reach Running. Without
     // it, a rejected/expired key sends the daemon into a NeedsLogin state where
     // `up` blocks forever waiting for an interactive browser login — which BigLace
@@ -875,7 +1016,6 @@ fn try_connect(server: &str, authkey: &str, hostname: &str) -> Result<()> {
     let mut args = vec!["up", "--reset", "--accept-routes", "--timeout=10s"];
 
     let s_arg;
-    let a_arg;
     let h_arg;
     let op_arg;
 
@@ -883,21 +1023,17 @@ fn try_connect(server: &str, authkey: &str, hostname: &str) -> Result<()> {
         s_arg = format!("--login-server={server}");
         args.push(&s_arg);
     }
-    if !authkey.is_empty() {
-        a_arg = format!("--authkey={authkey}");
-        args.push(&a_arg);
-        // Required when switching to a login-server that differs from the
-        // one cached locally — without this, tailscale aborts with
-        // "can't change --login-server without --force-reauth".
-        args.push("--force-reauth");
-    }
+    let a_arg = format!("--authkey={authkey}");
+    args.push(&a_arg);
+    // Required when switching to a login-server that differs from the
+    // one cached locally — without this, tailscale aborts with
+    // "can't change --login-server without --force-reauth".
+    args.push("--force-reauth");
     if !hostname.is_empty() {
         h_arg = format!("--hostname={hostname}");
         args.push(&h_arg);
     }
-    // Without --reset, `tailscale up` requires every non-default pref to be
-    // mentioned explicitly. Operator is one of those once we set it, so pass
-    // it back on every up to keep the call self-consistent.
+    // Keep the per-user operator configured after the enrollment reset.
     if !user.is_empty() {
         op_arg = format!("--operator={user}");
         args.push(&op_arg);
@@ -930,11 +1066,11 @@ pub fn set_operator_current_user() -> Result<()> {
         bail!(tr!("Could not determine the current user."));
     }
     let arg = format!("--operator={user}");
-    let st = Command::new("pkexec")
-        .args(["tailscale", "set", &arg])
-        .status()
+    let mut command = Command::new("pkexec");
+    command.args(["tailscale", "set", &arg]);
+    let st = command_output_timeout(&mut command, Duration::from_secs(120))
         .with_context(|| tr!("Failed to run pkexec tailscale set"))?;
-    if !st.success() {
+    if !st.status.success() {
         bail!(tr!("Failed to set tailscale operator."));
     }
     Ok(())
@@ -957,10 +1093,7 @@ pub fn set_operator_current_user() -> Result<()> {
 /// MagicDNS without the user noticing — the IP path keeps the launch
 /// buttons usable in that case.
 ///
-/// Resolution is synchronous on purpose. Modern resolvers fail fast on
-/// NXDOMAIN (a few ms), so the click-handler delay is imperceptible. Only
-/// when the network is really wedged could this stall, and a stalled
-/// network would block the actual ssh/sftp call right after anyway.
+/// Call from a worker thread: resolver timeouts must not block the GTK loop.
 pub fn pick_target(dns_name: &str, ip_fallback: &str) -> String {
     use std::net::ToSocketAddrs;
     if !dns_name.is_empty() {
@@ -992,10 +1125,8 @@ pub fn pick_target(dns_name: &str, ip_fallback: &str) -> String {
 ///   4. Last resort: `gio mount` then `xdg-open`.
 #[cfg(unix)]
 pub fn open_files(host: &str, user: &str) {
-    let target = if user.is_empty() {
-        host.to_string()
-    } else {
-        format!("{user}@{host}")
+    let Some(target) = ssh_target(host, user) else {
+        return;
     };
     let url = format!("sftp://{target}/");
 
@@ -1026,10 +1157,8 @@ pub fn open_files(host: &str, user: &str) {
 /// The README explains the WinSCP install step.
 #[cfg(windows)]
 pub fn open_files(host: &str, user: &str) {
-    let target = if user.is_empty() {
-        host.to_string()
-    } else {
-        format!("{user}@{host}")
+    let Some(target) = ssh_target(host, user) else {
+        return;
     };
     let url = format!("sftp://{target}/");
 
@@ -1068,10 +1197,9 @@ pub fn open_files(host: &str, user: &str) {
 
 #[cfg(unix)]
 fn default_handler_for(mime: &str) -> Option<String> {
-    let out = Command::new("xdg-mime")
-        .args(["query", "default", mime])
-        .output()
-        .ok()?;
+    let mut command = Command::new("xdg-mime");
+    command.args(["query", "default", mime]);
+    let out = command_output_timeout(&mut command, Duration::from_secs(5)).ok()?;
     if !out.status.success() {
         return None;
     }
@@ -1089,20 +1217,17 @@ fn default_handler_for(mime: &str) -> Option<String> {
 /// failing to launch at all.
 #[cfg(unix)]
 pub fn open_terminal(host: &str, user: &str) {
-    let target = if user.is_empty() {
-        host.to_string()
-    } else {
-        format!("{user}@{host}")
+    let Some(target) = ssh_target(host, user) else {
+        return;
     };
-    let ssh_cmd = format!("ssh {target}");
 
-    // Try common terminals in preference order.
+    // Pass program and target as separate argv values. No shell is involved.
     for (term, args) in &[
-        ("ashyterm",         vec!["-e", ssh_cmd.as_str()]),
-        ("xterm",            vec!["-e", ssh_cmd.as_str()]),
-        ("konsole",          vec!["-e", ssh_cmd.as_str()]),
-        ("gnome-terminal",   vec!["--", "ssh", target.as_str()]),
-        ("xfce4-terminal",   vec!["-e", ssh_cmd.as_str()]),
+        ("ashyterm", vec!["-e", "ssh", target.as_str()]),
+        ("xterm", vec!["-e", "ssh", target.as_str()]),
+        ("konsole", vec!["-e", "ssh", target.as_str()]),
+        ("gnome-terminal", vec!["--", "ssh", target.as_str()]),
+        ("xfce4-terminal", vec!["--execute", "ssh", target.as_str()]),
     ] {
         if Command::new(term).args(args).spawn().is_ok() {
             return;
@@ -1121,10 +1246,8 @@ pub fn open_terminal(host: &str, user: &str) {
 /// feature that's enabled by default on Win10 (1809+) and Win11.
 #[cfg(windows)]
 pub fn open_terminal(host: &str, user: &str) {
-    let target = if user.is_empty() {
-        host.to_string()
-    } else {
-        format!("{user}@{host}")
+    let Some(target) = ssh_target(host, user) else {
+        return;
     };
 
     // wt.exe new-tab ssh user@host
@@ -1137,7 +1260,7 @@ pub fn open_terminal(host: &str, user: &str) {
     }
     // PowerShell with -NoExit so the window stays open after ssh exits.
     if Command::new("powershell.exe")
-        .args(["-NoExit", "-Command", &format!("ssh {target}")])
+        .args(["-NoExit", "-Command", &format!("ssh.exe --% {target}")])
         .spawn()
         .is_ok()
     {
@@ -1147,6 +1270,28 @@ pub fn open_terminal(host: &str, user: &str) {
     let _ = Command::new("cmd.exe")
         .args(["/K", &format!("ssh {target}")])
         .spawn();
+}
+
+/// Reject control/shell syntax before composing SFTP URLs or Windows fallback
+/// commands. Tailscale DNS names, IP literals and normal OS users fit this set.
+fn ssh_target(host: &str, user: &str) -> Option<String> {
+    fn safe(value: &str, is_host: bool) -> bool {
+        !value.is_empty()
+            && value.len() <= 255
+            && value.chars().all(|c| {
+                c.is_ascii_alphanumeric()
+                    || matches!(c, '.' | '-' | '_' | ':')
+                    || (is_host && matches!(c, '[' | ']'))
+            })
+    }
+    if !safe(host, true) || (!user.is_empty() && !safe(user, false)) {
+        return None;
+    }
+    Some(if user.is_empty() {
+        host.to_string()
+    } else {
+        format!("{user}@{host}")
+    })
 }
 
 /// Open a terminal that tails `tailscaled`'s journal. Useful for debugging
@@ -1160,9 +1305,9 @@ pub fn open_logs() {
     // when the user is in `systemd-journal` (Manjaro default).
     let cmd = "journalctl -fu tailscaled --no-pager; echo; echo '[press enter to close]'; read";
     for (term, args) in &[
-        ("ashyterm",       vec!["-e", cmd]),
-        ("xterm",          vec!["-e", cmd]),
-        ("konsole",        vec!["-e", "bash", "-c", cmd]),
+        ("ashyterm", vec!["-e", cmd]),
+        ("xterm", vec!["-e", cmd]),
+        ("konsole", vec!["-e", "bash", "-c", cmd]),
         ("gnome-terminal", vec!["--", "bash", "-c", cmd]),
         ("xfce4-terminal", vec!["-e", cmd]),
     ] {
@@ -1215,7 +1360,7 @@ pub fn set_hostname(name: &str) -> Result<()> {
 pub fn set_exit_node(host: Option<&str>) -> Result<()> {
     let arg = match host {
         Some(h) => format!("--exit-node={h}"),
-        None    => "--exit-node=".to_string(),
+        None => "--exit-node=".to_string(),
     };
     let r = run_tailscale_with_fallback(&["set", &arg]);
     invalidate_status_cache();
@@ -1228,10 +1373,15 @@ pub fn set_exit_node(host: Option<&str>) -> Result<()> {
 /// milliseconds on the first reply, or None on timeout / unreachable. Caps at
 /// ~2s so a dead peer doesn't hang the periodic refresh.
 pub fn ping_ms(target: &str) -> Option<f64> {
-    let out = Command::new(tailscale_cmd())
-        .args(["ping", "--c=1", "--timeout=2s", "--until-direct=false", target])
-        .output()
-        .ok()?;
+    let mut command = Command::new(tailscale_cmd());
+    command.args([
+        "ping",
+        "--c=1",
+        "--timeout=2s",
+        "--until-direct=false",
+        target,
+    ]);
+    let out = command_output_timeout(&mut command, Duration::from_secs(5)).ok()?;
     if !out.status.success() {
         return None;
     }
@@ -1267,6 +1417,41 @@ pub fn headscale_healthy(server_url: &str) -> bool {
     // health probe failed outright — the badge showed a healthy Headscale as
     // permanently unreachable. Reusing the agent also shares the connection
     // pool instead of allocating a fresh TlsConnector every 60s.
-    let Ok(agent) = crate::panel::shared_agent() else { return false; };
+    let Ok(agent) = crate::panel::shared_agent() else {
+        return false;
+    };
     matches!(agent.get(&endpoint).call(), Ok(r) if (200..300).contains(&r.status()))
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn ssh_target_accepts_network_names_and_rejects_shell_syntax() {
+        assert_eq!(
+            ssh_target("host.example", "alice"),
+            Some("alice@host.example".into())
+        );
+        assert_eq!(
+            ssh_target("[fd7a:115c::1]", ""),
+            Some("[fd7a:115c::1]".into())
+        );
+        assert_eq!(ssh_target("host;touch-pwned", "alice"), None);
+        assert_eq!(ssh_target("host", "$(id)"), None);
+    }
+
+    #[cfg(unix)]
+    #[test]
+    fn command_runner_captures_output_and_enforces_timeout() {
+        let mut command = Command::new("sh");
+        command.args(["-c", "printf ok"]);
+        let output = command_output_timeout(&mut command, Duration::from_secs(1)).unwrap();
+        assert_eq!(output.stdout, b"ok");
+
+        let mut command = Command::new("sleep");
+        command.arg("2");
+        let error = command_output_timeout(&mut command, Duration::from_millis(50)).unwrap_err();
+        assert_eq!(error.kind(), io::ErrorKind::TimedOut);
+    }
 }

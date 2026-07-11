@@ -31,7 +31,7 @@ use crate::{tr, trf};
 /// Status update pushed from the GTK loop to the tray worker thread.
 #[derive(Debug, Clone, Copy)]
 struct Update {
-    connected:  bool,
+    connected: bool,
     peer_count: usize,
 }
 
@@ -43,7 +43,10 @@ impl HandleImpl {
     pub fn update(&self, connected: bool, peer_count: usize) {
         // Worker may have exited (e.g. tray init failed and we never started
         // the loop); a dropped update is harmless — there's nothing to refresh.
-        let _ = self.update_tx.send(Update { connected, peer_count });
+        let _ = self.update_tx.send(Update {
+            connected,
+            peer_count,
+        });
     }
 }
 
@@ -133,7 +136,11 @@ fn run_tray_thread(
         // Apply pending state updates from the GTK main loop.
         while let Ok(u) = update_rx.try_recv() {
             connected = u.connected;
-            let toggle_label = if connected { tr!("Disconnect") } else { tr!("Connect") };
+            let toggle_label = if connected {
+                tr!("Disconnect")
+            } else {
+                tr!("Connect")
+            };
             toggle_item.set_text(&toggle_label);
             let _ = tray.set_tooltip(Some(tooltip_text(connected, u.peer_count)));
         }
@@ -143,7 +150,11 @@ fn run_tray_thread(
             let cmd = if ev.id == show_id {
                 Command::Show
             } else if ev.id == toggle_id {
-                if connected { Command::Disconnect } else { Command::Connect }
+                if connected {
+                    Command::Disconnect
+                } else {
+                    Command::Connect
+                }
             } else if ev.id == quit_id {
                 Command::Quit
             } else {

@@ -5,19 +5,19 @@ use crate::tr;
 
 #[derive(Clone)]
 pub struct Content {
-    pub toolbar:            libadwaita::ToolbarView,
-    pub status_dot:         gtk4::Box,
-    pub status_label:       gtk4::Label,
-    pub health_badge:       gtk4::Label,
-    pub update_badge:       gtk4::Label,
-    pub btn_refresh:        gtk4::Button,
-    pub btn_menu:           gtk4::MenuButton,
-    pub stack:              gtk4::Stack,
-    pub btn_start_service:  gtk4::Button,
-    pub self_row:           libadwaita::ActionRow,
-    pub btn_copy_self_ip:   gtk4::Button,
-    pub peers_list:         gtk4::ListBox,
-    pub bottom_label:       gtk4::Label,
+    pub toolbar: libadwaita::ToolbarView,
+    pub status_dot: gtk4::Box,
+    pub status_label: gtk4::Label,
+    pub health_badge: gtk4::Label,
+    pub update_badge: gtk4::Label,
+    pub btn_refresh: gtk4::Button,
+    pub btn_menu: gtk4::MenuButton,
+    pub stack: gtk4::Stack,
+    pub btn_start_service: gtk4::Button,
+    pub self_row: libadwaita::ActionRow,
+    pub btn_copy_self_ip: gtk4::Button,
+    pub peers_list: gtk4::ListBox,
+    pub bottom_label: gtk4::Label,
 }
 
 pub fn build() -> Content {
@@ -63,18 +63,12 @@ pub fn build() -> Content {
     // Header badges — visibility is toggled in apply_state(). Keep them in the
     // start area so they sit just left of the title without crowding the menu
     // button on the right.
-    let health_badge = gtk4::Label::builder()
-        .label("")
-        .visible(false)
-        .build();
+    let health_badge = gtk4::Label::builder().label("").visible(false).build();
     health_badge.add_css_class("badge");
     health_badge.add_css_class("badge-warning");
     header.pack_start(&health_badge);
 
-    let update_badge = gtk4::Label::builder()
-        .label("")
-        .visible(false)
-        .build();
+    let update_badge = gtk4::Label::builder().label("").visible(false).build();
     update_badge.add_css_class("badge");
     update_badge.add_css_class("badge-info");
     header.pack_start(&update_badge);
@@ -187,9 +181,12 @@ fn build_connecting_page() -> gtk4::Box {
     bx
 }
 
-fn build_connected_page()
-    -> (gtk4::ScrolledWindow, libadwaita::ActionRow, gtk4::Button, gtk4::ListBox)
-{
+fn build_connected_page() -> (
+    gtk4::ScrolledWindow,
+    libadwaita::ActionRow,
+    gtk4::Button,
+    gtk4::ListBox,
+) {
     let scroll = gtk4::ScrolledWindow::builder()
         .hscrollbar_policy(gtk4::PolicyType::Never)
         .vexpand(true)
