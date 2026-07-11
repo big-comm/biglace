@@ -316,8 +316,11 @@ use a Windows VM/host with WiX 3, Rust MSVC, ImageMagick, and gvsbuild installed
 cargo build --release --no-default-features --target x86_64-pc-windows-msvc
 cargo install cargo-wix --locked --version 0.3.9
 heat.exe dir target\wix-stage -cg RuntimeFiles -dr APPLICATIONFOLDER -ag -srd -sfrag -var var.StageDir -out wix\runtime.wxs
-cargo wix --no-build --nocapture --target x86_64-pc-windows-msvc -C "-ext" -C "WixUtilExtension" -C "-dStageDir=target\wix-stage"
+cargo wix --no-build --nocapture --target x86_64-pc-windows-msvc -C "-dStageDir=target\wix-stage"
 ```
+
+`cargo-wix` already loads `WixUIExtension` and `WixUtilExtension`; passing either
+extension again makes WiX fail with a duplicate schema error.
 
 `--no-default-features` disables jemalloc, which has no Windows backend.
 
