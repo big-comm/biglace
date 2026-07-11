@@ -10,7 +10,7 @@ biglace-mobile-<...>.apk.sha256      # SHA-256 of the APK next to it
 
 | File | Version | Build type | Notes |
 |---|---|---|---|
-| `biglace-mobile-0.9.1-vc28-debug.apk` | 0.9.1 (code 28) | debug | Keeps the encrypted pre-auth key visible in Settings after enrollment and allows reconnecting from persisted tsnet state. Includes the multi-session terminal/SFTP tabs from 0.9.0. **ARM64 phones only** |
+| `biglace-mobile-0.9.2-vc29-debug.apk` | 0.9.2 (code 29) | debug | Keeps long Codex/terminal sessions responsive with bounded off-main-thread rendering and includes the updated app icon. Includes all fixes from 0.9.1. **ARM64 phones only** |
 
 **Debug-signed** — installable for testing (`adb install <file>.apk`) but not for
 distribution. A release build needs a signing config (`app/build.gradle.kts`) and
@@ -31,5 +31,5 @@ there and rebuild to cut a new artifact.
 ## Verify
 
 ```bash
-sha256sum -c biglace-mobile-0.9.1-vc28-debug.apk.sha256
+sha256sum -c biglace-mobile-0.9.2-vc29-debug.apk.sha256
 ```

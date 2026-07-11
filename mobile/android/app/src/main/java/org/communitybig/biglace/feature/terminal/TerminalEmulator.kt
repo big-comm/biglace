@@ -319,9 +319,12 @@ class TerminalEmulator(
     // ── Rendering ─────────────────────────────────────────────────────────────
 
     @Synchronized
-    fun render(): AnnotatedString = buildAnnotatedString {
+    fun render(scrollbackLimit: Int = DEFAULT_RENDER_SCROLLBACK): AnnotatedString = buildAnnotatedString {
         val out = ArrayList<Pair<Array<Cell>, Int>>() // line + cursor col (-1 = none)
-        if (!inAlt) for (row in scrollback) out.add(row to -1)
+        if (!inAlt) {
+            val skip = (scrollback.size - scrollbackLimit.coerceAtLeast(0)).coerceAtLeast(0)
+            scrollback.asSequence().drop(skip).forEach { out.add(it to -1) }
+        }
         // Only render screen rows down to the last non-blank row (or the cursor):
         // otherwise the 24-row grid's trailing blank lines push the prompt off the
         // top when we auto-scroll to the bottom.
@@ -377,6 +380,7 @@ class TerminalEmulator(
         private const val OSC = 3
         private const val OSC_ST = 4
         private const val CHARSET = 5
+        private const val DEFAULT_RENDER_SCROLLBACK = 200
 
         private const val ESCC = '\u001B'
         private const val BEL = '\u0007'

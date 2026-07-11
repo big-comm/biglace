@@ -40,6 +40,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.saveable.rememberSaveableStateHolder
+import androidx.compose.runtime.snapshotFlow
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -73,6 +74,7 @@ import org.communitybig.biglace.ui.AuthDialog
 import org.communitybig.biglace.ui.PasswordField
 import org.communitybig.biglace.ui.SessionTabs
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.flow.distinctUntilChanged
 
 @Composable
 fun TerminalScreen(container: AppContainer, modifier: Modifier = Modifier) {
@@ -346,9 +348,14 @@ private fun TerminalView(
         }
     }
 
-    // Keep the newest line (the prompt) in view: when little output, it sits at
-    // the top; when it overflows, we follow the bottom.
-    LaunchedEffect(screen) { vScroll.scrollTo(vScroll.maxValue) }
+    // Follow layout growth, not every character. Long-running TUIs update the
+    // same rows frequently; restarting a scroll coroutine for each update makes
+    // keyboard input progressively less responsive.
+    LaunchedEffect(vScroll) {
+        snapshotFlow { vScroll.maxValue }
+            .distinctUntilChanged()
+            .collect { vScroll.scrollTo(it) }
+    }
 
     Column(
         modifier.fillMaxSize().padding(horizontal = 8.dp, vertical = 4.dp),

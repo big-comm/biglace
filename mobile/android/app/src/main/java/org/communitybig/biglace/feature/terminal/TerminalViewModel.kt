@@ -155,16 +155,16 @@ class TerminalViewModel(private val container: AppContainer) : ViewModel() {
 
     fun dismissError() { if (_status.value is TermStatus.Error) _status.value = TermStatus.Idle }
 
-    /** 30 fps render pump: rebuild the coloured screen only when new bytes arrived. */
+    /** Bounded render pump: coalesce output and keep text work off the UI thread. */
     private fun startRenderPump() {
         renderJob?.cancel()
-        renderJob = viewModelScope.launch {
+        renderJob = viewModelScope.launch(Dispatchers.Default) {
             while (isActive) {
                 if (dirty) {
                     dirty = false
-                    _screen.value = emulator.render()
+                    _screen.value = emulator.render(RENDER_SCROLLBACK_ROWS)
                 }
-                delay(33)
+                delay(RENDER_FRAME_MS)
             }
         }
     }
@@ -227,5 +227,7 @@ class TerminalViewModel(private val container: AppContainer) : ViewModel() {
     private companion object {
         const val COLS = 80
         const val ROWS = 24
+        const val RENDER_SCROLLBACK_ROWS = 200
+        const val RENDER_FRAME_MS = 50L
     }
 }

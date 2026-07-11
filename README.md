@@ -81,7 +81,7 @@ own SSH terminal and SFTP file manager.
 |---|---|---|
 | **Linux** (Arch / BigCommunity, Fedora, Debian — anywhere with GTK4 + libadwaita 1.4) | Primary target. | `pkgbuild/PKGBUILD` ships `/usr/bin/biglace`, the `.desktop` entry, icons, and compiled `.mo` catalogues. |
 | **Windows 10 / 11 (x64)** | Supported. | `.github/workflows/windows.yml` produces a single signed-ready MSI (`biglace-<version>-x86_64.msi`) bundling biglace.exe + the gvsbuild GTK4 runtime. |
-| **Android 8+ (API 26, ARM64)** | Native app, current mobile version `0.9.1`. | Debug-signed test APKs live in `mobile/dist/`; Gradle also builds ARMv7, x86, and x86_64 splits. |
+| **Android 8+ (API 26, ARM64)** | Native app, current mobile version `0.9.2`. | Debug-signed test APKs live in `mobile/dist/`; Gradle also builds ARMv7, x86, and x86_64 splits. |
 | **macOS** | Code compiles (config path, keyring, and `Command::new` calls are cfg-gated), but no installer is shipped yet. | Build from source with `cargo build --release`. |
 
 The desktop codebase is one Rust crate; platform differences are gated behind
@@ -113,7 +113,7 @@ Current mobile features:
 - Adaptive launcher/monochrome icon and a dedicated six-node notification icon.
 
 The current ARM64 test build is
-[`mobile/dist/biglace-mobile-0.9.1-vc28-debug.apk`](mobile/dist/biglace-mobile-0.9.1-vc28-debug.apk).
+[`mobile/dist/biglace-mobile-0.9.2-vc29-debug.apk`](mobile/dist/biglace-mobile-0.9.2-vc29-debug.apk).
 It is debug-signed for testing, not a store/release signing configuration.
 
 ---
