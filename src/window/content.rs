@@ -9,6 +9,9 @@ pub struct Content {
     pub status_dot: gtk4::Box,
     pub status_label: gtk4::Label,
     pub health_badge: gtk4::Label,
+    /// Shown when tailscaled couldn't install the tailnet's DNS config, which
+    /// silently downgrades every peer button from names to raw IPs.
+    pub dns_badge: gtk4::Label,
     pub update_badge: gtk4::Label,
     pub btn_refresh: gtk4::Button,
     pub btn_menu: gtk4::MenuButton,
@@ -67,6 +70,22 @@ pub fn build() -> Content {
     health_badge.add_css_class("badge");
     health_badge.add_css_class("badge-warning");
     header.pack_start(&health_badge);
+
+    // Unlike the Headscale badge this one stays useful while connected — the
+    // tunnel is fine, it's name resolution that broke — so apply_state shows it
+    // in every state. The tooltip carries the fix so the user doesn't have to
+    // go digging through `tailscale status`.
+    let dns_badge = gtk4::Label::builder().label("").visible(false).build();
+    dns_badge.add_css_class("badge");
+    dns_badge.add_css_class("badge-warning");
+    dns_badge.set_tooltip_text(Some(&tr!(
+        "Tailscale cannot write this device's DNS settings, so it can no longer \
+         keep peer names working. They may still resolve for now, from the \
+         configuration left over from before the failure, but that will break \
+         the next time the network changes — and BigLace will fall back to IP \
+         addresses. On most distributions `sudo resolvconf -u` repairs it."
+    )));
+    header.pack_start(&dns_badge);
 
     let update_badge = gtk4::Label::builder().label("").visible(false).build();
     update_badge.add_css_class("badge");
@@ -129,6 +148,7 @@ pub fn build() -> Content {
         status_dot,
         status_label,
         health_badge,
+        dns_badge,
         update_badge,
         btn_refresh,
         btn_menu,

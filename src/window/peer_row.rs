@@ -241,13 +241,15 @@ pub fn build(peer: &Peer, ctx: &PeerCtx) -> libadwaita::ExpanderRow {
             .valign(gtk4::Align::Center)
             .tooltip_text(tr!("Open files (SFTP)"))
             .build();
+        let toast_files = ctx.toast.clone();
         btn_files.connect_clicked(move |_| {
             let host = host_files.clone();
             let ip = ip_files.clone();
             let user = ssh_user_files.clone();
-            std::thread::spawn(move || {
+            let toast = toast_files.clone();
+            spawn_launcher(toast, move || {
                 let target = tailscale::pick_target(&host, &ip);
-                tailscale::open_files(&target, &user);
+                tailscale::open_files(&target, &user)
             });
         });
         row.add_suffix(&btn_files);
@@ -261,13 +263,15 @@ pub fn build(peer: &Peer, ctx: &PeerCtx) -> libadwaita::ExpanderRow {
             .valign(gtk4::Align::Center)
             .tooltip_text(tr!("Open terminal (SSH)"))
             .build();
+        let toast_term = ctx.toast.clone();
         btn_term.connect_clicked(move |_| {
             let host = host_term.clone();
             let ip = ip_term.clone();
             let user = ssh_user_term.clone();
-            std::thread::spawn(move || {
+            let toast = toast_term.clone();
+            spawn_launcher(toast, move || {
                 let target = tailscale::pick_target(&host, &ip);
-                tailscale::open_terminal(&target, &user);
+                tailscale::open_terminal(&target, &user)
             });
         });
         row.add_suffix(&btn_term);
@@ -466,6 +470,44 @@ pub fn build(peer: &Peer, ctx: &PeerCtx) -> libadwaita::ExpanderRow {
     }
 
     row
+}
+
+/// Run a launcher (`open_files` / `open_terminal`) on a worker thread and toast
+/// its error if it fails.
+///
+/// Both launchers do a DNS lookup and then probe several programs, each with a
+/// settle window — up to a couple of seconds — so they can't run on the GTK
+/// thread. `ToastOverlay` isn't `Send`, so the worker parks its result in a
+/// Mutex and a main-loop poller picks it up, the same shape the exit-node
+/// switch above uses.
+fn spawn_launcher<F>(toast: libadwaita::ToastOverlay, work: F)
+where
+    F: FnOnce() -> Result<(), String> + Send + 'static,
+{
+    let slot: Arc<Mutex<Option<Result<(), String>>>> = Arc::new(Mutex::new(None));
+    let slot_t = slot.clone();
+    std::thread::spawn(move || {
+        let outcome = work();
+        if let Ok(mut g) = slot_t.lock() {
+            *g = Some(outcome);
+        }
+    });
+    glib::timeout_add_local(std::time::Duration::from_millis(200), move || {
+        let Some(outcome) = slot.lock().ok().and_then(|mut g| g.take()) else {
+            return glib::ControlFlow::Continue;
+        };
+        if let Err(message) = outcome {
+            toast.add_toast(
+                libadwaita::Toast::builder()
+                    // The message can embed a hostname or a handler name;
+                    // escape before it hits AdwToast's markup-aware title.
+                    .title(glib::markup_escape_text(&message).as_str())
+                    .timeout(6)
+                    .build(),
+            );
+        }
+        glib::ControlFlow::Break
+    });
 }
 
 fn detail_row(icon: &str, label: &str, value: &str) -> libadwaita::ActionRow {
