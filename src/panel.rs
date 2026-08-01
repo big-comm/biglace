@@ -15,17 +15,32 @@ const MAX_RESPONSE_BYTES: u64 = 1024 * 1024;
 /// retrying the (unlikely-to-recover) initialization.
 pub(crate) fn shared_agent() -> Result<ureq::Agent> {
     static AGENT: OnceLock<std::result::Result<ureq::Agent, String>> = OnceLock::new();
-    let cell = AGENT.get_or_init(|| {
-        let tls =
-            native_tls::TlsConnector::new().map_err(|e| format!("init TLS connector: {e}"))?;
-        Ok(ureq::AgentBuilder::new()
-            .timeout_connect(Duration::from_secs(10))
-            .timeout_read(Duration::from_secs(30))
-            .redirects(0)
-            .tls_connector(Arc::new(tls))
-            .build())
-    });
-    cell.clone().map_err(|e| anyhow!("{e}"))
+    AGENT
+        .get_or_init(|| build_agent(0))
+        .clone()
+        .map_err(|e| anyhow!("{e}"))
+}
+
+/// Same agent, but following up to three redirects. Only for requests that
+/// carry no credentials — panel calls keep `redirects(0)` so a hostile or
+/// misconfigured redirect can't replay the user's password (or a tailnet-
+/// authenticated request) against a different host.
+pub(crate) fn redirecting_agent() -> Result<ureq::Agent> {
+    static AGENT: OnceLock<std::result::Result<ureq::Agent, String>> = OnceLock::new();
+    AGENT
+        .get_or_init(|| build_agent(3))
+        .clone()
+        .map_err(|e| anyhow!("{e}"))
+}
+
+fn build_agent(redirects: u32) -> std::result::Result<ureq::Agent, String> {
+    let tls = native_tls::TlsConnector::new().map_err(|e| format!("init TLS connector: {e}"))?;
+    Ok(ureq::AgentBuilder::new()
+        .timeout_connect(Duration::from_secs(10))
+        .timeout_read(Duration::from_secs(30))
+        .redirects(redirects)
+        .tls_connector(Arc::new(tls))
+        .build())
 }
 
 #[derive(Debug, Clone)]

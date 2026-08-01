@@ -129,12 +129,20 @@ fn read_capped(reader: &mut impl Read) -> Vec<u8> {
     const MAX_CAPTURE: usize = 16 * 1024 * 1024;
     let mut captured = Vec::new();
     let mut buffer = [0_u8; 8192];
-    while let Ok(read) = reader.read(&mut buffer) {
-        if read == 0 {
-            break;
+    loop {
+        match reader.read(&mut buffer) {
+            Ok(0) => break,
+            Ok(read) => {
+                let keep = read.min(MAX_CAPTURE.saturating_sub(captured.len()));
+                captured.extend_from_slice(&buffer[..keep]);
+            }
+            // A signal delivered mid-read is not end-of-output. Treating EINTR
+            // as EOF (which `while let Ok(..)` did) silently truncated the
+            // captured stderr, so a failing `tailscale up` could surface to the
+            // user as an empty error message.
+            Err(e) if e.kind() == io::ErrorKind::Interrupted => continue,
+            Err(_) => break,
         }
-        let keep = read.min(MAX_CAPTURE.saturating_sub(captured.len()));
-        captured.extend_from_slice(&buffer[..keep]);
     }
     captured
 }
@@ -171,15 +179,97 @@ pub(crate) fn dbg(msg: &str) {
 fn redact_args(args: &[&str]) -> String {
     args.iter()
         .map(|a| {
-            if a.starts_with("--authkey=") {
-                "--authkey=<redacted>".to_string()
-            } else {
-                (*a).to_string()
+            // `--authkey=file:/run/user/1000/…` carries no secret — the key
+            // lives inside the (0600) file — and the path is worth seeing when
+            // debugging a failed enrollment, so only the inline form is masked.
+            match a.strip_prefix("--authkey=") {
+                Some(value) if !value.starts_with("file:") => "--authkey=<redacted>".to_string(),
+                _ => (*a).to_string(),
             }
         })
         .collect::<Vec<_>>()
         .join(" ")
 }
+
+/// A 0600 file holding the pre-auth key for the lifetime of one `tailscale up`,
+/// unlinked on drop.
+///
+/// `tailscale up --authkey=file:<path>` exists precisely so the key doesn't
+/// have to travel in `argv`. That matters here: on Linux `/proc/<pid>/cmdline`
+/// is world-readable, so an inline `--authkey=tskey-…` is visible to every
+/// local user for as long as the command runs — and the elevated path runs the
+/// key through `pkexec sh -c … "$@"`, which puts it in a *second* process's
+/// argv as well. A reusable pre-auth key leaked that way lets anyone on the
+/// machine register a node on the user's tailnet.
+#[cfg(unix)]
+struct AuthKeyFile {
+    path: std::path::PathBuf,
+}
+
+#[cfg(unix)]
+impl Drop for AuthKeyFile {
+    fn drop(&mut self) {
+        let _ = std::fs::remove_file(&self.path);
+    }
+}
+
+#[cfg(unix)]
+fn stage_authkey(authkey: &str) -> io::Result<AuthKeyFile> {
+    use std::io::Write;
+    use std::os::unix::fs::OpenOptionsExt;
+    use std::sync::atomic::{AtomicU32, Ordering};
+
+    static SEQ: AtomicU32 = AtomicU32::new(0);
+
+    // XDG_RUNTIME_DIR is a per-user 0700 tmpfs — the right home for a
+    // short-lived secret. The temp-dir fallback is shared, so `create_new`
+    // makes a planted symlink an error instead of a write-through.
+    let dir = std::env::var("XDG_RUNTIME_DIR")
+        .map(std::path::PathBuf::from)
+        .unwrap_or_else(|_| std::env::temp_dir());
+    let path = dir.join(format!(
+        "biglace-authkey-{}-{}",
+        std::process::id(),
+        SEQ.fetch_add(1, Ordering::Relaxed)
+    ));
+    let _ = std::fs::remove_file(&path);
+    let mut file = std::fs::OpenOptions::new()
+        .write(true)
+        .create_new(true)
+        .mode(0o600)
+        .open(&path)?;
+    file.write_all(authkey.as_bytes())?;
+    file.write_all(b"\n")?;
+    file.sync_all()?;
+    Ok(AuthKeyFile { path })
+}
+
+/// Build the `--authkey=` argument, staging the key in a file when we can so it
+/// stays out of `argv`. The guard must outlive the command: dropping it
+/// unlinks the file.
+fn authkey_arg(authkey: &str) -> (String, Option<AuthKeyFile>) {
+    #[cfg(unix)]
+    {
+        match stage_authkey(authkey) {
+            Ok(staged) => {
+                let arg = format!("--authkey=file:{}", staged.path.display());
+                return (arg, Some(staged));
+            }
+            // Read-only runtime dir, full disk, exotic sandbox: fall back to the
+            // inline form rather than refusing to connect at all.
+            Err(e) => dbg(&format!(
+                "connect: could not stage the pre-auth key ({e}); passing it inline"
+            )),
+        }
+    }
+    (format!("--authkey={authkey}"), None)
+}
+
+/// Windows placeholder so `authkey_arg`'s return type is uniform across
+/// platforms. `/proc`-style argv exposure doesn't apply there.
+#[cfg(not(unix))]
+#[allow(dead_code)]
+struct AuthKeyFile;
 
 fn dbg_output(label: &str, args: &[&str], status: i32, stdout: &str, stderr: &str) {
     eprintln!(
@@ -219,6 +309,10 @@ pub struct Status {
     /// True when tailscaled already holds a node registration on disk
     /// (BackendState Running/Stopped/Starting) — so we can reconnect without a key.
     pub registered: bool,
+    /// True when tailscaled reports it couldn't install the tailnet's DNS
+    /// config (see `dns_config_failed`). Carried on `Status` rather than read
+    /// on demand so the UI never has to touch the daemon from the GTK thread.
+    pub dns_broken: bool,
 }
 
 #[derive(Debug, Clone)]
@@ -572,6 +666,22 @@ pub fn get_health_issue() -> Option<String> {
     Some(login_issue.cloned().unwrap_or_else(|| health[0].clone()))
 }
 
+/// True when tailscaled is reporting that it couldn't install the tailnet's DNS
+/// configuration on this machine.
+///
+/// This is the failure behind "it used to connect by name and now only by IP":
+/// something rewrote `/etc/resolv.conf` without openresolv's signature, so
+/// tailscaled gives up on MagicDNS and every `<peer>.<tailnet>` lookup fails.
+/// The tunnel still works, so nothing else in the UI goes red and the user is
+/// left guessing — `pick_target` quietly degrades to raw IPs. Surfacing it as
+/// its own badge turns a mystery into a one-command fix.
+fn dns_config_failed(ts: &TsStatus) -> bool {
+    ts.health.iter().flatten().any(|h| {
+        let l = h.to_lowercase();
+        l.contains("dns configuration") || l.contains("resolvconf") || l.contains("resolv.conf")
+    })
+}
+
 pub fn get_status() -> Status {
     if !is_installed() {
         return Status::default();
@@ -634,6 +744,7 @@ fn build_status(ts: &TsStatus) -> Status {
             ts.backend_state.as_deref(),
             Some("Running") | Some("Stopped") | Some("Starting")
         ),
+        dns_broken: dns_config_failed(ts),
     }
 }
 
@@ -754,10 +865,13 @@ fn build_peers(ts: &TsStatus) -> Vec<Peer> {
         })
         .collect();
 
-    // online first, then alphabetical. Final ordering (favorites first) happens
-    // in the UI layer, which knows the user's pin list — keeping it out of
-    // here means tests of get_peers don't need a Config to compare against.
-    peers.sort_by(|a, b| b.online.cmp(&a.online).then(a.hostname.cmp(&b.hostname)));
+    // online first, then alphabetical by the label the user actually sees.
+    // Sorting on `hostname` (the peer's OS hostname) made the list look
+    // unsorted whenever it differed from the headscale-assigned name shown in
+    // the row. Final ordering (favorites first) happens in the UI layer, which
+    // knows the user's pin list — keeping it out of here means tests of
+    // get_peers don't need a Config to compare against.
+    peers.sort_by_cached_key(|p| (!p.online, p.display_name().to_lowercase()));
     peers
 }
 
@@ -1023,7 +1137,10 @@ fn try_connect_with_key(server: &str, authkey: &str, hostname: &str) -> Result<(
         s_arg = format!("--login-server={server}");
         args.push(&s_arg);
     }
-    let a_arg = format!("--authkey={authkey}");
+    // `_authkey_file` keeps the staged key alive for the duration of the call —
+    // dropping the guard unlinks it, so it must stay in scope until after
+    // `run_tailscale_with_fallback` returns.
+    let (a_arg, _authkey_file) = authkey_arg(authkey);
     args.push(&a_arg);
     // Required when switching to a login-server that differs from the
     // one cached locally — without this, tailscale aborts with
@@ -1085,68 +1202,398 @@ pub fn set_operator_current_user() -> Result<()> {
     Ok(())
 }
 
-/// Pick the right target for `ssh`/`sftp` at click time: prefer the tailnet
-/// hostname (more readable, survives the peer reconnecting on a different
-/// IP), but fall back to the IP when the local resolver can't resolve the
-/// name. The fallback exists because biglace runs on every distro under the
-/// sun and openresolv/systemd-resolved misconfiguration silently breaks
-/// MagicDNS without the user noticing — the IP path keeps the launch
-/// buttons usable in that case.
+/// Resolve `host` through the OS resolver, giving up after `timeout`.
 ///
-/// Call from a worker thread: resolver timeouts must not block the GTK loop.
-pub fn pick_target(dns_name: &str, ip_fallback: &str) -> String {
+/// `getaddrinfo` has no timeout knob and, with a broken `/etc/resolv.conf`,
+/// routinely blocks for the full resolver retry budget (tens of seconds on
+/// some setups). Running it on a detached thread and reading the answer with a
+/// deadline bounds what a click on "Open files" costs. The orphaned thread
+/// finishes on its own and writes into a channel nobody reads.
+fn resolve_with_timeout(host: &str, timeout: Duration) -> Option<Vec<std::net::IpAddr>> {
     use std::net::ToSocketAddrs;
-    if !dns_name.is_empty() {
-        // Port is irrelevant — `getaddrinfo` only needs *something* to
-        // attempt the lookup against. We don't open this socket.
-        if (dns_name, 22_u16)
+    let (tx, rx) = std::sync::mpsc::channel();
+    let owned = host.to_string();
+    std::thread::spawn(move || {
+        // The port is irrelevant — `getaddrinfo` just needs something to look
+        // up against. We never open this socket.
+        let addrs = (owned.as_str(), 22_u16)
             .to_socket_addrs()
-            .map(|mut it| it.next().is_some())
-            .unwrap_or(false)
-        {
-            return dns_name.to_string();
-        }
+            .map(|it| it.map(|s| s.ip()).collect::<Vec<_>>())
+            .ok();
+        let _ = tx.send(addrs);
+    });
+    rx.recv_timeout(timeout).ok().flatten()
+}
+
+/// Tailnet IPs tailscaled reports for the peer whose DNSName is `dns_name`.
+/// Empty when the daemon doesn't know the name (or isn't reachable).
+fn tailnet_ips_for(dns_name: &str) -> Vec<std::net::IpAddr> {
+    let Some(ts) = cached_ts_status() else {
+        return Vec::new();
+    };
+    let wanted = dns_name.trim_end_matches('.');
+    ts.peers
+        .iter()
+        .flat_map(|m| m.values())
+        .find(|n| n.dns_name.as_deref().unwrap_or("").trim_end_matches('.') == wanted)
+        .and_then(|n| n.ips.clone())
+        .unwrap_or_default()
+        .iter()
+        .filter_map(|s| s.parse().ok())
+        .collect()
+}
+
+/// Pick the right target for `ssh`/`sftp` at click time: prefer the tailnet
+/// hostname (more readable, survives the peer reconnecting on a different IP),
+/// but fall back to the IP when the name won't get the user to the right box.
+///
+/// Two things have to hold before we hand the name to ssh or a file manager,
+/// because *they* resolve it themselves and we don't get a second chance:
+///
+///   1. **The local resolver answers.** biglace runs on every distro under the
+///      sun and an openresolv/systemd-resolved misconfiguration silently
+///      breaks MagicDNS without the user noticing. The IP path keeps the
+///      launch buttons working through that.
+///   2. **The answer is the peer we meant.** If MagicDNS is down but some
+///      other resolver still answers for the name — a search domain, a
+///      wildcard record, a captive portal's DNS — the old code accepted it and
+///      would happily point ssh at a machine that isn't on the tailnet. We now
+///      cross-check the resolved addresses against the IPs tailscaled reports
+///      for that peer and fall back to the IP on a mismatch.
+///
+/// Call from a worker thread: resolution is bounded but still slow.
+pub fn pick_target(dns_name: &str, ip_fallback: &str) -> String {
+    if dns_name.is_empty() {
+        return ip_fallback.to_string();
     }
+    let Some(resolved) = resolve_with_timeout(dns_name, Duration::from_secs(3)) else {
+        dbg(&format!(
+            "pick_target: {dns_name} did not resolve — using {ip_fallback}"
+        ));
+        return ip_fallback.to_string();
+    };
+    if resolved.is_empty() {
+        return ip_fallback.to_string();
+    }
+
+    let known = tailnet_ips_for(dns_name);
+    // No opinion from the daemon (disconnected, or a peer it doesn't list):
+    // keep the pre-existing behaviour and trust the resolver.
+    if known.is_empty() || resolved.iter().any(|ip| known.contains(ip)) {
+        return dns_name.to_string();
+    }
+
+    dbg(&format!(
+        "pick_target: {dns_name} resolved to {resolved:?}, none of which is a tailnet address \
+         for that peer — using {ip_fallback}"
+    ));
     ip_fallback.to_string()
 }
 
-/// Open the user's configured file manager pointed at `sftp://<user>@<host>/`.
-///
-/// We can't rely on `xdg-open` alone: it forwards to `gio open`, which fails
-/// on a bare sftp URL with "location is not mounted" because GVfs needs an
-/// explicit mount step before it'll open. So we resolve the user's preferred
-/// handler ourselves:
-///   1. `xdg-mime query default x-scheme-handler/sftp` → the .desktop entry
-///      that the user (or distro) set as the SFTP handler. `gtk-launch` runs
-///      it with the URL as argument.
-///   2. Same for `inode/directory` — many file managers register only there.
-///   3. Probe a known list of GUI managers in popularity order. Each one of
-///      them mounts the SFTP location itself and pops up the password prompt.
-///   4. Last resort: `gio mount` then `xdg-open`.
-#[cfg(unix)]
-pub fn open_files(host: &str, user: &str) {
-    let Some(target) = ssh_target(host, user) else {
-        return;
-    };
-    let url = format!("sftp://{target}/");
+// ─── Desktop integration (Linux) ─────────────────────────────────────────────
 
-    for mime in &["x-scheme-handler/sftp", "inode/directory"] {
-        if let Some(desktop) = default_handler_for(mime) {
-            let r = Command::new("gtk-launch").args([&desktop, &url]).status();
-            if matches!(r, Ok(s) if s.success()) {
-                return;
+/// Desktop environment family, used to pick the file manager / terminal the
+/// user actually runs instead of whatever happens to be installed first.
+///
+/// This matters more than it looks: distros ship GTK and Qt file managers side
+/// by side (a Plasma install commonly pulls `nautilus` in as a dependency of
+/// some GNOME app), so a fixed "nautilus, nemo, caja, dolphin…" probe order
+/// hands a KDE user a Nautilus window for a button they pressed in a Qt-less
+/// GTK app. Ordering by the running session fixes that.
+#[cfg(unix)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+enum Desktop {
+    Kde,
+    Gnome,
+    Xfce,
+    Cinnamon,
+    Mate,
+    Lxqt,
+    Other,
+}
+
+#[cfg(unix)]
+fn desktop_env() -> Desktop {
+    // XDG_CURRENT_DESKTOP is the spec'd variable and can hold a colon-separated
+    // list ("ubuntu:GNOME"); the other two are the practical fallbacks for
+    // sessions that don't set it (some minimal WM setups, older SDDM).
+    let raw = std::env::var("XDG_CURRENT_DESKTOP")
+        .or_else(|_| std::env::var("XDG_SESSION_DESKTOP"))
+        .or_else(|_| std::env::var("DESKTOP_SESSION"))
+        .unwrap_or_default()
+        .to_ascii_lowercase();
+    for token in raw.split(':') {
+        // DESKTOP_SESSION can be a path (`/usr/share/xsessions/plasma`).
+        let token = token.rsplit('/').next().unwrap_or(token).trim();
+        match token {
+            "kde" | "plasma" | "plasma5" | "plasma6" => return Desktop::Kde,
+            "gnome" | "gnome-classic" | "gnome-xorg" | "ubuntu" | "pantheon" | "budgie"
+            | "budgie-desktop" => return Desktop::Gnome,
+            "xfce" | "xubuntu" => return Desktop::Xfce,
+            "x-cinnamon" | "cinnamon" => return Desktop::Cinnamon,
+            "mate" => return Desktop::Mate,
+            "lxqt" => return Desktop::Lxqt,
+            _ => {}
+        }
+    }
+    Desktop::Other
+}
+
+/// GUI file managers to try, session-native one first. Every entry here can
+/// browse `sftp://` on its own (KIO on Qt, GVfs on GTK) — we never depend on
+/// an external mount step.
+#[cfg(unix)]
+fn file_manager_candidates() -> Vec<&'static str> {
+    let native: &[&str] = match desktop_env() {
+        Desktop::Kde | Desktop::Lxqt => &["dolphin"],
+        Desktop::Gnome => &["nautilus"],
+        Desktop::Xfce => &["thunar"],
+        Desktop::Cinnamon => &["nemo"],
+        Desktop::Mate => &["caja"],
+        Desktop::Other => &[],
+    };
+    let generic = ["nautilus", "dolphin", "nemo", "caja", "thunar", "pcmanfm"];
+    let mut out: Vec<&'static str> = native.to_vec();
+    for candidate in generic {
+        if !out.contains(&candidate) {
+            out.push(candidate);
+        }
+    }
+    out
+}
+
+/// Extra flags a given file manager needs to open the URL in a window the user
+/// will actually see.
+///
+/// Dolphin is the one that matters: it reuses an already-running instance, so a
+/// plain `dolphin sftp://…` adds the location as a *tab* to whatever window is
+/// already open — leaving the visible view on the local folder it was showing.
+/// `--new-window` forces its own window at the remote location.
+#[cfg(unix)]
+fn file_manager_args(program: &str) -> &'static [&'static str] {
+    match program {
+        "dolphin" => &["--new-window"],
+        "nemo" => &["--no-desktop"],
+        _ => &[],
+    }
+}
+
+/// Launch a known GUI file manager at `url`, with whatever flags that
+/// particular one needs (see `file_manager_args`).
+#[cfg(unix)]
+fn launch_file_manager(program: &str, url: &str) -> bool {
+    let mut command = Command::new(program);
+    command.args(file_manager_args(program));
+    command.arg(url);
+    spawn_and_settle(&mut command)
+}
+
+/// Spawn a launcher and give it a moment to reject the argument.
+///
+/// `spawn()` alone only proves the binary exists — a file manager that can't
+/// handle the scheme still spawns fine and then exits non-zero, which the old
+/// code counted as success and used to stop trying alternatives. Waiting
+/// briefly distinguishes "opened a window" (still running, or handed off to an
+/// existing instance and exited 0) from "refused the URL" (exited non-zero).
+#[cfg(unix)]
+fn spawn_and_settle(command: &mut Command) -> bool {
+    let Ok(mut child) = command.spawn() else {
+        return false;
+    };
+    let deadline = Instant::now() + Duration::from_millis(1500);
+    loop {
+        match child.try_wait() {
+            Ok(Some(status)) => return status.success(),
+            Ok(None) => {}
+            Err(_) => return false,
+        }
+        if Instant::now() >= deadline {
+            // Still alive: it took the URL and is drawing a window. Reap it in
+            // the background so the finished child doesn't linger as a zombie
+            // for the lifetime of the app.
+            std::thread::spawn(move || {
+                let _ = child.wait();
+            });
+            return true;
+        }
+        std::thread::sleep(Duration::from_millis(50));
+    }
+}
+
+/// Full path of a `.desktop` entry, searched across the XDG data dirs in
+/// precedence order (user overrides first).
+#[cfg(unix)]
+fn desktop_entry_path(desktop_id: &str) -> Option<std::path::PathBuf> {
+    // Reject anything that could climb out of the applications directories —
+    // `desktop_id` comes from `xdg-mime`, which reads user-writable config.
+    if desktop_id.contains('/') || desktop_id.contains("..") {
+        return None;
+    }
+    let mut roots: Vec<std::path::PathBuf> = Vec::new();
+    if let Ok(home) = std::env::var("XDG_DATA_HOME") {
+        roots.push(std::path::PathBuf::from(home));
+    } else if let Ok(home) = std::env::var("HOME") {
+        roots.push(std::path::PathBuf::from(home).join(".local/share"));
+    }
+    let dirs = std::env::var("XDG_DATA_DIRS")
+        .unwrap_or_else(|_| "/usr/local/share:/usr/share".to_string());
+    roots.extend(dirs.split(':').filter(|d| !d.is_empty()).map(Into::into));
+
+    for root in roots {
+        let candidate = root.join("applications").join(desktop_id);
+        if candidate.is_file() {
+            return Some(candidate);
+        }
+    }
+    None
+}
+
+/// The `Exec=` line of a `.desktop` entry's `[Desktop Entry]` group.
+#[cfg(unix)]
+fn desktop_entry_exec(desktop_id: &str) -> Option<String> {
+    let text = std::fs::read_to_string(desktop_entry_path(desktop_id)?).ok()?;
+    let mut in_main_group = false;
+    for line in text.lines() {
+        let line = line.trim();
+        if line.starts_with('[') {
+            in_main_group = line == "[Desktop Entry]";
+            continue;
+        }
+        if in_main_group {
+            if let Some(exec) = line.strip_prefix("Exec=") {
+                return Some(exec.to_string());
             }
         }
     }
+    None
+}
 
-    for cmd in &["nautilus", "nemo", "caja", "dolphin", "thunar", "pcmanfm"] {
-        if Command::new(cmd).arg(&url).spawn().is_ok() {
-            return;
+/// Hand a URL to a `.desktop` handler. Returns true when it was actually
+/// launched with the URL.
+///
+/// The `%u`/`%U` check is the crux: `gtk-launch` goes through GIO, and GIO
+/// **silently drops** non-local arguments for entries that declare the
+/// local-file field codes `%f`/`%F` — it launches the app with no argument at
+/// all and exits 0. The old code read that 0 as success, which is exactly how
+/// a click on "Open files" ended up showing the user their own home directory
+/// instead of the peer. When the entry can't take a URL we skip `gtk-launch`
+/// and run its program directly, which at least gives the app a chance to
+/// parse the URL itself (Dolphin, Nemo and Thunar all do).
+#[cfg(unix)]
+fn launch_desktop_handler(desktop_id: &str, url: &str) -> bool {
+    let exec = desktop_entry_exec(desktop_id);
+    let program = exec
+        .as_deref()
+        .and_then(|e| e.split_whitespace().next())
+        .and_then(|p| p.rsplit('/').next())
+        .unwrap_or_default()
+        .to_string();
+
+    // When the user's handler is a file manager we know, invoke it ourselves so
+    // it gets the flags it needs (`--new-window` for Dolphin, see
+    // `file_manager_args`). `gtk-launch` can only run the entry's plain Exec
+    // line, which for Dolphin means the URL may land as a background tab of an
+    // already-open window.
+    if !file_manager_args(&program).is_empty() && launch_file_manager(&program, url) {
+        return true;
+    }
+
+    let accepts_uris = exec
+        .as_deref()
+        .is_some_and(|e| e.contains("%u") || e.contains("%U"));
+
+    if accepts_uris {
+        let mut command = Command::new("gtk-launch");
+        command.args([desktop_id, url]);
+        if spawn_and_settle(&mut command) {
+            return true;
         }
     }
 
-    let _ = Command::new("gio").args(["mount", &url]).status();
-    let _ = Command::new("xdg-open").arg(&url).spawn();
+    // Fall back to the entry's own program, dropping the field codes.
+    let Some(exec) = exec else { return false };
+    let mut parts = exec.split_whitespace().filter(|a| !a.starts_with('%'));
+    let Some(program) = parts.next() else {
+        return false;
+    };
+    let mut command = Command::new(program);
+    command.args(parts);
+    command.arg(url);
+    spawn_and_settle(&mut command)
+}
+
+/// Compose `sftp://<user>@<host>/`, bracketing a bare IPv6 literal.
+///
+/// `pick_target` falls back to the peer's IP when MagicDNS can't resolve its
+/// name, and on an IPv6-only peer that IP is a bare `fd7a:115c::1`. Dropped
+/// into a URL unbracketed, the colons read as a port separator and every file
+/// manager rejects the location.
+fn sftp_url(target: &str) -> String {
+    match target.rsplit_once('@') {
+        Some((user, host)) => format!("sftp://{user}@{}/", bracket_ipv6(host)),
+        None => format!("sftp://{}/", bracket_ipv6(target)),
+    }
+}
+
+/// Wrap `host` in `[]` when it's a bare IPv6 literal (already-bracketed and
+/// non-IPv6 values pass through untouched).
+fn bracket_ipv6(host: &str) -> String {
+    if host.starts_with('[') || !host.contains(':') {
+        return host.to_string();
+    }
+    format!("[{host}]")
+}
+
+/// Open the user's file manager pointed at `sftp://<user>@<host>/`.
+///
+/// We can't rely on `xdg-open` alone: it forwards to `gio open`, which fails
+/// on a bare sftp URL with "location is not mounted" because GVfs needs an
+/// explicit mount step before it'll open. So we resolve the handler ourselves:
+///   1. `xdg-mime query default x-scheme-handler/sftp` → the .desktop entry
+///      the user (or distro) set as the SFTP handler.
+///   2. Same for `inode/directory`. Most file managers register only there —
+///      on Plasma the sftp scheme typically has no handler at all, so this is
+///      the branch that actually fires on KDE.
+///   3. Probe GUI managers, session-native first.
+///   4. Last resort: `gio mount` then `xdg-open`.
+///
+/// Returns Err with a message to show the user when every path failed —
+/// silently doing nothing was indistinguishable from the app being broken.
+#[cfg(unix)]
+pub fn open_files(host: &str, user: &str) -> Result<(), String> {
+    let Some(target) = ssh_target(host, user) else {
+        return Err(tr!("Invalid device address."));
+    };
+    let url = sftp_url(&target);
+    dbg(&format!("open_files: {url} (desktop={:?})", desktop_env()));
+
+    for mime in &["x-scheme-handler/sftp", "inode/directory"] {
+        if let Some(desktop) = default_handler_for(mime) {
+            if launch_desktop_handler(&desktop, &url) {
+                return Ok(());
+            }
+            dbg(&format!("open_files: handler {desktop} for {mime} failed"));
+        }
+    }
+
+    for cmd in file_manager_candidates() {
+        if launch_file_manager(cmd, &url) {
+            return Ok(());
+        }
+    }
+
+    let _ = command_output_timeout(
+        Command::new("gio").args(["mount", &url]),
+        Duration::from_secs(20),
+    );
+    let mut command = Command::new("xdg-open");
+    command.arg(&url);
+    if spawn_and_settle(&mut command) {
+        return Ok(());
+    }
+    Err(tr!(
+        "No file manager could open the SFTP location. Install one (Dolphin, Nautilus, Nemo, Thunar…) and try again."
+    ))
 }
 
 /// Windows has no native SFTP support in Explorer — the closest UX is
@@ -1156,11 +1603,11 @@ pub fn open_files(host: &str, user: &str) {
 /// `start sftp://...` so the user at least sees what URL would have opened.
 /// The README explains the WinSCP install step.
 #[cfg(windows)]
-pub fn open_files(host: &str, user: &str) {
+pub fn open_files(host: &str, user: &str) -> Result<(), String> {
     let Some(target) = ssh_target(host, user) else {
-        return;
+        return Err(tr!("Invalid device address."));
     };
-    let url = format!("sftp://{target}/");
+    let url = sftp_url(&target);
 
     // 1. WinSCP. Standard MSI installs land in Program Files; the portable
     // `winscp.com` console launcher also accepts `sftp://` URLs identically.
@@ -1169,30 +1616,40 @@ pub fn open_files(host: &str, user: &str) {
         r"C:\Program Files (x86)\WinSCP\WinSCP.exe",
     ];
     for path in WINSCP {
-        if std::path::Path::new(path).exists() {
-            let _ = Command::new(path).arg(&url).spawn();
-            return;
+        if std::path::Path::new(path).exists() && Command::new(path).arg(&url).spawn().is_ok() {
+            return Ok(());
         }
     }
     // PATH lookup, in case the user installed WinSCP via choco/scoop/portable.
     if Command::new("winscp.exe").arg(&url).spawn().is_ok() {
-        return;
+        return Ok(());
     }
 
     // 2. sshfs-win — opens File Explorer at \\sshfs.r\<user>@<host>. Requires
     // both `sshfs-win` and WinFSP to be installed; we don't probe for them
     // explicitly since spawn() will just fail silently if absent.
-    if !user.is_empty() {
-        let unc = format!(r"\\sshfs.r\{user}@{host}");
-        if Command::new("explorer.exe").arg(&unc).spawn().is_ok() {
-            return;
-        }
+    if !user.is_empty()
+        && Command::new("explorer.exe")
+            .arg(format!(r"\\sshfs.r\{user}@{host}"))
+            .spawn()
+            .is_ok()
+    {
+        return Ok(());
     }
 
     // 3. Last resort: ask the shell to handle the URL. This usually pops the
     // "How do you want to open this?" dialog, which at least surfaces to the
     // user that no SFTP client is installed.
-    let _ = Command::new("cmd").args(["/C", "start", "", &url]).spawn();
+    if Command::new("cmd")
+        .args(["/C", "start", "", &url])
+        .spawn()
+        .is_ok()
+    {
+        return Ok(());
+    }
+    Err(tr!(
+        "No file manager could open the SFTP location. Install WinSCP and try again."
+    ))
 }
 
 #[cfg(unix)]
@@ -1211,28 +1668,298 @@ fn default_handler_for(mime: &str) -> Option<String> {
     }
 }
 
+/// Whether `program` is on PATH.
+#[cfg(unix)]
+fn program_exists(program: &str) -> bool {
+    Command::new("sh")
+        .args(["-c", &format!("command -v {program} >/dev/null 2>&1")])
+        .status()
+        .is_ok_and(|s| s.success())
+}
+
+/// Desktop-entry id of the terminal named in `xdg-terminals.list` (first
+/// non-comment line), per the freedesktop terminal-execution draft.
+#[cfg(unix)]
+fn xdg_terminals_list_entry() -> Option<String> {
+    let mut roots: Vec<std::path::PathBuf> = Vec::new();
+    if let Ok(home) = std::env::var("XDG_CONFIG_HOME") {
+        roots.push(std::path::PathBuf::from(home));
+    } else if let Ok(home) = std::env::var("HOME") {
+        roots.push(std::path::PathBuf::from(home).join(".config"));
+    }
+    let dirs = std::env::var("XDG_CONFIG_DIRS").unwrap_or_else(|_| "/etc/xdg".to_string());
+    roots.extend(dirs.split(':').filter(|d| !d.is_empty()).map(Into::into));
+
+    for root in roots {
+        let Ok(text) = std::fs::read_to_string(root.join("xdg-terminals.list")) else {
+            continue;
+        };
+        if let Some(entry) = text
+            .lines()
+            .map(str::trim)
+            .find(|l| !l.is_empty() && !l.starts_with('#'))
+        {
+            return Some(entry.to_string());
+        }
+    }
+    None
+}
+
+/// How to start the user's terminal.
+#[cfg(unix)]
+struct TerminalLauncher {
+    /// Program we invoke, and the args that precede the command to run.
+    program: String,
+    args: Vec<String>,
+    /// Program of the emulator that will actually appear on screen. Differs
+    /// from `program` when we go through `xdg-terminal-exec`, and lets callers
+    /// reach for that emulator's native flags.
+    emulator: String,
+}
+
+/// The terminal the user has actually configured.
+///
+/// Probing a hardcoded list is a last resort, not the first move: every desktop
+/// has a real "this is my terminal" setting and honouring it is the difference
+/// between the button opening the terminal the user expects and it opening
+/// whichever emulator happens to sort first in our array. Sources, in order of
+/// how authoritative they are:
+///
+///   1. `$TERMINAL` — explicit user intent, respected by most CLI tooling.
+///   2. `xdg-terminal-exec` — the freedesktop mechanism. It reads
+///      `xdg-terminals.list` and launches the entry named there, so it covers
+///      every desktop at once. This is what BigLinux uses to point at
+///      Ashyterm, and it's why the button must not second-guess it.
+///   3. GNOME's `default-applications.terminal` GSettings pair.
+///   4. Plasma's `TerminalApplication` in `kdeglobals`.
+#[cfg(unix)]
+fn configured_terminal() -> Option<TerminalLauncher> {
+    fn have(program: &str) -> bool {
+        program_exists(program)
+    }
+    fn read_setting(program: &str, args: &[&str]) -> Option<String> {
+        let mut command = Command::new(program);
+        command.args(args);
+        let out = command_output_timeout(&mut command, Duration::from_secs(5)).ok()?;
+        if !out.status.success() {
+            return None;
+        }
+        // GSettings quotes string values ('xdg-terminal-exec').
+        let value = std::str::from_utf8(&out.stdout)
+            .ok()?
+            .trim()
+            .trim_matches('\'')
+            .trim_matches('"')
+            .trim()
+            .to_string();
+        (!value.is_empty()).then_some(value)
+    }
+
+    if let Ok(term) = std::env::var("TERMINAL") {
+        let term = term.trim().to_string();
+        if !term.is_empty() && have(&term) {
+            return Some(TerminalLauncher {
+                emulator: term.clone(),
+                program: term,
+                args: vec!["-e".into()],
+            });
+        }
+    }
+
+    if have("xdg-terminal-exec") {
+        // Resolve which emulator it will pick so callers can use that program's
+        // native flags — going through the generic "run this command" path
+        // costs real quality on some terminals (see `launch_ssh_in_terminal`).
+        let emulator = xdg_terminals_list_entry()
+            .and_then(|id| desktop_entry_exec(&id))
+            .and_then(|exec| {
+                exec.split_whitespace()
+                    .next()
+                    .and_then(|p| p.rsplit('/').next())
+                    .map(str::to_string)
+            })
+            .unwrap_or_else(|| "xdg-terminal-exec".into());
+        // `--` ends xdg-terminal-exec's own options, so a command starting with
+        // a dash can't be mistaken for one.
+        return Some(TerminalLauncher {
+            program: "xdg-terminal-exec".into(),
+            args: vec!["--".into()],
+            emulator,
+        });
+    }
+
+    if let Some(exec) = read_setting(
+        "gsettings",
+        &[
+            "get",
+            "org.gnome.desktop.default-applications.terminal",
+            "exec",
+        ],
+    ) {
+        if have(&exec) {
+            let flag = read_setting(
+                "gsettings",
+                &[
+                    "get",
+                    "org.gnome.desktop.default-applications.terminal",
+                    "exec-arg",
+                ],
+            )
+            .filter(|f| !f.is_empty())
+            .unwrap_or_else(|| "-e".into());
+            return Some(TerminalLauncher {
+                emulator: exec.clone(),
+                program: exec,
+                args: vec![flag],
+            });
+        }
+    }
+
+    for kread in ["kreadconfig6", "kreadconfig5"] {
+        if !have(kread) {
+            continue;
+        }
+        if let Some(exec) = read_setting(
+            kread,
+            &[
+                "--file",
+                "kdeglobals",
+                "--group",
+                "General",
+                "--key",
+                "TerminalApplication",
+            ],
+        ) {
+            if have(&exec) {
+                return Some(TerminalLauncher {
+                    emulator: exec.clone(),
+                    program: exec,
+                    args: vec!["-e".into()],
+                });
+            }
+        }
+    }
+
+    None
+}
+
+/// Terminal emulators to probe when nothing is configured, paired with the flag
+/// each one uses to mean "run this command instead of a shell".
+///
+/// Ashyterm leads because it's BigCommunity's own terminal and ships as the
+/// default on BigLinux — on a BigLinux box that never wrote an
+/// `xdg-terminals.list`, this is what the user means by "the terminal". After
+/// that comes the session's native emulator, and `xterm` sits last: probing it
+/// early (as the original list did) handed a Plasma user a bare 1980s xterm for
+/// a button they pressed in a themed app.
+#[cfg(unix)]
+fn terminal_candidates() -> Vec<(&'static str, &'static str)> {
+    let native: &[(&str, &str)] = match desktop_env() {
+        Desktop::Kde => &[("konsole", "-e")],
+        Desktop::Gnome => &[("kgx", "--"), ("gnome-terminal", "--")],
+        Desktop::Xfce => &[("xfce4-terminal", "--command")],
+        Desktop::Cinnamon => &[("gnome-terminal", "--")],
+        Desktop::Mate => &[("mate-terminal", "--")],
+        Desktop::Lxqt => &[("qterminal", "-e")],
+        Desktop::Other => &[],
+    };
+    let generic = [
+        ("konsole", "-e"),
+        ("gnome-terminal", "--"),
+        ("kgx", "--"),
+        ("xfce4-terminal", "--command"),
+        ("mate-terminal", "--"),
+        ("qterminal", "-e"),
+        ("alacritty", "-e"),
+        ("kitty", "--"),
+        ("foot", "-e"),
+        ("tilix", "-e"),
+        ("terminator", "-x"),
+        ("xterm", "-e"),
+    ];
+    let mut out: Vec<(&'static str, &'static str)> = vec![("ashyterm", "-e")];
+    out.extend_from_slice(native);
+    for (name, flag) in generic {
+        if !out.iter().any(|(existing, _)| *existing == name) {
+            out.push((name, flag));
+        }
+    }
+    out
+}
+
+/// Open an SSH session to `target` in the user's terminal.
+///
+/// Prefers the emulator's own SSH mode over the generic "run this command"
+/// path, because the generic path is not equivalent. Ashyterm's `-e`
+/// implementation *types* the command into an interactive shell rather than
+/// exec'ing it, so the session opened with a stray
+/// `^[[200~ssh user@host^[[201~` line — the shell echoing bracketed-paste
+/// markers. `ashyterm --ssh` spawns the client directly and adds connection
+/// multiplexing, keepalives and OSC7 remote-directory reporting on top:
+///
+///   -e      python3 __init__.py → /bin/bash → ssh user@host      (pasted)
+///   --ssh   python3 __init__.py → ssh -t -o ControlMaster=auto …  (exec'd)
+#[cfg(unix)]
+fn launch_ssh_in_terminal(target: &str) -> bool {
+    let configured = configured_terminal();
+    let emulator = configured
+        .as_ref()
+        .map(|t| t.emulator.as_str())
+        .unwrap_or_default();
+    // Either ashyterm is the configured terminal, or nothing is configured and
+    // it heads the probe list below — same outcome, so use its native mode.
+    if emulator == "ashyterm" || (emulator.is_empty() && program_exists("ashyterm")) {
+        let mut command = Command::new("ashyterm");
+        command.args(["--ssh", target]);
+        if spawn_and_settle(&mut command) {
+            return true;
+        }
+        dbg("terminal: ashyterm --ssh failed, falling back");
+    }
+    launch_in_terminal(&["ssh", target])
+}
+
+/// Run `argv` inside the user's terminal emulator.
+#[cfg(unix)]
+fn launch_in_terminal(argv: &[&str]) -> bool {
+    if let Some(TerminalLauncher { program, args, .. }) = configured_terminal() {
+        dbg(&format!("terminal: using configured {program} {args:?}"));
+        let mut command = Command::new(&program);
+        command.args(&args);
+        command.args(argv);
+        if spawn_and_settle(&mut command) {
+            return true;
+        }
+        dbg(&format!("terminal: configured {program} failed, probing"));
+    }
+    for (term, flag) in terminal_candidates() {
+        let mut command = Command::new(term);
+        command.arg(flag);
+        command.args(argv);
+        if spawn_and_settle(&mut command) {
+            return true;
+        }
+    }
+    false
+}
+
 /// Open a terminal running `ssh <user>@<host>`. `user` should be the peer's
 /// OS user (its hostname on Linux). When empty we fall back to `ssh <host>`,
 /// which makes ssh use the local username — usually wrong, but better than
 /// failing to launch at all.
 #[cfg(unix)]
-pub fn open_terminal(host: &str, user: &str) {
+pub fn open_terminal(host: &str, user: &str) -> Result<(), String> {
     let Some(target) = ssh_target(host, user) else {
-        return;
+        return Err(tr!("Invalid device address."));
     };
 
     // Pass program and target as separate argv values. No shell is involved.
-    for (term, args) in &[
-        ("ashyterm", vec!["-e", "ssh", target.as_str()]),
-        ("xterm", vec!["-e", "ssh", target.as_str()]),
-        ("konsole", vec!["-e", "ssh", target.as_str()]),
-        ("gnome-terminal", vec!["--", "ssh", target.as_str()]),
-        ("xfce4-terminal", vec!["--execute", "ssh", target.as_str()]),
-    ] {
-        if Command::new(term).args(args).spawn().is_ok() {
-            return;
-        }
+    if launch_ssh_in_terminal(target.as_str()) {
+        return Ok(());
     }
+    Err(tr!(
+        "No terminal emulator found. Install one (Konsole, GNOME Terminal, xterm…) and try again."
+    ))
 }
 
 /// Windows variant. Preference order:
@@ -1245,9 +1972,9 @@ pub fn open_terminal(host: &str, user: &str) {
 /// `ssh.exe` itself ships with the OpenSSH client, an optional Windows
 /// feature that's enabled by default on Win10 (1809+) and Win11.
 #[cfg(windows)]
-pub fn open_terminal(host: &str, user: &str) {
+pub fn open_terminal(host: &str, user: &str) -> Result<(), String> {
     let Some(target) = ssh_target(host, user) else {
-        return;
+        return Err(tr!("Invalid device address."));
     };
 
     // wt.exe new-tab ssh user@host
@@ -1256,7 +1983,7 @@ pub fn open_terminal(host: &str, user: &str) {
         .spawn()
         .is_ok()
     {
-        return;
+        return Ok(());
     }
     // PowerShell with -NoExit so the window stays open after ssh exits.
     if Command::new("powershell.exe")
@@ -1264,12 +1991,19 @@ pub fn open_terminal(host: &str, user: &str) {
         .spawn()
         .is_ok()
     {
-        return;
+        return Ok(());
     }
     // Fall back to cmd /K so the window doesn't vanish on disconnect.
-    let _ = Command::new("cmd.exe")
+    if Command::new("cmd.exe")
         .args(["/K", &format!("ssh {target}")])
-        .spawn();
+        .spawn()
+        .is_ok()
+    {
+        return Ok(());
+    }
+    Err(tr!(
+        "No terminal emulator found. Install one (Konsole, GNOME Terminal, xterm…) and try again."
+    ))
 }
 
 /// Reject control/shell syntax before composing SFTP URLs or Windows fallback
@@ -1280,8 +2014,13 @@ fn ssh_target(host: &str, user: &str) -> Option<String> {
             && value.len() <= 255
             && value.chars().all(|c| {
                 c.is_ascii_alphanumeric()
-                    || matches!(c, '.' | '-' | '_' | ':')
-                    || (is_host && matches!(c, '[' | ']'))
+                    || matches!(c, '.' | '-' | '_')
+                    // Colons and brackets belong to IPv6 literals and are only
+                    // valid on the host side. On the user side a colon would
+                    // split the URL's userinfo into `user:password`, so a login
+                    // propagated by the panel (network-controlled) could smuggle
+                    // a password field into the SFTP URL.
+                    || (is_host && matches!(c, ':' | '[' | ']'))
             })
     }
     if !safe(host, true) || (!user.is_empty() && !safe(user, false)) {
@@ -1304,17 +2043,10 @@ pub fn open_logs() {
     // tailscaled-routed lines via the system journal under `-u tailscaled`
     // when the user is in `systemd-journal` (Manjaro default).
     let cmd = "journalctl -fu tailscaled --no-pager; echo; echo '[press enter to close]'; read";
-    for (term, args) in &[
-        ("ashyterm", vec!["-e", cmd]),
-        ("xterm", vec!["-e", cmd]),
-        ("konsole", vec!["-e", "bash", "-c", cmd]),
-        ("gnome-terminal", vec!["--", "bash", "-c", cmd]),
-        ("xfce4-terminal", vec!["-e", cmd]),
-    ] {
-        if Command::new(term).args(args).spawn().is_ok() {
-            return;
-        }
-    }
+    // Always go through `bash -c`: the script uses shell syntax (`;`, `read`),
+    // and emulators differ on whether a single `-e` argument is re-parsed by a
+    // shell or exec'd directly. Naming the shell explicitly makes it uniform.
+    launch_in_terminal(&["bash", "-c", cmd]);
 }
 
 /// Windows variant — Tailscale's Windows daemon writes to its own log file
@@ -1411,13 +2143,17 @@ pub fn headscale_healthy(server_url: &str) -> bool {
         return false;
     }
     let endpoint = format!("{url}/health");
-    // Reuse the shared TLS-configured agent. Building a bare `ureq::Agent` with
+    // Reuse a shared TLS-configured agent. Building a bare `ureq::Agent` with
     // no `.tls_connector()` (as this did before) has NO TLS backend under our
     // `default-features = false` + `native-tls` setup, so every `https://`
     // health probe failed outright — the badge showed a healthy Headscale as
     // permanently unreachable. Reusing the agent also shares the connection
     // pool instead of allocating a fresh TlsConnector every 60s.
-    let Ok(agent) = crate::panel::shared_agent() else {
+    //
+    // The *redirecting* agent, specifically: this probe sends no credentials,
+    // and a Headscale behind a proxy that answers `http://…/health` with a 301
+    // to its HTTPS vhost would otherwise be reported as unreachable.
+    let Ok(agent) = crate::panel::redirecting_agent() else {
         return false;
     };
     matches!(agent.get(&endpoint).call(), Ok(r) if (200..300).contains(&r.status()))
@@ -1439,6 +2175,134 @@ mod tests {
         );
         assert_eq!(ssh_target("host;touch-pwned", "alice"), None);
         assert_eq!(ssh_target("host", "$(id)"), None);
+        // A colon is legal in an IPv6 host but never in the login: on the user
+        // side it would split the URL's userinfo into `user:password`.
+        assert_eq!(ssh_target("host.example", "alice:secret"), None);
+    }
+
+    #[cfg(unix)]
+    #[test]
+    fn staged_authkey_is_private_and_removed_on_drop() {
+        use std::os::unix::fs::PermissionsExt;
+
+        let staged = stage_authkey("tskey-secret").expect("stage the key");
+        let path = staged.path.clone();
+
+        let metadata = std::fs::metadata(&path).unwrap();
+        // Owner-only: the whole point is that the key isn't readable by other
+        // local users while `tailscale up` runs.
+        assert_eq!(metadata.permissions().mode() & 0o777, 0o600);
+        assert_eq!(
+            std::fs::read_to_string(&path).unwrap().trim(),
+            "tskey-secret"
+        );
+
+        drop(staged);
+        assert!(!path.exists(), "the staged key outlived its guard");
+    }
+
+    #[test]
+    fn debug_logs_never_echo_an_inline_pre_auth_key() {
+        let redacted = redact_args(&["up", "--authkey=tskey-secret", "--hostname=box"]);
+        assert!(!redacted.contains("tskey-secret"));
+        assert!(redacted.contains("--authkey=<redacted>"));
+        // The file form carries no secret and its path is worth logging.
+        let with_file = redact_args(&["up", "--authkey=file:/run/user/1000/biglace-authkey-7-0"]);
+        assert!(with_file.contains("file:/run/user/1000/biglace-authkey-7-0"));
+    }
+
+    #[cfg(unix)]
+    #[test]
+    fn sftp_url_brackets_bare_ipv6_literals() {
+        assert_eq!(sftp_url("alice@host.example"), "sftp://alice@host.example/");
+        assert_eq!(sftp_url("alice@100.64.0.6"), "sftp://alice@100.64.0.6/");
+        // Unbracketed IPv6 would read as host `fd7a` + port — every file
+        // manager rejects that location.
+        assert_eq!(
+            sftp_url("alice@fd7a:115c:a1e0::6"),
+            "sftp://alice@[fd7a:115c:a1e0::6]/"
+        );
+        assert_eq!(sftp_url("fd7a:115c:a1e0::6"), "sftp://[fd7a:115c:a1e0::6]/");
+        // Already bracketed (what `ssh_target` yields for an IPv6 peer) passes
+        // through untouched instead of double-bracketing.
+        assert_eq!(sftp_url("[fd7a:115c::1]"), "sftp://[fd7a:115c::1]/");
+    }
+
+    #[cfg(unix)]
+    #[test]
+    fn launcher_candidates_are_deduplicated_and_lead_with_the_session_native_app() {
+        let managers = file_manager_candidates();
+        let mut seen = managers.clone();
+        seen.sort_unstable();
+        seen.dedup();
+        assert_eq!(seen.len(), managers.len(), "duplicate file manager probed");
+
+        let terminals = terminal_candidates();
+        let mut names: Vec<&str> = terminals.iter().map(|(n, _)| *n).collect();
+        let total = names.len();
+        names.sort_unstable();
+        names.dedup();
+        assert_eq!(names.len(), total, "duplicate terminal probed");
+
+        // Ashyterm leads (BigCommunity's own terminal, the BigLinux default)
+        // and xterm is the universal last resort — never ahead of a desktop's
+        // own emulator, whichever session this runs under.
+        assert_eq!(terminals.first().map(|(n, _)| *n), Some("ashyterm"));
+        assert_eq!(terminals.last().map(|(n, _)| *n), Some("xterm"));
+    }
+
+    #[cfg(unix)]
+    #[test]
+    fn xdg_terminals_list_skips_comments_and_blank_lines() {
+        let dir = std::env::temp_dir().join(format!("biglace-term-{}", std::process::id()));
+        std::fs::create_dir_all(&dir).unwrap();
+        std::fs::write(
+            dir.join("xdg-terminals.list"),
+            "# the user's terminal\n\norg.communitybig.ashyterm.desktop\nkonsole.desktop\n",
+        )
+        .unwrap();
+        std::env::set_var("XDG_CONFIG_HOME", &dir);
+
+        assert_eq!(
+            xdg_terminals_list_entry().as_deref(),
+            Some("org.communitybig.ashyterm.desktop")
+        );
+
+        std::env::remove_var("XDG_CONFIG_HOME");
+        let _ = std::fs::remove_dir_all(&dir);
+    }
+
+    #[cfg(unix)]
+    #[test]
+    fn desktop_entry_lookup_rejects_path_traversal() {
+        assert!(desktop_entry_path("../../etc/passwd").is_none());
+        assert!(desktop_entry_path("/etc/passwd").is_none());
+    }
+
+    #[cfg(unix)]
+    #[test]
+    fn desktop_entry_exec_reads_the_main_group_only() {
+        // A `[Desktop Action …]` group's Exec must not be mistaken for the
+        // entry's own — actions like Dolphin's "open-home" would send the file
+        // manager to the local home directory instead of the peer.
+        let dir = std::env::temp_dir().join(format!("biglace-test-{}", std::process::id()));
+        let apps = dir.join("applications");
+        std::fs::create_dir_all(&apps).unwrap();
+        std::fs::write(
+            apps.join("probe.desktop"),
+            "[Desktop Entry]\nName=Probe\nExec=probe-fm %U\n\n\
+             [Desktop Action open-home]\nExec=probe-fm --home\n",
+        )
+        .unwrap();
+        std::env::set_var("XDG_DATA_HOME", &dir);
+
+        assert_eq!(
+            desktop_entry_exec("probe.desktop").as_deref(),
+            Some("probe-fm %U")
+        );
+
+        std::env::remove_var("XDG_DATA_HOME");
+        let _ = std::fs::remove_dir_all(&dir);
     }
 
     #[cfg(unix)]

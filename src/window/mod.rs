@@ -450,10 +450,17 @@ fn spawn_latency_worker(ctx: &Ctx) {
         let lat = latency.clone();
         let tx_t = tx.clone();
         std::thread::spawn(move || {
+            // Ping the IPv4 address when the peer has one. `ip` is just the
+            // first entry of TailscaleIPs, which is IPv6 on a v6-first peer —
+            // and a host with IPv6 disabled can't ping that, so the row's
+            // latency stayed permanently blank.
             let online_targets: Vec<(String, String)> = tailscale::get_peers()
                 .into_iter()
-                .filter(|p| p.online && !p.ip.is_empty())
-                .map(|p| (p.hostname, p.ip))
+                .filter(|p| p.online)
+                .filter_map(|p| {
+                    let target = if p.ipv4.is_empty() { p.ip } else { p.ipv4 };
+                    (!target.is_empty()).then_some((p.hostname, target))
+                })
                 .collect();
             if online_targets.is_empty() {
                 return;
@@ -599,7 +606,10 @@ fn spawn_update_check(ctx: &Ctx) {
     let tx = ctx.refresh_tx.clone();
     std::thread::spawn(move || {
         let url = "https://api.github.com/repos/communitybig/biglace/releases/latest";
-        let Ok(agent) = panel::shared_agent() else {
+        // Redirect-following agent: unauthenticated public API, and GitHub
+        // redirects `/repos/<owner>/…` after a repository rename or transfer —
+        // with `redirects(0)` the check would silently stop reporting updates.
+        let Ok(agent) = panel::redirecting_agent() else {
             return;
         };
         let Ok(resp) = agent
@@ -700,16 +710,30 @@ fn spawn_device_meta_worker(ctx: &Ctx) {
     });
 }
 
-/// Naive semver-ish comparison: split on `.`, parse u32 components,
-/// compare lexicographically. Pre-release tags (`-rc1` etc.) make this
-/// imprecise but biglace doesn't currently ship those, so good enough.
+/// Semver-ish comparison: numeric components first, then pre-release status.
+///
+/// Splitting the whole string on `.` (as this did) mangles pre-release tags —
+/// `1.2.0-rc1` parsed as `[1, 0, 0]` because `"0-rc1"` isn't a u32, so a
+/// release candidate looked *older* than `1.1.9` and a plain `1.2.0` never
+/// registered as an upgrade over `1.2.0-rc1`. Strip the pre-release tail before
+/// parsing and use it only to break a tie, per semver: `1.2.0` > `1.2.0-rc1`.
 fn version_is_newer(candidate: &str, current: &str) -> bool {
-    let parse = |s: &str| -> Vec<u32> {
-        s.split('.')
+    let parse = |s: &str| -> (Vec<u32>, bool) {
+        let core = s.split(['-', '+']).next().unwrap_or("");
+        let numbers = core
+            .split('.')
             .map(|p| p.parse::<u32>().unwrap_or(0))
-            .collect()
+            .collect();
+        (numbers, core.len() != s.len())
     };
-    parse(candidate) > parse(current)
+    let (new_numbers, new_is_pre) = parse(candidate);
+    let (old_numbers, old_is_pre) = parse(current);
+    match new_numbers.cmp(&old_numbers) {
+        std::cmp::Ordering::Greater => true,
+        std::cmp::Ordering::Less => false,
+        // Same numbers: only a final release supersedes a pre-release.
+        std::cmp::Ordering::Equal => old_is_pre && !new_is_pre,
+    }
 }
 
 // ─── Apply config to UI ──────────────────────────────────────────────────────
@@ -1334,6 +1358,22 @@ fn apply_state(ctx: &Ctx, state: AppState, status: &Status, peers: &[Peer]) {
         ui.content.health_badge.set_visible(false);
     }
 
+    // ── Broken-DNS badge (header) ──
+    // Independent of the Headscale badge and shown in every state: the tunnel
+    // can be perfectly healthy while MagicDNS is dead, and that combination is
+    // exactly what makes the SSH/SFTP buttons quietly fall back to raw IPs.
+    // The label deliberately says "can't set DNS", not "DNS not working":
+    // resolution often still succeeds from the configuration left behind
+    // before the failure, so a badge claiming DNS is down contradicts what the
+    // user can plainly see and reads as a false alarm. What's actually broken
+    // is tailscaled's ability to *manage* it.
+    ui.content.dns_badge.set_visible(status.dns_broken);
+    if status.dns_broken {
+        ui.content
+            .dns_badge
+            .set_label(&tr!("Tailscale can't set DNS"));
+    }
+
     // ── Self-update banner ──
     let latest_release = ctx.update_available.lock().ok().and_then(|g| g.clone());
     if let Some(latest) = latest_release {
@@ -1501,13 +1541,17 @@ fn apply_state(ctx: &Ctx, state: AppState, status: &Status, peers: &[Peer]) {
 
         // Sort: favorites → online → alpha. We keep the get_peers() order
         // (online → alpha) and just stable-partition pinned ones to the top.
+        // Alphabetical on the label the row actually shows (`display_name`),
+        // not on the peer's OS hostname — those differ whenever a device was
+        // renamed in the panel, and sorting on the hidden one made the list
+        // look arbitrarily ordered.
         let mut sorted: Vec<&Peer> = peers.iter().collect();
-        sorted.sort_by(|a, b| {
-            let af = cfg_snap.is_favorite(&a.hostname);
-            let bf = cfg_snap.is_favorite(&b.hostname);
-            bf.cmp(&af)
-                .then(b.online.cmp(&a.online))
-                .then(a.hostname.cmp(&b.hostname))
+        sorted.sort_by_cached_key(|p| {
+            (
+                !cfg_snap.is_favorite(&p.hostname),
+                !p.online,
+                p.display_name().to_lowercase(),
+            )
         });
 
         // Diff against the previous render. Latency changes — by far the most
@@ -1823,6 +1867,22 @@ mod tests {
         assert!(!has_visible_identity(AppState::NotSignedIn, &cfg));
         assert!(!should_show_manual_setup(AppState::Connected, &cfg));
         assert!(should_show_manual_setup(AppState::NotSignedIn, &cfg));
+    }
+
+    #[test]
+    fn update_check_orders_prereleases_below_their_release() {
+        assert!(version_is_newer("1.1.0", "1.0.0"));
+        assert!(version_is_newer("1.0.1", "1.0.0"));
+        assert!(!version_is_newer("1.0.0", "1.0.0"));
+        assert!(!version_is_newer("0.9.9", "1.0.0"));
+        // A release candidate must not read as an upgrade over the release it
+        // precedes, and the release must read as an upgrade over it.
+        assert!(!version_is_newer("1.2.0-rc1", "1.2.0"));
+        assert!(version_is_newer("1.2.0", "1.2.0-rc1"));
+        // …and a candidate for a *later* version still is one.
+        assert!(version_is_newer("1.3.0-rc1", "1.2.0"));
+        // Fewer components compare as lower, not as garbage.
+        assert!(version_is_newer("1.2.1", "1.2"));
     }
 
     #[test]
