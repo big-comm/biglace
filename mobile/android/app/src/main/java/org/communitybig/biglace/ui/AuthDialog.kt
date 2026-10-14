@@ -44,6 +44,9 @@ fun AuthDialog(
     message: String,
     confirmText: String,
     onDismiss: () -> Unit,
+    /** Optional second button (e.g. "Forget old key" on a host-key mismatch). */
+    actionText: String? = null,
+    onAction: () -> Unit = {},
 ) {
     Dialog(onDismissRequest = onDismiss, properties = DialogProperties(usePlatformDefaultWidth = false)) {
         val view = LocalView.current
@@ -89,8 +92,13 @@ fun AuthDialog(
                             .verticalScroll(rememberScrollState()),
                     )
                 }
-                TextButton(onClick = onDismiss, modifier = Modifier.align(Alignment.End)) {
-                    Text(confirmText)
+                Row(Modifier.align(Alignment.End)) {
+                    if (actionText != null) {
+                        TextButton(onClick = onAction) {
+                            Text(actionText, color = MaterialTheme.colorScheme.error)
+                        }
+                    }
+                    TextButton(onClick = onDismiss) { Text(confirmText) }
                 }
             }
         }

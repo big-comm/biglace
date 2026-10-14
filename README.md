@@ -1,320 +1,244 @@
 <div align="center">
 
-<img src="usr/share/icons/hicolor/scalable/apps/org.communitybig.biglace.svg" width="128" alt="BigLace">
+<img src="usr/share/icons/hicolor/scalable/apps/org.communitybig.biglace.svg" width="112" alt="BigLace logo">
 
 # BigLace
 
-**Mesh VPN client with a graphical interface for Headscale and BigScale.**
+**A native mesh VPN client for BigScale and Headscale — on Linux, Windows and Android.**
 
-[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
-[![Platform](https://img.shields.io/badge/platform-Linux%20%7C%20Windows%20%7C%20Android-blue)](#platforms)
-[![Built with Rust](https://img.shields.io/badge/Built%20with-Rust-orange?logo=rust&logoColor=white)](https://www.rust-lang.org)
-[![GTK4 · Libadwaita](https://img.shields.io/badge/GTK4-Libadwaita-blueviolet?logo=gnome&logoColor=white)](https://gtk.org)
 [![Latest release](https://img.shields.io/github/v/release/big-comm/biglace?label=release&color=brightgreen)](https://github.com/big-comm/biglace/releases)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
+[![Platforms](https://img.shields.io/badge/platforms-Linux%20%7C%20Windows%20%7C%20Android-blue)](#download)
+[![Rust](https://img.shields.io/badge/Rust-GTK4%20%C2%B7%20libadwaita-orange?logo=rust&logoColor=white)](https://gtk.org)
+[![Kotlin](https://img.shields.io/badge/Kotlin-Jetpack%20Compose-7F52FF?logo=kotlin&logoColor=white)](mobile/android)
+
+[Download](#download) ·
+[Features](#features) ·
+[Getting started](#getting-started) ·
+[Build from source](#build-from-source) ·
+[Contributing](#development)
+
+<br>
+
+<picture>
+  <source media="(prefers-color-scheme: dark)" srcset="docs/screenshots/overview-dark.png">
+  <source media="(prefers-color-scheme: light)" srcset="docs/screenshots/overview-light.png">
+  <img src="docs/screenshots/overview-dark.png" width="880" alt="BigLace main window: this device, a list of peers with status, OS and latency, and quick SSH and SFTP actions">
+</picture>
+
+<sub>Screenshots use a fictitious network.</sub>
 
 </div>
 
 ---
 
-BigLace provides native desktop and Android clients for joining a **BigScale**
-mesh (or any plain Headscale server). The GTK4 desktop app drives the local
-`tailscale` CLI; the Kotlin/Compose Android app embeds `tsnet` and includes its
-own SSH terminal and SFTP file manager.
+BigLace puts your private mesh network one click away. Join a BigScale or
+Headscale tailnet, see every device you own at a glance, and open an SSH
+terminal or browse files on any of them without remembering a single IP
+address.
 
-## Table of contents
+- **Desktop (Linux and Windows)** — a GTK4 / libadwaita app that drives the
+  system `tailscale` client and lives in the tray.
+- **Android** — a standalone app that joins the network in-process (embedded
+  `tsnet`, no separate VPN app) and ships its own SSH terminal and SFTP file
+  manager.
 
-- [Highlights](#highlights)
-- [Platforms](#platforms)
-- [Android app](#android-app)
-- [Concepts: server, panel, and your personal key](#concepts-server-panel-and-your-personal-key)
-- [Two ways to fill the form](#two-ways-to-fill-the-form)
-- [Build](#build)
-- [Privileges (Linux)](#privileges-linux)
-- [Run locally](#run-locally)
-- [Configuration file](#configuration-file)
-- [Security and reliability](#security-and-reliability)
-- [Translations](#translations)
-- [Validation](#validation)
-- [Source layout](#source-layout)
-- [License](#license)
+## Features
 
----
+<table>
+<tr>
+<td width="50%" valign="top">
 
-## Highlights
+### Desktop
 
-- **One-click connect / disconnect** via `tailscale up` / `tailscale down`.
-- **Live peer list** with online/offline status, IP, and short name; favourite
-  peers float to the top.
-- **SSH and SFTP launchers** open the system terminal and file manager
-  pointing straight at an online peer (Linux: `xdg-open sftp://…`; Windows:
-  WinSCP → sshfs-win → native `sftp://` fallback).
-- **Sign in with a BigScale panel account**: BigLace asks the panel for a
-  fresh pre-auth key and fills the form for you — no copy-pasting keys.
-- **System tray indicator** (StatusNotifierItem on Linux, Shell_NotifyIcon on
-  Windows) with quick connect/disconnect and a "minimise to tray" close
-  button.
-- **Desktop notifications** when peers come online or drop off, debounced so
-  flapping peers don't spam the notification daemon.
-- **Latency pings**, **self-update check**, and a **Headscale health badge**
-  in the header — all running on background threads so the UI stays
-  responsive.
-- **Auto-reconnect with exponential backoff** when a session drops.
-- **Start with the desktop session** so BigLace opens after login and can
-  auto-connect without being launched manually.
-- **Internationalised** via gettext (29 locales shipped, including pt-BR, en,
-  es, de, fr, it, …).
-- **Native credential storage** for panel passwords via the OS keyring
-  (Secret Service on Linux, Windows Credential Manager, Apple Keychain).
-- **Android client with embedded `tsnet`**, a VT-style SSH terminal, a full
-  SFTP browser, foreground connectivity, and optional connect-on-boot.
-- **Concurrent Android sessions**: terminals and file browsers remain connected
-  in independent per-device tabs; `+` opens a manual session and closing a tab
-  disconnects only that SSH/SFTP client.
-- **Hardened secrets and SSH trust**: desktop enrollment keys use the OS
-  keyring; Android secrets use Keystore-backed AES-GCM and host keys use TOFU.
+- **One-click connect** — reconnects without a key once the device is enrolled.
+- **Live device list** with online state, OS, latency and owner; pinned
+  devices stay on top.
+- **SSH and SFTP in one click** — opens the terminal and file manager you
+  actually use (Ashyterm, Konsole, GNOME Console, Dolphin, Nautilus, …;
+  WinSCP on Windows).
+- **Sign in with a panel account** — BigLace requests a fresh pre-auth key
+  for you; no copy-pasting.
+- **Tray icon** with quick connect / disconnect; optional start with the
+  session, hidden in the tray.
+- **Auto-reconnect** with exponential backoff and **peer notifications**
+  with flap protection.
+- **Rename the device**, set a per-device SSH login, and route traffic
+  through any peer that offers itself as an **exit node**.
+- **Update notice** when a newer release is published.
+- **29 languages**, credentials in the OS keyring.
 
----
-
-## Platforms
-
-| Platform | Status | Distribution |
-|---|---|---|
-| **Linux** (Arch / BigCommunity, Fedora, Debian — anywhere with GTK4 + libadwaita 1.4) | Primary target. | `pkgbuild/PKGBUILD` ships `/usr/bin/biglace`, the `.desktop` entry, icons, and compiled `.mo` catalogues. |
-| **Windows 10 / 11 (x64)** | Supported. | `.github/workflows/windows.yml` produces a single signed-ready MSI (`biglace-<version>-x86_64.msi`) bundling biglace.exe + the gvsbuild GTK4 runtime. |
-| **Android 8+ (API 26, ARM64)** | Native app, current mobile version `0.9.2`. | Debug-signed test APKs live in `mobile/dist/`; Gradle also builds ARMv7, x86, and x86_64 splits. |
-| **macOS** | Code compiles (config path, keyring, and `Command::new` calls are cfg-gated), but no installer is shipped yet. | Build from source with `cargo build --release`. |
-
-The desktop codebase is one Rust crate; platform differences are gated behind
-`#[cfg(target_os = …)]` blocks. Android lives under `mobile/` and combines a
-Kotlin/Compose application with a small Go bridge compiled to an AAR.
-
----
-
-## Android app
-
-The Android client joins the tailnet inside the app through `tsnet`. It does
-not require a separately installed Tailscale app and only forwards BigLace's
-own SSH/SFTP sockets; it is not a device-wide `VpnService`.
-
-Current mobile features:
-
-- Real peer list, online state, favorites, per-peer SSH login overrides, panel
-  enrollment, foreground connection status, auto-connect, and connect-on-boot.
-- Embedded SSH terminal with UTF-8 handling, VT screen state, resize-aware PTY,
-  pinch zoom, extra keys, key/password/keyboard-interactive authentication, and
-  automatic fallback.
-- Independent terminal tabs, so several peers can remain connected at once.
-- SFTP browsing with independent per-peer tabs, search, name/size/type sorting,
-  upload, download/open/share, rename, move, recursive delete, and new folders.
-- Generated SSH keys, encrypted per-host passwords and usernames, and TOFU host
-  fingerprints with an explicit reset action for rotated server keys.
-- Android Keystore-backed encryption, bounded temporary files and HTTP bodies,
-  strict panel URL validation, and cancellation-safe service/bridge lifecycle.
-- Adaptive launcher/monochrome icon and a dedicated six-node notification icon.
-
-The current ARM64 test build is
-[`mobile/dist/biglace-mobile-0.9.2-vc29-debug.apk`](mobile/dist/biglace-mobile-0.9.2-vc29-debug.apk).
-It is debug-signed for testing, not a store/release signing configuration.
-
----
-
-## Concepts: server, panel, and your personal key
-
-BigScale has three things that are easy to mix up. Read this once and the
-fields in the UI will make sense.
-
-### 1. The server (BigScale / Headscale)
-
-This is the coordinator that the VPN clients connect to. It speaks the
-Tailscale protocol. In the BigLace UI it is the **"Server URL"** field.
-
-- In production, this is usually a public address such as
-  `https://bigscale.example.com`.
-- In a local development setup with the project's `docker-compose.override.yml`
-  it is `http://localhost:18080`.
-- BigLace requires this field for manual setup. An empty server is not treated
-  as an implicit "official Tailscale" mode.
-
-The server has its own administrative API key (it shows up in the panel as
-`hskey-api-…` and is **truncated** there on purpose). You **never** put that
-key into BigLace. It exists only so the panel itself can talk to the
-Headscale daemon.
-
-### 2. The panel (BigScale web UI)
-
-This is the SvelteKit website where an administrator manages users and keys.
-In a local development setup it lives at `http://localhost:3000`. In
-production it usually lives at the same domain as the server (or a sibling
-subdomain).
-
-You only need the panel address inside BigLace if you use the
-**"Sign in with panel account"** menu, described below.
-
-### 3. Your personal pre-auth key
-
-This is the one credential that an end user actually needs. It is **not** the
-server's key — it is a per-person key generated by an administrator inside
-the panel.
-
-In Headscale, "users" are just labels (namespaces) used to group devices.
-They have no password. To let a person join the mesh, the admin:
-
-1. Opens the panel → **Users**.
-2. Creates (or picks) a user, e.g. `alice`.
-3. Clicks **"New key"**, picks options (reusable / ephemeral / expiry) and
-   confirms.
-4. The panel reveals the generated key **once**. The admin copies it and
-   sends it to that person over a secure channel.
-
-That key is what goes into BigLace's **"Pre-auth key (yours)"** field, under
-the **"Your identity on the network"** section. Each person has their own
-key. Multiple devices belonging to the same person can reuse one key (if
-the admin marked it reusable) or each get their own.
-
-### Quick mental model
-
-| You see in panel | What it is | Goes in BigLace? |
-|---|---|---|
-| `hskey-api-…` (truncated) | Server admin API key | **No, never.** |
-| Long string from "New key" modal | Pre-auth key for one user | **Yes — "Pre-auth key (yours)" field.** |
-| Panel admin login | Site login for the administrator | Only in the "Sign in with panel account" menu. |
-
----
-
-## Two ways to fill the form
-
-### A. Manual
-
-Best for end users who received a key from the admin.
-
-- **Server URL**: required. E.g. `https://bigscale.example.com` (production) or
-  `http://localhost:18080` (local dev with the override).
-- **Pre-auth key (yours)**: the key the admin sent you.
-- **Device name**: a lowercase DNS-safe label, e.g. `alice-laptop`. The clients
-  normalize spaces, accents, and unsupported characters to hyphens.
-
-Click **Save**, then **Connect**.
-
-The official Tailscale control plane is a different flow: it normally uses
-Tailscale's own login/default server and requires a Tailscale account or an
-auth key generated in that tailnet. BigLace does not infer that mode from an
-empty server field; the coordinator must be explicit.
-
-### B. "Sign in with panel account"
-
-Convenience shortcut for an administrator (or anyone with panel
-credentials) on their own machine. From the menu:
-
-- **Panel URL**: the admin website, e.g. `http://localhost:3000`.
-- **Username / password**: the panel login.
-- **Node user**: the Headscale user this device belongs to.
-
-BigLace calls `POST /api/v1/preauth-key` on the panel; the panel verifies
-the admin login, makes sure the user exists, generates a fresh 1-hour
-pre-auth key, and returns it together with the canonical server URL. The
-main form is filled in automatically and the config is saved.
-
-This menu is **not** something every end user has to use. Most end users
-will never log into the panel — they just paste the key the admin gave
-them.
-
----
-
-## Build
-
-### Linux
-
-Runtime dependencies: `gtk4`, `libadwaita`, `tailscale`, `openssl`.
-Build dependencies: `rust`, `cargo`, `pkgconf`, `openssl` (for the
-`native-tls` backend used to talk to the panel HTTPS API).
-
-```bash
-cargo build --release
-# binary: target/release/biglace
-```
-
-To package on Arch / BigCommunity:
-
-```bash
-cd pkgbuild
-makepkg -si
-```
-
-The `PKGBUILD` installs:
-
-| Path | Source |
-|---|---|
-| `/usr/bin/biglace` | Rust binary |
-| `/usr/share/applications/org.communitybig.biglace.desktop` | `usr/share/applications/org.communitybig.biglace.desktop` |
-| `/usr/share/icons/hicolor/scalable/apps/org.communitybig.biglace.svg` | `usr/share/icons/hicolor/scalable/apps/org.communitybig.biglace.svg` |
-| `/usr/share/icons/hicolor/symbolic/apps/org.communitybig.biglace-symbolic.svg` | `usr/share/icons/hicolor/symbolic/apps/org.communitybig.biglace-symbolic.svg` |
-| `/usr/share/locale/<lang>/LC_MESSAGES/biglace.mo` | `usr/share/locale/<lang>/LC_MESSAGES/biglace.mo` |
-| `/usr/share/licenses/biglace/LICENSE` | `LICENSE` |
-| `/usr/share/doc/biglace/README.md` | this file |
-
-The repository's `usr/` tree is a literal mirror of the install layout: the
-PKGBUILD just copies `usr/` straight into `${pkgdir}/`. Pre-compiled message
-catalogues (`.mo`) live under `usr/share/locale/<lang>/LC_MESSAGES/biglace.mo`
-and are produced by the project's external translation pipeline from the
-`.po` files in `locale/` — neither the PKGBUILD nor `cargo build` regenerates
-them.
+</td>
+<td width="50%" valign="top">
 
 ### Android
 
-Requirements: JDK 17, Android SDK/platform 36, and an Android NDK. The committed
-`tsbridge.aar` is sufficient for normal app builds:
+- **Joins the tailnet inside the app** (`tsnet`) — no Tailscale app, no
+  device-wide VPN, keeps running as a foreground service.
+- **SSH terminal** with a real VT emulator: colours, full-screen TUIs
+  (vim, htop, Claude Code), extra keys, PgUp/PgDn, copy / paste, hardware
+  keyboards, pinch to zoom.
+- **SFTP file manager** — browse, search, sort, upload, open, share, rename,
+  move and delete, with progress and cancellable transfers.
+- **Multiple sessions** in tabs, one per device.
+- **Key or password authentication**, generated SSH keys, trust-on-first-use
+  host keys with a clear warning when a key changes.
+- **In-app updates** from GitHub Releases, verified before installing.
+- Secrets encrypted with the Android Keystore.
 
-```bash
-cd mobile/android
-./gradlew testDebugUnitTest lintDebug assembleDebug
+</td>
+</tr>
+</table>
+
+<div align="center">
+<picture>
+  <source media="(prefers-color-scheme: dark)" srcset="docs/screenshots/details-dark.png">
+  <source media="(prefers-color-scheme: light)" srcset="docs/screenshots/details-light.png">
+  <img src="docs/screenshots/details-dark.png" width="880" alt="A peer expanded to show its DNS name, IPv4 and IPv6 addresses, owner, SSH login override and tags">
+</picture>
+
+<sub>Expand any device for its DNS name, addresses, owner, tags and a per-device SSH login.</sub>
+</div>
+
+## Download
+
+Every release is published on the
+[**Releases page**](https://github.com/big-comm/biglace/releases) with
+packages for all platforms.
+
+| Platform | Package | Notes |
+|---|---|---|
+| **Arch Linux, BigLinux, Manjaro** | `biglace-<version>-x86_64.pkg.tar.zst` | `sudo pacman -U biglace-*.pkg.tar.zst` — requires `tailscale`. |
+| **Windows 10 / 11 (x64)** | `biglace-<version>-x86_64.msi` | Requires the official [Tailscale for Windows](https://tailscale.com/download/windows) service. |
+| **Android 8+** | `biglace-mobile-<version>-vc<code>-<abi>.apk` | Most phones need `arm64-v8a`. Later updates install from inside the app. |
+| **Other Linux distributions, macOS** | — | [Build from source](#build-from-source). The code builds on macOS, but no installer ships yet. |
+
+On Linux, the `tailscaled` service must be installed and running. BigLace
+offers to start it if it is stopped.
+
+## Getting started
+
+BigScale and Headscale involve three different things that are easy to mix up:
+
+| Term | What it is | Where it goes in BigLace |
+|---|---|---|
+| **Server** | The coordination server (BigScale / Headscale), e.g. `https://vpn.example.com`. | **Server URL** |
+| **Panel** | The BigScale web interface where an administrator manages users and keys. | Only in **Sign in with panel account** |
+| **Pre-auth key** | A personal key an administrator creates for you in the panel. | **Pre-auth key** |
+
+> [!IMPORTANT]
+> The server's administrative API key (`hskey-api-…`) never goes into BigLace.
+> It exists only so the panel can talk to the server.
+
+### Option A — sign in with a panel account
+
+Open the menu (☰) → **Sign in with panel account** and enter the panel
+address, your panel username and password, and a name for this device.
+BigLace asks the panel for a fresh pre-auth key and fills everything in.
+Press **Connect**.
+
+### Option B — use a pre-auth key
+
+If an administrator sent you a key, expand **Advanced: use a pre-auth key** in
+the sidebar and fill in:
+
+- **Server URL** — e.g. `https://vpn.example.com` (`https://` is added if you
+  leave it out);
+- **Pre-auth key** — the key you received;
+- **Device name** — how this device appears to others, e.g. `alex-laptop`.
+  Spaces and accents are converted for you.
+
+Press **Save**, then **Connect**. The key is only needed the first time: once
+the device is registered, it reconnects without it.
+
+### No more password prompts (Linux)
+
+`tailscale up` and `tailscale down` need root or the configured *tailscale
+operator*. Until then, BigLace asks for your password through polkit. To stop
+the prompts, choose **Make this user the tailscale operator** in the menu once
+— it runs `tailscale set --operator=$USER` with your permission.
+
+On Windows the Tailscale service already accepts commands from local users.
+
+## Privacy and security
+
+- **Keys stay out of plain text.** Pre-auth keys and panel passwords live in
+  the OS keyring (Secret Service, Windows Credential Manager, macOS Keychain);
+  on Android they are encrypted with an Android Keystore key. Settings are
+  still saved when no keyring is available.
+- **Keys stay out of process lists and logs.** `tailscale up` reads the key
+  from a private temporary file, never from the command line, and logs mask
+  it.
+- **HTTPS only** for the panel, with redirects disabled for credentialed
+  requests and response sizes capped. Plain HTTP is accepted only for
+  `localhost` during development.
+- **No guessing on SSH.** Launchers validate host names and logins, and pick
+  the tailnet address when MagicDNS answers with something else. Android pins
+  SSH host keys on first use (SHA-256) and warns before accepting a changed
+  one.
+- **Verified updates.** The Android app installs only APKs downloaded from this
+  repository's releases, checks their SHA-256 first, and Android itself
+  requires the same signing key as the installed app.
+- **Crash-safe settings.** Configuration is written atomically; a file that
+  can't be read is backed up instead of overwritten.
+
+## Configuration
+
+Settings are stored per user:
+
+| Platform | Location |
+|---|---|
+| Linux | `~/.config/biglace/config.toml` |
+| Windows | `%APPDATA%\biglace\config.toml` |
+| macOS | `~/Library/Application Support/biglace/config.toml` |
+
+```toml
+server_url          = "https://vpn.example.com"
+hostname            = "alex-laptop"
+enrolled            = true          # this device is registered and can reconnect without a key
+auto_connect        = true
+auto_reconnect      = true
+notify_peer_changes = true
+favorites           = ["build-server"]
+
+[peer_overrides]                    # per-device SSH login
+build-server = "deploy"
 ```
 
-Gradle creates ABI-specific APKs under
-`mobile/android/app/build/outputs/apk/debug/`. The ARM64 output is
-`app-arm64-v8a-debug.apk`. Release builds enable R8/resource shrinking but are
-unsigned until a signing configuration is supplied:
+Everything can be changed from the app; secrets are never written to this
+file.
+
+## Build from source
+
+### Linux
+
+Runtime: `gtk4` (≥ 4.12), `libadwaita` (≥ 1.4), `tailscale`, `openssl`.
+Build: `rust`, `cargo`, `pkgconf`.
 
 ```bash
-./gradlew assembleRelease
+cargo build --release --locked
+./target/release/biglace
 ```
 
-Rebuild the embedded Go/`tsnet` AAR after changing `mobile/tsbridge`:
+Arch / BigLinux package:
 
 ```bash
-cd mobile/tsbridge
-./build-aar.sh
+cd pkgbuild && makepkg -si
 ```
 
-The script builds `libgojni.so` for ARM64, ARMv7, x86, and x86_64, strips the
-native binaries, and requests 16 KiB ELF page alignment. It discovers the SDK
-from `ANDROID_HOME`, `ANDROID_SDK_ROOT`, or Android's `local.properties` and
-uses the newest installed NDK unless `ANDROID_NDK_HOME` is set.
+The `usr/` directory mirrors the installed layout (desktop entry, icons and
+compiled translations), and the PKGBUILD copies it as-is.
 
-### Windows (MSI)
+> [!NOTE]
+> Distribution packages are built with `--no-default-features`, which leaves
+> out the bundled jemalloc allocator; some hardened linker setups can't link
+> it.
 
-End-user installer is built by GitHub Actions:
+### Windows
 
-- **Trigger:** the `build-package` action publishes a release, then sends a
-  `windows-msi-build` repository dispatch to this repo. You can also run the
-  **Windows MSI** workflow manually from the Actions tab.
-- **Output:** `biglace-<version>-x86_64.msi` published as a workflow artifact
-  and, when a tag is provided, attached to that GitHub Release.
-- **Install scope:** per-machine, into `C:\Program Files\BigLace`. Adds a
-  Start Menu shortcut and uninstalls cleanly through *Settings → Apps*.
-
-The pipeline pins `gvsbuild` for a reproducible MSVC GTK4 + libadwaita SDK,
-bundles all GTK runtime DLLs alongside `biglace.exe`, harvests them with
-WiX `heat.exe`, and produces the MSI through `cargo wix`. See
-[`.github/workflows/windows.yml`](.github/workflows/windows.yml) and
-[`wix/main.wxs`](wix/main.wxs) for the full recipe.
-
-To test the MSI path without waiting for the full `build-package` flow, run the
-**Windows MSI** workflow manually against a branch or tag. To test it locally,
-use a Windows VM/host with WiX 3, Rust MSVC, ImageMagick, and gvsbuild installed:
-
-Testing-channel builds do not send the stable release dispatch. Before promotion,
-run the workflow manually against the development branch with the tag left empty;
-the MSI is uploaded as an Actions artifact without modifying a GitHub Release.
+The MSI is built by [`.github/workflows/windows.yml`](.github/workflows/windows.yml)
+with a pinned [gvsbuild](https://github.com/wingtk/gvsbuild) GTK4 runtime and
+WiX 3. To build manually on Windows with Rust (MSVC), WiX 3 and gvsbuild:
 
 ```powershell
 cargo build --release --no-default-features --target x86_64-pc-windows-msvc
@@ -323,222 +247,107 @@ heat.exe dir target\wix-stage -cg RuntimeFiles -dr APPLICATIONFOLDER -ag -srd -s
 cargo wix --no-build --nocapture --target x86_64-pc-windows-msvc -C "-dStageDir=target\wix-stage"
 ```
 
-`cargo-wix` already loads `WixUIExtension` and `WixUtilExtension`; passing either
-extension again makes WiX fail with a duplicate schema error.
+### Android
 
-`--no-default-features` disables jemalloc, which has no Windows backend.
-
----
-
-## Privileges (Linux)
-
-The `tailscaled` daemon only accepts `up`/`down` from `root` or from the
-user marked as the tailscale operator. If neither applies, BigLace falls
-back automatically to running the command via `pkexec`, so the user is
-prompted by polkit and the command goes through.
-
-To stop seeing the polkit prompt every connect/disconnect, use the menu
-**"Make this user the tailscale operator"** once. It runs
-`pkexec tailscale set --operator=$USER`. After that, BigLace can drive
-`tailscale up`/`down` as your user with no elevation.
-
-This is equivalent to the message that the tailscale CLI itself prints:
-*"To not require root, use 'sudo tailscale set --operator=$USER' once."*
-
-On Windows, the Tailscale service runs as `LocalSystem` and BigLace talks to
-it through the standard CLI, which is already permitted for any local user —
-no equivalent polkit dance is needed.
-
----
-
-## Run locally
+Requires JDK 17 and the Android SDK (platform 36). The embedded network engine
+(`mobile/android/app/libs/tsbridge.aar`) is committed, so Go and the NDK are
+only needed to rebuild it.
 
 ```bash
-cargo run --release
+cd mobile/android
+./gradlew testDebugUnitTest lintDebug assembleDebug   # debug APKs, one per ABI
+../dist/build-apk.sh                                  # signed release APKs in mobile/dist/
 ```
 
-If you run a local BigScale stack with the override file, point BigLace at:
-
-- **Server URL**: `http://localhost:18080`
-- **Pre-auth key**: generated in the panel at `http://localhost:3000` →
-  Users → expand a user → "New key".
-- **Device name**: anything.
-
-To exercise the panel-login path, use the menu **"Sign in with panel
-account"** with `http://localhost:3000` and your panel admin credentials.
-
----
-
-## Configuration file
-
-BigLace persists settings to a per-user TOML file. The location follows
-each platform's convention:
-
-| Platform | Path |
-|---|---|
-| Linux | `~/.config/biglace/config.toml` |
-| Windows | `%APPDATA%\biglace\config.toml` |
-| macOS | `~/Library/Application Support/biglace/config.toml` |
-
-```toml
-server_url   = "https://bigscale.example.com"
-hostname     = "alice-laptop"
-auto_connect = false
-enrolled     = true
-panel_url    = "https://bigscale.example.com"   # optional, used by the panel-login menu
-panel_username = "alice"
-```
-
-You may edit non-secret settings directly or use the UI. Panel passwords and
-enrollment/pre-auth keys are stored in the OS keyring and are never serialized
-to TOML. Existing plaintext `authkey` fields are migrated when a usable server
-URL is available. The durable `enrolled` marker records that the local
-Tailscale state is registered and can reconnect if the enrollment key is
-temporarily unavailable. The encrypted key itself remains in the OS keyring.
-
----
-
-## Security and reliability
-
-- Desktop config writes use a same-directory temporary file, file and parent
-  directory sync, and atomic rename. Invalid config is preserved as a backup;
-  BigLace refuses to overwrite data it could not read or back up.
-- Desktop panel/update HTTP uses native TLS, redirect blocking, response-size
-  limits, and deadlines. Remote credential endpoints require HTTPS; loopback
-  HTTP remains available for local development.
-- Tailscale CLI workers have timeouts and bounded output, status refresh is
-  single-flight with a short cache, and reconnect retries use exponential
-  backoff until success or an explicit disconnect.
-- Android secrets use an AES-GCM key held by Android Keystore. Existing
-  plaintext preferences migrate transparently; corrupt encrypted values are
-  discarded rather than returned as credentials.
-- Android SSH verifies host fingerprints with trust-on-first-use. Concurrent
-  terminal writes are serialized, UTF-8 is decoded incrementally, and SFTP
-  operations are mutex-protected with bounded recursive deletion and isolated
-  temporary staging directories.
-- Panel clients reject malformed authorities/userinfo, cap response bodies,
-  disable redirects, and allow plaintext HTTP only for loopback or explicit
-  tailnet endpoints where the source-IP-authenticated panel API requires it.
-- The Go bridge makes startup cancellable, handles stop/start races, bounds
-  status/log work, and closes one-shot forwarding listeners after the SSH
-  transport connects.
-
----
-
-## Translations
-
-Translatable strings live in `locale/*.po`. The list of locale codes
-shipped with the package is in `locale/LINGUAS`, and the source files
-scanned for translatable strings are listed in `locale/POTFILES.in`.
-
-To add a language:
-
-1. Add the code (e.g. `fr`, `it`) to `locale/LINGUAS`.
-2. Copy `locale/biglace.pot` to `locale/<lang>.po` and translate the
-   `msgstr` entries. Use the POSIX form with an underscore for regional
-   variants — `pt_BR`, not `pt-BR`.
-
-Compiled `.mo` files are committed under
-`usr/share/locale/<lang>/LC_MESSAGES/biglace.mo` and are produced by the
-project's external translation pipeline (which also re-extracts
-`biglace.pot` via `xgettext` with the `tr` and `trf` keywords). Neither
-the PKGBUILD nor `cargo build` regenerates them.
-
-For development, with locally produced `.mo` files, set
-`BIGLACE_LOCALEDIR=/path/to/locale` to make the binary use that directory
-instead of `/usr/share/locale`.
-
----
-
-## Validation
-
-Run the desktop checks from the repository root:
+Rebuild the engine after changing [`mobile/tsbridge`](mobile/tsbridge):
 
 ```bash
+cd mobile/tsbridge && ./build-aar.sh
+```
+
+More detail in [`mobile/dist/README.md`](mobile/dist/README.md) (signing and
+release APKs) and [`mobile/ARCHITECTURE.md`](mobile/ARCHITECTURE.md).
+
+## Development
+
+### Releases and versioning
+
+Packages are produced with **gitrepo**, which publishes a GitHub release for
+each build.
+
+- **Version.** `APP_VERSION` in [`src/main.rs`](src/main.rs) is the app's
+  semantic version. gitrepo bumps it on every commit it creates: `feat` →
+  minor, `fix` / `perf` / `docs` / … → patch, breaking change → major. Keep it
+  a plain `"MAJOR.MINOR.PATCH"` literal so gitrepo can find it.
+- **Build stamp.** The PKGBUILD also embeds the build date (`YY.MM.DD-HHMM`,
+  the release tag format), which the update notice compares with the latest
+  release.
+- **One release, every platform.** Publishing a release triggers the
+  [Windows](.github/workflows/windows.yml) and
+  [Android](.github/workflows/android.yml) workflows, which attach the MSI
+  and the APKs to that same release. The Android job takes its version from
+  the tag and signs with the key stored in the repository secrets
+  (`ANDROID_KEYSTORE_BASE64`, `ANDROID_KEYSTORE_PASSWORD`, `ANDROID_KEY_ALIAS`,
+  `ANDROID_KEY_PASSWORD`).
+
+### Checks
+
+```bash
+# Desktop
 cargo fmt --all -- --check
 cargo test --all-targets --locked
 cargo clippy --all-targets --locked -- -D warnings
 cargo audit --deny warnings
+
+# Android
+cd mobile/android && ./gradlew testDebugUnitTest lintDebug assembleDebug
+
+# Network engine
+cd mobile/tsbridge && go test -race ./... && go mod verify
 ```
 
-Run Android and Go checks with:
+Packaging files can also be checked with `shellcheck`, `namcap`,
+`desktop-file-validate` and `msgfmt -c`.
 
-```bash
-cd mobile/android
-./gradlew testDebugUnitTest lintDebug assembleDebug
+### Translations
 
-cd ../tsbridge
-go test -race ./...
-go mod verify
-```
+Translations live in `locale/<lang>.po` (languages listed in
+`locale/LINGUAS`). The template and the compiled catalogues under
+`usr/share/locale/` are regenerated by the project's translation pipeline,
+which extracts strings marked with `tr!` / `trf!`. To add a language, add its
+code to `locale/LINGUAS` and translate a copy of `locale/biglace.pot`
+(use `pt_BR`, not `pt-BR`).
 
-Packaging sources can additionally be checked with `shellcheck`, `namcap`,
-`desktop-file-validate`, `xmllint`, and `msgfmt -c`. Android APKs/AARs are built
-as per-ABI artifacts; release candidates should be checked with Android
-Build-Tools `zipalign -c -P 16 4` before signing.
+To try local catalogues, point `BIGLACE_LOCALEDIR` at them.
 
----
-
-## Source layout
+### Project layout
 
 ```
 biglace/
-├── Cargo.toml
+├── src/                     Desktop app (Rust, GTK4 + libadwaita)
+│   ├── main.rs              entry point, APP_VERSION
+│   ├── tailscale.rs         tailscale CLI, peer parsing, SSH / SFTP launchers
+│   ├── panel.rs             BigScale panel client
+│   ├── config.rs            settings file
+│   ├── secrets.rs           OS keyring
+│   ├── tray.rs, tray/       tray icon (Linux · Windows · stub)
+│   └── window/              main window, sidebar, peer rows, dialogs
 ├── mobile/
-│   ├── android/                            # Kotlin + Compose Android app
-│   │   └── app/src/
-│   │       ├── main/java/org/communitybig/biglace/
-│   │       │   ├── core/                   # data, mesh, panel, SSH sessions
-│   │       │   ├── feature/                # peers, terminal, files, settings
-│   │       │   ├── service/                # foreground mesh + boot receiver
-│   │       │   └── ui/                     # navigation, session tabs, theme
-│   │       └── test/                       # JVM unit tests
-│   ├── tsbridge/                           # Go tsnet bridge + AAR build script
-│   └── dist/                               # versioned test APK + SHA-256
-├── usr/                                  # literal mirror of /usr at install time
-│   └── share/
-│       ├── applications/
-│       │   └── org.communitybig.biglace.desktop
-│       ├── icons/hicolor/
-│       │   ├── scalable/apps/org.communitybig.biglace.svg
-│       │   └── symbolic/apps/org.communitybig.biglace-symbolic.svg
-│       └── locale/<lang>/LC_MESSAGES/biglace.mo   # one per language in LINGUAS
-├── locale/                               # translation sources (29 languages)
-│   ├── POTFILES.in
-│   ├── LINGUAS
-│   ├── biglace.pot
-│   └── <lang>.po
-├── pkgbuild/                             # Arch / BigCommunity packaging
-│   ├── PKGBUILD
-│   └── pkgbuild.install
-├── wix/                                  # Windows MSI assets
-│   ├── main.wxs                          # WiX 3 installer template
-│   └── License.rtf                       # EULA dialog text
-├── .github/workflows/
-│   └── windows.yml                       # Windows MSI CI pipeline
-└── src/
-    ├── main.rs        # entry point + i18n init + jemalloc (Linux/macOS)
-    ├── i18n.rs        # gettext bootstrap, tr! / trf! macros
-    ├── config.rs      # per-OS config.toml location + (de)serialization
-    ├── secrets.rs     # OS keyring wrapper (Secret Service / Credential Manager / Keychain)
-    ├── tailscale.rs   # tailscale CLI wrappers, peer parsing, SSH/SFTP launchers
-    ├── panel.rs       # BigScale panel HTTP client
-    ├── tray.rs        # cross-platform tray facade (Command / Handle / spawn)
-    ├── tray/
-    │   ├── linux.rs   # ksni / StatusNotifierItem backend
-    │   ├── windows.rs # tray-icon backend with a Win32 message pump
-    │   └── stub.rs    # no-op fallback for unsupported targets
-    └── window/
-        ├── mod.rs     # main window, signal wiring, background workers
-        ├── content.rs # right-pane peer list view
-        ├── sidebar.rs # left-pane connection form
-        ├── peer_row.rs# per-peer expander row widget
-        ├── dialogs.rs # About + panel-login modals
-        └── style.rs   # CSS overrides
+│   ├── android/             Android app (Kotlin, Jetpack Compose)
+│   ├── tsbridge/            Go bridge embedding tsnet, built as an AAR
+│   └── dist/                release APK build script
+├── usr/                     installed files: desktop entry, icons, translations
+├── locale/                  translation sources
+├── pkgbuild/                Arch / BigLinux package
+├── wix/                     Windows installer
+├── docs/screenshots/        images used in this README
+└── .github/workflows/       Windows and Android release pipelines
 ```
-
----
 
 ## License
 
-MIT — see [`LICENSE`](LICENSE).
+BigLace is released under the [MIT License](LICENSE).
+
+<div align="center">
+<sub>Made by the <a href="https://github.com/big-comm">BigCommunity</a>.</sub>
+</div>

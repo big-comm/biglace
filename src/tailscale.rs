@@ -15,6 +15,19 @@ use crate::{tr, trf};
 /// already explicitly invalidates the cache via `invalidate_status_cache()`.
 const STATUS_CACHE_TTL: Duration = Duration::from_millis(500);
 
+/// How old a cached status may be and still stand in for a fetch that failed.
+/// The fallback smooths over a single slow or failed `tailscale status`; it
+/// must not keep painting "Connected" with live-looking peers for as long as a
+/// wedged daemon (the classic post-suspend hang) keeps timing out.
+const STATUS_STALE_LIMIT: Duration = Duration::from_secs(30);
+
+/// The cached status, if it's recent enough to use in place of a fresh one.
+fn usable_stale(value: Option<&CachedStatus>) -> Option<Arc<TsStatus>> {
+    value
+        .filter(|(when, _)| when.elapsed() < STATUS_STALE_LIMIT)
+        .map(|(_, ts)| ts.clone())
+}
+
 /// Fetch time + the shared parsed payload. `Arc` so cache reads are refcount
 /// bumps, never deep copies of a payload that runs to hundreds of KB.
 type CachedStatus = (Instant, Arc<TsStatus>);
@@ -61,7 +74,7 @@ fn cached_ts_status() -> Option<Arc<TsStatus>> {
                 break;
             }
         }
-        return state.value.as_ref().map(|(_, ts)| ts.clone());
+        return usable_stale(state.value.as_ref());
     }
     state.fetching = true;
     drop(state);
@@ -80,7 +93,7 @@ fn cached_ts_status() -> Option<Arc<TsStatus>> {
         state.value = Some((Instant::now(), ts.clone()));
     }
     ready.notify_all();
-    fetched.or_else(|| state.value.as_ref().map(|(_, ts)| ts.clone()))
+    fetched.or_else(|| usable_stale(state.value.as_ref()))
 }
 
 fn command_output_timeout(command: &mut Command, timeout: Duration) -> io::Result<Output> {
@@ -317,6 +330,12 @@ pub struct Status {
 
 #[derive(Debug, Clone)]
 pub struct Peer {
+    /// Stable node identity (the node's public key). Use this — not
+    /// `hostname` — to tell peers apart: hostnames aren't unique on a tailnet
+    /// (a reinstalled machine leaves its old offline node behind under the
+    /// same name). Favorites and SSH overrides stay keyed on `hostname`
+    /// because they're persisted and shared with the mobile app.
+    pub id: String,
     pub hostname: String,
     /// First TailscaleIP — kept as `ip` for backwards compatibility with the
     /// existing UI. Same value as `ipv4` whenever the peer has one.
@@ -568,7 +587,34 @@ pub fn is_service_active() -> bool {
 fn detect_service_active() -> bool {
     let mut command = Command::new("systemctl");
     command.args(["is-active", "--quiet", "tailscaled"]);
-    command_output_timeout(&mut command, Duration::from_secs(5))
+    let systemctl = command_output_timeout(&mut command, Duration::from_secs(5))
+        .map(|out| out.status.success());
+    service_active_from(systemctl, daemon_reachable)
+}
+
+/// Interpret `systemctl is-active`. Without systemd at all (Artix, Void,
+/// Alpine, containers) the command doesn't exist; asking it pinned the UI to
+/// "Service stopped" forever there, so fall back to whether the CLI can reach
+/// the daemon — the same test macOS uses.
+#[cfg(all(unix, not(target_os = "macos")))]
+fn service_active_from(
+    systemctl: io::Result<bool>,
+    daemon_reachable: impl FnOnce() -> bool,
+) -> bool {
+    match systemctl {
+        Ok(active) => active,
+        Err(e) if e.kind() == io::ErrorKind::NotFound => daemon_reachable(),
+        Err(_) => false,
+    }
+}
+
+/// `tailscale status` connects to the daemon and exits 0 even while logged
+/// out or stopped; it only fails when the daemon itself isn't running.
+#[cfg(all(unix, not(target_os = "macos")))]
+fn daemon_reachable() -> bool {
+    let mut command = Command::new(tailscale_cmd());
+    command.args(["status", "--json"]);
+    command_output_timeout(&mut command, Duration::from_secs(10))
         .is_ok_and(|out| out.status.success())
 }
 
@@ -815,8 +861,8 @@ fn build_peers(ts: &TsStatus) -> Vec<Peer> {
     let mut peers: Vec<Peer> = ts
         .peers
         .iter()
-        .flat_map(|m| m.values())
-        .filter_map(|n| {
+        .flat_map(|m| m.iter())
+        .filter_map(|(node_key, n)| {
             let user = resolve_user(n.user_id);
             if is_reserved(n, &user) {
                 return None;
@@ -841,6 +887,7 @@ fn build_peers(ts: &TsStatus) -> Vec<Peer> {
                 .map(|t| t.strip_prefix("tag:").unwrap_or(&t).to_string())
                 .collect();
             Some(Peer {
+                id: node_key.clone(),
                 hostname: n.hostname.clone().unwrap_or_default(),
                 ip,
                 ipv4,
@@ -1035,6 +1082,7 @@ pub fn connect(server: &str, authkey: &str, hostname: &str) -> Result<()> {
         dbg("connect: cached registration present — trying keyless reconnect");
         if try_reconnect().is_ok() && wait_until_online() {
             dbg("connect: reconnected via cached registration (no key needed)");
+            apply_saved_hostname(hostname);
             return Ok(());
         }
         dbg("connect: keyless reconnect didn't take — (re)authenticating with the key");
@@ -1091,6 +1139,28 @@ pub fn connect(server: &str, authkey: &str, hostname: &str) -> Result<()> {
         bail!(h);
     }
     bail!(tr!("Failed to connect — check the server URL and key."))
+}
+
+/// A keyless reconnect is a bare `tailscale up`, which keeps the daemon's
+/// stored hostname. When the user renamed the device while it was
+/// disconnected (or before the daemon was reachable), push the saved name now
+/// — otherwise the rename would only ever take effect on a re-enrollment.
+fn apply_saved_hostname(wanted: &str) {
+    let current = get_status().hostname;
+    if hostname_needs_update(current.as_deref(), wanted) {
+        dbg(&format!(
+            "connect: applying saved hostname {wanted:?} (daemon has {current:?})"
+        ));
+        if let Err(e) = set_hostname(wanted.trim()) {
+            dbg(&format!("connect: could not apply the saved hostname: {e}"));
+        }
+    }
+}
+
+/// Whether the daemon's hostname differs from the one the user saved.
+fn hostname_needs_update(current: Option<&str>, wanted: &str) -> bool {
+    let wanted = wanted.trim();
+    !wanted.is_empty() && current.map(str::trim) != Some(wanted)
 }
 
 /// Poll for tailscaled to flip Online after an `up`, bypassing the status cache
@@ -1668,13 +1738,50 @@ fn default_handler_for(mime: &str) -> Option<String> {
     }
 }
 
+/// Resolve `program` the way `execvp` would: a path is checked as-is,
+/// a bare name is looked up in `$PATH`. Done in-process — it used to fork a
+/// `sh -c "command -v …"` per candidate, which also put configuration values
+/// (`$TERMINAL`, GSettings, kdeglobals) through a shell.
+#[cfg(unix)]
+fn find_in_path(program: &str) -> Option<std::path::PathBuf> {
+    use std::os::unix::fs::PermissionsExt;
+    fn executable(path: &std::path::Path) -> bool {
+        std::fs::metadata(path).is_ok_and(|m| m.is_file() && m.permissions().mode() & 0o111 != 0)
+    }
+    if program.is_empty() {
+        return None;
+    }
+    if program.contains('/') {
+        let path = std::path::PathBuf::from(program);
+        return executable(&path).then_some(path);
+    }
+    let paths = std::env::var_os("PATH")?;
+    std::env::split_paths(&paths)
+        .map(|dir| dir.join(program))
+        .find(|candidate| executable(candidate))
+}
+
 /// Whether `program` is on PATH.
 #[cfg(unix)]
 fn program_exists(program: &str) -> bool {
-    Command::new("sh")
-        .args(["-c", &format!("command -v {program} >/dev/null 2>&1")])
-        .status()
-        .is_ok_and(|s| s.success())
+    find_in_path(program).is_some()
+}
+
+/// Split a configured command (`kitty --single-instance`) into the program
+/// and its own arguments. Settings like `$TERMINAL` or GNOME's
+/// `default-applications.terminal exec` legitimately carry flags; treating the
+/// whole string as a program name made those setups fall through to probing.
+#[cfg(unix)]
+fn split_command(value: &str) -> Option<(String, Vec<String>)> {
+    let mut parts = value.split_whitespace().map(str::to_string);
+    let program = parts.next()?;
+    Some((program, parts.collect()))
+}
+
+/// File name of a program path, for comparing against emulator names.
+#[cfg(unix)]
+fn program_name(program: &str) -> String {
+    program.rsplit('/').next().unwrap_or(program).to_string()
 }
 
 /// Desktop-entry id of the terminal named in `xdg-terminals.list` (first
@@ -1755,13 +1862,16 @@ fn configured_terminal() -> Option<TerminalLauncher> {
         (!value.is_empty()).then_some(value)
     }
 
-    if let Ok(term) = std::env::var("TERMINAL") {
-        let term = term.trim().to_string();
-        if !term.is_empty() && have(&term) {
+    if let Some((program, mut args)) = std::env::var("TERMINAL")
+        .ok()
+        .and_then(|t| split_command(&t))
+    {
+        if have(&program) {
+            args.push("-e".into());
             return Some(TerminalLauncher {
-                emulator: term.clone(),
-                program: term,
-                args: vec!["-e".into()],
+                emulator: program_name(&program),
+                program,
+                args,
             });
         }
     }
@@ -1788,14 +1898,16 @@ fn configured_terminal() -> Option<TerminalLauncher> {
         });
     }
 
-    if let Some(exec) = read_setting(
+    if let Some((exec, mut args)) = read_setting(
         "gsettings",
         &[
             "get",
             "org.gnome.desktop.default-applications.terminal",
             "exec",
         ],
-    ) {
+    )
+    .and_then(|v| split_command(&v))
+    {
         if have(&exec) {
             let flag = read_setting(
                 "gsettings",
@@ -1807,10 +1919,11 @@ fn configured_terminal() -> Option<TerminalLauncher> {
             )
             .filter(|f| !f.is_empty())
             .unwrap_or_else(|| "-e".into());
+            args.push(flag);
             return Some(TerminalLauncher {
-                emulator: exec.clone(),
+                emulator: program_name(&exec),
                 program: exec,
-                args: vec![flag],
+                args,
             });
         }
     }
@@ -1819,7 +1932,7 @@ fn configured_terminal() -> Option<TerminalLauncher> {
         if !have(kread) {
             continue;
         }
-        if let Some(exec) = read_setting(
+        if let Some((exec, mut args)) = read_setting(
             kread,
             &[
                 "--file",
@@ -1829,12 +1942,15 @@ fn configured_terminal() -> Option<TerminalLauncher> {
                 "--key",
                 "TerminalApplication",
             ],
-        ) {
+        )
+        .and_then(|v| split_command(&v))
+        {
             if have(&exec) {
+                args.push("-e".into());
                 return Some(TerminalLauncher {
-                    emulator: exec.clone(),
+                    emulator: program_name(&exec),
                     program: exec,
-                    args: vec!["-e".into()],
+                    args,
                 });
             }
         }
@@ -2163,6 +2279,86 @@ pub fn headscale_healthy(server_url: &str) -> bool {
 mod tests {
     use super::*;
 
+    #[cfg(all(unix, not(target_os = "macos")))]
+    #[test]
+    fn service_state_falls_back_to_the_daemon_without_systemd() {
+        assert!(service_active_from(Ok(true), || panic!("not consulted")));
+        assert!(!service_active_from(Ok(false), || panic!("not consulted")));
+        let missing = || Err(io::Error::from(io::ErrorKind::NotFound));
+        assert!(service_active_from(missing(), || true));
+        assert!(!service_active_from(missing(), || false));
+        // A systemctl that exists but misbehaves is not "no systemd".
+        let timed_out = Err(io::Error::from(io::ErrorKind::TimedOut));
+        assert!(!service_active_from(timed_out, || panic!("not consulted")));
+    }
+
+    #[cfg(unix)]
+    #[test]
+    fn programs_are_resolved_without_a_shell() {
+        assert!(find_in_path("sh").is_some());
+        assert!(find_in_path("/bin/sh").is_some());
+        assert!(find_in_path("biglace-no-such-program-xyz").is_none());
+        // Present but not executable.
+        let plain = std::env::temp_dir().join(format!("biglace-noexec-{}", std::process::id()));
+        std::fs::write(&plain, "not a program").unwrap();
+        assert!(find_in_path(plain.to_str().unwrap()).is_none());
+        let _ = std::fs::remove_file(&plain);
+        // Shell syntax is just an (absent) file name now, never executed.
+        assert!(find_in_path("sh; touch /tmp/biglace-pwned").is_none());
+        assert!(!std::path::Path::new("/tmp/biglace-pwned").exists());
+
+        assert_eq!(
+            split_command("kitty --single-instance"),
+            Some(("kitty".to_string(), vec!["--single-instance".to_string()]))
+        );
+        assert_eq!(split_command("   "), None);
+        assert_eq!(program_name("/usr/bin/ashyterm"), "ashyterm");
+    }
+
+    #[test]
+    fn a_failed_fetch_only_falls_back_to_a_recent_status() {
+        let ts = Arc::new(serde_json::from_str::<TsStatus>("{}").unwrap());
+        let fresh: CachedStatus = (Instant::now(), ts.clone());
+        assert!(usable_stale(Some(&fresh)).is_some());
+
+        let old = Instant::now()
+            .checked_sub(STATUS_STALE_LIMIT + Duration::from_secs(1))
+            .expect("monotonic clock far enough from boot");
+        let stale: CachedStatus = (old, ts);
+        assert!(
+            usable_stale(Some(&stale)).is_none(),
+            "a wedged daemon must not look connected"
+        );
+        assert!(usable_stale(None).is_none());
+    }
+
+    #[test]
+    fn peers_sharing_a_hostname_keep_distinct_ids() {
+        let status: TsStatus = serde_json::from_str(
+            r#"{"Peer": {
+                "nodekey:aaa": {"HostName": "box", "DNSName": "box.ts.net.", "Online": true,
+                                "TailscaleIPs": ["100.64.0.1"]},
+                "nodekey:bbb": {"HostName": "box", "DNSName": "box-1.ts.net.", "Online": false,
+                                "TailscaleIPs": ["100.64.0.2"]}
+            }}"#,
+        )
+        .unwrap();
+        let peers = build_peers(&status);
+        assert_eq!(peers.len(), 2);
+        let ids: std::collections::HashSet<&str> = peers.iter().map(|p| p.id.as_str()).collect();
+        assert!(ids.contains("nodekey:aaa") && ids.contains("nodekey:bbb"));
+    }
+
+    #[test]
+    fn saved_hostname_is_pushed_only_when_it_differs() {
+        assert!(hostname_needs_update(Some("old-name"), "new-name"));
+        assert!(hostname_needs_update(None, "new-name"));
+        assert!(!hostname_needs_update(Some("same"), "same"));
+        assert!(!hostname_needs_update(Some("same"), " same "));
+        // Nothing saved: keep whatever the daemon has.
+        assert!(!hostname_needs_update(Some("anything"), ""));
+    }
+
     #[test]
     fn ssh_target_accepts_network_names_and_rejects_shell_syntax() {
         assert_eq!(
@@ -2254,6 +2450,7 @@ mod tests {
     #[cfg(unix)]
     #[test]
     fn xdg_terminals_list_skips_comments_and_blank_lines() {
+        let _env = crate::test_env_lock();
         let dir = std::env::temp_dir().join(format!("biglace-term-{}", std::process::id()));
         std::fs::create_dir_all(&dir).unwrap();
         std::fs::write(
@@ -2275,6 +2472,7 @@ mod tests {
     #[cfg(unix)]
     #[test]
     fn desktop_entry_lookup_rejects_path_traversal() {
+        let _env = crate::test_env_lock();
         assert!(desktop_entry_path("../../etc/passwd").is_none());
         assert!(desktop_entry_path("/etc/passwd").is_none());
     }
@@ -2282,6 +2480,7 @@ mod tests {
     #[cfg(unix)]
     #[test]
     fn desktop_entry_exec_reads_the_main_group_only() {
+        let _env = crate::test_env_lock();
         // A `[Desktop Action …]` group's Exec must not be mistaken for the
         // entry's own — actions like Dolphin's "open-home" would send the file
         // manager to the local home directory instead of the peer.

@@ -24,7 +24,7 @@ Gradle 8.14.5 · Compose BOM 2024.12.01 · `compileSdk 36` · `minSdk 26`.
 | **SSH terminal** to a peer, over the tunnel | ✅ implemented (basic — ANSI stripped, password auth; full VT emulator later) |
 | **SFTP file browser** of a peer, over the tunnel | ✅ implemented (list + navigate; transfers later) |
 | Settings: connection form, save/connect/disconnect, panel sign-in | ✅ implemented |
-| `PanelClient`: `preauth-key`, `os-user`, `os-users` — exact desktop contract | ✅ implemented |
+| `PanelClient`: `preauth-key` — exact desktop contract (`os-user` / `os-users` not wired yet) | ✅ implemented |
 | `SettingsStore` / `SecretStore` | ✅ implemented (secrets not encrypted yet — TODO below) |
 | Full VT terminal emulator, file transfers, SSH key auth, host-key TOFU UI | ⬜ next — see mobile/ROADMAP.md |
 
@@ -77,10 +77,9 @@ experience (previews, run configs).
 app/src/main/java/org/communitybig/biglace/
 ├── BigLaceApplication.kt · MainActivity.kt · AppContainer.kt   # entry + DI
 ├── core/
-│   ├── mesh/     MeshBackend, Models (Peer/MeshState), Fake + Companion
-│   ├── panel/    PanelClient (preauth-key, os-user, os-users)
-│   ├── ssh/      SshManager seam (M2)
-│   ├── sftp/     SftpManager seam (M3)
+│   ├── mesh/     MeshBackend, Models (Peer/MeshState), TsnetMeshBackend
+│   ├── panel/    PanelClient (preauth-key)
+│   ├── ssh/      SshConnector, SshAuth, TOFU host keys, session tabs
 │   └── data/     SettingsStore, SecretStore
 ├── ui/           BigLaceApp (nav shell), theme/, Common
 └── feature/

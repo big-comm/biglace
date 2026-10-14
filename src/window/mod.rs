@@ -12,7 +12,7 @@ use std::hash::{Hash, Hasher};
 use std::io::Read;
 use std::rc::Rc;
 use std::sync::atomic::{AtomicBool, Ordering};
-use std::sync::{mpsc, Arc, Mutex};
+use std::sync::{Arc, Mutex};
 use std::time::Duration;
 
 use crate::autostart;
@@ -70,13 +70,15 @@ struct Ctx {
     ui: Ui,
     cfg: Rc<RefCell<config::Config>>,
     tray: TrayHandle,
-    /// hostname → most recent ping, if any. None = "queried but timed out".
+    /// peer id → most recent ping, if any. None = "queried but timed out".
     /// Missing = "haven't measured yet".
     latency: Arc<Mutex<HashMap<String, Option<f64>>>>,
-    /// hostname → online flag from the previous render. Diff'd against the
-    /// current render to fire desktop notifications on transitions.
+    /// peer id → online flag from the previous render. Diff'd against the
+    /// current render to fire desktop notifications on transitions. Keyed by
+    /// node id: with hostnames, a live node and a stale offline node sharing a
+    /// name overwrote each other and announced "online" on every refresh.
     last_peer_states: Rc<RefCell<HashMap<String, bool>>>,
-    /// hostname → instant of the last `notify-send` we fired for this peer.
+    /// peer id → instant of the last `notify-send` we fired for this peer.
     /// Used to debounce notifications when a peer flaps online/offline rapidly
     /// (tailscale's `Online` field can oscillate around DERP heartbeats), so
     /// the user doesn't get spammed by KDE/GNOME's notification daemon.
@@ -107,7 +109,7 @@ struct Ctx {
     /// successful panel call — peers fall back to using their hostname as
     /// the SSH login while empty.
     device_meta: Arc<Mutex<HashMap<String, String>>>,
-    /// Hostnames of peers whose detail panel is currently expanded. Updated
+    /// Ids of peers whose detail panel is currently expanded. Updated
     /// from each row's `notify::expanded` listener; consumed by the next
     /// rebuild to restore the user's open rows so the periodic refresh
     /// doesn't slam expanders shut.
@@ -118,26 +120,22 @@ struct Ctx {
     /// fire every 20s and otherwise nothing has changed). u64::MAX is the
     /// sentinel for "no render yet", so the first refresh always rebuilds.
     last_peer_signature: Rc<RefCell<u64>>,
-    /// Live `hostname → row` map for the currently rendered peers, kept in
-    /// sync with the ListBox. The soft-refresh path looks up each peer by
-    /// hostname and calls `set_subtitle` on its row without touching the
-    /// rest of the widget tree.
+    /// Live `peer id → row` map for the currently rendered peers, kept in
+    /// sync with the ListBox. The soft-refresh path looks up each peer by id
+    /// and calls `set_subtitle` on its row without touching the rest of the
+    /// widget tree.
     peer_rows: Rc<RefCell<HashMap<String, libadwaita::ExpanderRow>>>,
     /// Worker threads send `()` here to ask the main loop to schedule a
-    /// refresh. A poller in `build()` drains the receiver and kicks a
+    /// refresh. A main-loop task in `build()` awaits the receiver and kicks a
     /// background gather. This is our cross-thread bridge — workers only ever
     /// send `Send`-friendly types, never `Ctx` itself.
-    refresh_tx: mpsc::Sender<()>,
-    /// Result slot for the background gather started by `refresh_state`. The
-    /// gather thread stores the latest `RefreshData` here and signals
-    /// `refresh_done_tx`; the main-loop poller takes it and applies it.
-    refresh_slot: Arc<Mutex<Option<RefreshData>>>,
+    refresh_tx: async_channel::Sender<()>,
     /// Coalesces periodic and user-triggered refreshes into one worker.
     refresh_in_flight: Arc<AtomicBool>,
     /// Records a refresh requested while the worker is gathering.
     refresh_pending: Arc<AtomicBool>,
-    /// Signaled by a gather thread once `refresh_slot` holds a fresh snapshot.
-    refresh_done_tx: mpsc::Sender<()>,
+    /// A gather thread sends its snapshot here; a main-loop task applies it.
+    refresh_done_tx: async_channel::Sender<RefreshData>,
     /// True while an explicit connect/start-service action is in flight (the
     /// UI is showing "Connecting…"). A background gather that snapshotted the
     /// pre-connect state must not yank the UI back to "Disconnected" and
@@ -194,8 +192,8 @@ pub fn build(app: &libadwaita::Application, start_hidden: bool) {
         content: content_widgets,
     };
 
-    let (refresh_tx, refresh_rx) = mpsc::channel::<()>();
-    let (refresh_done_tx, refresh_done_rx) = mpsc::channel::<()>();
+    let (refresh_tx, refresh_rx) = async_channel::unbounded::<()>();
+    let (refresh_done_tx, refresh_done_rx) = async_channel::unbounded::<RefreshData>();
 
     let ctx = Ctx {
         ui: ui.clone(),
@@ -214,7 +212,6 @@ pub fn build(app: &libadwaita::Application, start_hidden: bool) {
         last_peer_signature: Rc::new(RefCell::new(u64::MAX)),
         peer_rows: Rc::new(RefCell::new(HashMap::new())),
         refresh_tx,
-        refresh_slot: Arc::new(Mutex::new(None)),
         refresh_in_flight: Arc::new(AtomicBool::new(false)),
         refresh_pending: Arc::new(AtomicBool::new(false)),
         refresh_done_tx,
@@ -229,33 +226,34 @@ pub fn build(app: &libadwaita::Application, start_hidden: bool) {
     let tray_active = setup_tray(&ctx);
     setup_close_to_tray(&ctx, tray_active);
 
-    // One poller drives the whole refresh cycle:
+    // Two main-loop tasks drive the refresh cycle:
     //   • a worker asked for a refresh (`refresh_rx`) → kick a background
     //     gather (coalesced: a burst of pings triggers a single gather);
-    //   • a background gather finished (`refresh_done_rx`) → apply its snapshot
-    //     on the main thread.
+    //   • a background gather finished (`refresh_done_rx`) → apply its
+    //     snapshot on the main thread.
     // Keeping the subprocess + JSON parse off the GTK thread means a hung
-    // tailscaled can't freeze the UI.
+    // tailscaled can't freeze the UI. Both tasks sleep until a message
+    // arrives — the timers that used to poll here woke the CPU 5×/s even
+    // with the window hidden.
     {
         let ctx2 = ctx.clone();
-        glib::timeout_add_local(Duration::from_millis(200), move || {
-            let mut requested = false;
-            while refresh_rx.try_recv().is_ok() {
-                requested = true;
-            }
-            if requested {
+        glib::spawn_future_local(async move {
+            while refresh_rx.recv().await.is_ok() {
+                while refresh_rx.try_recv().is_ok() {}
                 refresh_state(&ctx2);
             }
-            let mut done = false;
-            while refresh_done_rx.try_recv().is_ok() {
-                done = true;
-            }
-            if done {
-                if let Some(data) = ctx2.refresh_slot.lock().ok().and_then(|mut g| g.take()) {
-                    apply_refresh(&ctx2, data);
+        });
+    }
+    {
+        let ctx2 = ctx.clone();
+        glib::spawn_future_local(async move {
+            while let Ok(mut data) = refresh_done_rx.recv().await {
+                // Only the newest snapshot matters.
+                while let Ok(newer) = refresh_done_rx.try_recv() {
+                    data = newer;
                 }
+                apply_refresh(&ctx2, data);
             }
-            glib::ControlFlow::Continue
         });
     }
 
@@ -272,11 +270,20 @@ pub fn build(app: &libadwaita::Application, start_hidden: bool) {
 
     // Periodic refresh of tailscaled status. Keep at 30s so we don't spam
     // `tailscale status --json`; transitions still get caught quickly because
-    // explicit user actions also call refresh_state directly.
+    // explicit user actions also call refresh_state directly. While hidden in
+    // the tray only every 4th tick runs (2 min): the tray tooltip can lag, and
+    // showing the window refreshes at once. Peer notifications need the
+    // regular cadence, so they keep it; auto-reconnect nudges its own refresh.
     {
         let ctx2 = ctx.clone();
+        let tick = Cell::new(0_u32);
         glib::timeout_add_seconds_local(30, move || {
-            refresh_state(&ctx2);
+            tick.set(tick.get().wrapping_add(1));
+            let hidden = !ctx2.ui.win.is_visible();
+            let notifying = ctx2.cfg.borrow().notify_peer_changes;
+            if !hidden || notifying || tick.get().is_multiple_of(4) {
+                refresh_state(&ctx2);
+            }
             glib::ControlFlow::Continue
         });
     }
@@ -295,24 +302,15 @@ pub fn build(app: &libadwaita::Application, start_hidden: bool) {
             // just-shown window; fire do_connect from the main loop once the
             // probe reports the daemon is up but not yet connected.
             let ctx2 = ctx.clone();
-            let slot: Arc<Mutex<Option<bool>>> = Arc::new(Mutex::new(None));
-            let slot_t = slot.clone();
-            std::thread::spawn(move || {
-                let should = tailscale::is_service_active() && !tailscale::get_status().online;
-                if let Ok(mut g) = slot_t.lock() {
-                    *g = Some(should);
-                }
-            });
-            glib::timeout_add_local(Duration::from_millis(200), move || {
-                let Some(should) = slot.lock().ok().and_then(|mut g| g.take()) else {
-                    return glib::ControlFlow::Continue;
-                };
-                if should {
-                    let c = ctx2.cfg.borrow().clone();
-                    do_connect(&ctx2, c.server_url, c.authkey, c.hostname.clone());
-                }
-                glib::ControlFlow::Break
-            });
+            run_in_background(
+                || tailscale::is_service_active() && !tailscale::get_status().online,
+                move |should| {
+                    if should {
+                        let c = ctx2.cfg.borrow().clone();
+                        do_connect(&ctx2, c.server_url, c.authkey, c.hostname.clone());
+                    }
+                },
+            );
         }
     }
 }
@@ -329,56 +327,48 @@ fn setup_tray(ctx: &Ctx) -> bool {
     *ctx.tray.borrow_mut() = Some(handle);
 
     let ctx2 = ctx.clone();
-    glib::timeout_add_local(Duration::from_millis(150), move || {
-        // Drain whatever's queued. If the tray sender dropped (subprocess
-        // exited, KDE/GNOME tray went away), break the polling loop instead of
-        // looping forever on a dead channel — keeps the main loop cleaner and
-        // releases the captured `ctx2`.
-        loop {
-            match rx.try_recv() {
-                Ok(cmd) => match cmd {
-                    tray::Command::Show => {
-                        ctx2.ui.win.present();
-                        // Re-sync immediately: latency pings pause while hidden
-                        // (see spawn_latency_worker), so the list could be
-                        // showing stale data the moment the window reappears.
-                        refresh_state(&ctx2);
-                    }
-                    tray::Command::Connect => {
-                        if ctx2.ui.sidebar.btn_connect.is_sensitive()
-                            && !ctx2
-                                .ui
-                                .sidebar
-                                .btn_connect
-                                .has_css_class("destructive-action")
-                        {
-                            ctx2.ui.sidebar.btn_connect.emit_clicked();
-                        }
-                    }
-                    tray::Command::Disconnect => {
-                        if ctx2
+    glib::spawn_future_local(async move {
+        // Sleeps until the tray sends something. When the tray side goes away
+        // (service thread exited) the channel closes and this task ends,
+        // releasing the captured `ctx2`.
+        while let Ok(cmd) = rx.recv().await {
+            match cmd {
+                tray::Command::Show => {
+                    ctx2.ui.win.present();
+                    // Re-sync immediately: latency pings pause while hidden
+                    // (see spawn_latency_worker), so the list could be
+                    // showing stale data the moment the window reappears.
+                    refresh_state(&ctx2);
+                }
+                tray::Command::Connect => {
+                    if ctx2.ui.sidebar.btn_connect.is_sensitive()
+                        && !ctx2
                             .ui
                             .sidebar
                             .btn_connect
                             .has_css_class("destructive-action")
-                        {
-                            ctx2.ui.sidebar.btn_connect.emit_clicked();
-                        }
+                    {
+                        ctx2.ui.sidebar.btn_connect.emit_clicked();
                     }
-                    tray::Command::Quit => {
-                        if let Some(app) = ctx2.ui.win.application() {
-                            app.quit();
-                        }
+                }
+                tray::Command::Disconnect => {
+                    if ctx2
+                        .ui
+                        .sidebar
+                        .btn_connect
+                        .has_css_class("destructive-action")
+                    {
+                        ctx2.ui.sidebar.btn_connect.emit_clicked();
                     }
-                },
-                Err(mpsc::TryRecvError::Empty) => break,
-                Err(mpsc::TryRecvError::Disconnected) => {
-                    eprintln!("[biglace] tray: channel closed, stopping poller");
-                    return glib::ControlFlow::Break;
+                }
+                tray::Command::Quit => {
+                    if let Some(app) = ctx2.ui.win.application() {
+                        app.quit();
+                    }
                 }
             }
         }
-        glib::ControlFlow::Continue
+        eprintln!("[biglace] tray: channel closed");
     });
     true
 }
@@ -459,7 +449,7 @@ fn spawn_latency_worker(ctx: &Ctx) {
                 .filter(|p| p.online)
                 .filter_map(|p| {
                     let target = if p.ipv4.is_empty() { p.ip } else { p.ipv4 };
-                    (!target.is_empty()).then_some((p.hostname, target))
+                    (!target.is_empty()).then_some((p.id, target))
                 })
                 .collect();
             if online_targets.is_empty() {
@@ -489,7 +479,7 @@ fn spawn_latency_worker(ctx: &Ctx) {
             for h in handles {
                 let _ = h.join();
             }
-            let _ = tx_t.send(());
+            let _ = tx_t.try_send(());
         });
         glib::ControlFlow::Continue
     });
@@ -498,13 +488,13 @@ fn spawn_latency_worker(ctx: &Ctx) {
 /// Poll Headscale's `/health` every 60s and update the badge in the header.
 /// Skipped while the user has no server configured.
 fn spawn_health_worker(ctx: &Ctx) {
-    let kick = |url: String, health_ok: Arc<Mutex<bool>>, tx: mpsc::Sender<()>| {
+    let kick = |url: String, health_ok: Arc<Mutex<bool>>, tx: async_channel::Sender<()>| {
         std::thread::spawn(move || {
             let ok = tailscale::headscale_healthy(&url);
             if let Ok(mut g) = health_ok.lock() {
                 *g = ok;
             }
-            let _ = tx.send(());
+            let _ = tx.try_send(());
         });
     };
 
@@ -545,7 +535,7 @@ fn spawn_reconnect_worker(ctx: &Ctx) {
         // Nudge a background gather so `current_online` stays fresh, then read
         // the last gathered value — never probe tailscaled synchronously here,
         // that would freeze the GTK loop when the daemon hangs.
-        let _ = ctx2.refresh_tx.send(());
+        let _ = ctx2.refresh_tx.try_send(());
         let now_online = ctx2.current_online.get();
         if now_online {
             // Reset backoff on successful connect, even if user reconnected manually.
@@ -597,15 +587,15 @@ fn spawn_reconnect_worker(ctx: &Ctx) {
     });
 }
 
-/// One-shot Github releases check. Compares `crate::APP_VERSION` against the
-/// `tag_name` returned by the API and stashes the new version string in
+/// One-shot Github releases check. Compares `crate::BUILD_VERSION` against the
+/// `tag_name` of the latest release and stashes the new version string in
 /// `update_available` for the header badge to pick up. Silent on failure —
 /// no internet, rate-limit, or repo rename should never spam the user.
 fn spawn_update_check(ctx: &Ctx) {
     let update_available = ctx.update_available.clone();
     let tx = ctx.refresh_tx.clone();
     std::thread::spawn(move || {
-        let url = "https://api.github.com/repos/communitybig/biglace/releases/latest";
+        let url = "https://api.github.com/repos/big-comm/biglace/releases/latest";
         // Redirect-following agent: unauthenticated public API, and GitHub
         // redirects `/repos/<owner>/…` after a repository rename or transfer —
         // with `redirects(0)` the check would silently stop reporting updates.
@@ -638,12 +628,16 @@ fn spawn_update_check(ctx: &Ctx) {
             return;
         };
         let latest = tag.trim_start_matches('v').to_string();
-        let current = crate::APP_VERSION;
-        if version_is_newer(&latest, current) {
+        // Release tags are date stamps, so compare against this build's date
+        // stamp, not the semantic APP_VERSION.
+        let Some(current) = crate::BUILD_VERSION else {
+            return;
+        };
+        if release_is_newer(&latest, current) {
             if let Ok(mut g) = update_available.lock() {
                 *g = Some(latest);
             }
-            let _ = tx.send(());
+            let _ = tx.try_send(());
         }
     });
 }
@@ -691,7 +685,7 @@ fn spawn_device_meta_worker(ctx: &Ctx) {
                     if let Ok(mut g) = device_meta_t.lock() {
                         *g = map;
                     }
-                    let _ = tx_t.send(());
+                    let _ = tx_t.try_send(());
                 }
                 Err(e) => eprintln!("[biglace] panel: fetch device-meta failed: {e}"),
             }
@@ -710,29 +704,42 @@ fn spawn_device_meta_worker(ctx: &Ctx) {
     });
 }
 
-/// Semver-ish comparison: numeric components first, then pre-release status.
-///
-/// Splitting the whole string on `.` (as this did) mangles pre-release tags —
-/// `1.2.0-rc1` parsed as `[1, 0, 0]` because `"0-rc1"` isn't a u32, so a
-/// release candidate looked *older* than `1.1.9` and a plain `1.2.0` never
-/// registered as an upgrade over `1.2.0-rc1`. Strip the pre-release tail before
-/// parsing and use it only to break a tie, per semver: `1.2.0` > `1.2.0-rc1`.
-fn version_is_newer(candidate: &str, current: &str) -> bool {
-    let parse = |s: &str| -> (Vec<u32>, bool) {
-        let core = s.split(['-', '+']).next().unwrap_or("");
-        let numbers = core
-            .split('.')
-            .map(|p| p.parse::<u32>().unwrap_or(0))
-            .collect();
-        (numbers, core.len() != s.len())
+/// Minutes encoded by a date-based version `YY.MM.DD[-HHMM]` (release tags
+/// and packaged builds both use it). The day count is approximate (31-day
+/// months), which is fine: it only has to order versions, not measure them.
+fn version_minutes(version: &str) -> Option<u64> {
+    let (date, time) = match version.split_once('-') {
+        Some((date, time)) => (date, Some(time)),
+        None => (version, None),
     };
-    let (new_numbers, new_is_pre) = parse(candidate);
-    let (old_numbers, old_is_pre) = parse(current);
-    match new_numbers.cmp(&old_numbers) {
-        std::cmp::Ordering::Greater => true,
-        std::cmp::Ordering::Less => false,
-        // Same numbers: only a final release supersedes a pre-release.
-        std::cmp::Ordering::Equal => old_is_pre && !new_is_pre,
+    let mut parts = date.split('.').map(|p| p.parse::<u64>().ok());
+    let (yy, mm, dd) = (parts.next()??, parts.next()??, parts.next()??);
+    if parts.next().is_some() || !(1..=12).contains(&mm) || !(1..=31).contains(&dd) {
+        return None;
+    }
+    let hhmm = match time {
+        Some(t) if t.len() == 4 => t
+            .parse::<u64>()
+            .ok()
+            .filter(|v| v / 100 < 24 && v % 100 < 60)?,
+        Some(_) => return None,
+        None => 0,
+    };
+    Some(((yy * 12 + mm) * 31 + dd) * 1440 + (hhmm / 100) * 60 + hhmm % 100)
+}
+
+/// Whether the release tagged `candidate` is newer than the running build.
+///
+/// Both are date-based. The package is built a few minutes before (or after)
+/// its release tag is created, so a release must be more than an hour newer
+/// than the build to count — otherwise the release a user just installed
+/// would advertise itself as an update. A build without a date version is a
+/// developer build and never gets the badge.
+fn release_is_newer(candidate: &str, current: &str) -> bool {
+    const SAME_RELEASE_WINDOW_MIN: u64 = 60;
+    match (version_minutes(candidate), version_minutes(current)) {
+        (Some(new), Some(old)) => new > old + SAME_RELEASE_WINDOW_MIN,
+        _ => false,
     }
 }
 
@@ -900,21 +907,22 @@ fn wire_signals(ctx: &Ctx) {
             // get on `--login-server`).
             ctx2.ui.sidebar.entry_server.set_text(&server);
             ctx2.ui.sidebar.entry_host.set_text(&host);
-            {
+            let saved = {
                 let mut c = ctx2.cfg.borrow_mut();
                 c.server_url = server;
                 c.authkey = key;
                 c.hostname = host;
                 c.enrolled = true;
-                config::save_or_warn(&c);
-            }
+                config::save_with_authkey(&c)
+            };
             ctx2.ui.sidebar.expander_manual.set_expanded(false);
-            ctx2.ui.toast.add_toast(
-                libadwaita::Toast::builder()
-                    .title(tr!("Setup saved"))
-                    .timeout(2)
-                    .build(),
-            );
+            // Report what actually happened: this used to say "Setup saved"
+            // even when nothing reached the disk.
+            match saved {
+                Ok(None) => show_toast(&ctx2.ui.toast, &tr!("Setup saved"), 2),
+                Ok(Some(reason)) => show_toast(&ctx2.ui.toast, &keyring_warning(&reason), 8),
+                Err(e) => show_toast(&ctx2.ui.toast, &trf!("Error: {error}", "error" => e), 6),
+            }
             refresh_state(&ctx2);
         });
     }
@@ -1014,18 +1022,29 @@ fn wire_signals(ctx: &Ctx) {
                 }
                 *ctx2.reconnect_attempts.borrow_mut() = 0;
                 *ctx2.reconnect_was_online.borrow_mut() = false;
+                // Refresh when `tailscale down` actually finished — a fixed
+                // 400 ms delay raced it (and lost whenever pkexec asked for a
+                // password), leaving the UI on "Connected" for up to 30 s.
+                btn.set_sensitive(false);
                 let ctx3 = ctx2.clone();
-                std::thread::spawn(|| {
-                    if let Err(e) = tailscale::disconnect() {
-                        eprintln!("[biglace] disconnect: failed: {e}");
-                    } else {
-                        eprintln!("[biglace] disconnect: ok");
-                    }
-                });
-                glib::timeout_add_local(Duration::from_millis(400), move || {
-                    refresh_state(&ctx3);
-                    glib::ControlFlow::Break
-                });
+                run_in_background(
+                    || tailscale::disconnect().map_err(|e| e.to_string()),
+                    move |result| {
+                        match result {
+                            Ok(()) => eprintln!("[biglace] disconnect: ok"),
+                            Err(e) => {
+                                eprintln!("[biglace] disconnect: failed: {e}");
+                                show_toast(
+                                    &ctx3.ui.toast,
+                                    &trf!("Error: {error}", "error" => e),
+                                    6,
+                                );
+                            }
+                        }
+                        ctx3.ui.sidebar.btn_connect.set_sensitive(true);
+                        refresh_state(&ctx3);
+                    },
+                );
             } else {
                 let c = ctx2.cfg.borrow().clone();
                 if c.authkey.trim().is_empty() && !c.enrolled {
@@ -1064,55 +1083,48 @@ fn wire_signals(ctx: &Ctx) {
                 // pkexec/sc prompt is up (see apply_refresh).
                 *ctx2.connect_in_flight.borrow_mut() = true;
 
-                let slot: Arc<Mutex<Option<bool>>> = Arc::new(Mutex::new(None));
-                let slot_t = slot.clone();
-                std::thread::spawn(move || {
-                    // Linux: `pkexec systemctl enable --now tailscaled` prompts via
-                    // polkit and registers the unit for auto-start. Windows: the
-                    // installer already configures `Tailscale` to start at boot,
-                    // so all we need is `sc start` — which silently no-ops when
-                    // the service is already RUNNING. Both paths return a single
-                    // bool so the GTK-side poller can be shared.
-                    #[cfg(target_os = "linux")]
-                    let ok = std::process::Command::new("pkexec")
-                        .args(["systemctl", "enable", "--now", "tailscaled"])
-                        .status()
-                        .map(|s| s.success())
-                        .unwrap_or(false);
-                    #[cfg(target_os = "windows")]
-                    let ok = std::process::Command::new("sc")
-                        .args(["start", "Tailscale"])
-                        .status()
-                        // sc returns 1056 (ERROR_SERVICE_ALREADY_RUNNING) when the
-                        // service is already up — that's success from the user's
-                        // perspective, so accept any exit code as long as the
-                        // process ran.
-                        .map(|_| true)
-                        .unwrap_or(false);
-                    #[cfg(not(any(target_os = "linux", target_os = "windows")))]
-                    let ok = false;
-                    if let Ok(mut g) = slot_t.lock() {
-                        *g = Some(ok);
-                    }
-                });
-
                 let ctx3 = ctx2.clone();
                 let btn3 = btn.clone();
-                glib::timeout_add_local(Duration::from_millis(400), move || {
-                    match slot.lock().ok().and_then(|mut g| g.take()) {
-                        None => glib::ControlFlow::Continue,
-                        Some(_) => {
-                            btn3.set_sensitive(true);
-                            *ctx3.connect_in_flight.borrow_mut() = false;
-                            // The service state just changed under us; drop the
-                            // cached probe so this refresh reads the truth instead
-                            // of an up-to-2s-old "stopped".
-                            tailscale::invalidate_service_cache();
-                            refresh_state(&ctx3);
-                            glib::ControlFlow::Break
+                run_in_background(
+                    move || {
+                        // Linux: `pkexec systemctl enable --now tailscaled` prompts via
+                        // polkit and registers the unit for auto-start. Windows: the
+                        // installer already configures `Tailscale` to start at boot,
+                        // so all we need is `sc start` — which silently no-ops when
+                        // the service is already RUNNING. Both paths return a single
+                        // bool so the GTK-side poller can be shared.
+                        #[cfg(target_os = "linux")]
+                        let ok = std::process::Command::new("pkexec")
+                            .args(["systemctl", "enable", "--now", "tailscaled"])
+                            .status()
+                            .map(|s| s.success())
+                            .unwrap_or(false);
+                        #[cfg(target_os = "windows")]
+                        let ok = std::process::Command::new("sc")
+                            .args(["start", "Tailscale"])
+                            .status()
+                            .is_ok_and(|s| sc_start_succeeded(s.code()));
+                        #[cfg(not(any(target_os = "linux", target_os = "windows")))]
+                        let ok = false;
+                        ok
+                    },
+                    move |ok: bool| {
+                        btn3.set_sensitive(true);
+                        *ctx3.connect_in_flight.borrow_mut() = false;
+                        if !ok {
+                            show_toast(
+                                &ctx3.ui.toast,
+                                &tr!("Could not start the Tailscale service."),
+                                5,
+                            );
                         }
-                    }
-                });
+                        // The service state just changed under us; drop the
+                        // cached probe so this refresh reads the truth instead
+                        // of an up-to-2s-old "stopped".
+                        tailscale::invalidate_service_cache();
+                        refresh_state(&ctx3);
+                    },
+                );
             });
     }
 
@@ -1136,6 +1148,54 @@ fn wire_signals(ctx: &Ctx) {
     }
 }
 
+/// Whether `sc start Tailscale` left the service running: exit 0, or 1056
+/// (ERROR_SERVICE_ALREADY_RUNNING), which is success from the user's point of
+/// view. Anything else — access denied (5), disabled (1058), missing (1060) —
+/// is a real failure that used to be reported as success.
+#[cfg_attr(not(target_os = "windows"), allow(dead_code))]
+fn sc_start_succeeded(code: Option<i32>) -> bool {
+    matches!(code, Some(0) | Some(1056))
+}
+
+/// Run `work` on a worker thread and hand its result to `done` on the GTK
+/// main loop. The main loop is woken by the channel only when the result
+/// arrives — no timer polls a shared slot in the meantime.
+pub(super) fn run_in_background<T, W, D>(work: W, done: D)
+where
+    T: Send + 'static,
+    W: FnOnce() -> T + Send + 'static,
+    D: FnOnce(T) + 'static,
+{
+    let (tx, rx) = async_channel::bounded(1);
+    std::thread::spawn(move || {
+        let _ = tx.send_blocking(work());
+    });
+    glib::spawn_future_local(async move {
+        if let Ok(result) = rx.recv().await {
+            done(result);
+        }
+    });
+}
+
+/// Show a toast. The text is escaped: AdwToast titles are markup, and
+/// messages here can embed tailscale stderr or hostnames with `<`/`&`.
+pub(super) fn show_toast(overlay: &libadwaita::ToastOverlay, text: &str, timeout: u32) {
+    overlay.add_toast(
+        libadwaita::Toast::builder()
+            .title(glib::markup_escape_text(text).as_str())
+            .timeout(timeout)
+            .build(),
+    );
+}
+
+/// The config was saved but the pre-auth key couldn't go into the keyring.
+pub(super) fn keyring_warning(reason: &str) -> String {
+    trf!(
+        "Saved, but the pre-auth key could not be stored in the system keyring ({error}). This device can still reconnect; the key is only needed again to register it anew.",
+        "error" => reason
+    )
+}
+
 // ─── Connect flow ────────────────────────────────────────────────────────────
 
 fn do_connect(ctx: &Ctx, server: String, authkey: String, hostname: String) {
@@ -1145,94 +1205,94 @@ fn do_connect(ctx: &Ctx, server: String, authkey: String, hostname: String) {
     // this attempt resolves (see apply_refresh).
     *ctx.connect_in_flight.borrow_mut() = true;
 
-    let slot: Arc<Mutex<Option<Result<(), String>>>> = Arc::new(Mutex::new(None));
-    let slot_t = slot.clone();
-
-    std::thread::spawn(move || {
-        let r = tailscale::connect(&server, &authkey, &hostname).map_err(|e| e.to_string());
-        match &r {
-            Ok(()) => eprintln!("[biglace] connect: ok"),
-            Err(e) => eprintln!("[biglace] connect: failed: {e}"),
-        }
-        if let Ok(mut g) = slot_t.lock() {
-            *g = Some(r);
-        }
-    });
-
     let ctx2 = ctx.clone();
-    glib::timeout_add_local(Duration::from_millis(300), move || {
-        match slot.lock().ok().and_then(|mut g| g.take()) {
-            None => glib::ControlFlow::Continue,
-            Some(Ok(())) => {
-                let updated = mark_enrolled(ctx2.cfg.borrow().clone());
-                let persist_error = match config::save(&updated) {
-                    Ok(()) => {
-                        *ctx2.cfg.borrow_mut() = updated;
-                        None
+    run_in_background(
+        move || {
+            let r = tailscale::connect(&server, &authkey, &hostname).map_err(|e| e.to_string());
+            match &r {
+                Ok(()) => eprintln!("[biglace] connect: ok"),
+                Err(e) => eprintln!("[biglace] connect: failed: {e}"),
+            }
+            r
+        },
+        move |result| {
+            match result {
+                Ok(()) => {
+                    let updated = mark_enrolled(ctx2.cfg.borrow().clone());
+                    let persist_error = match config::save(&updated) {
+                        Ok(()) => {
+                            *ctx2.cfg.borrow_mut() = updated;
+                            None
+                        }
+                        Err(error) => Some(error.to_string()),
+                    };
+                    if let Some(error) = persist_error {
+                        ctx2.ui.toast.add_toast(
+                            libadwaita::Toast::builder()
+                                .title(
+                                    glib::markup_escape_text(
+                                        &trf!("Error: {error}", "error" => error),
+                                    )
+                                    .as_str(),
+                                )
+                                .timeout(6)
+                                .build(),
+                        );
                     }
-                    Err(error) => Some(error.to_string()),
-                };
-                if let Some(error) = persist_error {
+                    *ctx2.connect_in_flight.borrow_mut() = false;
+                    refresh_state(&ctx2);
+                    // Push our $USER to the panel and refresh the peer→os_user
+                    // cache right away so the SFTP/SSH buttons of the just-listed
+                    // peers compose the correct login on the very first render
+                    // — without this, the user would wait up to 30s for the next
+                    // device-meta worker tick.
+                    if !ctx2.cfg.borrow().panel_url.is_empty() {
+                        let os_user = config::os_user();
+                        let device_meta = ctx2.device_meta.clone();
+                        let refresh_tx = ctx2.refresh_tx.clone();
+                        std::thread::spawn(move || {
+                            if let Err(e) = panel::post_os_user(&os_user) {
+                                eprintln!("[biglace] panel: post os_user failed: {e}");
+                            }
+                            match panel::fetch_device_meta() {
+                                Ok(map) => {
+                                    if let Ok(mut g) = device_meta.lock() {
+                                        *g = map;
+                                    }
+                                    let _ = refresh_tx.try_send(());
+                                }
+                                Err(e) => {
+                                    eprintln!("[biglace] panel: fetch device-meta failed: {e}")
+                                }
+                            }
+                        });
+                    }
                     ctx2.ui.toast.add_toast(
                         libadwaita::Toast::builder()
-                            .title(
-                                glib::markup_escape_text(&trf!("Error: {error}", "error" => error))
-                                    .as_str(),
-                            )
-                            .timeout(6)
+                            .title(tr!("Connected"))
+                            .timeout(2)
                             .build(),
                     );
                 }
-                *ctx2.connect_in_flight.borrow_mut() = false;
-                refresh_state(&ctx2);
-                // Push our $USER to the panel and refresh the peer→os_user
-                // cache right away so the SFTP/SSH buttons of the just-listed
-                // peers compose the correct login on the very first render
-                // — without this, the user would wait up to 30s for the next
-                // device-meta worker tick.
-                if !ctx2.cfg.borrow().panel_url.is_empty() {
-                    let os_user = config::os_user();
-                    let device_meta = ctx2.device_meta.clone();
-                    let refresh_tx = ctx2.refresh_tx.clone();
-                    std::thread::spawn(move || {
-                        if let Err(e) = panel::post_os_user(&os_user) {
-                            eprintln!("[biglace] panel: post os_user failed: {e}");
-                        }
-                        match panel::fetch_device_meta() {
-                            Ok(map) => {
-                                if let Ok(mut g) = device_meta.lock() {
-                                    *g = map;
-                                }
-                                let _ = refresh_tx.send(());
-                            }
-                            Err(e) => eprintln!("[biglace] panel: fetch device-meta failed: {e}"),
-                        }
-                    });
+                Err(e) => {
+                    *ctx2.connect_in_flight.borrow_mut() = false;
+                    refresh_state(&ctx2);
+                    let toast = libadwaita::Toast::builder()
+                        // Escape: the tailscale stderr embedded here can contain
+                        // `<`/`&` (URLs, hostnames), which AdwToast's markup-aware
+                        // title would otherwise swallow — hiding the very error the
+                        // user needs to read.
+                        .title(
+                            glib::markup_escape_text(&trf!("Error: {error}", "error" => e))
+                                .as_str(),
+                        )
+                        .timeout(6)
+                        .build();
+                    ctx2.ui.toast.add_toast(toast);
                 }
-                ctx2.ui.toast.add_toast(
-                    libadwaita::Toast::builder()
-                        .title(tr!("Connected"))
-                        .timeout(2)
-                        .build(),
-                );
-                glib::ControlFlow::Break
             }
-            Some(Err(e)) => {
-                *ctx2.connect_in_flight.borrow_mut() = false;
-                refresh_state(&ctx2);
-                let toast = libadwaita::Toast::builder()
-                    // Escape: the tailscale stderr embedded here can contain
-                    // `<`/`&` (URLs, hostnames), which AdwToast's markup-aware
-                    // title would otherwise swallow — hiding the very error the
-                    // user needs to read.
-                    .title(glib::markup_escape_text(&trf!("Error: {error}", "error" => e)).as_str())
-                    .timeout(6)
-                    .build();
-                ctx2.ui.toast.add_toast(toast);
-                glib::ControlFlow::Break
-            }
-        }
-    });
+        },
+    );
 }
 
 // ─── State refresh & UI binding ──────────────────────────────────────────────
@@ -1245,7 +1305,6 @@ fn refresh_state(ctx: &Ctx) {
         ctx.refresh_pending.store(true, Ordering::Release);
         return;
     }
-    let slot = ctx.refresh_slot.clone();
     let done = ctx.refresh_done_tx.clone();
     let device_meta = ctx.device_meta.clone();
     let in_flight = ctx.refresh_in_flight.clone();
@@ -1269,10 +1328,7 @@ fn refresh_state(ctx: &Ctx) {
                 }
                 RefreshData::Live { status, peers }
             };
-            if let Ok(mut g) = slot.lock() {
-                *g = Some(data);
-            }
-            let _ = done.send(());
+            let _ = done.try_send(data);
 
             if pending.swap(false, Ordering::AcqRel) {
                 continue;
@@ -1514,29 +1570,18 @@ fn apply_state(ctx: &Ctx, state: AppState, status: &Status, peers: &[Peer]) {
             let mut last_notif = ctx.last_peer_notifications.borrow_mut();
             let now = std::time::Instant::now();
             let cooldown = std::time::Duration::from_secs(60);
-            for p in peers {
-                let was = prev.get(&p.hostname).copied();
-                let transition = match (was, p.online) {
-                    (Some(true), false) => Some(false),
-                    (Some(false), true) => Some(true),
-                    _ => None,
-                };
-                if let Some(state) = transition {
-                    let recent = last_notif
-                        .get(&p.hostname)
-                        .map(|t| now.duration_since(*t) < cooldown)
-                        .unwrap_or(false);
-                    if !recent {
-                        notify_peer_change(&p.display_name(), state);
-                        last_notif.insert(p.hostname.clone(), now);
-                    }
+            for (p, online) in peer_transitions(&prev, peers) {
+                let recent = last_notif
+                    .get(&p.id)
+                    .map(|t| now.duration_since(*t) < cooldown)
+                    .unwrap_or(false);
+                if !recent {
+                    notify_peer_change(&p.display_name(), online);
+                    last_notif.insert(p.id.clone(), now);
                 }
             }
         }
-        prev.clear();
-        for p in peers {
-            prev.insert(p.hostname.clone(), p.online);
-        }
+        *prev = peers.iter().map(|p| (p.id.clone(), p.online)).collect();
         drop(prev);
 
         // Sort: favorites → online → alpha. We keep the get_peers() order
@@ -1563,13 +1608,13 @@ fn apply_state(ctx: &Ctx, state: AppState, status: &Status, peers: &[Peer]) {
         let prev_sig = *ctx.last_peer_signature.borrow();
         let row_map_has_all = {
             let m = ctx.peer_rows.borrow();
-            !m.is_empty() && sorted.iter().all(|p| m.contains_key(&p.hostname))
+            !m.is_empty() && sorted.iter().all(|p| m.contains_key(&p.id))
         };
 
         if new_sig == prev_sig && row_map_has_all {
             let rows = ctx.peer_rows.borrow();
             for peer in &sorted {
-                if let Some(row) = rows.get(&peer.hostname) {
+                if let Some(row) = rows.get(&peer.id) {
                     row.set_subtitle(&peer_row::compose_subtitle(peer, &ctx.latency));
                 }
             }
@@ -1594,12 +1639,12 @@ fn apply_state(ctx: &Ctx, state: AppState, status: &Status, peers: &[Peer]) {
             for peer in &sorted {
                 let row = peer_row::build(peer, &peer_ctx);
                 ui.content.peers_list.append(&row);
-                new_rows.insert(peer.hostname.clone(), row);
+                new_rows.insert(peer.id.clone(), row);
             }
             *ctx.peer_rows.borrow_mut() = new_rows;
             // Drop expanded entries for peers that no longer exist so the
             // set doesn't grow unbounded across long sessions.
-            let live: HashSet<&str> = sorted.iter().map(|p| p.hostname.as_str()).collect();
+            let live: HashSet<&str> = sorted.iter().map(|p| p.id.as_str()).collect();
             ctx.expanded_peers
                 .borrow_mut()
                 .retain(|h| live.contains(h.as_str()));
@@ -1644,6 +1689,7 @@ fn compute_peer_signature(sorted: &[&Peer], cfg: &config::Config) -> u64 {
     let mut h = std::collections::hash_map::DefaultHasher::new();
     sorted.len().hash(&mut h);
     for p in sorted {
+        p.id.hash(&mut h);
         p.hostname.hash(&mut h);
         p.online.hash(&mut h);
         p.ip.hash(&mut h);
@@ -1665,6 +1711,18 @@ fn compute_peer_signature(sorted: &[&Peer], cfg: &config::Config) -> u64 {
         cfg.peer_overrides.get(&p.hostname).hash(&mut h);
     }
     h.finish()
+}
+
+/// Peers whose online state flipped since the previous render, keyed by node
+/// id so two nodes that share a hostname never read as one flapping peer.
+fn peer_transitions<'a>(prev: &HashMap<String, bool>, peers: &'a [Peer]) -> Vec<(&'a Peer, bool)> {
+    peers
+        .iter()
+        .filter_map(|p| match prev.get(&p.id) {
+            Some(&was) if was != p.online => Some((p, p.online)),
+            _ => None,
+        })
+        .collect()
 }
 
 /// Send a desktop notification via `notify-send`. Silent on failure (no
@@ -1870,19 +1928,98 @@ mod tests {
     }
 
     #[test]
-    fn update_check_orders_prereleases_below_their_release() {
-        assert!(version_is_newer("1.1.0", "1.0.0"));
-        assert!(version_is_newer("1.0.1", "1.0.0"));
-        assert!(!version_is_newer("1.0.0", "1.0.0"));
-        assert!(!version_is_newer("0.9.9", "1.0.0"));
-        // A release candidate must not read as an upgrade over the release it
-        // precedes, and the release must read as an upgrade over it.
-        assert!(!version_is_newer("1.2.0-rc1", "1.2.0"));
-        assert!(version_is_newer("1.2.0", "1.2.0-rc1"));
-        // …and a candidate for a *later* version still is one.
-        assert!(version_is_newer("1.3.0-rc1", "1.2.0"));
-        // Fewer components compare as lower, not as garbage.
-        assert!(version_is_newer("1.2.1", "1.2"));
+    fn update_check_compares_date_based_release_tags() {
+        // A later day, or a release hours later on the same day, is an update.
+        assert!(release_is_newer("26.09.02-0100", "26.09.01-0155"));
+        assert!(release_is_newer("26.09.01-1800", "26.09.01-0155"));
+        assert!(release_is_newer("27.01.01-0300", "26.12.31-2359"));
+        assert!(!release_is_newer("27.01.01-0000", "26.12.31-2359"));
+        // The release this build came from (tagged minutes apart) is not.
+        assert!(!release_is_newer("26.09.01-0157", "26.09.01-0155"));
+        assert!(!release_is_newer("26.09.01-0155", "26.09.01-0210"));
+        assert!(!release_is_newer("26.08.31-2300", "26.09.01-0155"));
+        // Development builds (crate version) and odd tags never get a badge.
+        assert!(!release_is_newer("26.09.01-0155", "1.0.0"));
+        assert!(!release_is_newer(
+            "biglace-26.09.01-0157-x86_64",
+            "26.01.01-0000"
+        ));
+        assert!(!release_is_newer("26.13.01-0000", "26.01.01-0000"));
+    }
+
+    fn test_peer(id: &str, hostname: &str, online: bool) -> Peer {
+        Peer {
+            id: id.into(),
+            hostname: hostname.into(),
+            ip: String::new(),
+            ipv4: String::new(),
+            ipv6: String::new(),
+            dns_name: String::new(),
+            online,
+            os: String::new(),
+            user: String::new(),
+            ssh_user: String::new(),
+            last_seen: String::new(),
+            tags: Vec::new(),
+            exit_node_offered: false,
+            exit_node_active: false,
+        }
+    }
+
+    #[test]
+    fn windows_service_start_only_accepts_running_outcomes() {
+        assert!(sc_start_succeeded(Some(0)));
+        assert!(sc_start_succeeded(Some(1056)));
+        assert!(!sc_start_succeeded(Some(5)));
+        assert!(!sc_start_succeeded(Some(1060)));
+        assert!(!sc_start_succeeded(None));
+    }
+
+    #[test]
+    fn background_work_is_delivered_on_the_main_loop() {
+        let context = glib::MainContext::new();
+        context
+            .with_thread_default(|| {
+                let got = Rc::new(Cell::new(None));
+                let main_thread = std::thread::current().id();
+                let sink = got.clone();
+                run_in_background(
+                    || (21 * 2, std::thread::current().id()),
+                    move |(value, worker)| {
+                        sink.set(Some((value, worker, std::thread::current().id())))
+                    },
+                );
+                let deadline = std::time::Instant::now() + Duration::from_secs(5);
+                while got.get().is_none() && std::time::Instant::now() < deadline {
+                    context.iteration(true);
+                }
+                let (value, worker, delivered_on) = got.get().expect("result delivered");
+                assert_eq!(value, 42);
+                assert_ne!(worker, main_thread, "work must run off the main loop");
+                assert_eq!(delivered_on, main_thread, "result must come back on it");
+            })
+            .unwrap();
+    }
+
+    #[test]
+    fn duplicate_hostnames_do_not_produce_phantom_transitions() {
+        // A live node and its stale predecessor, same hostname.
+        let peers = vec![
+            test_peer("nodekey:new", "box", true),
+            test_peer("nodekey:old", "box", false),
+        ];
+        let prev: HashMap<String, bool> = peers.iter().map(|p| (p.id.clone(), p.online)).collect();
+        assert!(peer_transitions(&prev, &peers).is_empty());
+
+        // A real change is still reported, for the right node.
+        let changed = vec![
+            test_peer("nodekey:new", "box", false),
+            test_peer("nodekey:old", "box", false),
+        ];
+        let flips = peer_transitions(&prev, &changed);
+        assert_eq!(flips.len(), 1);
+        assert_eq!(flips[0].0.id, "nodekey:new");
+        assert!(!flips[0].1);
     }
 
     #[test]

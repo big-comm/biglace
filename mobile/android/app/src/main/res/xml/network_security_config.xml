@@ -1,8 +1,10 @@
 <?xml version="1.0" encoding="utf-8"?>
-<network-security-config xmlns:tools="http://schemas.android.com/tools">
-    <!-- Tailnet metadata endpoints authenticate by source IP and use HTTP.
-         Panel credentials remain HTTPS-only in PanelClient. -->
-    <base-config
-        cleartextTrafficPermitted="true"
-        tools:ignore="InsecureBaseConfiguration" />
+<network-security-config>
+    <!-- The panel is HTTPS-only (PanelClient). Cleartext is allowed solely for a
+         panel running on this same device, which is useful during development. -->
+    <base-config cleartextTrafficPermitted="false" />
+    <domain-config cleartextTrafficPermitted="true">
+        <domain includeSubdomains="false">localhost</domain>
+        <domain includeSubdomains="false">127.0.0.1</domain>
+    </domain-config>
 </network-security-config>

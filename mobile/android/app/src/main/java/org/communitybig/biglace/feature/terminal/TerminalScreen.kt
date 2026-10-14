@@ -14,11 +14,26 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.widthIn
+import android.content.ClipData
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.ui.input.key.Key
+import androidx.compose.ui.input.key.KeyEventType
+import androidx.compose.ui.input.key.isCtrlPressed
+import androidx.compose.ui.input.key.key
+import androidx.compose.ui.input.key.onPreviewKeyEvent
+import androidx.compose.ui.input.key.type
+import androidx.compose.ui.input.key.utf16CodePoint
+import androidx.compose.ui.platform.ClipEntry
+import androidx.compose.ui.platform.LocalClipboard
+import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.text.rememberTextMeasurer
+import androidx.compose.ui.unit.IntSize
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
-import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Button
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ElevatedCard
@@ -34,7 +49,6 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableFloatStateOf
-import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
@@ -51,7 +65,6 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.font.Font
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
@@ -74,7 +87,6 @@ import org.communitybig.biglace.ui.AuthDialog
 import org.communitybig.biglace.ui.PasswordField
 import org.communitybig.biglace.ui.SessionTabs
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.flow.distinctUntilChanged
 
 @Composable
 fun TerminalScreen(container: AppContainer, modifier: Modifier = Modifier) {
@@ -97,6 +109,7 @@ fun TerminalScreen(container: AppContainer, modifier: Modifier = Modifier) {
 
     val active = tabs.firstOrNull { it.id == activeId } ?: return
     val vm: TerminalViewModel = viewModel(
+        viewModelStoreOwner = remember(active.id) { tabsVm.ownerFor(active.id) },
         key = "terminal-session-${active.id}",
         factory = viewModelFactory { initializer { TerminalViewModel(container) } },
     )
@@ -108,7 +121,6 @@ fun TerminalScreen(container: AppContainer, modifier: Modifier = Modifier) {
             onSelect = tabsVm::select,
             onAdd = tabsVm::add,
             onCloseActive = {
-                vm.disconnect()
                 stateHolder.removeState(active.id)
                 tabsVm.close(active.id)
             },
@@ -134,7 +146,7 @@ private fun TerminalSessionScreen(
     modifier: Modifier = Modifier,
 ) {
     val status by vm.status.collectAsStateWithLifecycle()
-    val screen by vm.screen.collectAsStateWithLifecycle()
+    val frame by vm.frame.collectAsStateWithLifecycle()
     val testing by vm.testing.collectAsStateWithLifecycle()
     val probe by vm.probe.collectAsStateWithLifecycle()
 
@@ -149,10 +161,13 @@ private fun TerminalSessionScreen(
 
     if (status == TermStatus.Connected) {
         TerminalView(
-            screen = screen,
+            frame = frame,
             onRaw = vm::sendRaw,
             onCtrl = vm::sendCtrl,
             onKey = { vm.sendBytes(it) },
+            onArrow = vm::sendArrow,
+            onPaste = vm::paste,
+            screenText = vm::screenText,
             onResize = vm::resize,
             onDisconnect = { vm.disconnect() },
             modifier = modifier,
@@ -195,12 +210,17 @@ private fun TerminalSessionScreen(
     }
 
     (status as? TermStatus.Error)?.let { err ->
+        val changedHost = err.hostKeyHost
         AuthDialog(
             ok = false,
-            title = stringResource(R.string.ssh_auth_failed),
+            title = stringResource(
+                if (changedHost != null) R.string.ssh_host_key_changed_title else R.string.ssh_auth_failed,
+            ),
             message = err.message,
             confirmText = stringResource(R.string.action_ok),
             onDismiss = { vm.dismissError() },
+            actionText = changedHost?.let { stringResource(R.string.action_forget_host) },
+            onAction = { changedHost?.let(vm::forgetHostKey) },
         )
     }
     probe?.let { result ->
@@ -319,80 +339,121 @@ private fun AuthChip(label: String, selected: Boolean, onClick: () -> Unit) {
 
 @Composable
 private fun TerminalView(
-    screen: AnnotatedString,
+    frame: TerminalFrame,
     onRaw: (String) -> Unit,
     onCtrl: (String) -> Unit,
     onKey: (Int) -> Unit,
+    onArrow: (Char) -> Unit,
+    onPaste: (String) -> Unit,
+    screenText: () -> String,
     onResize: (Int, Int) -> Unit,
     onDisconnect: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
-    val vScroll = rememberScrollState()
-    val hScroll = rememberScrollState()
+    val listState = rememberLazyListState()
     val scope = rememberCoroutineScope()
+    val clipboard = LocalClipboard.current
+    val context = LocalContext.current
     var fontSize by rememberSaveable { mutableFloatStateOf(13f) }
     var ctrl by rememberSaveable { mutableStateOf(false) }
     var buffer by rememberSaveable { mutableStateOf("") }
-    var viewportWidth by remember { mutableIntStateOf(0) }
-    var viewportHeight by remember { mutableIntStateOf(0) }
+    var viewport by remember { mutableStateOf(IntSize.Zero) }
     val density = LocalDensity.current
+    val measurer = rememberTextMeasurer()
+    val lines = frame.lines
 
-    LaunchedEffect(viewportWidth, viewportHeight, fontSize, density) {
-        if (viewportWidth > 0 && viewportHeight > 0) {
-            val charPx = with(density) { fontSize.sp.toPx() } * 0.61f
-            val linePx = with(density) { (fontSize * 1.25f).sp.toPx() }
-            onResize(
-                (viewportHeight / linePx).toInt().coerceAtLeast(2),
-                (viewportWidth / charPx).toInt().coerceAtLeast(8),
-            )
+    val textStyle = remember(fontSize) {
+        TextStyle(
+            fontFamily = TermFont,
+            fontSize = fontSize.sp,
+            lineHeight = (fontSize * 1.25f).sp,
+            color = TerminalFg,
+        )
+    }
+
+    // Size the PTY from the real glyph metrics and the area text can actually
+    // occupy (the viewport minus its padding). A guessed cell width or a few
+    // phantom rows is what clips full-screen apps at the right and bottom edges.
+    LaunchedEffect(viewport, textStyle, density) {
+        if (viewport.width > 0 && viewport.height > 0) {
+            val sample = measurer.measure(CELL_SAMPLE, textStyle, softWrap = false, maxLines = 1)
+            val charPx = sample.size.width.toFloat() / CELL_SAMPLE.length
+            val linePx = sample.size.height.toFloat()
+            val padPx = with(density) { TerminalPadding.toPx() } * 2
+            if (charPx > 0f && linePx > 0f) {
+                onResize(
+                    ((viewport.height - padPx) / linePx).toInt().coerceAtLeast(2),
+                    ((viewport.width - padPx) / charPx).toInt().coerceAtLeast(8),
+                )
+            }
         }
     }
 
-    // Follow layout growth, not every character. Long-running TUIs update the
-    // same rows frequently; restarting a scroll coroutine for each update makes
-    // keyboard input progressively less responsive.
-    LaunchedEffect(vScroll) {
-        snapshotFlow { vScroll.maxValue }
-            .distinctUntilChanged()
-            .collect { vScroll.scrollTo(it) }
+    // Follow new output while the view sits at the bottom; once the user scrolls
+    // up to read history, stay there until they come back down.
+    var follow by remember { mutableStateOf(true) }
+    LaunchedEffect(listState) {
+        snapshotFlow { listState.isScrollInProgress to listState.canScrollForward }
+            .collect { (scrolling, canGoDown) -> if (scrolling) follow = !canGoDown }
+    }
+    LaunchedEffect(frame, viewport) {
+        if (follow && lines.isNotEmpty()) listState.scrollToItem(lines.lastIndex)
     }
 
     Column(
         modifier.fillMaxSize().padding(horizontal = 8.dp, vertical = 4.dp),
         verticalArrangement = Arrangement.spacedBy(6.dp),
     ) {
-        // ── Slim top bar: disconnect lives here, out of the input's way ──
+        // ── Slim top bar: clipboard + disconnect, out of the input's way ──
         Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.End, verticalAlignment = Alignment.CenterVertically) {
-            TextButton(onClick = onDisconnect, contentPadding = PaddingValues(horizontal = 10.dp, vertical = 2.dp)) {
+            val barPadding = PaddingValues(horizontal = 10.dp, vertical = 2.dp)
+            TextButton(
+                onClick = {
+                    val text = screenText()
+                    scope.launch { clipboard.setClipEntry(ClipEntry(ClipData.newPlainText("terminal", text))) }
+                },
+                contentPadding = barPadding,
+            ) {
+                Text(stringResource(R.string.action_copy), style = MaterialTheme.typography.labelMedium)
+            }
+            TextButton(
+                onClick = {
+                    scope.launch {
+                        val clip = clipboard.getClipEntry()?.clipData
+                        if (clip != null && clip.itemCount > 0) {
+                            onPaste(clip.getItemAt(0).coerceToText(context).toString())
+                        }
+                    }
+                },
+                contentPadding = barPadding,
+            ) {
+                Text(stringResource(R.string.term_paste), style = MaterialTheme.typography.labelMedium)
+            }
+            TextButton(onClick = onDisconnect, contentPadding = barPadding) {
                 Text("✕  " + stringResource(R.string.settings_disconnect), style = MaterialTheme.typography.labelMedium)
             }
         }
 
-        // ── Screen: top-aligned normal flow. Scrolls both ways for long/wide
-        // output; pinch to zoom. ──
+        // ── Screen: one lazy item per line, so only visible lines are laid out
+        // and an unchanged line is skipped outright. Pinch to zoom. ──
         Box(
             Modifier
                 .weight(1f)
                 .fillMaxWidth()
                 .clip(RoundedCornerShape(10.dp))
                 .background(TerminalBg)
-                .onSizeChanged {
-                    viewportWidth = it.width
-                    viewportHeight = it.height
-                }
-                .pinchZoom { factor -> fontSize = (fontSize * factor).coerceIn(7f, 30f) }
-                .verticalScroll(vScroll)
-                .horizontalScroll(hScroll)
-                .padding(10.dp),
+                .onSizeChanged { viewport = it }
+                .pinchZoom { factor -> fontSize = (fontSize * factor).coerceIn(7f, 30f) },
         ) {
-            Text(
-                screen,
-                fontFamily = TermFont,
-                fontSize = fontSize.sp,
-                lineHeight = (fontSize * 1.25f).sp,
-                color = TerminalFg,
-                softWrap = false,
-            )
+            LazyColumn(
+                state = listState,
+                modifier = Modifier.fillMaxSize(),
+                contentPadding = PaddingValues(TerminalPadding),
+            ) {
+                items(lines.size, contentType = { 0 }) { index ->
+                    Text(lines[index], style = textStyle, softWrap = false, maxLines = 1)
+                }
+            }
         }
 
         // ── Extra keys (hard-to-type keys the soft keyboard lacks) ──
@@ -401,7 +462,10 @@ private fun TerminalView(
             onCtrlToggle = { ctrl = !ctrl },
             onRaw = onRaw,
             onKey = onKey,
-            onKill = { onRaw("\u0015clear\r"); buffer = "" }, // Ctrl-U (kill line) then run `clear`
+            onArrow = onArrow,
+            // Ctrl-L: redraw/clear in shells and most TUIs, without typing a
+            // command into whatever happens to be running.
+            onClear = { onKey(0x0C) },
         )
 
         // ── Input line + dedicated Enter button. Local buffer mirrors every edit
@@ -425,7 +489,32 @@ private fun TerminalView(
                 singleLine = true,
                 modifier = Modifier
                     .weight(1f)
-                    .onFocusChanged { if (it.isFocused) scope.launch { vScroll.scrollTo(vScroll.maxValue) } },
+                    .onFocusChanged {
+                        if (it.isFocused && lines.isNotEmpty()) {
+                            follow = true
+                            scope.launch { listState.scrollToItem(lines.lastIndex) }
+                        }
+                    }
+                    // Physical keyboards (and soft keyboards that emit key events):
+                    // keys with no text of their own go straight to the shell.
+                    .onPreviewKeyEvent { event ->
+                        if (event.type != KeyEventType.KeyDown) return@onPreviewKeyEvent false
+                        when {
+                            event.key == Key.DirectionUp -> onArrow('A')
+                            event.key == Key.DirectionDown -> onArrow('B')
+                            event.key == Key.DirectionRight -> onArrow('C')
+                            event.key == Key.DirectionLeft -> onArrow('D')
+                            event.key == Key.PageUp -> onRaw("\u001B[5~")
+                            event.key == Key.PageDown -> onRaw("\u001B[6~")
+                            event.key == Key.Escape -> onKey(0x1B)
+                            event.key == Key.Tab -> onRaw("\t")
+                            event.key == Key.Backspace && buffer.isEmpty() -> onKey(0x7F)
+                            event.isCtrlPressed && event.utf16CodePoint in 0x40..0x7E ->
+                                onCtrl(event.utf16CodePoint.toChar().toString())
+                            else -> return@onPreviewKeyEvent false
+                        }
+                        true
+                    },
                 textStyle = MaterialTheme.typography.bodyLarge.copy(fontFamily = TermFont),
                 keyboardOptions = KeyboardOptions(
                     capitalization = KeyboardCapitalization.None,
@@ -453,7 +542,8 @@ private fun ExtraKeysRow(
     onCtrlToggle: () -> Unit,
     onRaw: (String) -> Unit,
     onKey: (Int) -> Unit,
-    onKill: () -> Unit,
+    onArrow: (Char) -> Unit,
+    onClear: () -> Unit,
 ) {
     val scroll = rememberScrollState()
     Row(
@@ -465,11 +555,13 @@ private fun ExtraKeysRow(
         KeyCap("TAB") { onRaw("\t") }
         KeyCap("CTRL", active = ctrl, onClick = onCtrlToggle)
         KeyCap("⌫") { onKey(0x7F) }
-        KeyCap("CLR", onClick = onKill)
-        KeyCap("←") { onRaw("\u001B[D") }
-        KeyCap("↑") { onRaw("\u001B[A") }
-        KeyCap("↓") { onRaw("\u001B[B") }
-        KeyCap("→") { onRaw("\u001B[C") }
+        KeyCap("CLR", onClick = onClear)
+        KeyCap("←") { onArrow('D') }
+        KeyCap("↑") { onArrow('A') }
+        KeyCap("↓") { onArrow('B') }
+        KeyCap("→") { onArrow('C') }
+        KeyCap("PgUp") { onRaw("\u001B[5~") }
+        KeyCap("PgDn") { onRaw("\u001B[6~") }
         KeyCap("|") { onRaw("|") }
         KeyCap("/") { onRaw("/") }
         KeyCap("~") { onRaw("~") }
@@ -519,6 +611,10 @@ private fun Modifier.pinchZoom(onZoom: (Float) -> Unit): Modifier = pointerInput
 }
 
 private val TerminalBg = Color(0xFF0B0E14)
+private val TerminalPadding = 10.dp
+
+// Measured to get the monospace cell size; long enough to average out rounding.
+private const val CELL_SAMPLE = "MMMMMMMMMMMMMMMMMMMM"
 private val TerminalFg = Color(0xFFD7DCE5)
 
 // Full Nerd Font Mono (Noto Sans M Nerd) — has the COMPLETE glyph set incl. the

@@ -35,11 +35,29 @@ static GLOBAL: tikv_jemallocator::Jemalloc = tikv_jemallocator::Jemalloc;
 #[export_name = "malloc_conf"]
 pub static MALLOC_CONF: &[u8] = b"background_thread:true,dirty_decay_ms:1000,muzzy_decay_ms:0\0";
 
-/// Single source of truth for the app version. Wired to `Cargo.toml` via
-/// `CARGO_PKG_VERSION` so a `cargo set-version` (or manual bump) flows
-/// through to the About dialog and the GitHub releases self-update check
-/// without an extra place to keep in sync.
-pub const APP_VERSION: &str = env!("CARGO_PKG_VERSION");
+/// The app version shown in About.
+///
+/// Must stay a plain string literal: gitrepo bumps it on every commit it
+/// creates (feat → minor, fix/perf/docs/… → patch, breaking → major) by
+/// rewriting this assignment. Reading it from `CARGO_PKG_VERSION` hid it from
+/// gitrepo, which is how the version sat at 1.0.0 through dozens of releases.
+pub const APP_VERSION: &str = "1.11.1";
+
+/// Date-based build stamp (`YY.MM.DD-HHMM`) — the scheme the GitHub release
+/// tags use. The PKGBUILD exports it as `BIGLACE_VERSION`; the update check
+/// compares it with the latest release tag. `None` for a plain `cargo build`,
+/// which the update check treats as a development build.
+pub const BUILD_VERSION: Option<&str> = option_env!("BIGLACE_VERSION");
+
+/// Serializes tests that mutate process-wide environment variables (XDG
+/// dirs, D-Bus address): cargo runs tests on parallel threads, and one test
+/// changing `XDG_CONFIG_HOME` under another makes both flaky.
+#[cfg(test)]
+pub(crate) fn test_env_lock() -> std::sync::MutexGuard<'static, ()> {
+    static LOCK: std::sync::Mutex<()> = std::sync::Mutex::new(());
+    LOCK.lock()
+        .unwrap_or_else(std::sync::PoisonError::into_inner)
+}
 
 fn main() {
     i18n::init();
@@ -81,4 +99,18 @@ fn main() {
     });
 
     std::process::exit(app.run_with_args(&["biglace"]).into());
+}
+
+#[cfg(test)]
+mod tests {
+    /// gitrepo can only bump a literal `MAJOR.MINOR.PATCH`; anything else
+    /// (a `concat!`, an `env!`, a suffix) silently freezes the version again.
+    #[test]
+    fn app_version_is_a_plain_semantic_version() {
+        let parts: Vec<&str> = super::APP_VERSION.split('.').collect();
+        assert_eq!(parts.len(), 3, "APP_VERSION must be MAJOR.MINOR.PATCH");
+        assert!(parts
+            .iter()
+            .all(|p| !p.is_empty() && p.bytes().all(|b| b.is_ascii_digit())));
+    }
 }

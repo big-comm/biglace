@@ -2,6 +2,8 @@ package org.communitybig.biglace.core.ssh
 
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertNotEquals
+import org.junit.Assert.assertNotSame
+import org.junit.Assert.assertSame
 import org.junit.Test
 
 class SshSessionTabsViewModelTest {
@@ -32,5 +34,17 @@ class SshSessionTabsViewModelTest {
         assertEquals(1, vm.tabs.value.size)
         assertEquals("", vm.tabs.value.single().host)
         assertEquals(vm.tabs.value.single().id, vm.activeId.value)
+    }
+
+    @Test
+    fun closingATabReleasesItsViewModelStore() {
+        val vm = SshSessionTabsViewModel()
+        val id = vm.openPeer("server-a", "alice", "")
+        val owner = vm.ownerFor(id)
+        assertSame(owner, vm.ownerFor(id))
+
+        vm.close(id)
+
+        assertNotSame(owner, vm.ownerFor(id))
     }
 }

@@ -20,7 +20,9 @@ import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.cancel
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withTimeoutOrNull
 import org.communitybig.biglace.BigLaceApplication
 import org.communitybig.biglace.MainActivity
 import org.communitybig.biglace.R
@@ -79,8 +81,9 @@ class MeshService : Service() {
                         // the local tsnet state ever needs to be recreated.
                         startRefreshLoop()
                     } else if (c.activeBackend.value.state.value is MeshState.Error) {
+                        // halt(), not disconnect(): keep the error on screen.
                         try {
-                            c.activeBackend.value.disconnect()
+                            c.activeBackend.value.halt()
                         } finally {
                             stopService()
                         }
@@ -118,7 +121,7 @@ class MeshService : Service() {
                         goForeground(getString(R.string.svc_error, state.message.take(80)))
                         if (connectionJob?.isCompleted == true) {
                             try {
-                                backend.disconnect()
+                                backend.halt()
                             } finally {
                                 stopService()
                             }
@@ -134,7 +137,12 @@ class MeshService : Service() {
         refreshJob?.cancel()
         refreshJob = scope.launch {
             while (true) {
-                delay(15_000)
+                // Nobody is looking at the peer list with the UI off screen; the
+                // notification's online count can lag instead of waking the CPU.
+                // Coming back to the app refreshes right away.
+                val visible = app.container.uiVisible
+                if (visible.value) delay(REFRESH_VISIBLE_MS)
+                else withTimeoutOrNull(REFRESH_BACKGROUND_MS) { visible.first { it } }
                 val backend = app.container.activeBackend.value
                 if (backend.state.value !is MeshState.Up) return@launch
                 backend.refresh()
@@ -196,6 +204,8 @@ class MeshService : Service() {
         const val ACTION_DISCONNECT = "org.communitybig.biglace.DISCONNECT"
         private const val CHANNEL_ID = "mesh"
         private const val NOTIF_ID = 1
+        private const val REFRESH_VISIBLE_MS = 15_000L
+        private const val REFRESH_BACKGROUND_MS = 120_000L
 
         /** Start the tunnel via a foreground service (survives app close). */
         fun connect(context: Context) {

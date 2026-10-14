@@ -45,11 +45,26 @@ class MainActivity : ComponentActivity() {
             }
         }
 
-        // Auto-connect on app launch when the user enabled it.
-        if (container.settings.autoConnect && container.hasConnectConfig()) {
+        // Auto-connect on app launch when the user enabled it — not when the
+        // Activity is merely recreated (rotation, theme change), which would
+        // undo a manual disconnect.
+        if (savedInstanceState == null && container.settings.autoConnect && container.hasConnectConfig()) {
             container.requestConnect()
         }
 
+        // Ask GitHub for a newer build (throttled, silent on failure).
+        if (savedInstanceState == null) container.updater.checkOnLaunch()
+
         setContent { BigLaceApp(container) }
+    }
+
+    override fun onStart() {
+        super.onStart()
+        container.uiVisible.value = true
+    }
+
+    override fun onStop() {
+        container.uiVisible.value = false
+        super.onStop()
     }
 }

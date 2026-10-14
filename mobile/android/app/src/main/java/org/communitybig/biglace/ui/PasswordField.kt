@@ -23,6 +23,7 @@ fun PasswordField(
     label: String,
     modifier: Modifier = Modifier,
     enabled: Boolean = true,
+    supportingText: String? = null,
 ) {
     var show by remember { mutableStateOf(false) }
     OutlinedTextField(
@@ -31,6 +32,7 @@ fun PasswordField(
         label = { Text(label) },
         singleLine = true,
         enabled = enabled,
+        supportingText = supportingText?.let { { Text(it) } },
         visualTransformation = if (show) VisualTransformation.None else PasswordVisualTransformation(),
         trailingIcon = {
             IconButton(onClick = { show = !show }) {

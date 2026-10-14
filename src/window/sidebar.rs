@@ -10,7 +10,9 @@ pub struct Sidebar {
     pub btn_edit_host: gtk4::Button,
     pub expander_manual: libadwaita::ExpanderRow,
     pub entry_server: libadwaita::EntryRow,
-    pub entry_key: libadwaita::EntryRow,
+    /// Masked: a reusable pre-auth key registers devices on the user's
+    /// tailnet, so it shouldn't sit readable on screen (or in screenshots).
+    pub entry_key: libadwaita::PasswordEntryRow,
     pub entry_host: libadwaita::EntryRow,
     pub btn_save_manual: gtk4::Button,
     pub switch_auto: gtk4::Switch,
@@ -106,7 +108,7 @@ pub fn build() -> Sidebar {
     entry_server.add_prefix(&server_icon);
     expander_manual.add_row(&entry_server);
 
-    let entry_key = libadwaita::EntryRow::builder()
+    let entry_key = libadwaita::PasswordEntryRow::builder()
         .title(tr!("Pre-auth key"))
         .build();
     entry_key.set_tooltip_text(Some(&tr!(
