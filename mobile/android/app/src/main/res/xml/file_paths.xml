@@ -1,5 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!-- Files pulled over SFTP are staged under cacheDir/sftp and shared from there. -->
+<!-- Files pulled over SFTP are staged under cacheDir/sftp and shared from there;
+     app updates downloaded from GitHub sit in cacheDir/updates for the installer. -->
 <paths>
     <cache-path name="sftp" path="sftp/" />
+    <cache-path name="updates" path="updates/" />
 </paths>

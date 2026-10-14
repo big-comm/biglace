@@ -43,6 +43,16 @@ class SettingsStore(context: Context) {
         get() = prefs.getBoolean(KEY_CONNECT_ON_BOOT, false)
         set(v) = prefs.edit { putBoolean(KEY_CONNECT_ON_BOOT, v) }
 
+    /** Last time GitHub was asked for a newer app version (epoch ms). */
+    var lastUpdateCheck: Long
+        get() = prefs.getLong(KEY_LAST_UPDATE_CHECK, 0L)
+        set(v) = prefs.edit { putLong(KEY_LAST_UPDATE_CHECK, v) }
+
+    /** Version code the user answered "Not now" to; not offered again automatically. */
+    var skippedUpdateCode: Long
+        get() = prefs.getLong(KEY_SKIPPED_UPDATE, 0L)
+        set(v) = prefs.edit { putLong(KEY_SKIPPED_UPDATE, v) }
+
     private val _favorites = MutableStateFlow(
         prefs.getStringSet(KEY_FAVORITES, emptySet())!!.toSet(),
     )
@@ -87,5 +97,7 @@ class SettingsStore(context: Context) {
         const val KEY_CONNECT_ON_BOOT = "connect_on_boot"
         const val KEY_FAVORITES = "favorites"
         const val KEY_OVERRIDES = "peer_overrides"
+        const val KEY_LAST_UPDATE_CHECK = "last_update_check"
+        const val KEY_SKIPPED_UPDATE = "skipped_update_code"
     }
 }

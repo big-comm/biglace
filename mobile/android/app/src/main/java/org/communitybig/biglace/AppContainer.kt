@@ -16,6 +16,7 @@ import org.communitybig.biglace.core.data.SettingsStore
 import org.communitybig.biglace.core.mesh.MeshBackend
 import org.communitybig.biglace.core.mesh.TsnetMeshBackend
 import org.communitybig.biglace.core.panel.PanelClient
+import org.communitybig.biglace.core.update.AppUpdater
 import org.communitybig.biglace.service.MeshService
 
 /** A peer the user asked to open a terminal / files for, handed across tabs. */
@@ -38,6 +39,9 @@ class AppContainer(context: Context) {
 
     /** Process-lifetime IO scope: work that must outlive a screen (closing sockets). */
     val ioScope = CoroutineScope(SupervisorJob() + Dispatchers.IO)
+
+    /** In-app updates from GitHub Releases. */
+    val updater = AppUpdater(context, settings, ioScope)
 
     /** Whether the UI is on screen; background status polling slows down without it. */
     val uiVisible = MutableStateFlow(false)

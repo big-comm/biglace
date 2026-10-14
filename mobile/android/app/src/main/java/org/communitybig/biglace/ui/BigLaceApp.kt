@@ -14,6 +14,8 @@ import androidx.compose.material3.NavigationBarItem
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.painterResource
@@ -49,6 +51,8 @@ fun BigLaceApp(container: AppContainer) {
         val pager = rememberPagerState(pageCount = { tabs.size })
         val scope = rememberCoroutineScope()
         fun goTo(tab: Tab) = scope.launch { pager.animateScrollToPage(tab.ordinal) }
+        val updateState by container.updater.state.collectAsStateWithLifecycle()
+        UpdateDialog(container.updater, updateState)
 
         Scaffold(
             bottomBar = {

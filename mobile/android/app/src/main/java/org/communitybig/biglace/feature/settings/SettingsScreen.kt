@@ -39,6 +39,8 @@ import androidx.lifecycle.viewmodel.viewModelFactory
 import org.communitybig.biglace.AppContainer
 import org.communitybig.biglace.R
 import org.communitybig.biglace.core.mesh.MeshState
+import org.communitybig.biglace.core.update.AppUpdater
+import org.communitybig.biglace.core.update.UpdateState
 import org.communitybig.biglace.ui.PasswordField
 import androidx.compose.runtime.rememberCoroutineScope
 import kotlinx.coroutines.launch
@@ -161,6 +163,10 @@ fun SettingsScreen(container: AppContainer, modifier: Modifier = Modifier) {
         SshKeySection(vm)
 
         HorizontalDivider(Modifier.padding(vertical = 8.dp))
+        SectionTitle(stringResource(R.string.settings_updates))
+        UpdatesSection(container.updater)
+
+        HorizontalDivider(Modifier.padding(vertical = 8.dp))
         SectionTitle(stringResource(R.string.settings_about))
         Text(
             stringResource(R.string.about_status),
@@ -201,6 +207,37 @@ fun SettingsScreen(container: AppContainer, modifier: Modifier = Modifier) {
                 showPanelLogin = false
             },
         )
+    }
+}
+
+@Composable
+private fun UpdatesSection(updater: AppUpdater) {
+    val state by updater.state.collectAsStateWithLifecycle()
+    val busy = state is UpdateState.Checking || state is UpdateState.Downloading
+    Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+        Text(
+            stringResource(R.string.update_installed_version, updater.installedVersionName),
+            style = MaterialTheme.typography.bodyMedium,
+        )
+        val status = when (val s = state) {
+            UpdateState.Checking -> stringResource(R.string.update_checking)
+            is UpdateState.UpToDate -> stringResource(R.string.update_up_to_date, s.versionName)
+            is UpdateState.Failed -> if (s.release == null) s.message else null
+            else -> null
+        }
+        status?.let {
+            Text(
+                it,
+                style = MaterialTheme.typography.bodySmall,
+                color = if (state is UpdateState.Failed) MaterialTheme.colorScheme.error
+                else MaterialTheme.colorScheme.onSurface.copy(alpha = 0.7f),
+            )
+        }
+        OutlinedButton(
+            onClick = { updater.check(manual = true) },
+            enabled = !busy,
+            modifier = Modifier.fillMaxWidth(),
+        ) { Text(stringResource(R.string.update_check)) }
     }
 }
 

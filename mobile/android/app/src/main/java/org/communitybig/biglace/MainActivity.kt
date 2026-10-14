@@ -52,6 +52,9 @@ class MainActivity : ComponentActivity() {
             container.requestConnect()
         }
 
+        // Ask GitHub for a newer build (throttled, silent on failure).
+        if (savedInstanceState == null) container.updater.checkOnLaunch()
+
         setContent { BigLaceApp(container) }
     }
 

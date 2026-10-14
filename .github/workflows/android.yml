@@ -1,0 +1,145 @@
+# Android APK pipeline.
+#
+# Runs on the same `repository_dispatch` the BigCommunity build-package action
+# fires after it publishes a release (the one windows.yml listens to), so a
+# single gitrepo build ends with the Linux package, the Windows MSI and the
+# Android APKs all attached to one GitHub Release. Also runnable by hand.
+#
+# Output: one signed APK per ABI, named
+#   biglace-mobile-<versionName>-vc<versionCode>-<abi>.apk (+ .sha256)
+# The app's in-app updater finds new versions by exactly that file name, in any
+# release of this repository.
+#
+# Version: derived from the release tag (YY.MM.DD-HHMM), like the MSI, so it
+# rises with every release without bumping build.gradle.kts by hand.
+#
+# Signing: in-app updates only install over the current app when every APK is
+# signed with the SAME key, so this job refuses to build without these secrets:
+#   ANDROID_KEYSTORE_BASE64   base64 of the .jks/.keystore file
+#   ANDROID_KEYSTORE_PASSWORD
+#   ANDROID_KEY_ALIAS
+#   ANDROID_KEY_PASSWORD
+# (A CI runner's own debug key would produce APKs nobody could update to.)
+
+name: Android APK
+
+on:
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: 'Existing tag to build the APKs for (optional)'
+        required: false
+        type: string
+  repository_dispatch:
+    types: [windows-msi-build]
+
+jobs:
+  build:
+    name: Build APKs
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+
+    steps:
+      # Untrusted values go through env, never interpolated into the script.
+      - name: Resolve tag
+        id: resolve
+        env:
+          PAYLOAD_TAG: ${{ github.event.client_payload.tag_name }}
+          INPUT_TAG: ${{ github.event.inputs.tag }}
+          REF_NAME: ${{ github.ref_name }}
+        run: |
+          tag="$PAYLOAD_TAG"
+          if [ -z "$tag" ]; then tag="$INPUT_TAG"; fi
+          if [ -z "$tag" ]; then tag="$REF_NAME"; fi
+          echo "tag=$tag" >> "$GITHUB_OUTPUT"
+          echo "Resolved tag: $tag"
+
+      # versionName = the tag; versionCode = minutes since 2020-01-01 at the
+      # tag's date/time, which only ever grows and stays far below Android's
+      # 2100000000 limit. A tag that isn't YY.MM.DD-HHMM keeps the values
+      # from build.gradle.kts.
+      - name: Resolve app version
+        id: version
+        env:
+          TAG: ${{ steps.resolve.outputs.tag }}
+        run: |
+          if [[ "$TAG" =~ ^v?([0-9]{2})\.([0-9]{2})\.([0-9]{2})-([0-9]{2})([0-9]{2})$ ]]; then
+            stamp="20${BASH_REMATCH[1]}-${BASH_REMATCH[2]}-${BASH_REMATCH[3]} ${BASH_REMATCH[4]}:${BASH_REMATCH[5]} UTC"
+            minutes=$(( ($(date -u -d "$stamp" +%s) - $(date -u -d '2020-01-01' +%s)) / 60 ))
+            echo "args=-Pbiglace.versionName=${TAG#v} -Pbiglace.versionCode=$minutes" >> "$GITHUB_OUTPUT"
+            echo "versionName=${TAG#v} versionCode=$minutes"
+          else
+            echo "args=" >> "$GITHUB_OUTPUT"
+            echo "Tag is not date-based; using build.gradle.kts version"
+          fi
+
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ steps.resolve.outputs.tag }}
+
+      - name: Install JDK 17
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+
+      - name: Set up Gradle
+        uses: gradle/actions/setup-gradle@v4
+
+      - name: Install signing key
+        env:
+          KEYSTORE_BASE64: ${{ secrets.ANDROID_KEYSTORE_BASE64 }}
+          KEYSTORE_PASSWORD: ${{ secrets.ANDROID_KEYSTORE_PASSWORD }}
+          KEY_ALIAS: ${{ secrets.ANDROID_KEY_ALIAS }}
+          KEY_PASSWORD: ${{ secrets.ANDROID_KEY_PASSWORD }}
+        working-directory: mobile/android
+        run: |
+          if [ -z "$KEYSTORE_BASE64" ] || [ -z "$KEYSTORE_PASSWORD" ] || [ -z "$KEY_ALIAS" ]; then
+            echo "::error::Android signing secrets are missing; see the header of this workflow."
+            exit 1
+          fi
+          umask 077
+          echo "$KEYSTORE_BASE64" | base64 -d > release.keystore
+          {
+            echo "storeFile=release.keystore"
+            echo "storePassword=$KEYSTORE_PASSWORD"
+            echo "keyAlias=$KEY_ALIAS"
+            echo "keyPassword=${KEY_PASSWORD:-$KEYSTORE_PASSWORD}"
+          } > keystore.properties
+
+      - name: Build and stage APKs
+        env:
+          GRADLE_ARGS: ${{ steps.version.outputs.args }}
+        run: mobile/dist/build-apk.sh
+
+      - name: Remove signing key
+        if: always()
+        working-directory: mobile/android
+        run: rm -f release.keystore keystore.properties
+
+      - name: Upload APK artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: biglace-apk
+          path: |
+            mobile/dist/biglace-mobile-*.apk
+            mobile/dist/biglace-mobile-*.apk.sha256
+          if-no-files-found: error
+          retention-days: 30
+
+      # The release already exists (build-package created it); just add files.
+      - name: Attach to release
+        if: >-
+          github.event_name == 'repository_dispatch' ||
+          (github.event_name == 'workflow_dispatch' && github.event.inputs.tag != '')
+        uses: softprops/action-gh-release@v2
+        with:
+          files: |
+            mobile/dist/biglace-mobile-*.apk
+            mobile/dist/biglace-mobile-*.apk.sha256
+          tag_name: ${{ steps.resolve.outputs.tag }}
+          fail_on_unmatched_files: true
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

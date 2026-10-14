@@ -1,4 +1,5 @@
 import org.jetbrains.kotlin.gradle.dsl.JvmTarget
+import java.util.Properties
 
 plugins {
     id("com.android.application")
@@ -15,13 +16,35 @@ android {
         applicationId = "org.communitybig.biglace"
         minSdk = 26
         targetSdk = 36
-        versionCode = 33
-        versionName = "0.9.6"
+        // CI passes -Pbiglace.versionCode / -Pbiglace.versionName derived from
+        // the release tag (.github/workflows/android.yml); these are the
+        // values for local builds.
+        versionCode = (findProperty("biglace.versionCode") as String?)?.toInt() ?: 34
+        versionName = (findProperty("biglace.versionName") as String?) ?: "0.9.7"
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
+    }
+
+    // In-app updates only install over the existing app when every published APK
+    // is signed with the SAME key. Put a dedicated key in keystore.properties
+    // (gitignored; storeFile/storePassword/keyAlias/keyPassword). Without it the
+    // release is signed with this machine's debug key — the one the 0.9.x test
+    // builds already carry, so those installs can update in place.
+    val keystoreProps = rootProject.file("keystore.properties")
+    signingConfigs {
+        if (keystoreProps.isFile) {
+            create("release") {
+                val p = Properties().apply { keystoreProps.inputStream().use { load(it) } }
+                storeFile = rootProject.file(p.getProperty("storeFile"))
+                storePassword = p.getProperty("storePassword")
+                keyAlias = p.getProperty("keyAlias")
+                keyPassword = p.getProperty("keyPassword")
+            }
+        }
     }
 
     buildTypes {
         release {
+            signingConfig = signingConfigs.findByName("release") ?: signingConfigs.getByName("debug")
             isMinifyEnabled = true
             isShrinkResources = true
             proguardFiles(
