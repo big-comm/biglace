@@ -274,7 +274,7 @@ pub fn show_panel_login(
         .title(tr!("Device name on the network"))
         .build();
     er_node.connect_changed(|entry| {
-        let clean = sanitize_hostname(&entry.text());
+        let clean = sanitize_hostname_while_typing(&entry.text());
         if clean != entry.text().as_str() {
             entry.set_text(&clean);
             entry.set_position(-1);
@@ -596,6 +596,12 @@ pub fn show_rename_device(
         let dlg_w = dlg.clone();
         let lbl_w = lbl_err.clone();
         Rc::new(move |text: &str| match validate_hostname(text.trim()) {
+            // Mid-word ("tales-" on the way to "tales-cel"): not savable yet,
+            // but not worth a red error either.
+            Err(_) if text.ends_with('-') => {
+                lbl_w.set_visible(false);
+                dlg_w.set_response_enabled("save", false);
+            }
             Ok(()) => {
                 lbl_w.set_visible(false);
                 dlg_w.set_response_enabled("save", true);
@@ -617,7 +623,7 @@ pub fn show_rename_device(
     {
         let validate2 = validate.clone();
         entry.connect_changed(move |e| {
-            let clean = sanitize_hostname(&e.text());
+            let clean = sanitize_hostname_while_typing(&e.text());
             if clean != e.text().as_str() {
                 e.set_text(&clean);
                 e.set_position(-1);
@@ -747,6 +753,16 @@ pub(super) fn validate_hostname(s: &str) -> Result<(), String> {
 }
 
 pub(super) fn sanitize_hostname(input: &str) -> String {
+    sanitize_hostname_while_typing(input)
+        .trim_end_matches('-')
+        .to_string()
+}
+
+/// The same normalization for an entry that is still being edited: a trailing
+/// hyphen is kept, because it is how "tales-cel" gets typed one key at a time.
+/// Stripping it on every keystroke made the hyphen impossible to type;
+/// [`sanitize_hostname`] removes it once the value is used.
+pub(super) fn sanitize_hostname_while_typing(input: &str) -> String {
     use unicode_normalization::{char::is_combining_mark, UnicodeNormalization};
 
     let mut output = String::with_capacity(input.len().min(63));
@@ -766,7 +782,7 @@ pub(super) fn sanitize_hostname(input: &str) -> String {
             hyphen = true;
         }
     }
-    output.trim_matches('-').to_string()
+    output
 }
 
 /// If the server returned a loopback URL (because its `server_url` config is
@@ -820,6 +836,18 @@ mod tests {
         assert!(!out.enrolled);
         assert_eq!(out.server_url, cfg.server_url);
         assert_eq!(out.favorites, cfg.favorites);
+    }
+
+    #[test]
+    fn a_hyphen_can_be_typed_and_is_only_trimmed_on_use() {
+        // Typing "tales-cel" one key at a time must keep the hyphen in between.
+        let typed = "tales-cel".chars().fold(String::new(), |field, key| {
+            sanitize_hostname_while_typing(&format!("{field}{key}"))
+        });
+        assert_eq!(typed, "tales-cel");
+        assert_eq!(sanitize_hostname_while_typing("Tales "), "tales-");
+        assert_eq!(sanitize_hostname("tales-"), "tales");
+        assert_eq!(sanitize_hostname_while_typing("--tales"), "tales");
     }
 
     #[test]
