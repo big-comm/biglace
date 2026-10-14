@@ -88,7 +88,7 @@ fun SettingsScreen(container: AppContainer, modifier: Modifier = Modifier) {
             } else null,
         )
         OutlinedTextField(
-            value = hostname, onValueChange = { hostname = sanitizeDeviceName(it) },
+            value = hostname, onValueChange = { hostname = sanitizeDeviceNameWhileTyping(it) },
             label = { Text(stringResource(R.string.settings_device_name)) },
             isError = !validHostname,
             supportingText = if (!validHostname) {

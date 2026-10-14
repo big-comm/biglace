@@ -57,7 +57,7 @@ fun PanelLoginDialog(
                     label = { Text(stringResource(R.string.settings_username)) })
                 PasswordField(password, { password = it }, stringResource(R.string.settings_password),
                     modifier = Modifier.fillMaxWidth(), enabled = !busy)
-                OutlinedTextField(node, { node = sanitizeDeviceName(it) }, enabled = !busy, singleLine = true,
+                OutlinedTextField(node, { node = sanitizeDeviceNameWhileTyping(it) }, enabled = !busy, singleLine = true,
                     label = { Text(stringResource(R.string.settings_device_name)) })
                 error?.let { Text(it, color = MaterialTheme.colorScheme.error) }
                 if (busy) {

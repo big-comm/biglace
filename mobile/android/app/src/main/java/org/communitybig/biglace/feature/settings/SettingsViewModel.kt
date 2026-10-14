@@ -149,14 +149,22 @@ class SettingsViewModel(private val container: AppContainer) : ViewModel() {
     private fun text(id: Int): String = container.appContext.getString(id)
 }
 
-internal fun sanitizeDeviceName(input: String): String {
+internal fun sanitizeDeviceName(input: String): String =
+    sanitizeDeviceNameWhileTyping(input).trimEnd('-')
+
+/**
+ * The same normalization for a field that is still being edited: a trailing
+ * hyphen is kept, because it is how the user types "tales-cel" one key at a
+ * time. Stripping it on every keystroke made the hyphen impossible to type.
+ * [sanitizeDeviceName] removes it when the value is saved.
+ */
+internal fun sanitizeDeviceNameWhileTyping(input: String): String {
     val ascii = Normalizer.normalize(input, Normalizer.Form.NFD)
         .replace(Regex("\\p{M}+"), "")
         .lowercase(Locale.ROOT)
     return ascii
         .replace(Regex("[^a-z0-9]+"), "-")
         .replace(Regex("-+"), "-")
-        .trim('-')
+        .trimStart('-')
         .take(63)
-        .trimEnd('-')
 }

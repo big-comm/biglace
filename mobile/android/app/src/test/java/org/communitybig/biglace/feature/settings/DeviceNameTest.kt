@@ -16,6 +16,16 @@ class DeviceNameTest {
     }
 
     @Test
+    fun aHyphenCanBeTypedAndIsOnlyTrimmedOnSave() {
+        // Typing "tales-cel" one key at a time must keep the hyphen in between.
+        val typed = "tales-cel".fold("") { field, key -> sanitizeDeviceNameWhileTyping(field + key) }
+        assertEquals("tales-cel", typed)
+        assertEquals("tales-", sanitizeDeviceNameWhileTyping("Tales "))
+        assertEquals("tales", sanitizeDeviceName("tales-"))
+        assertEquals("tales", sanitizeDeviceNameWhileTyping("--tales"))
+    }
+
+    @Test
     fun limitsLabelTo63CharactersWithoutTrailingHyphen() {
         val value = sanitizeDeviceName("a".repeat(62) + " - ignored")
         assertEquals(62, value.length)
