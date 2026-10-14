@@ -2,8 +2,14 @@ use gettextrs::{bind_textdomain_codeset, bindtextdomain, setlocale, textdomain, 
 
 const TEXTDOMAIN: &str = "biglace";
 
+/// Must run first in `main`, before any thread exists (see the SAFETY note).
 pub fn init() {
-    setlocale(LocaleCategory::LcAll, "");
+    // SAFETY: setlocale reads the locale environment without synchronization,
+    // so nothing may touch the environment concurrently. `init` is the first
+    // call in `main`, before GTK, the tray or any worker thread is started.
+    unsafe {
+        setlocale(LocaleCategory::LcAll, "");
+    }
 
     let dir = locale_dir();
     let _ = bindtextdomain(TEXTDOMAIN, dir);

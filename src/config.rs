@@ -187,17 +187,38 @@ pub fn load() -> Config {
     }
 }
 
+/// Write the TOML config. Never touches the OS keyring: settings toggles call
+/// this on every click, and a keyring round trip there meant a D-Bus call on
+/// the GTK thread (or an unlock prompt per click on a locked keyring) — and,
+/// on sessions with no Secret Service at all, that no setting was ever saved.
+/// The enrollment key is stored by [`save_with_authkey`], only when it changes.
 pub fn save(cfg: &Config) -> Result<()> {
     if cfg.recovery_blocked {
         bail!("refusing to overwrite an unreadable configuration file");
     }
-    if !cfg.authkey.trim().is_empty() {
-        if cfg.server_url.trim().is_empty() {
-            bail!("cannot store a pre-auth key without a server URL");
-        }
-        crate::secrets::save_authkey(&cfg.server_url, &cfg.authkey)?;
-    }
     write_config_file(cfg)
+}
+
+/// Save the config, then store a newly entered pre-auth key in the keyring.
+///
+/// The config is written first and independently: a keyring that's missing or
+/// refuses the write must not cost the user their server, device name and
+/// favorites. Returns `Ok(Some(reason))` when the config was saved but the key
+/// could not be kept — the device can still reconnect after enrolling (the
+/// node key lives in tailscaled), it just won't be able to re-register with
+/// this key after a restart.
+pub fn save_with_authkey(cfg: &Config) -> Result<Option<String>> {
+    save(cfg)?;
+    let key = cfg.authkey.trim();
+    if key.is_empty() {
+        return Ok(None);
+    }
+    if cfg.server_url.trim().is_empty() {
+        return Ok(Some("no server URL to file the key under".into()));
+    }
+    Ok(crate::secrets::save_authkey(&cfg.server_url, key)
+        .err()
+        .map(|e| e.to_string()))
 }
 
 fn write_config_file(cfg: &Config) -> Result<()> {
@@ -271,6 +292,47 @@ pub fn save_or_warn(cfg: &Config) {
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    /// Point the config dir at a temp dir and make the Secret Service
+    /// unreachable, so these tests neither touch the user's real config nor
+    /// their keyring.
+    fn isolated_env(tag: &str) -> (std::sync::MutexGuard<'static, ()>, PathBuf) {
+        let guard = crate::test_env_lock();
+        let dir = std::env::temp_dir().join(format!("biglace-cfg-{tag}-{}", std::process::id()));
+        let _ = fs::remove_dir_all(&dir);
+        std::env::set_var("XDG_CONFIG_HOME", &dir);
+        std::env::set_var(
+            "DBUS_SESSION_BUS_ADDRESS",
+            "unix:path=/nonexistent/biglace-test-bus",
+        );
+        (guard, dir)
+    }
+
+    #[cfg(target_os = "linux")]
+    #[test]
+    fn settings_are_saved_even_when_the_keyring_is_unavailable() {
+        let (_guard, dir) = isolated_env("nokeyring");
+        let cfg = Config {
+            server_url: "https://vpn.example.org".into(),
+            authkey: "hskey-auth-secret".into(),
+            favorites: vec!["box".into()],
+            ..Config::default()
+        };
+
+        // Plain saves (every switch toggle) never involve the keyring.
+        save(&cfg).expect("config saved without a keyring");
+        let written = fs::read_to_string(dir.join("biglace/config.toml")).unwrap();
+        assert!(written.contains("box"));
+        assert!(!written.contains("hskey-auth-secret"));
+
+        // Saving a new key still writes the config and reports the key problem.
+        fs::remove_file(dir.join("biglace/config.toml")).unwrap();
+        let warning = save_with_authkey(&cfg).expect("config saved");
+        assert!(warning.is_some(), "the unstored key must be reported");
+        assert!(dir.join("biglace/config.toml").exists());
+
+        let _ = fs::remove_dir_all(&dir);
+    }
 
     #[test]
     fn enrollment_key_is_never_serialized() {

@@ -1,12 +1,10 @@
 //! Linux backend: StatusNotifierItem (D-Bus) via `ksni`.
 //!
 //! Runs on a dedicated std::thread (via `ksni`'s blocking adapter) and pushes
-//! user actions back to the GTK main loop through an std::sync::mpsc channel.
+//! user actions back to the GTK main loop through an async channel.
 //! The GTK side owns the widgets, so the tray never touches them directly —
 //! it only emits commands and lets the main loop translate them into the
 //! existing connect/disconnect/show flows.
-
-use std::sync::mpsc;
 
 use ksni::{
     blocking::{Handle as KsniHandle, TrayMethods},
@@ -20,14 +18,14 @@ use crate::{tr, trf};
 pub struct BigLaceTray {
     pub connected: bool,
     pub peer_count: usize,
-    sender: mpsc::Sender<Command>,
+    sender: async_channel::Sender<Command>,
 }
 
 impl BigLaceTray {
     fn send(&self, cmd: Command) {
         // The receiver lives on the GTK main loop; if it's gone, the app is
         // shutting down and a dropped command is fine.
-        let _ = self.sender.send(cmd);
+        let _ = self.sender.try_send(cmd);
     }
 }
 
@@ -133,8 +131,8 @@ impl HandleImpl {
 /// task re-registers the item automatically once the watcher appears moments
 /// later. A genuine hard D-Bus failure (no session bus at all) still returns
 /// `Err`, so the headless fallback of presenting the window is preserved.
-pub fn spawn() -> Option<(mpsc::Receiver<Command>, HandleImpl)> {
-    let (tx, rx) = mpsc::channel();
+pub fn spawn() -> Option<(async_channel::Receiver<Command>, HandleImpl)> {
+    let (tx, rx) = async_channel::unbounded();
     let tray = BigLaceTray {
         connected: false,
         peer_count: 0,

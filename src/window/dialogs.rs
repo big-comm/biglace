@@ -2,8 +2,6 @@ use gtk4::{glib, prelude::*};
 use libadwaita::prelude::*;
 use std::cell::RefCell;
 use std::rc::Rc;
-use std::sync::{Arc, Mutex};
-use std::time::Duration;
 
 use crate::config;
 use crate::panel::{self, PanelCredentials};
@@ -17,7 +15,8 @@ use super::sidebar::Sidebar;
 /// Outcome of the background rename worker (see `show_rename_device`), so the
 /// online probe + `tailscale set --hostname` both run off the GTK thread.
 enum RenameResult {
-    /// Tunnel down — config saved, nothing pushed to the daemon.
+    /// Not registered with a control server yet — config saved; the name goes
+    /// out with the enrollment (`tailscale up --hostname`).
     SavedOffline,
     /// `tailscale set --hostname` succeeded.
     Renamed,
@@ -33,6 +32,11 @@ pub fn show_about(parent: &libadwaita::ApplicationWindow) {
         .application_icon("org.communitybig.biglace")
         .developer_name("BigCommunity")
         .version(crate::APP_VERSION)
+        // The package's date stamp says exactly which release this is.
+        .debug_info(match crate::BUILD_VERSION {
+            Some(build) => format!("Build {build}"),
+            None => "Development build".to_string(),
+        })
         .website("https://github.com/big-comm/biglace")
         .issue_url("https://github.com/big-comm/biglace/issues")
         .copyright("© 2026 BigCommunity")
@@ -47,33 +51,23 @@ pub fn show_set_operator(parent: &libadwaita::ApplicationWindow) {
     // which blocks until the user answers the polkit prompt (up to minutes).
     // Run it on a worker thread and show the result via a main-loop poller so
     // the whole window doesn't freeze while the prompt is up.
-    let slot: Arc<Mutex<Option<Result<(), String>>>> = Arc::new(Mutex::new(None));
-    let slot_t = slot.clone();
-    std::thread::spawn(move || {
-        let r = tailscale::set_operator_current_user().map_err(|e| e.to_string());
-        if let Ok(mut g) = slot_t.lock() {
-            *g = Some(r);
-        }
-    });
-
     let parent_w = parent.clone();
-    glib::timeout_add_local(Duration::from_millis(200), move || {
-        let Some(result) = slot.lock().ok().and_then(|mut g| g.take()) else {
-            return glib::ControlFlow::Continue;
-        };
-        let body = match &result {
-            Ok(()) => tr!("Done. You will no longer need a password to connect or disconnect."),
-            Err(e) => trf!("Failed: {error}", "error" => e),
-        };
-        let dlg = libadwaita::MessageDialog::new(
-            Some(&parent_w),
-            Some(&tr!("Tailscale operator")),
-            Some(&body),
-        );
-        dlg.add_response("ok", &tr!("OK"));
-        dlg.present();
-        glib::ControlFlow::Break
-    });
+    super::run_in_background(
+        || tailscale::set_operator_current_user().map_err(|e| e.to_string()),
+        move |result| {
+            let body = match &result {
+                Ok(()) => tr!("Done. You will no longer need a password to connect or disconnect."),
+                Err(e) => trf!("Failed: {error}", "error" => e),
+            };
+            let dlg = libadwaita::MessageDialog::new(
+                Some(&parent_w),
+                Some(&tr!("Tailscale operator")),
+                Some(&body),
+            );
+            dlg.add_response("ok", &tr!("OK"));
+            dlg.present();
+        },
+    );
 }
 
 /// Confirm with the user, then tear down the current session.
@@ -133,6 +127,36 @@ fn sign_out(
     cfg: &Rc<RefCell<config::Config>>,
     _sidebar: &Sidebar,
 ) {
+    let parent_w = parent.clone();
+    let overlay_w = overlay.clone();
+    let cfg_w = cfg.clone();
+    super::run_in_background(
+        move || tailscale::logout().map_err(|e| e.to_string()),
+        move |result| match result {
+            Ok(()) => forget_local_identity(&parent_w, &overlay_w, &cfg_w),
+            // `tailscale logout` has to reach the control server. When that
+            // server is down — exactly when someone may want to switch
+            // accounts — the old code just toasted the error and left the user
+            // stuck signed in. Offer to forget the identity on this computer.
+            Err(error) => offer_local_sign_out(&parent_w, &overlay_w, &cfg_w, &error),
+        },
+    );
+}
+
+/// The config after signing out: no enrollment key, not enrolled.
+fn signed_out(cfg: &config::Config) -> config::Config {
+    let mut updated = cfg.clone();
+    updated.authkey.clear();
+    updated.enrolled = false;
+    updated
+}
+
+/// Drop the saved identity (config + keyring entries) and refresh the UI.
+fn forget_local_identity(
+    parent: &libadwaita::ApplicationWindow,
+    overlay: &libadwaita::ToastOverlay,
+    cfg: &Rc<RefCell<config::Config>>,
+) {
     let (server_url, panel_url, panel_username) = {
         let c = cfg.borrow();
         (
@@ -141,64 +165,60 @@ fn sign_out(
             c.panel_username.clone(),
         )
     };
-    let slot: Arc<Mutex<Option<Result<(), String>>>> = Arc::new(Mutex::new(None));
-    let slot_t = slot.clone();
-    std::thread::spawn(move || {
-        let result = tailscale::logout().map_err(|e| e.to_string());
-        if let Ok(mut guard) = slot_t.lock() {
-            *guard = Some(result);
-        }
-    });
+    let updated = signed_out(&cfg.borrow());
+    if let Err(error) = config::save(&updated) {
+        super::show_toast(overlay, &trf!("Error: {error}", "error" => error), 6);
+        return;
+    }
+    *cfg.borrow_mut() = updated;
+    secrets::clear(&panel_url, &panel_username);
+    secrets::clear_authkey(&server_url);
+    super::show_toast(overlay, &tr!("Signed out."), 3);
+    gtk4::prelude::WidgetExt::activate_action(parent, "win.refresh", None).ok();
+}
+
+fn offer_local_sign_out(
+    parent: &libadwaita::ApplicationWindow,
+    overlay: &libadwaita::ToastOverlay,
+    cfg: &Rc<RefCell<config::Config>>,
+    error: &str,
+) {
+    let dlg = libadwaita::MessageDialog::new(
+        Some(parent),
+        Some(&tr!("Couldn't reach the server")),
+        Some(&trf!(
+            "The control server didn't confirm the sign-out: {error}\n\nYou can still sign out on this computer: BigLace forgets the saved key and account and disconnects. The server keeps listing this device until an administrator removes it.",
+            "error" => error
+        )),
+    );
+    dlg.add_response("cancel", &tr!("Cancel"));
+    dlg.add_response("local", &tr!("Sign out on this computer"));
+    dlg.set_response_appearance("local", libadwaita::ResponseAppearance::Destructive);
+    dlg.set_default_response(Some("cancel"));
+    dlg.set_close_response("cancel");
 
     let parent_w = parent.clone();
     let overlay_w = overlay.clone();
     let cfg_w = cfg.clone();
-    glib::timeout_add_local(Duration::from_millis(200), move || {
-        let Some(result) = slot.lock().ok().and_then(|mut guard| guard.take()) else {
-            return glib::ControlFlow::Continue;
-        };
-        match result {
-            Ok(()) => {
-                let mut updated = cfg_w.borrow().clone();
-                updated.authkey.clear();
-                updated.enrolled = false;
-                if let Err(error) = config::save(&updated) {
-                    overlay_w.add_toast(
-                        libadwaita::Toast::builder()
-                            .title(
-                                glib::markup_escape_text(&trf!("Error: {error}", "error" => error))
-                                    .as_str(),
-                            )
-                            .timeout(6)
-                            .build(),
-                    );
-                    return glib::ControlFlow::Break;
-                }
-                *cfg_w.borrow_mut() = updated;
-                secrets::clear(&panel_url, &panel_username);
-                secrets::clear_authkey(&server_url);
-                overlay_w.add_toast(
-                    libadwaita::Toast::builder()
-                        .title(tr!("Signed out."))
-                        .timeout(3)
-                        .build(),
-                );
-                gtk4::prelude::WidgetExt::activate_action(&parent_w, "win.refresh", None).ok();
-            }
-            Err(error) => {
-                overlay_w.add_toast(
-                    libadwaita::Toast::builder()
-                        .title(
-                            glib::markup_escape_text(&trf!("Error: {error}", "error" => error))
-                                .as_str(),
-                        )
-                        .timeout(6)
-                        .build(),
-                );
-            }
+    dlg.connect_response(None, move |dlg, resp| {
+        dlg.close();
+        if resp != "local" {
+            return;
         }
-        glib::ControlFlow::Break
+        // Stop the tunnel too (best effort; it may well be down already).
+        let parent_t = parent_w.clone();
+        let overlay_t = overlay_w.clone();
+        let cfg_t = cfg_w.clone();
+        super::run_in_background(
+            || {
+                if let Err(e) = tailscale::disconnect() {
+                    eprintln!("[biglace] sign-out: disconnect failed: {e}");
+                }
+            },
+            move |()| forget_local_identity(&parent_t, &overlay_t, &cfg_t),
+        );
     });
+    dlg.present();
 }
 
 pub fn show_panel_login(
@@ -293,24 +313,15 @@ pub fn show_panel_login(
             (c.panel_url.clone(), c.panel_username.clone())
         };
         if !panel_url.is_empty() && !username.is_empty() {
-            let slot: Arc<Mutex<Option<Option<String>>>> = Arc::new(Mutex::new(None));
-            let slot_t = slot.clone();
-            std::thread::spawn(move || {
-                let pw = secrets::load(&panel_url, &username);
-                if let Ok(mut g) = slot_t.lock() {
-                    *g = Some(pw);
-                }
-            });
             let er_pass_w = er_pass.clone();
-            glib::timeout_add_local(Duration::from_millis(150), move || {
-                let Some(pw) = slot.lock().ok().and_then(|mut g| g.take()) else {
-                    return glib::ControlFlow::Continue;
-                };
-                if let Some(pw) = pw {
-                    er_pass_w.set_text(&pw);
-                }
-                glib::ControlFlow::Break
-            });
+            super::run_in_background(
+                move || secrets::load(&panel_url, &username),
+                move |pw| {
+                    if let Some(pw) = pw {
+                        er_pass_w.set_text(&pw);
+                    }
+                },
+            );
         }
     }
 
@@ -441,16 +452,7 @@ pub fn show_panel_login(
             ok_spinner_w.start();
             *busy_c.borrow_mut() = true;
 
-            let slot: Arc<Mutex<Option<Result<panel::PreAuthResponse, String>>>> =
-                Arc::new(Mutex::new(None));
-            let slot_t = slot.clone();
             let creds_t = creds.clone();
-            std::thread::spawn(move || {
-                let r = panel::request_preauth(&creds_t).map_err(|e| e.to_string());
-                if let Ok(mut g) = slot_t.lock() {
-                    *g = Some(r);
-                }
-            });
 
             let dlg3 = dlg2.clone();
             let win3 = win2.clone();
@@ -467,10 +469,10 @@ pub fn show_panel_login(
             let username = creds.username.clone();
             let password = creds.password.clone();
 
-            glib::timeout_add_local(Duration::from_millis(300), move || {
-                match slot.lock().ok().and_then(|mut g| g.take()) {
-                    None => glib::ControlFlow::Continue,
-                    Some(Ok(resp)) => {
+            super::run_in_background(
+                move || panel::request_preauth(&creds_t).map_err(|e| e.to_string()),
+                move |result| match result {
+                    Ok(resp) => {
                         // Clear busy before close() — the close-request guard
                         // returns Stop while busy and would otherwise block our
                         // own dlg3.close() below.
@@ -485,7 +487,7 @@ pub fn show_panel_login(
                         // Collapse the manual-key expander — the key was just
                         // generated for the user, no need to show the field.
                         sidebar3.expander_manual.set_expanded(false);
-                        {
+                        let saved = {
                             let mut c = cfg3.borrow_mut();
                             c.panel_url = panel_url.clone();
                             c.panel_username = username.clone();
@@ -493,25 +495,31 @@ pub fn show_panel_login(
                             c.authkey = resp.authkey.clone();
                             c.hostname = creds.hostname.clone();
                             c.enrolled = true;
-                            config::save_or_warn(&c);
-                        }
+                            config::save_with_authkey(&c)
+                        };
                         // Stash the password in the OS-native keyring so the
                         // user doesn't retype it next time they sign in.
                         secrets::save(&panel_url, &username, &password);
-                        toast3.add_toast(
-                            libadwaita::Toast::builder()
-                                .title(tr!("Signed in. Press Connect to join the network."))
-                                .timeout(3)
-                                .build(),
-                        );
+                        match saved {
+                            Ok(None) => super::show_toast(
+                                &toast3,
+                                &tr!("Signed in. Press Connect to join the network."),
+                                3,
+                            ),
+                            Ok(Some(reason)) => {
+                                super::show_toast(&toast3, &super::keyring_warning(&reason), 8)
+                            }
+                            Err(e) => {
+                                super::show_toast(&toast3, &trf!("Error: {error}", "error" => e), 6)
+                            }
+                        }
                         dlg3.close();
                         // Force the sidebar / status to re-read config now —
                         // otherwise the UI keeps showing the "not signed in"
                         // layout until the next 30s refresh tick.
                         gtk4::prelude::WidgetExt::activate_action(&win3, "win.refresh", None).ok();
-                        glib::ControlFlow::Break
                     }
-                    Some(Err(e)) => {
+                    Err(e) => {
                         *busy_p.borrow_mut() = false;
                         lbl_err3.set_text(&trf!("Error: {error}", "error" => e));
                         // Restore the idle button state so the user can retry.
@@ -519,10 +527,9 @@ pub fn show_panel_login(
                         btn_ok_w2.set_child(Some(&ok_idle_w2));
                         btn_ok_w2.set_sensitive(true);
                         btn_cancel_w2.set_sensitive(true);
-                        glib::ControlFlow::Break
                     }
-                }
-            });
+                },
+            );
         });
     }
 
@@ -645,73 +652,71 @@ pub fn show_rename_device(
             config::save_or_warn(&c);
         }
 
-        // Probe online state AND push the rename on a worker thread: the
-        // is_service_active/get_status probe is a subprocess that would freeze
-        // the GTK loop on a hung daemon if done here. If the tunnel is up we
-        // apply now; otherwise the next `tailscale up` carries the new value.
+        // Probe the daemon AND push the rename on a worker thread: the probe is
+        // a subprocess that would freeze the GTK loop on a hung daemon.
+        // `tailscale set --hostname` works whenever the node is registered —
+        // connected or not — so only an unregistered device has to wait for
+        // its enrollment. (Gating on "online", as before, left a rename done
+        // while disconnected stuck in the config: the keyless reconnect is a
+        // bare `tailscale up` that never passes a hostname.)
         let name_t = new_name.clone();
-        let slot: Arc<Mutex<Option<RenameResult>>> = Arc::new(Mutex::new(None));
-        let slot_t = slot.clone();
-        std::thread::spawn(move || {
-            let online = tailscale::is_service_active() && tailscale::get_status().online;
-            let outcome = if !online {
-                RenameResult::SavedOffline
-            } else {
-                match tailscale::set_hostname(&name_t) {
-                    Ok(()) => RenameResult::Renamed,
-                    Err(e) => RenameResult::Failed(e.to_string()),
-                }
-            };
-            if let Ok(mut g) = slot_t.lock() {
-                *g = Some(outcome);
-            }
-        });
-
         let parent_t = parent_w.clone();
         let overlay_t = overlay_w.clone();
-        glib::timeout_add_local(Duration::from_millis(200), move || {
-            let Some(outcome) = slot.lock().ok().and_then(|mut g| g.take()) else {
-                return glib::ControlFlow::Continue;
-            };
-            match outcome {
-                RenameResult::SavedOffline => {
-                    overlay_t.add_toast(
-                        libadwaita::Toast::builder()
-                            .title(tr!(
+        super::run_in_background(
+            move || {
+                let registered =
+                    tailscale::is_service_active() && tailscale::get_status().registered;
+                if !registered {
+                    RenameResult::SavedOffline
+                } else {
+                    match tailscale::set_hostname(&name_t) {
+                        Ok(()) => RenameResult::Renamed,
+                        Err(e) => RenameResult::Failed(e.to_string()),
+                    }
+                }
+            },
+            move |outcome| {
+                match outcome {
+                    RenameResult::SavedOffline => {
+                        overlay_t.add_toast(
+                            libadwaita::Toast::builder()
+                                .title(tr!(
                                 "Saved. The new name will take effect the next time you connect."
                             ))
-                            .timeout(3)
-                            .build(),
-                    );
-                    gtk4::prelude::WidgetExt::activate_action(&parent_t, "win.refresh", None).ok();
-                }
-                RenameResult::Renamed => {
-                    overlay_t.add_toast(
-                        libadwaita::Toast::builder()
-                            .title(tr!("Device renamed."))
-                            .timeout(2)
-                            .build(),
-                    );
-                    gtk4::prelude::WidgetExt::activate_action(&parent_t, "win.refresh", None).ok();
-                }
-                RenameResult::Failed(e) => {
-                    overlay_t.add_toast(
-                        libadwaita::Toast::builder()
-                            // Escape tailscale stderr before it hits the
-                            // markup-aware toast title.
-                            .title(
-                                glib::markup_escape_text(
-                                    &trf!("Rename failed: {error}", "error" => e),
+                                .timeout(3)
+                                .build(),
+                        );
+                        gtk4::prelude::WidgetExt::activate_action(&parent_t, "win.refresh", None)
+                            .ok();
+                    }
+                    RenameResult::Renamed => {
+                        overlay_t.add_toast(
+                            libadwaita::Toast::builder()
+                                .title(tr!("Device renamed."))
+                                .timeout(2)
+                                .build(),
+                        );
+                        gtk4::prelude::WidgetExt::activate_action(&parent_t, "win.refresh", None)
+                            .ok();
+                    }
+                    RenameResult::Failed(e) => {
+                        overlay_t.add_toast(
+                            libadwaita::Toast::builder()
+                                // Escape tailscale stderr before it hits the
+                                // markup-aware toast title.
+                                .title(
+                                    glib::markup_escape_text(
+                                        &trf!("Rename failed: {error}", "error" => e),
+                                    )
+                                    .as_str(),
                                 )
-                                .as_str(),
-                            )
-                            .timeout(6)
-                            .build(),
-                    );
+                                .timeout(6)
+                                .build(),
+                        );
+                    }
                 }
-            }
-            glib::ControlFlow::Break
-        });
+            },
+        );
     });
     dlg.present();
 }
@@ -742,9 +747,14 @@ pub(super) fn validate_hostname(s: &str) -> Result<(), String> {
 }
 
 pub(super) fn sanitize_hostname(input: &str) -> String {
+    use unicode_normalization::{char::is_combining_mark, UnicodeNormalization};
+
     let mut output = String::with_capacity(input.len().min(63));
     let mut hyphen = false;
-    for c in input.chars().flat_map(char::to_lowercase) {
+    // Decompose and drop the combining marks first, so "José" becomes "jose"
+    // (as on the Android app) instead of losing the accented letter.
+    let folded = input.nfd().filter(|c| !is_combining_mark(*c));
+    for c in folded.flat_map(char::to_lowercase) {
         if output.len() >= 63 {
             break;
         }
@@ -797,9 +807,28 @@ mod tests {
     use super::*;
 
     #[test]
+    fn signing_out_forgets_the_identity_but_keeps_preferences() {
+        let cfg = config::Config {
+            server_url: "https://vpn.example.org".into(),
+            authkey: "hskey-auth-secret".into(),
+            enrolled: true,
+            favorites: vec!["box".into()],
+            ..config::Config::default()
+        };
+        let out = signed_out(&cfg);
+        assert!(out.authkey.is_empty());
+        assert!(!out.enrolled);
+        assert_eq!(out.server_url, cfg.server_url);
+        assert_eq!(out.favorites, cfg.favorites);
+    }
+
+    #[test]
     fn device_name_is_a_dns_label() {
         assert_eq!(sanitize_hostname(" Office PC__01 "), "office-pc-01");
         assert_eq!(sanitize_hostname("---PHONE---"), "phone");
+        // Accents are folded, not dropped.
+        assert_eq!(sanitize_hostname("José Ñandú"), "jose-nandu");
+        assert_eq!(sanitize_hostname("  Sálá PC__01  "), "sala-pc-01");
         assert!(validate_hostname(&"a".repeat(63)).is_ok());
         assert!(validate_hostname(&"a".repeat(64)).is_err());
     }
