@@ -285,8 +285,10 @@ each build.
 - **One release, every platform.** Publishing a release triggers the
   [Windows](.github/workflows/windows.yml) and
   [Android](.github/workflows/android.yml) workflows, which attach the MSI
-  and the APKs to that same release. The Android job takes its version from
-  the tag and signs with the key stored in the repository secrets
+  and the APKs to that same release. Android shows the same `APP_VERSION` as
+  the desktop app; its internal versionCode comes from the release tag, so
+  every release can update the previous one. APKs are signed with the key in
+  the repository secrets
   (`ANDROID_KEYSTORE_BASE64`, `ANDROID_KEYSTORE_PASSWORD`, `ANDROID_KEY_ALIAS`,
   `ANDROID_KEY_PASSWORD`).
 
