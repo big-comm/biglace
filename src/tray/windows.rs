@@ -7,14 +7,11 @@
 //!   1. Owns the `TrayIcon` (Windows COM/threading rules require it stays
 //!      on its creating thread),
 //!   2. Pumps Win32 messages with `PeekMessageW` + `DispatchMessageW`,
-//!   3. Forwards menu clicks to the GTK loop via mpsc::Sender<Command>,
+//!   3. Forwards menu clicks to the GTK loop via an async channel,
 //!   4. Receives `update(connected, peer_count)` calls from the GTK loop via
 //!      a separate channel and applies them on its own thread.
 //!
-//! The icon is currently a placeholder solid-color square — embedding the
-//! real BigLace icon needs either a build-time SVG rasterizer or a Win32
-//! resource; either is a follow-up. The square is enough to make the tray
-//! visible and exercise the click-through plumbing in CI.
+//! The icon is the BigLace logo, embedded as raw RGBA (see `ICON_RGBA_32`).
 
 use std::sync::mpsc;
 use std::thread;
@@ -50,8 +47,8 @@ impl HandleImpl {
     }
 }
 
-pub fn spawn() -> Option<(mpsc::Receiver<Command>, HandleImpl)> {
-    let (cmd_tx, cmd_rx) = mpsc::channel();
+pub fn spawn() -> Option<(async_channel::Receiver<Command>, HandleImpl)> {
+    let (cmd_tx, cmd_rx) = async_channel::unbounded();
     let (update_tx, update_rx) = mpsc::channel::<Update>();
 
     // Probe channel: the worker pings this once it has built the tray
@@ -70,7 +67,7 @@ pub fn spawn() -> Option<(mpsc::Receiver<Command>, HandleImpl)> {
 }
 
 fn run_tray_thread(
-    cmd_tx: mpsc::Sender<Command>,
+    cmd_tx: async_channel::Sender<Command>,
     update_rx: mpsc::Receiver<Update>,
     ready_tx: mpsc::Sender<bool>,
 ) {
@@ -160,7 +157,7 @@ fn run_tray_thread(
             } else {
                 continue;
             };
-            if cmd_tx.send(cmd).is_err() {
+            if cmd_tx.send_blocking(cmd).is_err() {
                 // GTK loop has dropped the receiver — app is shutting down.
                 return;
             }
@@ -194,15 +191,8 @@ fn tooltip_text(connected: bool, peer_count: usize) -> String {
     }
 }
 
-/// Placeholder 16x16 RGBA icon (BigLace blue). The real branded icon should
-/// land here in a follow-up — likely via a `build.rs` that rasterizes
-/// `usr/share/icons/hicolor/scalable/apps/org.communitybig.biglace.svg`
-/// into RGBA bytes embedded with `include_bytes!`.
+/// The BigLace logo at 32×32; Windows scales it for the tray's DPI.
 fn build_default_icon() -> Icon {
-    const SIZE: u32 = 16;
-    let mut rgba = Vec::with_capacity((SIZE * SIZE * 4) as usize);
-    for _ in 0..(SIZE * SIZE) {
-        rgba.extend_from_slice(&[0x29, 0x9F, 0xFC, 0xFF]);
-    }
-    Icon::from_rgba(rgba, SIZE, SIZE).expect("16x16 RGBA buffer is always valid")
+    Icon::from_rgba(super::ICON_RGBA_32.to_vec(), 32, 32)
+        .expect("embedded 32x32 RGBA icon is always valid")
 }
