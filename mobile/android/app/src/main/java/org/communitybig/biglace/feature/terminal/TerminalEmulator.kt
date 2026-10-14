@@ -4,8 +4,9 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.buildAnnotatedString
+import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.withStyle
+import androidx.compose.ui.text.style.TextDecoration
 
 /**
  * A grid-based ANSI/VT terminal emulator — the correct model for a real shell.
@@ -14,6 +15,10 @@ import androidx.compose.ui.text.withStyle
  * full-screen apps like vim/htop) plus a scrollback buffer for lines that scroll
  * off the top. This is what makes coloured prompts (ble.sh/powerline) and TUIs
  * render correctly instead of scattering characters.
+ *
+ * Rendering is per line and cached: [snapshot] only rebuilds the lines that
+ * changed since the previous call, so a TUI repainting a few rows many times a
+ * second (Claude Code, htop) costs a few rows of text work, not the whole buffer.
  */
 class TerminalEmulator(
     rows: Int = 24,
@@ -24,27 +29,59 @@ class TerminalEmulator(
         private set
     var cols: Int = cols.coerceAtLeast(8)
         private set
-    private class Cell(val ch: Char, val fg: Long, val bg: Long, val bold: Boolean)
+
+    /** Terminal → host replies (cursor position reports). Invoked while feeding. */
+    @Volatile var onReply: ((String) -> Unit)? = null
+
+    /** DECCKM: arrow keys must be sent as `ESC O x` instead of `ESC [ x`. */
+    @Volatile var applicationCursorKeys = false
+        private set
+
+    /** Mode 2004: pasted text must be wrapped in `ESC[200~` … `ESC[201~`. */
+    @Volatile var bracketedPaste = false
+        private set
+
+    /** Mode 2026: the app is mid-repaint; presenting now would show a torn frame. */
+    @Volatile var synchronizedOutput = false
+        private set
+
+    private class Cell(val ch: Char, val fg: Long, val bg: Long, val flags: Int)
+
+    /** One screen row plus its rendered form, dropped whenever a cell changes. */
+    private class Line(val cells: Array<Cell>) {
+        var text: AnnotatedString? = null
+    }
 
     private var screen = blankGrid()
-    private var mainScreen: Array<Array<Cell>>? = null
+    private var mainScreen: Array<Line>? = null
     private var inAlt = false
-    private val scrollback = ArrayDeque<Array<Cell>>()
+    private val scrollback = ArrayDeque<Line>()
 
     private var cr = 0            // cursor row
     private var cc = 0            // cursor col
     private var savedR = 0
     private var savedC = 0
+    private var mainR = 0         // main-screen cursor while the alt screen is up
+    private var mainC = 0
     private var top = 0           // scroll region top
-    private var bottom = rows - 1 // scroll region bottom
+    private var bottom = this.rows - 1 // scroll region bottom
     private var wrap = false      // deferred end-of-line wrap
+    private var autoWrap = true
+    private var cursorVisible = true
 
     private var curFg = FG
     private var curBg = BG_NONE
-    private var curBold = false
+    private var curFlags = 0
+
+    private var g0Graphics = false
+    private var g1Graphics = false
+    private var shiftOut = false
+    private var charsetSlot = 0
+    private var lastChar = ' '
 
     private var state = NORMAL
-    private val pb = StringBuilder()
+    private val params = StringBuilder()
+    private var intermediate = false
 
     @Synchronized
     fun feed(text: String) {
@@ -56,9 +93,15 @@ class TerminalEmulator(
             NORMAL -> normal(c)
             ESC -> esc(c)
             CSI -> csi(c)
-            OSC -> if (c == BEL) state = NORMAL else if (c == ESCC) state = OSC_ST
-            OSC_ST -> state = NORMAL
-            CHARSET -> state = NORMAL
+            STRING -> if (c == BEL) state = NORMAL else if (c == ESCC) state = STRING_ESC
+            // ST is ESC \. Anything else means the terminator was lost: treat the
+            // ESC as the start of a new sequence instead of swallowing the stream.
+            STRING_ESC -> if (c == '\\') state = NORMAL else { state = ESC; esc(c) }
+            CHARSET -> {
+                if (charsetSlot == 0) g0Graphics = c == '0' else if (charsetSlot == 1) g1Graphics = c == '0'
+                state = NORMAL
+            }
+            SKIP -> state = NORMAL
         }
     }
 
@@ -69,37 +112,58 @@ class TerminalEmulator(
             '\r' -> { cc = 0; wrap = false }
             '\b' -> { if (cc > 0) cc--; wrap = false }
             '\t' -> { cc = minOf(cols - 1, (cc / 8 + 1) * 8); wrap = false }
-            BEL -> Unit
-            else -> if (c.code >= 32) printChar(c)
+            '\u000E' -> shiftOut = true
+            '\u000F' -> shiftOut = false
+            else -> if (c.code >= 32 && c != '\u007F') printChar(c)
         }
     }
 
     private fun esc(c: Char) {
+        state = NORMAL
         when (c) {
-            '[' -> { state = CSI; pb.clear() }
-            ']' -> { state = OSC; pb.clear() }
-            '7' -> { saveCursor(); state = NORMAL }
-            '8' -> { restoreCursor(); state = NORMAL }
-            'M' -> { reverseIndex(); state = NORMAL }
-            'c' -> { reset(); state = NORMAL }
-            '(', ')', '*', '+' -> state = CHARSET
-            else -> state = NORMAL
+            '[' -> { state = CSI; params.clear(); intermediate = false }
+            // OSC, DCS, SOS, PM, APC: string payloads we don't interpret.
+            ']', 'P', 'X', '^', '_' -> state = STRING
+            '7' -> saveCursor()
+            '8' -> restoreCursor()
+            'D' -> lineFeed()
+            'E' -> { cc = 0; lineFeed() }
+            'M' -> reverseIndex()
+            'c' -> reset()
+            '(', ')', '*', '+' -> { charsetSlot = c - '('; state = CHARSET }
+            ' ', '#', '%' -> state = SKIP
         }
     }
 
     private fun csi(c: Char) {
-        if (c in '0'..'9' || c == ';' || c == '?' || c in ' '..'/') {
-            pb.append(c)
-            return
+        when (c) {
+            in '0'..'?' -> if (params.length < MAX_PARAM_CHARS) params.append(c)
+            in ' '..'/' -> intermediate = true
+            in '@'..'~' -> {
+                state = NORMAL
+                if (!intermediate) handleCsi(c, params.toString())
+            }
+            ESCC -> state = ESC
         }
-        handleCsi(c, pb.toString())
-        state = NORMAL
     }
 
     private fun printChar(c: Char) {
-        if (wrap) { cc = 0; lineFeed(); wrap = false }
-        screen[cr][cc] = Cell(c, curFg, curBg, curBold)
-        if (cc == cols - 1) wrap = true else cc++
+        val graphics = if (shiftOut) g1Graphics else g0Graphics
+        put(if (graphics && c in '`'..'~') ACS[c - '`'] else c)
+    }
+
+    private fun put(ch: Char) {
+        if (wrap) { cc = 0; lineFeed() }
+        val cell = if (ch == ' ' && curFg == FG && curBg == BG_NONE && curFlags == 0) BLANK
+            else Cell(ch, curFg, curBg, curFlags)
+        set(screen[cr], cc, cell)
+        lastChar = ch
+        if (cc == cols - 1) wrap = autoWrap else cc++
+    }
+
+    private fun set(line: Line, col: Int, cell: Cell) {
+        line.cells[col] = cell
+        line.text = null
     }
 
     private fun lineFeed() {
@@ -109,34 +173,50 @@ class TerminalEmulator(
 
     private fun reverseIndex() {
         if (cr == top) scrollDown() else if (cr > 0) cr--
+        wrap = false
     }
 
     private fun scrollUp() {
-        if (top == 0 && !inAlt) {
-            scrollback.addLast(screen[top])
-            while (scrollback.size > scrollbackMax) scrollback.removeFirst()
-        }
+        if (top == 0 && !inAlt) pushScrollback(screen[top])
         for (r in top until bottom) screen[r] = screen[r + 1]
-        screen[bottom] = blankRow()
+        screen[bottom] = newLine()
     }
 
     private fun scrollDown() {
         for (r in bottom downTo top + 1) screen[r] = screen[r - 1]
-        screen[top] = blankRow()
+        screen[top] = newLine()
+    }
+
+    private fun pushScrollback(line: Line) {
+        scrollback.addLast(line)
+        while (scrollback.size > scrollbackMax) scrollback.removeFirst()
     }
 
     private fun handleCsi(final: Char, raw: String) {
-        val priv = raw.startsWith('?')
-        val nums = raw.trimStart('?').split(';').map { it.toIntOrNull() }
+        val marker = raw.firstOrNull()?.takeIf { it in '<'..'?' }
+        val body = if (marker != null) raw.substring(1) else raw
+        // '<', '=', '>' introduce private queries/extensions (device attributes,
+        // modifyOtherKeys, kitty keyboard) that this terminal doesn't implement.
+        if (marker != null && marker != '?') return
+        if (marker == null && final == 'm') { sgr(body); return }
+
+        val nums = body.split(';').map { it.substringBefore(':').toIntOrNull()?.coerceAtMost(MAX_PARAM) }
         fun p(i: Int, def: Int) = nums.getOrNull(i) ?: def
+        if (marker == '?') {
+            when (final) {
+                'h' -> setModes(nums, true)
+                'l' -> setModes(nums, false)
+            }
+            return
+        }
         val n = maxOf(1, p(0, 1))
         when (final) {
-            'A' -> { cr = maxOf(top, cr - n); wrap = false }
-            'B' -> { cr = minOf(bottom, cr + n); wrap = false }
-            'C' -> { cc = minOf(cols - 1, cc + n); wrap = false }
+            'A' -> { cr = maxOf(if (cr >= top) top else 0, cr - n); wrap = false }
+            'B' -> { cr = minOf(if (cr <= bottom) bottom else rows - 1, cr + n); wrap = false }
+            'C', 'a' -> { cc = minOf(cols - 1, cc + n); wrap = false }
             'D' -> { cc = maxOf(0, cc - n); wrap = false }
-            'E' -> { cr = minOf(bottom, cr + n); cc = 0 }
-            'F' -> { cr = maxOf(top, cr - n); cc = 0 }
+            'E' -> { cr = minOf(if (cr <= bottom) bottom else rows - 1, cr + n); cc = 0; wrap = false }
+            'F' -> { cr = maxOf(if (cr >= top) top else 0, cr - n); cc = 0; wrap = false }
             'G', '`' -> { cc = (p(0, 1) - 1).coerceIn(0, cols - 1); wrap = false }
             'd' -> { cr = (p(0, 1) - 1).coerceIn(0, rows - 1); wrap = false }
             'H', 'f' -> {
@@ -146,59 +226,76 @@ class TerminalEmulator(
             }
             'J' -> eraseDisplay(p(0, 0))
             'K' -> eraseLine(cr, p(0, 0))
-            'X' -> { var i = cc; repeat(n) { if (i < cols) screen[cr][i++] = blank() } }
+            'X' -> eraseCells(screen[cr], cc, minOf(cols, cc + n))
             'P' -> deleteChars(n)
             '@' -> insertChars(n)
             'L' -> insertLines(n)
             'M' -> deleteLines(n)
+            'S' -> repeat(minOf(n, rows)) { scrollUp() }
+            'T' -> repeat(minOf(n, rows)) { scrollDown() }
+            'b' -> repeat(minOf(n, rows * cols)) { put(lastChar) }
             'r' -> {
                 top = (p(0, 1) - 1).coerceIn(0, rows - 1)
                 bottom = (p(1, rows) - 1).coerceIn(0, rows - 1)
                 if (top >= bottom) { top = 0; bottom = rows - 1 }
-                cr = top; cc = 0
+                cr = top; cc = 0; wrap = false
             }
             's' -> saveCursor()
             'u' -> restoreCursor()
-            'm' -> sgr(nums)
-            'h' -> if (priv) setModes(nums, true)
-            'l' -> if (priv) setModes(nums, false)
+            'n' -> when (p(0, 0)) {
+                5 -> onReply?.invoke("\u001B[0n")
+                6 -> onReply?.invoke("\u001B[${cr + 1};${cc + 1}R")
+            }
         }
+    }
+
+    /** Erased cells take the current background (terminfo `bce`), like xterm. */
+    private fun eraseCell(): Cell = if (curBg == BG_NONE) BLANK else Cell(' ', FG, curBg, 0)
+
+    private fun eraseCells(line: Line, from: Int, until: Int) {
+        val cell = eraseCell()
+        for (i in from until until) line.cells[i] = cell
+        line.text = null
     }
 
     private fun eraseDisplay(mode: Int) {
         when (mode) {
-            0 -> { eraseLine(cr, 0); for (r in cr + 1 until rows) clearRow(r) }
-            1 -> { for (r in 0 until cr) clearRow(r); eraseLine(cr, 1) }
-            2, 3 -> { for (r in 0 until rows) clearRow(r); if (mode == 3) scrollback.clear() }
+            0 -> { eraseLine(cr, 0); for (r in cr + 1 until rows) eraseLine(r, 2) }
+            1 -> { for (r in 0 until cr) eraseLine(r, 2); eraseLine(cr, 1) }
+            2, 3 -> { for (r in 0 until rows) eraseLine(r, 2); if (mode == 3) scrollback.clear() }
         }
     }
 
     private fun eraseLine(row: Int, mode: Int) {
         val line = screen[row]
         when (mode) {
-            0 -> for (i in cc until cols) line[i] = blank()
-            1 -> for (i in 0..minOf(cc, cols - 1)) line[i] = blank()
-            2 -> for (i in 0 until cols) line[i] = blank()
+            0 -> eraseCells(line, cc, cols)
+            1 -> eraseCells(line, 0, minOf(cc, cols - 1) + 1)
+            2 -> eraseCells(line, 0, cols)
         }
     }
 
     private fun deleteChars(n: Int) {
         val line = screen[cr]
         val count = minOf(n, cols - cc)
-        for (i in cc until cols) line[i] = if (i + count < cols) line[i + count] else blank()
+        val fill = eraseCell()
+        for (i in cc until cols) line.cells[i] = if (i + count < cols) line.cells[i + count] else fill
+        line.text = null
     }
 
     private fun insertChars(n: Int) {
         val line = screen[cr]
         val count = minOf(n, cols - cc)
-        for (i in cols - 1 downTo cc) line[i] = if (i - count >= cc) line[i - count] else blank()
+        val fill = eraseCell()
+        for (i in cols - 1 downTo cc) line.cells[i] = if (i - count >= cc) line.cells[i - count] else fill
+        line.text = null
     }
 
     private fun insertLines(n: Int) {
         if (cr < top || cr > bottom) return
         repeat(minOf(n, bottom - cr + 1)) {
             for (r in bottom downTo cr + 1) screen[r] = screen[r - 1]
-            screen[cr] = blankRow()
+            screen[cr] = newLine()
         }
     }
 
@@ -206,79 +303,116 @@ class TerminalEmulator(
         if (cr < top || cr > bottom) return
         repeat(minOf(n, bottom - cr + 1)) {
             for (r in cr until bottom) screen[r] = screen[r + 1]
-            screen[bottom] = blankRow()
+            screen[bottom] = newLine()
         }
     }
 
-    private fun sgr(nums: List<Int?>) {
-        if (nums.isEmpty() || (nums.size == 1 && nums[0] == null)) { resetSgr(); return }
+    private fun sgr(body: String) {
+        if (body.isEmpty()) { resetSgr(); return }
+        val groups = body.split(';')
+        fun int(i: Int) = groups.getOrNull(i)?.toIntOrNull()
         var i = 0
-        val codes = nums.map { it ?: 0 }
-        while (i < codes.size) {
-            when (val n = codes[i]) {
+        while (i < groups.size) {
+            val group = groups[i]
+            if (':' in group) {
+                // ITU-style sub-parameters: 38:2::r:g:b, 38:5:n, 4:3 …
+                val sub = group.split(':').map { it.toIntOrNull() }
+                when (sub[0]) {
+                    38, 48 -> {
+                        val color = when (sub.getOrNull(1)) {
+                            5 -> xterm256(sub.getOrNull(2) ?: 0)
+                            2 -> if (sub.size >= 5) sub.takeLast(3).let { rgb(it[0], it[1], it[2]) } else null
+                            else -> null
+                        }
+                        if (color != null) { if (sub[0] == 38) curFg = color else curBg = color }
+                    }
+                    4 -> curFlags = if (sub.getOrNull(1) == 0) curFlags and UNDERLINE.inv() else curFlags or UNDERLINE
+                }
+                i++
+                continue
+            }
+            when (val n = group.toIntOrNull() ?: 0) {
                 0 -> resetSgr()
-                1 -> curBold = true
-                22 -> curBold = false
-                7 -> { val t = curFg; curFg = if (curBg == BG_NONE) 0xFF0B0E14L else curBg; curBg = t } // reverse video
+                1 -> curFlags = curFlags or BOLD
+                2 -> curFlags = curFlags or DIM
+                3 -> curFlags = curFlags or ITALIC
+                4 -> curFlags = curFlags or UNDERLINE
+                7 -> curFlags = curFlags or INVERSE
+                22 -> curFlags = curFlags and (BOLD or DIM).inv()
+                23 -> curFlags = curFlags and ITALIC.inv()
+                24 -> curFlags = curFlags and UNDERLINE.inv()
+                27 -> curFlags = curFlags and INVERSE.inv()
                 in 30..37 -> curFg = ANSI16[n - 30]
                 in 90..97 -> curFg = ANSI16[n - 90 + 8]
                 39 -> curFg = FG
                 in 40..47 -> curBg = ANSI16[n - 40]
                 in 100..107 -> curBg = ANSI16[n - 100 + 8]
                 49 -> curBg = BG_NONE
-                38 -> when (codes.getOrNull(i + 1)) {
-                    5 -> { curFg = xterm256(codes.getOrNull(i + 2) ?: 7); i += 2 }
-                    2 -> { curFg = rgb(codes, i); i += 4 }
-                }
-                48 -> when (codes.getOrNull(i + 1)) {
-                    5 -> { curBg = xterm256(codes.getOrNull(i + 2) ?: 0); i += 2 }
-                    2 -> { curBg = rgb(codes, i); i += 4 }
+                38, 48 -> {
+                    val color = when (int(i + 1)) {
+                        5 -> xterm256(int(i + 2) ?: 0).also { i += 2 }
+                        2 -> rgb(int(i + 2), int(i + 3), int(i + 4)).also { i += 4 }
+                        else -> null
+                    }
+                    if (color != null) { if (n == 38) curFg = color else curBg = color }
                 }
             }
             i++
         }
     }
 
-    private fun resetSgr() { curFg = FG; curBg = BG_NONE; curBold = false }
+    private fun resetSgr() { curFg = FG; curBg = BG_NONE; curFlags = 0 }
 
-    private fun rgb(codes: List<Int>, i: Int): Long {
-        val r = codes.getOrNull(i + 2) ?: 0
-        val g = codes.getOrNull(i + 3) ?: 0
-        val b = codes.getOrNull(i + 4) ?: 0
-        return 0xFF000000L or (r.toLong() shl 16) or (g.toLong() shl 8) or b.toLong()
+    private fun rgb(r: Int?, g: Int?, b: Int?): Long {
+        fun ch(v: Int?) = (v ?: 0).coerceIn(0, 255).toLong()
+        return 0xFF000000L or (ch(r) shl 16) or (ch(g) shl 8) or ch(b)
     }
 
     private fun setModes(nums: List<Int?>, on: Boolean) {
         for (m in nums) when (m) {
+            1 -> applicationCursorKeys = on
+            7 -> { autoWrap = on; if (!on) wrap = false }
+            25 -> cursorVisible = on
             47, 1047, 1049 -> if (on) enterAlt() else leaveAlt()
+            2004 -> bracketedPaste = on
+            2026 -> synchronizedOutput = on
         }
     }
 
     private fun enterAlt() {
         if (inAlt) return
         mainScreen = screen
-        savedR = cr; savedC = cc
+        mainR = cr; mainC = cc
         screen = blankGrid()
-        cr = 0; cc = 0; top = 0; bottom = rows - 1; inAlt = true
+        cr = 0; cc = 0; top = 0; bottom = rows - 1; wrap = false; inAlt = true
     }
 
     private fun leaveAlt() {
         if (!inAlt) return
         screen = mainScreen ?: blankGrid()
         mainScreen = null
-        cr = savedR; cc = savedC; top = 0; bottom = rows - 1; inAlt = false
+        cr = mainR.coerceIn(0, rows - 1); cc = mainC.coerceIn(0, cols - 1)
+        top = 0; bottom = rows - 1; wrap = false; inAlt = false
     }
 
     private fun saveCursor() { savedR = cr; savedC = cc }
-    private fun restoreCursor() { cr = savedR.coerceIn(0, rows - 1); cc = savedC.coerceIn(0, cols - 1) }
+    private fun restoreCursor() {
+        cr = savedR.coerceIn(0, rows - 1); cc = savedC.coerceIn(0, cols - 1); wrap = false
+    }
 
     private fun reset() {
         screen = blankGrid(); scrollback.clear(); mainScreen = null; inAlt = false
         cr = 0; cc = 0; top = 0; bottom = rows - 1; resetSgr(); wrap = false
+        autoWrap = true; cursorVisible = true
+        g0Graphics = false; g1Graphics = false; shiftOut = false
+        applicationCursorKeys = false; bracketedPaste = false; synchronizedOutput = false
     }
 
     @Synchronized
-    fun clear() = reset()
+    fun clear() {
+        reset()
+        state = NORMAL
+    }
 
     @Synchronized
     fun resize(newRows: Int, newCols: Int) {
@@ -286,31 +420,46 @@ class TerminalEmulator(
         val targetCols = newCols.coerceIn(8, 300)
         if (targetRows == rows && targetCols == cols) return
 
-        fun resizedRow(source: Array<Cell>): Array<Cell> =
-            Array(targetCols) { c -> source.getOrNull(c) ?: blank() }
-
-        fun resized(source: Array<Array<Cell>>): Array<Array<Cell>> {
-            val result = Array(targetRows) { Array(targetCols) { blank() } }
-            for (r in 0 until minOf(source.size, targetRows)) {
-                for (c in 0 until minOf(source[r].size, targetCols)) {
-                    result[r][c] = source[r][c]
-                }
-            }
-            return result
+        fun resizedLine(source: Line?): Line = when {
+            source == null -> newLine(targetCols)
+            source.cells.size == targetCols -> source
+            else -> Line(Array(targetCols) { source.cells.getOrNull(it) ?: BLANK })
         }
 
-        screen = resized(screen)
-        mainScreen = mainScreen?.let(::resized)
-        val resizedScrollback = ArrayDeque<Array<Cell>>(scrollback.size)
-        scrollback.forEach { resizedScrollback.addLast(resizedRow(it)) }
-        scrollback.clear()
-        scrollback.addAll(resizedScrollback)
+        // A shell screen is anchored at the bottom: when it gets shorter (the
+        // soft keyboard opens) the rows that no longer fit leave through the top
+        // into the scrollback, so the prompt and the latest output stay put.
+        fun fitMain(source: Array<Line>, cursorRow: Int): Pair<Array<Line>, Int> {
+            var used = cursorRow
+            for (r in source.lastIndex downTo cursorRow + 1) {
+                if (rowNonBlank(source[r])) { used = r; break }
+            }
+            val drop = (used + 1 - targetRows).coerceAtLeast(0)
+            for (r in 0 until drop) pushScrollback(source[r])
+            return Array(targetRows) { resizedLine(source.getOrNull(it + drop)) } to
+                (cursorRow - drop).coerceAtLeast(0)
+        }
+
+        val main = mainScreen
+        if (inAlt && main != null) {
+            // Full-screen apps repaint on SIGWINCH; just crop/extend their canvas.
+            screen = Array(targetRows) { resizedLine(screen.getOrNull(it)) }
+            val (grid, row) = fitMain(main, mainR)
+            mainScreen = grid
+            mainR = row
+        } else {
+            val (grid, row) = fitMain(screen, cr)
+            screen = grid
+            cr = row
+        }
         rows = targetRows
         cols = targetCols
         cr = cr.coerceIn(0, rows - 1)
         cc = cc.coerceIn(0, cols - 1)
         savedR = savedR.coerceIn(0, rows - 1)
         savedC = savedC.coerceIn(0, cols - 1)
+        mainR = mainR.coerceIn(0, rows - 1)
+        mainC = mainC.coerceIn(0, cols - 1)
         top = 0
         bottom = rows - 1
         wrap = false
@@ -318,76 +467,124 @@ class TerminalEmulator(
 
     // ── Rendering ─────────────────────────────────────────────────────────────
 
+    /**
+     * The visible buffer, one entry per line: up to [scrollbackLimit] scrollback
+     * lines followed by the screen. Unchanged lines return the same instance as
+     * the previous call, which lets the UI skip them entirely.
+     */
     @Synchronized
-    fun render(scrollbackLimit: Int = DEFAULT_RENDER_SCROLLBACK): AnnotatedString = buildAnnotatedString {
-        val out = ArrayList<Pair<Array<Cell>, Int>>() // line + cursor col (-1 = none)
+    fun snapshot(scrollbackLimit: Int = Int.MAX_VALUE): List<AnnotatedString> {
+        val out = ArrayList<AnnotatedString>()
         if (!inAlt) {
             val skip = (scrollback.size - scrollbackLimit.coerceAtLeast(0)).coerceAtLeast(0)
-            scrollback.asSequence().drop(skip).forEach { out.add(it to -1) }
+            for (i in skip until scrollback.size) out.add(rendered(scrollback[i]))
         }
-        // Only render screen rows down to the last non-blank row (or the cursor):
-        // otherwise the 24-row grid's trailing blank lines push the prompt off the
-        // top when we auto-scroll to the bottom.
-        var lastRow = cr
-        for (r in rows - 1 downTo 0) { if (rowNonBlank(screen[r])) { lastRow = maxOf(cr, r); break } }
-        for (r in 0..lastRow) out.add(screen[r] to if (r == cr) cc else -1)
+        // On the shell screen only go down to the last non-blank row (or the
+        // cursor): trailing blank rows would push the prompt off the top when the
+        // view follows the bottom. A full-screen app owns every row.
+        var lastRow = if (inAlt) rows - 1 else cr
+        if (!inAlt) {
+            for (r in rows - 1 downTo cr + 1) { if (rowNonBlank(screen[r])) { lastRow = r; break } }
+        }
+        for (r in 0..lastRow) {
+            out.add(if (r == cr && cursorVisible) buildLine(screen[r], cc) else rendered(screen[r]))
+        }
+        return out
+    }
 
-        for ((idx, pair) in out.withIndex()) {
-            val line = pair.first
-            val cursorCol = pair.second
-            var last = -1
-            for (i in cols - 1 downTo 0) { if (!isBlank(line[i])) { last = i; break } }
-            val end = maxOf(last, cursorCol)
-            var i = 0
-            while (i <= end) {
-                if (i == cursorCol) {
-                    withStyle(SpanStyle(color = Color(0xFF0B0E14), background = CURSOR)) {
-                        append(if (line[i].ch == ' ') ' ' else line[i].ch)
-                    }
-                    i++
-                    continue
-                }
-                val fg = line[i].fg
-                val bg = line[i].bg
-                val bold = line[i].bold
-                val sb = StringBuilder()
-                while (i <= end && i != cursorCol && line[i].fg == fg && line[i].bg == bg && line[i].bold == bold) {
-                    sb.append(line[i].ch); i++
-                }
-                val weight = if (bold) FontWeight.Bold else FontWeight.Normal
-                val style = if (bg == BG_NONE) SpanStyle(color = Color(fg), fontWeight = weight)
-                    else SpanStyle(color = Color(fg), background = Color(bg), fontWeight = weight)
-                withStyle(style) { append(sb.toString()) }
-            }
-            if (idx < out.size - 1) append('\n')
+    /** The same content as [snapshot], joined into one string (tests, copy). */
+    fun render(scrollbackLimit: Int = DEFAULT_RENDER_SCROLLBACK): AnnotatedString = buildAnnotatedString {
+        snapshot(scrollbackLimit).forEachIndexed { index, line ->
+            if (index > 0) append('\n')
+            append(line)
         }
     }
 
-    private fun isBlank(c: Cell) = c.ch == ' ' && c.fg == FG && c.bg == BG_NONE
-    private fun rowNonBlank(row: Array<Cell>) = row.any { !isBlank(it) }
+    private fun rendered(line: Line): AnnotatedString =
+        line.text ?: buildLine(line, -1).also { line.text = it }
+
+    private fun buildLine(line: Line, cursorCol: Int): AnnotatedString = buildAnnotatedString {
+        val cells = line.cells
+        var last = -1
+        for (i in cells.lastIndex downTo 0) { if (!isBlank(cells[i])) { last = i; break } }
+        val end = minOf(maxOf(last, cursorCol), cells.lastIndex)
+        var i = 0
+        while (i <= end) {
+            val cell = cells[i]
+            val from = length
+            if (i == cursorCol) {
+                append(cell.ch)
+                addStyle(CURSOR_STYLE, from, length)
+                i++
+                continue
+            }
+            while (i <= end && i != cursorCol && sameStyle(cells[i], cell)) { append(cells[i].ch); i++ }
+            styleOf(cell)?.let { addStyle(it, from, length) }
+        }
+    }
+
+    private fun sameStyle(a: Cell, b: Cell) = a.fg == b.fg && a.bg == b.bg && a.flags == b.flags
+
+    /** Null for default-styled text, which needs no span at all. */
+    private fun styleOf(cell: Cell): SpanStyle? {
+        var fg = cell.fg
+        var bg = cell.bg
+        if (cell.flags and INVERSE != 0) {
+            val swapped = fg
+            fg = if (bg == BG_NONE) TERM_BG else bg
+            bg = swapped
+        }
+        if (fg == FG && bg == BG_NONE && cell.flags and (BOLD or DIM or ITALIC or UNDERLINE) == 0) return null
+        val color = Color(fg).let { if (cell.flags and DIM != 0) it.copy(alpha = 0.6f) else it }
+        return SpanStyle(
+            color = color,
+            background = if (bg == BG_NONE) Color.Unspecified else Color(bg),
+            fontWeight = if (cell.flags and BOLD != 0) FontWeight.Bold else null,
+            fontStyle = if (cell.flags and ITALIC != 0) FontStyle.Italic else null,
+            textDecoration = if (cell.flags and UNDERLINE != 0) TextDecoration.Underline else null,
+        )
+    }
+
+    private fun isBlank(c: Cell) = c.ch == ' ' && c.bg == BG_NONE && c.flags and (INVERSE or UNDERLINE) == 0
+    private fun rowNonBlank(row: Line) = row.cells.any { !isBlank(it) }
 
     // ── Grid helpers ──────────────────────────────────────────────────────────
 
-    private fun blank() = Cell(' ', FG, BG_NONE, false)
-    private fun blankRow() = Array(cols) { blank() }
-    private fun blankGrid() = Array(rows) { blankRow() }
-    private fun clearRow(r: Int) { screen[r] = blankRow() }
+    private fun newLine(width: Int = cols) = Line(Array(width) { BLANK })
+    private fun blankGrid() = Array(rows) { newLine() }
 
     companion object {
         private const val NORMAL = 0
         private const val ESC = 1
         private const val CSI = 2
-        private const val OSC = 3
-        private const val OSC_ST = 4
+        private const val STRING = 3
+        private const val STRING_ESC = 4
         private const val CHARSET = 5
+        private const val SKIP = 6
         private const val DEFAULT_RENDER_SCROLLBACK = 200
+        private const val MAX_PARAM = 9999
+        private const val MAX_PARAM_CHARS = 128
+
+        private const val BOLD = 1
+        private const val DIM = 2
+        private const val ITALIC = 4
+        private const val UNDERLINE = 8
+        private const val INVERSE = 16
 
         private const val ESCC = '\u001B'
         private const val BEL = '\u0007'
 
         private const val FG = 0xFFD7DCE5L
+        private const val TERM_BG = 0xFF0B0E14L
         private const val BG_NONE = 0L // sentinel: "no explicit background"
-        private val CURSOR = Color(0xFF6BE58A)
+        private val CURSOR_STYLE = SpanStyle(color = Color(TERM_BG), background = Color(0xFF6BE58A))
+
+        // Cells are immutable, so every empty cell can be this one instance.
+        private val BLANK = Cell(' ', FG, BG_NONE, 0)
+
+        // DEC Special Graphics (ESC ( 0), for '`'..'~': the box-drawing set that
+        // ncurses apps (mc, dialog, htop) use for borders.
+        private const val ACS = "◆▒␉␌␍␊°±␤␋┘┐┌└┼⎺⎻─⎼⎽├┤┴┬│≤≥π≠£·"
 
         private val ANSI16 = longArrayOf(
             0xFF1B1D23, 0xFFE05561, 0xFF8CC265, 0xFFD18F52,
@@ -396,15 +593,18 @@ class TerminalEmulator(
             0xFF4DC4FF, 0xFFDE73FF, 0xFF4CD1E0, 0xFFFFFFFF,
         )
 
-        private fun xterm256(n: Int): Long = when {
-            n < 16 -> ANSI16[n.coerceIn(0, 15)]
-            n in 16..231 -> {
-                val v = n - 16
-                val r = v / 36; val g = (v % 36) / 6; val b = v % 6
-                fun s(x: Int) = if (x == 0) 0L else 55L + x * 40
-                0xFF000000L or (s(r) shl 16) or (s(g) shl 8) or s(b)
+        private fun xterm256(index: Int): Long {
+            val n = index.coerceIn(0, 255)
+            return when {
+                n < 16 -> ANSI16[n]
+                n <= 231 -> {
+                    val v = n - 16
+                    val r = v / 36; val g = (v % 36) / 6; val b = v % 6
+                    fun s(x: Int) = if (x == 0) 0L else 55L + x * 40
+                    0xFF000000L or (s(r) shl 16) or (s(g) shl 8) or s(b)
+                }
+                else -> { val g = (8 + (n - 232) * 10).toLong(); 0xFF000000L or (g shl 16) or (g shl 8) or g }
             }
-            else -> { val g = (8 + (n - 232) * 10).toLong(); 0xFF000000L or (g shl 16) or (g shl 8) or g }
         }
     }
 }

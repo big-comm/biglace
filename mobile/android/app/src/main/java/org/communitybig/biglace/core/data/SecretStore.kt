@@ -61,14 +61,11 @@ class SecretStore(context: Context) {
         runCatching { JSONObject(prefs.getString(key).orEmpty().ifBlank { "{}" }) }
             .getOrDefault(JSONObject())
 
+    @Synchronized
     private fun putInMap(key: String, host: String, value: String) {
         val obj = loadMap(key)
         if (value.isBlank()) obj.remove(host) else obj.put(host, value)
         prefs.putString(key, obj.toString())
-    }
-
-    fun clear() {
-        prefs.clear()
     }
 
     private companion object {

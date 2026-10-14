@@ -50,12 +50,15 @@ fun SettingsScreen(container: AppContainer, modifier: Modifier = Modifier) {
     )
     val state by vm.state.collectAsStateWithLifecycle()
 
-    var server by remember { mutableStateOf(vm.initialServer()) }
+    // Saveable: unsaved edits survive rotation and swiping to another tab. The
+    // auth key is a secret, so it deliberately stays out of saved state.
+    var server by rememberSaveable { mutableStateOf(vm.initialServer()) }
     var authKey by remember { mutableStateOf(vm.initialAuthKey()) }
-    var hostname by remember { mutableStateOf(sanitizeDeviceName(vm.initialHostname())) }
-    var autoConnect by remember { mutableStateOf(vm.initialAutoConnect()) }
+    var hostname by rememberSaveable { mutableStateOf(sanitizeDeviceName(vm.initialHostname())) }
+    var autoConnect by remember { mutableStateOf(vm.autoConnect) }
     var bootConnect by remember { mutableStateOf(vm.connectOnBoot) }
     var showPanelLogin by remember { mutableStateOf(false) }
+    var confirmForgetDevice by rememberSaveable { mutableStateOf(false) }
     val validHostname = hostname.isNotBlank()
 
     Column(
@@ -72,8 +75,16 @@ fun SettingsScreen(container: AppContainer, modifier: Modifier = Modifier) {
             label = { Text(stringResource(R.string.settings_server_url)) },
             singleLine = true, modifier = Modifier.fillMaxWidth(),
         )
-        PasswordField(authKey, { authKey = it }, stringResource(R.string.settings_authkey),
-            Modifier.fillMaxWidth())
+        // The key is only needed to enrol. Once the device has its own identity
+        // an empty field is normal — say so instead of looking like lost data.
+        val registered = remember(state) { vm.hasDeviceIdentity() }
+        PasswordField(
+            authKey, { authKey = it }, stringResource(R.string.settings_authkey),
+            Modifier.fillMaxWidth(),
+            supportingText = if (authKey.isBlank() && registered) {
+                stringResource(R.string.settings_authkey_not_needed)
+            } else null,
+        )
         OutlinedTextField(
             value = hostname, onValueChange = { hostname = sanitizeDeviceName(it) },
             label = { Text(stringResource(R.string.settings_device_name)) },
@@ -86,7 +97,7 @@ fun SettingsScreen(container: AppContainer, modifier: Modifier = Modifier) {
 
         Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
             Text(stringResource(R.string.settings_auto_connect), Modifier.weight(1f))
-            Switch(checked = autoConnect, onCheckedChange = { autoConnect = it })
+            Switch(checked = autoConnect, onCheckedChange = { autoConnect = it; vm.autoConnect = it })
         }
         Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
             Column(Modifier.weight(1f)) {
@@ -107,7 +118,7 @@ fun SettingsScreen(container: AppContainer, modifier: Modifier = Modifier) {
 
         Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
             OutlinedButton(
-                onClick = { vm.save(server, authKey, hostname, autoConnect) },
+                onClick = { vm.save(server, authKey, hostname) },
                 enabled = validHostname,
                 modifier = Modifier.weight(1f),
             ) { Text(stringResource(R.string.settings_save)) }
@@ -141,6 +152,9 @@ fun SettingsScreen(container: AppContainer, modifier: Modifier = Modifier) {
         OutlinedButton(onClick = { showPanelLogin = true }, modifier = Modifier.fillMaxWidth()) {
             Text(stringResource(R.string.settings_panel_signin))
         }
+        TextButton(onClick = { confirmForgetDevice = true }, modifier = Modifier.fillMaxWidth()) {
+            Text(stringResource(R.string.settings_forget_device), color = MaterialTheme.colorScheme.error)
+        }
 
         HorizontalDivider(Modifier.padding(vertical = 8.dp))
         SectionTitle(stringResource(R.string.ssh_section))
@@ -152,6 +166,27 @@ fun SettingsScreen(container: AppContainer, modifier: Modifier = Modifier) {
             stringResource(R.string.about_status),
             style = MaterialTheme.typography.bodySmall,
             color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f),
+        )
+    }
+
+    if (confirmForgetDevice) {
+        AlertDialog(
+            onDismissRequest = { confirmForgetDevice = false },
+            title = { Text(stringResource(R.string.settings_forget_device)) },
+            text = { Text(stringResource(R.string.settings_forget_device_confirm)) },
+            confirmButton = {
+                TextButton(onClick = {
+                    confirmForgetDevice = false
+                    vm.forgetDevice { authKey = "" }
+                }) {
+                    Text(stringResource(R.string.action_forget), color = MaterialTheme.colorScheme.error)
+                }
+            },
+            dismissButton = {
+                TextButton(onClick = { confirmForgetDevice = false }) {
+                    Text(stringResource(R.string.dialog_cancel))
+                }
+            },
         )
     }
 
@@ -228,7 +263,7 @@ private fun SshKeySection(vm: SettingsViewModel) {
                     }
                 }
             }
-            androidx.compose.material3.TextButton(onClick = { vm.generateSshKey() }, enabled = !generating) {
+            TextButton(onClick = { vm.generateSshKey() }, enabled = !generating) {
                 Text(stringResource(if (generating) R.string.ssh_generating else R.string.ssh_regenerate))
             }
             Text(

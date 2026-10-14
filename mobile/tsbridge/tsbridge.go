@@ -23,6 +23,7 @@ import (
 	"time"
 
 	"tailscale.com/client/tailscale"
+	"tailscale.com/envknob"
 	"tailscale.com/net/netmon"
 	"tailscale.com/tsnet"
 )
@@ -44,6 +45,9 @@ var (
 	logMu  sync.Mutex
 	logBuf []string
 )
+
+// acceptTimeout bounds how long a forward waits for its local client.
+const acceptTimeout = 30 * time.Second
 
 // appendLog captures a tsnet log line into a bounded ring buffer so the UI can
 // show WHY a connection failed (via LastLogs) even without a USB logcat.
@@ -193,6 +197,9 @@ func Start(controlURL, authKey, hostname, stateDir string) (err error) {
 	if err := os.Setenv("TS_LOGS_DIR", stateDir); err != nil {
 		return fmt.Errorf("set log directory: %w", err)
 	}
+	// tsnet uploads node logs to log.tailscale.com by default. This is a private
+	// mesh on the user's own control server: keep the logs on the device.
+	envknob.SetNoLogsNoSupport()
 	logMu.Lock()
 	logBuf = logBuf[:0]
 	logMu.Unlock()
@@ -304,11 +311,14 @@ func StatusJSON() (out string, err error) {
 	return string(b), nil
 }
 
-// ForwardTo opens a local 127.0.0.1 listener that pipes every accepted
-// connection to hostPort (e.g. "100.64.0.5:22") over the tailnet, and returns
-// the chosen local port. The Kotlin SSH/SFTP client connects to
+// ForwardTo dials hostPort (e.g. "100.64.0.5:22") over the tailnet, then opens
+// a local 127.0.0.1 listener that pipes the first accepted connection to it,
+// and returns the chosen local port. The Kotlin SSH/SFTP client connects to
 // 127.0.0.1:<port>; this is how userspace tsnet reaches tailnet-only addresses
-// without a device VPN. The listener lives until Stop() drops the server.
+// without a device VPN.
+//
+// Dialing first means an unreachable peer is reported here, with the real
+// reason, instead of as an unexplained EOF in the middle of the SSH handshake.
 func ForwardTo(hostPort string) (port int, err error) {
 	defer func() {
 		if r := recover(); r != nil {
@@ -321,46 +331,52 @@ func ForwardTo(hostPort string) (port int, err error) {
 	if s == nil {
 		return 0, fmt.Errorf("tsbridge: not started")
 	}
+	dctx, cancel := context.WithTimeout(context.Background(), 20*time.Second)
+	remote, err := s.Dial(dctx, "tcp", hostPort)
+	cancel()
+	if err != nil {
+		return 0, err
+	}
 	ln, err := net.Listen("tcp", "127.0.0.1:0")
 	if err != nil {
+		_ = remote.Close()
 		return 0, err
 	}
 	mu.Lock()
 	if srv != s {
 		mu.Unlock()
 		_ = ln.Close()
+		_ = remote.Close()
 		return 0, fmt.Errorf("tsbridge: stopped while creating forward")
 	}
 	listeners[ln] = struct{}{}
 	mu.Unlock()
 
 	go func() {
-		defer func() {
-			_ = ln.Close()
-			mu.Lock()
-			delete(listeners, ln)
-			mu.Unlock()
-		}()
+		defer remote.Close()
+		// The client connects right after we return; don't hold the tailnet
+		// connection open forever if it never does.
+		if tl, ok := ln.(*net.TCPListener); ok {
+			_ = tl.SetDeadline(time.Now().Add(acceptTimeout))
+		}
 		// SSH/SFTP opens one transport connection per forward. Closing the
 		// listener after the first accept prevents a permanent listener leak.
 		local, err := ln.Accept()
-		if err != nil {
-			return
-		}
 		_ = ln.Close()
 		mu.Lock()
 		delete(listeners, ln)
 		mu.Unlock()
-		defer local.Close()
-		dctx, cancel := context.WithTimeout(context.Background(), 20*time.Second)
-		remote, err := s.Dial(dctx, "tcp", hostPort)
-		cancel()
 		if err != nil {
 			return
 		}
-		defer remote.Close()
-		go func() { _, _ = io.Copy(remote, local) }()
-		_, _ = io.Copy(local, remote)
+		defer local.Close()
+		// When either side finishes, tear down both: otherwise a client that
+		// went away leaves this goroutine and the tailnet connection parked on
+		// a read from a server that has nothing more to say.
+		done := make(chan struct{}, 2)
+		go func() { _, _ = io.Copy(remote, local); done <- struct{}{} }()
+		go func() { _, _ = io.Copy(local, remote); done <- struct{}{} }()
+		<-done
 	}()
 	return ln.Addr().(*net.TCPAddr).Port, nil
 }

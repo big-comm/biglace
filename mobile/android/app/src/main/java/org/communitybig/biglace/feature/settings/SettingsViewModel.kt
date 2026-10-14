@@ -18,6 +18,7 @@ import org.communitybig.biglace.AppContainer
 import org.communitybig.biglace.core.data.SshKeys
 import org.communitybig.biglace.core.mesh.MeshState
 import org.communitybig.biglace.core.panel.PanelCredentials
+import org.communitybig.biglace.core.panel.isLoopbackHost
 
 @OptIn(ExperimentalCoroutinesApi::class)
 class SettingsViewModel(private val container: AppContainer) : ViewModel() {
@@ -30,24 +31,28 @@ class SettingsViewModel(private val container: AppContainer) : ViewModel() {
     fun initialServer() = container.settings.serverUrl
     fun initialAuthKey() = container.secrets.authKey
     fun initialHostname() = container.settings.hostname
-    fun initialAutoConnect() = container.settings.autoConnect
+    fun hasDeviceIdentity() = container.hasDeviceIdentity()
     fun initialPanelUrl() = container.settings.panelUrl
     fun initialPanelUsername() = container.settings.panelUsername
 
-    fun save(server: String, authKey: String, hostname: String, autoConnect: Boolean) {
+    fun save(server: String, authKey: String, hostname: String) {
         container.settings.serverUrl = normalizeServer(server)
         container.secrets.authKey = authKey.trim()
         container.settings.hostname = sanitizeDeviceName(hostname)
-        container.settings.autoConnect = autoConnect
     }
 
     fun connect(server: String, authKey: String, hostname: String) {
-        save(server, authKey, hostname, container.settings.autoConnect)
+        save(server, authKey, hostname)
         // Route through the foreground service (survives app close, notification).
         container.requestConnect()
     }
 
     fun disconnect() = container.requestDisconnect()
+
+    // Both switches apply as soon as they are flipped.
+    var autoConnect: Boolean
+        get() = container.settings.autoConnect
+        set(v) { container.settings.autoConnect = v }
 
     var connectOnBoot: Boolean
         get() = container.settings.connectOnBoot
@@ -80,6 +85,12 @@ class SettingsViewModel(private val container: AppContainer) : ViewModel() {
     }
 
     fun clearTrustedSshHosts() = container.secrets.clearSshHostFingerprints()
+
+    /** Leave the mesh and delete this device's identity; [onDone] runs on the main thread. */
+    fun forgetDevice(onDone: () -> Unit) = viewModelScope.launch {
+        container.forgetDevice()
+        onDone()
+    }
 
     /** Panel sign-in: fetch a fresh pre-auth key and fill the form (like desktop). */
     suspend fun panelSignIn(url: String, user: String, password: String, node: String): Result<Unit> =
@@ -118,15 +129,11 @@ class SettingsViewModel(private val container: AppContainer) : ViewModel() {
     private fun normalizePanelUrl(input: String): String {
         val normalized = normalizeServer(input)
         val uri = runCatching { java.net.URI(normalized) }.getOrNull()
-        val host = uri?.host.orEmpty().trim('[', ']')
-        val loopback = host.equals("localhost", true) || host == "::1" ||
-            host.split('.').mapNotNull { it.toIntOrNull() }.let {
-                it.size == 4 && it[0] == 127 && it.all { octet -> octet in 0..255 }
-            }
+        val host = uri?.host.orEmpty()
         require(
             uri != null && host.isNotBlank() && uri.userInfo == null && uri.query == null &&
                 uri.fragment == null && (uri.scheme.equals("https", true) ||
-                (uri.scheme.equals("http", true) && loopback)),
+                (uri.scheme.equals("http", true) && isLoopbackHost(host))),
         ) { text(org.communitybig.biglace.R.string.panel_https_required) }
         return normalized
     }

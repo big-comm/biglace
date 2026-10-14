@@ -1,6 +1,7 @@
 package org.communitybig.biglace.core.mesh
 
 import android.content.Context
+import android.util.Log
 import community.biglace.tsbridge.Tsbridge
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.CancellationException
@@ -35,9 +36,14 @@ class TsnetMeshBackend(context: Context, private val stateDir: String) : MeshBac
     override val peers: StateFlow<List<Peer>> = _peers.asStateFlow()
     private var refreshFailures = 0
 
+    /** True from connect until the engine is stopped; gates interface updates. */
+    @Volatile private var engineWanted = false
+    private var lastInterfaces: String? = null
+
     override suspend fun connect(server: String, authKey: String?, hostname: String) {
         require(server.isNotBlank()) { "Server URL is required" }
         refreshFailures = 0
+        engineWanted = true
         _state.value = MeshState.Connecting
         try {
             withContext(Dispatchers.IO) {
@@ -54,20 +60,30 @@ class TsnetMeshBackend(context: Context, private val stateDir: String) : MeshBac
             // Throwable, not Exception: a failed native-lib load throws
             // UnsatisfiedLinkError (an Error), and a Go panic surfaces here too;
             // showing them beats crashing the app.
-            _state.value = MeshState.Error(describe(e))
+            _state.value = describe(e)
         }
     }
 
     override suspend fun disconnect() {
-        withContext(Dispatchers.IO) { Tsbridge.stop() }
+        stopEngine()
         _state.value = MeshState.Disconnected
+    }
+
+    override suspend fun halt() {
+        stopEngine()
+        if (_state.value !is MeshState.Error) _state.value = MeshState.Disconnected
+    }
+
+    private suspend fun stopEngine() {
+        engineWanted = false
+        withContext(Dispatchers.IO) { runCatching { Tsbridge.stop() } }
         _peers.value = emptyList()
         refreshFailures = 0
     }
 
     override suspend fun refresh() {
         if (!isRunning()) {
-            if (_state.value != MeshState.Disconnected) {
+            if (_state.value is MeshState.Up || _state.value is MeshState.Connecting) {
                 _peers.value = emptyList()
                 _state.value = MeshState.Error(appContext.getString(R.string.mesh_engine_stopped))
             }
@@ -86,19 +102,28 @@ class TsnetMeshBackend(context: Context, private val stateDir: String) : MeshBac
             if (e is CancellationException) throw e
             refreshFailures++
             if (_state.value is MeshState.Connecting || refreshFailures >= 3) {
-                _state.value = MeshState.Error(describe(e))
+                _state.value = describe(e)
             }
         }
     }
 
-    private fun describe(e: Throwable): String {
+    private fun describe(e: Throwable): MeshState.Error {
         val msg = e.message?.takeIf { it.isNotBlank() } ?: e.toString()
         val head = "${e.javaClass.simpleName}: $msg"
-        // Append the tail of the engine log so the real cause is visible even
+        // Keep the tail of the engine log so the real cause is available even
         // without a USB logcat.
         val logs = runCatching { Tsbridge.lastLogs() }.getOrDefault("")
             .lineSequence().filter { it.isNotBlank() }.toList().takeLast(6).joinToString("\n")
-        return if (logs.isNotBlank()) "$head\n\n$logs" else head
+        val details = if (logs.isNotBlank()) "$head\n\n$logs" else head
+        val friendly = when (classifyMeshError(msg)) {
+            MeshErrorKind.AUTHKEY_NOT_FOUND -> R.string.mesh_err_authkey_not_found
+            MeshErrorKind.AUTHKEY_EXPIRED -> R.string.mesh_err_authkey_expired
+            MeshErrorKind.AUTHKEY_USED -> R.string.mesh_err_authkey_used
+            MeshErrorKind.TIMEOUT -> R.string.mesh_err_timeout
+            MeshErrorKind.SERVER_UNREACHABLE -> R.string.mesh_err_server_unreachable
+            null -> R.string.mesh_err_generic
+        }
+        return MeshState.Error(appContext.getString(friendly), details)
     }
 
     /** Open a local port that tunnels to `host:port` over the tailnet. */
@@ -112,7 +137,29 @@ class TsnetMeshBackend(context: Context, private val stateDir: String) : MeshBac
 
     fun hasPersistedState(): Boolean = java.io.File(stateDir, "tailscaled.state").isFile
 
-    suspend fun updateInterfaces() = withContext(Dispatchers.IO) { updateInterfacesBlocking() }
+    /**
+     * The device's connectivity changed: hand the engine a fresh interface list.
+     * A no-op unless the engine is in use (so the native library isn't loaded
+     * just because the app was opened) and never throws — this runs from a
+     * system network callback, where an escaped exception would kill the app.
+     */
+    suspend fun onNetworkChanged() {
+        if (!engineWanted) return
+        withContext(Dispatchers.IO) {
+            try {
+                updateInterfacesBlocking()
+            } catch (e: Throwable) {
+                if (e is CancellationException) throw e
+                Log.w(TAG, "Could not refresh network interfaces", e)
+            }
+        }
+    }
+
+    /** Delete the persisted node identity. The engine must be stopped first. */
+    suspend fun wipeState() = withContext(Dispatchers.IO) {
+        java.io.File(stateDir).deleteRecursively()
+        Unit
+    }
 
     /** True once the embedded engine is up (safe: never throws). */
     fun isRunning(): Boolean = runCatching { Tsbridge.running() }.getOrDefault(false)
@@ -145,6 +192,7 @@ class TsnetMeshBackend(context: Context, private val stateDir: String) : MeshBac
                 ?.takeIf { it.isNotBlank() }
             out.add(
                 Peer(
+                    id = key,
                     hostname = n.optString("HostName"),
                     ipv4 = ipv4,
                     ipv6 = ipv6,
@@ -177,8 +225,17 @@ class TsnetMeshBackend(context: Context, private val stateDir: String) : MeshBac
      * (which Android permits, unlike Go's net.Interfaces on API 30+) and hand
      * them to the Go engine as JSON. See [Tsbridge.setInterfaces].
      */
+    @Synchronized
     private fun updateInterfacesBlocking() {
-        Tsbridge.setInterfaces(interfacesJson())
+        // Capability callbacks fire far more often than the interface set changes.
+        val json = interfacesJson()
+        if (json == lastInterfaces) return
+        Tsbridge.setInterfaces(json)
+        lastInterfaces = json
+    }
+
+    private companion object {
+        const val TAG = "BigLaceMesh"
     }
 
     private fun interfacesJson(): String {

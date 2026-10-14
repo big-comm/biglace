@@ -1,6 +1,8 @@
 package org.communitybig.biglace.core.ssh
 
 import androidx.lifecycle.ViewModel
+import androidx.lifecycle.ViewModelStore
+import androidx.lifecycle.ViewModelStoreOwner
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
@@ -25,6 +27,19 @@ class SshSessionTabsViewModel : ViewModel() {
 
     private val _activeId = MutableStateFlow(first.id)
     val activeId = _activeId.asStateFlow()
+
+    private val owners = HashMap<Long, TabOwner>()
+
+    private class TabOwner : ViewModelStoreOwner {
+        override val viewModelStore = ViewModelStore()
+    }
+
+    /**
+     * Where a tab's session ViewModel lives. Scoping it to the tab (instead of
+     * the Activity) is what lets [close] actually free the session — terminal
+     * buffer, SSH client and all — rather than leaking it until the app exits.
+     */
+    fun ownerFor(id: Long): ViewModelStoreOwner = owners.getOrPut(id) { TabOwner() }
 
     fun openPeer(host: String, user: String, password: String): Long {
         val existing = _tabs.value.firstOrNull {
@@ -77,11 +92,17 @@ class SshSessionTabsViewModel : ViewModel() {
         val index = current.indexOfFirst { it.id == id }
         if (index < 0) return
 
+        owners.remove(id)?.viewModelStore?.clear()
         val remaining = current.filterNot { it.id == id }.ifEmpty { listOf(newSession()) }
         _tabs.value = remaining
         if (_activeId.value == id) {
             _activeId.value = remaining[index.coerceAtMost(remaining.lastIndex)].id
         }
+    }
+
+    override fun onCleared() {
+        owners.values.forEach { it.viewModelStore.clear() }
+        owners.clear()
     }
 
     private fun newSession(

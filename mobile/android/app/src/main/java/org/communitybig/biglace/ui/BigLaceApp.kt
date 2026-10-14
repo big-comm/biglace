@@ -80,7 +80,7 @@ fun BigLaceApp(container: AppContainer) {
                         onOpenFiles = { goTo(Tab.FILES) },
                     )
                     Tab.TERMINAL -> TerminalScreen(container)
-                    Tab.FILES -> FilesScreen(container)
+                    Tab.FILES -> FilesScreen(container, isActivePage = pager.currentPage == page)
                     Tab.SETTINGS -> SettingsScreen(container)
                 }
             }

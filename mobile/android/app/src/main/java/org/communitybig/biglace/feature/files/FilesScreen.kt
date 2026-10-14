@@ -4,6 +4,7 @@ import android.content.Context
 import android.content.ClipData
 import android.content.Intent
 import android.webkit.MimeTypeMap
+import androidx.activity.compose.BackHandler
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.background
@@ -93,7 +94,7 @@ internal fun filterAndSortEntries(
 }
 
 @Composable
-fun FilesScreen(container: AppContainer, modifier: Modifier = Modifier) {
+fun FilesScreen(container: AppContainer, modifier: Modifier = Modifier, isActivePage: Boolean = true) {
     val tabsVm: SshSessionTabsViewModel = viewModel(key = "files-tabs")
     val tabs by tabsVm.tabs.collectAsStateWithLifecycle()
     val activeId by tabsVm.activeId.collectAsStateWithLifecycle()
@@ -113,6 +114,7 @@ fun FilesScreen(container: AppContainer, modifier: Modifier = Modifier) {
 
     val active = tabs.firstOrNull { it.id == activeId } ?: return
     val vm: FilesViewModel = viewModel(
+        viewModelStoreOwner = remember(active.id) { tabsVm.ownerFor(active.id) },
         key = "files-session-${active.id}",
         factory = viewModelFactory { initializer { FilesViewModel(container) } },
     )
@@ -124,7 +126,6 @@ fun FilesScreen(container: AppContainer, modifier: Modifier = Modifier) {
             onSelect = tabsVm::select,
             onAdd = tabsVm::add,
             onCloseActive = {
-                vm.disconnect()
                 stateHolder.removeState(active.id)
                 tabsVm.close(active.id)
             },
@@ -134,6 +135,7 @@ fun FilesScreen(container: AppContainer, modifier: Modifier = Modifier) {
                 container = container,
                 tab = active,
                 vm = vm,
+                isActivePage = isActivePage,
                 onUpdate = { transform -> tabsVm.update(active.id, transform) },
                 modifier = Modifier.weight(1f),
             )
@@ -146,6 +148,7 @@ private fun FilesSessionScreen(
     container: AppContainer,
     tab: SshSessionTab,
     vm: FilesViewModel,
+    isActivePage: Boolean,
     onUpdate: ((SshSessionTab) -> SshSessionTab) -> Unit,
     modifier: Modifier = Modifier,
 ) {
@@ -197,6 +200,12 @@ private fun FilesSessionScreen(
                 }
             }
         }
+    }
+
+    // Back climbs one directory instead of leaving the app. Only while this
+    // page is the one on screen: neighbouring pager pages stay composed.
+    BackHandler(enabled = isActivePage && status == FilesStatus.Connected && busy == null && vm.canGoUp()) {
+        vm.up()
     }
 
     if (status == FilesStatus.Connected) {
@@ -275,7 +284,7 @@ private fun FilesSessionScreen(
                         }
                     }
                 }
-                if (busy != null) {
+                busy?.let { current ->
                     Box(
                         Modifier.fillMaxSize().clickable(onClick = {})
                             .background(Color(0x99000000)),
@@ -284,11 +293,16 @@ private fun FilesSessionScreen(
                         Column(horizontalAlignment = Alignment.CenterHorizontally) {
                             CircularProgressIndicator()
                             Text(
-                                busy ?: "",
+                                current.label,
                                 color = Color.White,
                                 style = MaterialTheme.typography.bodyMedium,
                                 modifier = Modifier.padding(top = 12.dp),
                             )
+                            if (current.cancellable) {
+                                TextButton(onClick = { vm.cancelTransfer() }) {
+                                    Text(stringResource(R.string.dialog_cancel), color = Color.White)
+                                }
+                            }
                         }
                     }
                 }
@@ -332,12 +346,17 @@ private fun FilesSessionScreen(
     }
 
     (status as? FilesStatus.Error)?.let { err ->
+        val changedHost = err.hostKeyHost
         AuthDialog(
             ok = false,
-            title = stringResource(R.string.ssh_auth_failed),
+            title = stringResource(
+                if (changedHost != null) R.string.ssh_host_key_changed_title else R.string.ssh_auth_failed,
+            ),
             message = err.message,
             confirmText = stringResource(R.string.action_ok),
             onDismiss = { vm.dismissError() },
+            actionText = changedHost?.let { stringResource(R.string.action_forget_host) },
+            onAction = { changedHost?.let(vm::forgetHostKey) },
         )
     }
     probe?.let { result ->

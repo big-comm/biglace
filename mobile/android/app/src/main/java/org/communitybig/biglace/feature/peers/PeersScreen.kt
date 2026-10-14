@@ -33,6 +33,7 @@ import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -42,7 +43,9 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import android.text.format.DateUtils
 import android.widget.Toast
+import java.time.Instant
 import android.content.ClipData
 import androidx.compose.ui.platform.ClipEntry
 import androidx.compose.ui.platform.LocalClipboard
@@ -90,7 +93,9 @@ fun PeersScreen(
 
         val connected = ui.state is MeshState.Up
         if (connected && ui.items.isNotEmpty()) {
-            items(ui.items, key = { it.peer.hostname }) { item ->
+            // Keyed by node identity: two devices may share a hostname, and a
+            // duplicate lazy-list key is a crash.
+            items(ui.items, key = { it.peer.id.ifEmpty { "${it.peer.hostname}|${it.peer.ip}" } }) { item ->
                 val host = item.peer.hostname
                 PeerCard(
                     item = item,
@@ -180,13 +185,29 @@ private fun ConnectionCard(state: MeshState, vm: PeersViewModel) {
                     color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f),
                 )
                 is MeshState.Error -> {
-                    androidx.compose.foundation.text.selection.SelectionContainer {
-                        Text(
-                            state.message,
-                            style = MaterialTheme.typography.bodySmall,
-                            fontFamily = FontFamily.Monospace,
-                            color = MaterialTheme.colorScheme.error,
-                        )
+                    Text(state.message, style = MaterialTheme.typography.bodyMedium)
+                    if (state.details.isNotBlank()) {
+                        var showDetails by remember { mutableStateOf(false) }
+                        TextButton(
+                            onClick = { showDetails = !showDetails },
+                            contentPadding = PaddingValues(0.dp),
+                        ) {
+                            Text(stringResource(R.string.peers_error_details))
+                            Icon(
+                                if (showDetails) Icons.Filled.KeyboardArrowUp else Icons.Filled.KeyboardArrowDown,
+                                contentDescription = null,
+                            )
+                        }
+                        if (showDetails) {
+                            androidx.compose.foundation.text.selection.SelectionContainer {
+                                Text(
+                                    state.details,
+                                    style = MaterialTheme.typography.bodySmall,
+                                    fontFamily = FontFamily.Monospace,
+                                    color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f),
+                                )
+                            }
+                        }
                     }
                     Button(onClick = { vm.connect() }, enabled = vm.canConnect()) {
                         Text(stringResource(R.string.peers_retry))
@@ -239,7 +260,7 @@ private fun PeerCard(
                 Column(Modifier.padding(start = 12.dp).weight(1f)) {
                     Text(peer.displayName, style = MaterialTheme.typography.titleSmall, fontWeight = FontWeight.SemiBold)
                     Text(
-                        peerSubtitle(peer),
+                        peerSubtitle(peer, stringResource(R.string.peer_offline)),
                         style = MaterialTheme.typography.bodySmall,
                         color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f),
                     )
@@ -279,7 +300,7 @@ private fun PeerCard(
                 if (peer.owner.isNotBlank()) DetailRow(stringResource(R.string.peer_owner), peer.owner)
                 if (peer.tags.isNotEmpty()) DetailRow(stringResource(R.string.peer_tags), peer.tags.joinToString(", "))
                 if (!peer.online && !peer.lastSeen.isNullOrBlank()) {
-                    DetailRow(stringResource(R.string.peer_last_seen), peer.lastSeen!!)
+                    DetailRow(stringResource(R.string.peer_last_seen), formatLastSeen(peer.lastSeen))
                 }
                 OverrideRow(item, onSetOverride)
             }
@@ -344,14 +365,21 @@ private fun OverrideRow(item: PeerItem, onSetOverride: (String) -> Unit) {
     }
 }
 
-private fun peerSubtitle(peer: Peer): String = buildList {
+private fun peerSubtitle(peer: Peer, offline: String): String = buildList {
     peer.ip?.let { add(it) }
     if (peer.os.isNotEmpty()) add(peer.os.replaceFirstChar { it.uppercase() })
-    when {
-        !peer.online -> add("offline")
-        peer.latencyMs != null -> add("${peer.latencyMs} ms")
-    }
+    if (!peer.online) add(offline)
 }.joinToString("  ·  ")
+
+/** "3 hours ago" in the device language; the raw value if it isn't a timestamp. */
+private fun formatLastSeen(raw: String): String =
+    runCatching {
+        DateUtils.getRelativeTimeSpanString(
+            Instant.parse(raw).toEpochMilli(),
+            System.currentTimeMillis(),
+            DateUtils.MINUTE_IN_MILLIS,
+        ).toString()
+    }.getOrDefault(raw)
 
 /** SSH target host: prefer the tailnet IP (tsnet dials it directly), else DNS. */
 private fun targetHost(peer: Peer): String = peer.ip ?: peer.dnsName

@@ -48,8 +48,6 @@ class SettingsStore(context: Context) {
     )
     val favorites: StateFlow<Set<String>> = _favorites.asStateFlow()
 
-    fun isFavorite(hostname: String): Boolean = _favorites.value.contains(hostname)
-
     fun toggleFavorite(hostname: String) {
         val next = _favorites.value.toMutableSet().apply {
             if (!add(hostname)) remove(hostname)
@@ -61,8 +59,6 @@ class SettingsStore(context: Context) {
     // ── Per-peer SSH login overrides (hostname → login), like desktop ─────────
     private val _overrides = MutableStateFlow(loadOverrides())
     val peerOverrides: StateFlow<Map<String, String>> = _overrides.asStateFlow()
-
-    fun overrideFor(hostname: String): String? = _overrides.value[hostname]
 
     fun setOverride(hostname: String, login: String) {
         val next = _overrides.value.toMutableMap()
