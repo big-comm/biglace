@@ -324,19 +324,24 @@ jobs:
           # collision (CNDL0125/LGHT0126).
           # --install-version overrides the Cargo.toml 1.0.0 with the numeric
           # version derived from the tag so upgrades actually replace in place.
+          #
+          # The MSI goes to its own folder, outside `target`: `target` is
+          # restored from the cargo cache, so an MSI written there came back
+          # in the next run and got attached to the next release too.
+          New-Item -ItemType Directory -Force -Path msi-out | Out-Null
           cargo wix `
               --no-build `
               --nocapture `
               --target ${{ env.TARGET }} `
               --install-version $env:MSI_VERSION `
               -C "-dStageDir=target\wix-stage" `
-              --output "target\biglace-$env:TAG-x86_64.msi"
+              --output "msi-out\biglace-$env:TAG-x86_64.msi"
 
       - name: Upload MSI artifact
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
         with:
           name: biglace-msi
-          path: target/*.msi
+          path: msi-out/*.msi
           if-no-files-found: error
           retention-days: 30
 
@@ -350,7 +355,7 @@ jobs:
           (github.event_name == 'workflow_dispatch' && github.event.inputs.tag != '')
         uses: softprops/action-gh-release@3bb12739c298aeb8a4eeaf626c5b8d85266b0e65 # v2.6.2
         with:
-          files: target/*.msi
+          files: msi-out/*.msi
           tag_name: ${{ steps.resolve.outputs.tag }}
           fail_on_unmatched_files: true
         env:
