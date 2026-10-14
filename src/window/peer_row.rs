@@ -15,14 +15,14 @@ use crate::tr;
 pub struct PeerCtx {
     pub toast: libadwaita::ToastOverlay,
     pub cfg: Rc<RefCell<Config>>,
-    /// Latency in ms, indexed by hostname. `None` means "still measuring",
+    /// Latency in ms, indexed by peer id. `None` means "still measuring",
     /// missing key means "no data yet". Updated from a background poll —
     /// `Arc<Mutex<…>>` so the worker thread can write while the UI reads.
     pub latency: Arc<Mutex<std::collections::HashMap<String, Option<f64>>>>,
     /// Hook the window installs so peer-row actions can ask for a redraw
     /// (e.g. after pinning a peer, the list must re-sort).
     pub refresh: Rc<dyn Fn()>,
-    /// Hostnames whose detail panel is currently expanded. Mutated by the
+    /// Ids of the peers whose detail panel is currently expanded. Mutated by the
     /// row's `notify::expanded` listener so a periodic refresh that rebuilds
     /// the list can restore the user's open rows — otherwise tailscaled's
     /// 20-30s poll would slam every expander shut while the user is reading.
@@ -51,7 +51,7 @@ pub fn compose_subtitle(
     } else if let Some(ms) = latency
         .lock()
         .ok()
-        .and_then(|g| g.get(&peer.hostname).copied().flatten())
+        .and_then(|g| g.get(&peer.id).copied().flatten())
     {
         bits.push(format!("{ms:.0} ms"));
     }
@@ -76,7 +76,7 @@ pub fn build(peer: &Peer, ctx: &PeerCtx) -> libadwaita::ExpanderRow {
     // Restore expansion state from the previous render — without this, the
     // 20s latency poll (and any other refresh) would slam every expander
     // shut while the user was reading the detail rows.
-    if ctx.expanded.borrow().contains(&peer.hostname) {
+    if ctx.expanded.borrow().contains(&peer.id) {
         row.set_expanded(true);
     }
     // Track the user's manual toggles so the next rebuild can restore them.
@@ -84,13 +84,13 @@ pub fn build(peer: &Peer, ctx: &PeerCtx) -> libadwaita::ExpanderRow {
     // fine — re-inserting a value the set already contains is a no-op.
     {
         let expanded = ctx.expanded.clone();
-        let host = peer.hostname.clone();
+        let id = peer.id.clone();
         row.connect_expanded_notify(move |r| {
             let mut s = expanded.borrow_mut();
             if r.is_expanded() {
-                s.insert(host.clone());
+                s.insert(id.clone());
             } else {
-                s.remove(&host);
+                s.remove(&id);
             }
         });
     }
@@ -414,55 +414,41 @@ pub fn build(peer: &Peer, ctx: &PeerCtx) -> libadwaita::ExpanderRow {
                 sw.set_sensitive(false);
                 let sw_poll = sw.clone();
                 // Run `tailscale set --exit-node=...` off the GTK thread so
-                // pkexec prompts don't freeze the UI. We can't capture
-                // ToastOverlay/Rc into the thread (not Send), so the worker
-                // dumps its result into a Mutex<Option<...>> and a poller on
-                // the main loop picks it up to fire the toast + refresh.
-                // (succeeded, error message) handed back from the worker thread.
-                type ExitNodeOutcome = (bool, Option<String>);
-                let slot: Arc<Mutex<Option<ExitNodeOutcome>>> = Arc::new(Mutex::new(None));
-                let slot_t = slot.clone();
-                std::thread::spawn(move || {
-                    let r = tailscale::set_exit_node(target.as_deref());
-                    let payload = match r {
-                        Ok(()) => (true, None),
-                        Err(e) => (false, Some(e.to_string())),
-                    };
-                    if let Ok(mut g) = slot_t.lock() {
-                        *g = Some(payload);
-                    }
-                });
+                // pkexec prompts don't freeze the UI; the toast + refresh run
+                // back on the main loop once it finishes.
                 let toast_t = toast.clone();
                 let refresh_t = refresh.clone();
-                glib::timeout_add_local(std::time::Duration::from_millis(200), move || {
-                    let Some((ok, err)) = slot.lock().ok().and_then(|mut g| g.take()) else {
-                        return glib::ControlFlow::Continue;
-                    };
-                    sw_poll.set_sensitive(true);
-                    let label = if ok {
-                        if active {
-                            tr!("Exit node enabled")
+                super::run_in_background(
+                    move || match tailscale::set_exit_node(target.as_deref()) {
+                        Ok(()) => (true, None),
+                        Err(e) => (false, Some(e.to_string())),
+                    },
+                    move |(ok, err): (bool, Option<String>)| {
+                        sw_poll.set_sensitive(true);
+                        let label = if ok {
+                            if active {
+                                tr!("Exit node enabled")
+                            } else {
+                                tr!("Exit node disabled")
+                            }
                         } else {
-                            tr!("Exit node disabled")
-                        }
-                    } else {
-                        format!(
-                            "{}: {}",
-                            tr!("Failed to update exit node"),
-                            err.unwrap_or_default()
-                        )
-                    };
-                    toast_t.add_toast(
-                        libadwaita::Toast::builder()
-                            // `label` can embed tailscale stderr on failure —
-                            // escape so `<`/`&` don't corrupt the markup title.
-                            .title(glib::markup_escape_text(&label).as_str())
-                            .timeout(3)
-                            .build(),
-                    );
-                    refresh_t();
-                    glib::ControlFlow::Break
-                });
+                            format!(
+                                "{}: {}",
+                                tr!("Failed to update exit node"),
+                                err.unwrap_or_default()
+                            )
+                        };
+                        toast_t.add_toast(
+                            libadwaita::Toast::builder()
+                                // `label` can embed tailscale stderr on failure —
+                                // escape so `<`/`&` don't corrupt the markup title.
+                                .title(glib::markup_escape_text(&label).as_str())
+                                .timeout(3)
+                                .build(),
+                        );
+                        refresh_t();
+                    },
+                );
                 glib::Propagation::Proceed
             });
         }
@@ -477,36 +463,17 @@ pub fn build(peer: &Peer, ctx: &PeerCtx) -> libadwaita::ExpanderRow {
 ///
 /// Both launchers do a DNS lookup and then probe several programs, each with a
 /// settle window — up to a couple of seconds — so they can't run on the GTK
-/// thread. `ToastOverlay` isn't `Send`, so the worker parks its result in a
-/// Mutex and a main-loop poller picks it up, the same shape the exit-node
-/// switch above uses.
+/// thread.
 fn spawn_launcher<F>(toast: libadwaita::ToastOverlay, work: F)
 where
     F: FnOnce() -> Result<(), String> + Send + 'static,
 {
-    let slot: Arc<Mutex<Option<Result<(), String>>>> = Arc::new(Mutex::new(None));
-    let slot_t = slot.clone();
-    std::thread::spawn(move || {
-        let outcome = work();
-        if let Ok(mut g) = slot_t.lock() {
-            *g = Some(outcome);
-        }
-    });
-    glib::timeout_add_local(std::time::Duration::from_millis(200), move || {
-        let Some(outcome) = slot.lock().ok().and_then(|mut g| g.take()) else {
-            return glib::ControlFlow::Continue;
-        };
+    super::run_in_background(work, move |outcome| {
         if let Err(message) = outcome {
-            toast.add_toast(
-                libadwaita::Toast::builder()
-                    // The message can embed a hostname or a handler name;
-                    // escape before it hits AdwToast's markup-aware title.
-                    .title(glib::markup_escape_text(&message).as_str())
-                    .timeout(6)
-                    .build(),
-            );
+            // The message can embed a hostname or a handler name;
+            // `show_toast` escapes it for AdwToast's markup-aware title.
+            super::show_toast(&toast, &message, 6);
         }
-        glib::ControlFlow::Break
     });
 }
 

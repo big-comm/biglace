@@ -1,6 +1,6 @@
 [package]
 name = "biglace"
-version = "1.0.0"
+version = "1.11.1"
 edition = "2021"
 authors = ["BigCommunity"]
 description = "Mesh VPN client with a graphical interface for Headscale/Tailscale"
@@ -22,9 +22,14 @@ serde       = { version = "1",    features = ["derive"] }
 serde_json  = "1"
 toml        = "0.8"
 anyhow      = "1"
-gettext-rs  = { version = "0.7", features = ["gettext-system"] }
+gettext-rs  = { version = "0.8", features = ["gettext-system"] }
 ureq        = { version = "2",   default-features = false, features = ["json", "native-tls"] }
 native-tls  = "0.2"
+# Wakes the GTK main loop only when a worker actually has a result, instead
+# of polling shared slots on a timer.
+async-channel = "2"
+# Device names: "José" → "jose" rather than dropping the accented letter.
+unicode-normalization = "0.1"
 
 # jemalloc: long-running desktop processes on glibc accumulate fragmentation
 # and glibc's malloc doesn't return free pages to the kernel. jemalloc has a

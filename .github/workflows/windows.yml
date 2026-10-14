@@ -92,7 +92,7 @@ jobs:
           Write-Host "MSI ProductVersion: $ver"
 
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
         with:
           # Build the exact source the package was tagged from. Falls back to
           # the workflow's own ref when no tag is in play (e.g. ad-hoc runs).
@@ -102,12 +102,15 @@ jobs:
       # Stable + the MSVC target. dtolnay/rust-toolchain is the most maintained
       # action and skips a few seconds of overhead vs the official one.
       - name: Install Rust (MSVC)
-        uses: dtolnay/rust-toolchain@stable
+        # Pinned by commit: the action can no longer infer the toolchain from
+        # the ref name (@stable), so it has to be passed explicitly.
+        uses: dtolnay/rust-toolchain@686976e191b89faba57d3206551f0f330d8cb249 # stable branch at pin time
         with:
+          toolchain: stable
           targets: ${{ env.TARGET }}
 
       - name: Cache cargo registry
-        uses: actions/cache@v4
+        uses: actions/cache@0057852bfaa89a56745cba8c7296529d2fc39830 # v4.3.0
         with:
           path: |
             ~/.cargo/registry
@@ -122,7 +125,7 @@ jobs:
       # search dirs in the next step can find the .pc files and import libs.
       - name: Cache gvsbuild
         id: cache-gvsbuild
-        uses: actions/cache@v4
+        uses: actions/cache@0057852bfaa89a56745cba8c7296529d2fc39830 # v4.3.0
         with:
           path: C:\gtk-build\gtk\x64\release
           key: gvsbuild-${{ env.GVSBUILD_VERSION }}-x64
@@ -326,7 +329,7 @@ jobs:
               --output "target\biglace-$env:TAG-x86_64.msi"
 
       - name: Upload MSI artifact
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
         with:
           name: biglace-msi
           path: target/*.msi
@@ -341,7 +344,7 @@ jobs:
         if: >-
           github.event_name == 'repository_dispatch' ||
           (github.event_name == 'workflow_dispatch' && github.event.inputs.tag != '')
-        uses: softprops/action-gh-release@v2
+        uses: softprops/action-gh-release@3bb12739c298aeb8a4eeaf626c5b8d85266b0e65 # v2.6.2
         with:
           files: target/*.msi
           tag_name: ${{ steps.resolve.outputs.tag }}

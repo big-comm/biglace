@@ -352,28 +352,34 @@ class FilesViewModel(private val container: AppContainer) : ViewModel() {
         cancelRequested = false
         _busy.value = FilesBusy(label, cancellable)
         viewModelScope.launch(Dispatchers.IO) {
+            // The busy flag is the only thing `finally` does: rethrowing a
+            // cancellation from inside it (as the refresh used to) skipped the
+            // reset and left the screen stuck behind the busy overlay.
             try {
-                operations.withLock { block(f) }
-            } catch (e: CancellationException) {
-                throw e
-            } catch (e: Exception) {
-                if (!disconnecting) {
-                    _events.tryEmit(FilesEvent.Message(e.message ?: text(R.string.files_operation_failed)))
-                }
-            } finally {
-                if (!disconnecting) {
-                    try {
-                        operations.withLock { loadInto(_path.value.ifBlank { "." }) }
-                    } catch (e: CancellationException) {
-                        throw e
-                    } catch (e: Exception) {
-                        _events.tryEmit(
-                            FilesEvent.Message(e.message ?: text(R.string.files_listing_failed)),
-                        )
+                try {
+                    operations.withLock { block(f) }
+                } catch (e: CancellationException) {
+                    throw e
+                } catch (e: Exception) {
+                    if (!disconnecting) {
+                        _events.tryEmit(FilesEvent.Message(e.message ?: text(R.string.files_operation_failed)))
                     }
                 }
+                if (!disconnecting) refreshAfterOperation()
+            } finally {
                 _busy.value = null
             }
+        }
+    }
+
+    /** Re-list the current directory so the operation's effect shows up. */
+    private suspend fun refreshAfterOperation() {
+        try {
+            operations.withLock { loadInto(_path.value.ifBlank { "." }) }
+        } catch (e: CancellationException) {
+            throw e
+        } catch (e: Exception) {
+            _events.tryEmit(FilesEvent.Message(e.message ?: text(R.string.files_listing_failed)))
         }
     }
 

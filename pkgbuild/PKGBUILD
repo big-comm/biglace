@@ -36,7 +36,7 @@ fi
 prepare() {
     cd "${srcdir}/${pkgname}"
     export RUSTUP_TOOLCHAIN=stable
-    cargo fetch --locked 2>/dev/null || cargo fetch
+    cargo fetch --locked
 }
 
 build() {
@@ -48,8 +48,15 @@ build() {
     # fall back to glibc's malloc here. The non-allocator optimizations
     # (status cache, diff-based UI refresh, ureq agent reuse) carry most of
     # the RSS savings — jemalloc just smooths long-idle drift.
-    cargo build --release --locked --no-default-features 2>/dev/null \
-        || cargo build --release --no-default-features
+    #
+    # BIGLACE_VERSION is the build's date stamp: the update notice compares it
+    # with the GitHub release tags (YY.MM.DD-HHMM). The app's own semantic
+    # version is APP_VERSION in src/main.rs, which gitrepo bumps per commit.
+    #
+    # --locked without a fallback: building with dependency versions nobody
+    # reviewed must fail loudly, not silently succeed.
+    export BIGLACE_VERSION="${pkgver}-${pkgrel}"
+    cargo build --release --locked --no-default-features
 }
 
 package() {
