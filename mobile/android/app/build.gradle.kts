@@ -1,6 +1,15 @@
 import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 import java.util.Properties
 
+// The product version users see — shared by the desktop and Android apps. It
+// lives in APP_VERSION in src/main.rs, which gitrepo bumps on every commit
+// (feat → minor, fix → patch), so there is a single number to keep in sync.
+val appVersion: String = rootProject.file("../../src/main.rs")
+    .takeIf { it.isFile }
+    ?.readText()
+    ?.let { Regex("""APP_VERSION: &str = "(\d+\.\d+\.\d+)"""").find(it)?.groupValues?.get(1) }
+    ?: error("APP_VERSION not found in src/main.rs")
+
 plugins {
     id("com.android.application")
     id("org.jetbrains.kotlin.android")
@@ -16,11 +25,12 @@ android {
         applicationId = "org.communitybig.biglace"
         minSdk = 26
         targetSdk = 36
-        // CI passes -Pbiglace.versionCode / -Pbiglace.versionName derived from
-        // the release tag (.github/workflows/android.yml); these are the
-        // values for local builds.
+        // versionName is what users see (APP_VERSION, e.g. 1.11.1). versionCode
+        // is the internal number Android compares to accept an update; CI
+        // derives it from the release tag's date so it always grows
+        // (.github/workflows/android.yml). 34 is the value for local builds.
         versionCode = (findProperty("biglace.versionCode") as String?)?.toInt() ?: 34
-        versionName = (findProperty("biglace.versionName") as String?) ?: "0.9.7"
+        versionName = (findProperty("biglace.versionName") as String?) ?: appVersion
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
 

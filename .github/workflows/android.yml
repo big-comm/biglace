@@ -10,8 +10,10 @@
 # The app's in-app updater finds new versions by exactly that file name, in any
 # release of this repository.
 #
-# Version: derived from the release tag (YY.MM.DD-HHMM), like the MSI, so it
-# rises with every release without bumping build.gradle.kts by hand.
+# Version: users see APP_VERSION from src/main.rs (e.g. 1.11.1), the same
+# number as the desktop app, read by build.gradle.kts. The internal versionCode
+# that orders updates comes from the release tag (YY.MM.DD-HHMM), so it rises
+# with every release without bumping anything by hand.
 #
 # Signing: in-app updates only install over the current app when every APK is
 # signed with the SAME key, so this job refuses to build without these secrets:
@@ -59,10 +61,10 @@ jobs:
           echo "tag=$tag" >> "$GITHUB_OUTPUT"
           echo "Resolved tag: $tag"
 
-      # versionName = the tag; versionCode = minutes since 2020-01-01 at the
-      # tag's date/time, which only ever grows and stays far below Android's
-      # 2100000000 limit. A tag that isn't YY.MM.DD-HHMM keeps the values
-      # from build.gradle.kts.
+      # versionCode = minutes since 2020-01-01 at the tag's date/time, which
+      # only ever grows and stays far below Android's 2100000000 limit. The
+      # visible versionName is APP_VERSION, read by build.gradle.kts. A tag
+      # that isn't YY.MM.DD-HHMM keeps the local versionCode.
       - name: Resolve app version
         id: version
         env:
@@ -71,8 +73,8 @@ jobs:
           if [[ "$TAG" =~ ^v?([0-9]{2})\.([0-9]{2})\.([0-9]{2})-([0-9]{2})([0-9]{2})$ ]]; then
             stamp="20${BASH_REMATCH[1]}-${BASH_REMATCH[2]}-${BASH_REMATCH[3]} ${BASH_REMATCH[4]}:${BASH_REMATCH[5]} UTC"
             minutes=$(( ($(date -u -d "$stamp" +%s) - $(date -u -d '2020-01-01' +%s)) / 60 ))
-            echo "args=-Pbiglace.versionName=${TAG#v} -Pbiglace.versionCode=$minutes" >> "$GITHUB_OUTPUT"
-            echo "versionName=${TAG#v} versionCode=$minutes"
+            echo "args=-Pbiglace.versionCode=$minutes" >> "$GITHUB_OUTPUT"
+            echo "versionCode=$minutes"
           else
             echo "args=" >> "$GITHUB_OUTPUT"
             echo "Tag is not date-based; using build.gradle.kts version"
