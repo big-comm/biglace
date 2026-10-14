@@ -22,6 +22,10 @@
 # (A CI runner's own debug key would produce APKs nobody could update to.)
 
 name: Android APK
+# Title shown in the Actions list. Without it GitHub shows the dispatch event
+# name (windows-msi-build, shared by both release workflows), which made the
+# Android run look like a Windows build.
+run-name: Android APK for ${{ github.event.client_payload.tag_name || inputs.tag || github.ref_name }}
 
 on:
   workflow_dispatch:
