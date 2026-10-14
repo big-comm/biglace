@@ -30,4 +30,14 @@ class AppUpdaterTest {
         assertFalse(isTrustedApkUrl("https://github.com/someone/biglace/releases/download/x/a.apk"))
         assertFalse(isTrustedApkUrl("https://github.com.evil.io/big-comm/biglace/releases/download/x/a.apk"))
     }
+
+    @Test
+    fun automaticChecksAreSpacedButNeverStuck() {
+        val hour = 60 * 60 * 1000L
+        assertTrue(isCheckDue(nowMs = 10 * hour, lastCheckMs = 0))
+        assertFalse(isCheckDue(nowMs = 10 * hour, lastCheckMs = 10 * hour - 60_000))
+        assertTrue(isCheckDue(nowMs = 10 * hour, lastCheckMs = 10 * hour - AUTO_CHECK_INTERVAL_MS))
+        // A clock that moved backwards must not suppress checks until it catches up.
+        assertTrue(isCheckDue(nowMs = 10 * hour, lastCheckMs = 20 * hour))
+    }
 }

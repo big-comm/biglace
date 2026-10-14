@@ -68,11 +68,17 @@ fun UpdateDialog(updater: AppUpdater, state: UpdateState) {
                     style = MaterialTheme.typography.bodyMedium,
                     color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.7f),
                 )
-                if (release.notes.isNotBlank()) {
+                val linkColor = MaterialTheme.colorScheme.primary
+                val notes = remember(release.notes, linkColor) {
+                    cleanReleaseNotes(release.notes)
+                        .takeIf { it.isNotBlank() }
+                        ?.let { renderReleaseNotes(it, linkColor) }
+                }
+                if (notes != null) {
                     // Long notes scroll inside their own box, so they can't push
                     // the buttons off screen.
                     Text(
-                        release.notes,
+                        notes,
                         style = MaterialTheme.typography.bodySmall,
                         modifier = Modifier
                             .fillMaxWidth()

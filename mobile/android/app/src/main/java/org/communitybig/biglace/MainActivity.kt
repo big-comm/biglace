@@ -52,15 +52,15 @@ class MainActivity : ComponentActivity() {
             container.requestConnect()
         }
 
-        // Ask GitHub for a newer build (throttled, silent on failure).
-        if (savedInstanceState == null) container.updater.checkOnLaunch()
-
         setContent { BigLaceApp(container) }
     }
 
     override fun onStart() {
         super.onStart()
         container.uiVisible.value = true
+        // Every return to the app may find a new release (throttled, silent
+        // on failure).
+        container.updater.checkIfDue()
     }
 
     override fun onStop() {

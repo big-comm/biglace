@@ -62,6 +62,13 @@ internal fun parseApkAssetName(name: String): ApkAssetName? =
         ApkAssetName(m.groupValues[1], code, m.groupValues[3])
     }
 
+/** Whether enough time passed since [lastCheckMs] for another automatic check. */
+internal fun isCheckDue(nowMs: Long, lastCheckMs: Long, intervalMs: Long = AUTO_CHECK_INTERVAL_MS): Boolean =
+    lastCheckMs <= 0 || nowMs - lastCheckMs >= intervalMs || nowMs < lastCheckMs
+
+/** Automatic checks are spaced by this much (GitHub allows 60 anonymous API calls per hour). */
+internal const val AUTO_CHECK_INTERVAL_MS = 30 * 60 * 1000L
+
 /** Only GitHub release downloads of this repository are acceptable APK sources. */
 internal fun isTrustedApkUrl(url: String): Boolean = runCatching {
     val uri = java.net.URI(url)
@@ -97,10 +104,22 @@ class AppUpdater(
         appContext.packageManager.getPackageInfo(appContext.packageName, 0).versionName.orEmpty()
     }
 
-    /** Quiet background check at most every [AUTO_CHECK_INTERVAL_MS]; failures stay silent. */
-    fun checkOnLaunch() {
+    /**
+     * Quiet background check whenever the app comes to the foreground, at most
+     * every [AUTO_CHECK_INTERVAL_MS]; failures stay silent. It used to run only
+     * when the screen was created, with a 6 h gap — so a release published
+     * shortly after one check went unnoticed for hours, and reopening the app
+     * (whose process the mesh service keeps alive) never checked at all.
+     */
+    fun checkIfDue() {
+        // An offer already on screen (or a download in flight) must not be
+        // replaced by a fresh check — that would discard a finished download.
+        when (_state.value) {
+            is UpdateState.Available, is UpdateState.Downloading, is UpdateState.ReadyToInstall -> return
+            else -> Unit
+        }
+        if (!isCheckDue(System.currentTimeMillis(), settings.lastUpdateCheck)) return
         scope.launch { withContext(Dispatchers.IO) { cleanDownloads(keepCode = Long.MAX_VALUE) } }
-        if (System.currentTimeMillis() - settings.lastUpdateCheck < AUTO_CHECK_INTERVAL_MS) return
         check(manual = false)
     }
 
@@ -324,7 +343,6 @@ class AppUpdater(
 
     private companion object {
         const val UPDATES_DIR = "updates"
-        const val AUTO_CHECK_INTERVAL_MS = 6 * 60 * 60 * 1000L
         const val MAX_API_BYTES = 4 * 1024 * 1024
     }
 }
