@@ -66,8 +66,11 @@ internal fun parseApkAssetName(name: String): ApkAssetName? =
 internal fun isCheckDue(nowMs: Long, lastCheckMs: Long, intervalMs: Long = AUTO_CHECK_INTERVAL_MS): Boolean =
     lastCheckMs <= 0 || nowMs - lastCheckMs >= intervalMs || nowMs < lastCheckMs
 
-/** Automatic checks are spaced by this much (GitHub allows 60 anonymous API calls per hour). */
-internal const val AUTO_CHECK_INTERVAL_MS = 30 * 60 * 1000L
+/**
+ * Automatic checks are spaced by this much — just enough to absorb quick
+ * app switches. GitHub allows 60 anonymous API calls per hour per address.
+ */
+internal const val AUTO_CHECK_INTERVAL_MS = 2 * 60 * 1000L
 
 /** Only GitHub release downloads of this repository are acceptable APK sources. */
 internal fun isTrustedApkUrl(url: String): Boolean = runCatching {
@@ -106,10 +109,10 @@ class AppUpdater(
 
     /**
      * Quiet background check whenever the app comes to the foreground, at most
-     * every [AUTO_CHECK_INTERVAL_MS]; failures stay silent. It used to run only
-     * when the screen was created, with a 6 h gap — so a release published
-     * shortly after one check went unnoticed for hours, and reopening the app
-     * (whose process the mesh service keeps alive) never checked at all.
+     * every [AUTO_CHECK_INTERVAL_MS]; failures stay silent. Closing and
+     * reopening the app is enough to look again. A long gap here hid updates:
+     * a release is created a few minutes before its APKs are attached, and a
+     * check in that window found nothing and then suppressed the next ones.
      */
     fun checkIfDue() {
         // An offer already on screen (or a download in flight) must not be
