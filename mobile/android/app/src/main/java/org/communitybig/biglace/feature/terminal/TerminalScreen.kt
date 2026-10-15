@@ -120,6 +120,7 @@ fun TerminalScreen(container: AppContainer, modifier: Modifier = Modifier) {
             activeId = active.id,
             onSelect = tabsVm::select,
             onAdd = tabsVm::add,
+            onDuplicate = { tabsVm.duplicate(active.id) },
             onCloseActive = {
                 stateHolder.removeState(active.id)
                 tabsVm.close(active.id)
@@ -149,6 +150,14 @@ private fun TerminalSessionScreen(
     val frame by vm.frame.collectAsStateWithLifecycle()
     val testing by vm.testing.collectAsStateWithLifecycle()
     val probe by vm.probe.collectAsStateWithLifecycle()
+
+    // A duplicated session connects by itself, with the copied credentials.
+    LaunchedEffect(tab.id, tab.autoConnect) {
+        if (tab.autoConnect && status == TermStatus.Idle) {
+            onUpdate { it.copy(autoConnect = false) }
+            vm.connect(tab.host.trim(), tab.port.toIntOrNull() ?: 22, tab.user.trim(), tab.password, tab.mode)
+        }
+    }
 
     // Prefill the saved password whenever the host is known and none is typed yet.
     LaunchedEffect(tab.host) {

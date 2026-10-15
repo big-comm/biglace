@@ -47,4 +47,32 @@ class SshSessionTabsViewModelTest {
 
         assertNotSame(owner, vm.ownerFor(id))
     }
+
+    @Test
+    fun duplicatingASessionOpensAConnectingCopyNextToIt() {
+        val vm = SshSessionTabsViewModel()
+        val first = vm.openPeer("100.64.0.5", "tales", "secret")
+        val other = vm.openPeer("100.64.0.9", "maria", "")
+
+        val copy = vm.duplicate(first)!!
+
+        val tabs = vm.tabs.value
+        assertEquals(listOf(first, copy, other), tabs.map { it.id })
+        val source = tabs[0]
+        val dup = tabs[1]
+        assertEquals(copy, vm.activeId.value)
+        assertEquals(source.host, dup.host)
+        assertEquals(source.user, dup.user)
+        assertEquals(source.password, dup.password)
+        assertEquals(source.port, dup.port)
+        assertEquals(true, dup.autoConnect)
+        assertEquals("tales@100.64.0.5", dup.label)
+    }
+
+    @Test
+    fun aBlankTabCannotBeDuplicated() {
+        val vm = SshSessionTabsViewModel()
+        assertEquals(null, vm.duplicate(vm.activeId.value))
+        assertEquals(1, vm.tabs.value.size)
+    }
 }

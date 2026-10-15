@@ -1,9 +1,11 @@
 package org.communitybig.biglace.core.ssh
 
+import kotlinx.coroutines.CancellationException
 import net.schmizz.sshj.DefaultConfig
 import net.schmizz.sshj.SSHClient
 import org.communitybig.biglace.AppContainer
 import org.communitybig.biglace.R
+import java.io.IOException
 
 /** The host presented a different key than the one trusted on first use. */
 class HostKeyChangedException(val host: String, message: String) : Exception(message)
@@ -30,7 +32,18 @@ internal object SshConnector {
         mode: AuthMode,
         onClient: (SSHClient) -> Unit = {},
     ): Connection {
-        val local = container.forward(host, port)
+        val local = try {
+            container.forward(host, port)
+        } catch (e: CancellationException) {
+            throw e
+        } catch (e: Exception) {
+            // The engine isn't running: say what to do instead of surfacing
+            // the bridge's internal "tsbridge: not started".
+            if (e.message.orEmpty().contains("not started")) {
+                throw IOException(container.appContext.getString(R.string.ssh_mesh_not_connected), e)
+            }
+            throw e
+        }
         val client = SSHClient(DefaultConfig())
         onClient(client)
         val verifier = TofuHostKeyVerifier(host, container.secrets)

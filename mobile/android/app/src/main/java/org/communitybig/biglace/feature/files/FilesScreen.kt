@@ -125,6 +125,7 @@ fun FilesScreen(container: AppContainer, modifier: Modifier = Modifier, isActive
             activeId = active.id,
             onSelect = tabsVm::select,
             onAdd = tabsVm::add,
+            onDuplicate = { tabsVm.duplicate(active.id) },
             onCloseActive = {
                 stateHolder.removeState(active.id)
                 tabsVm.close(active.id)
@@ -178,6 +179,14 @@ private fun FilesSessionScreen(
 
     val uploadPicker = rememberLauncherForActivityResult(ActivityResultContracts.GetContent()) { uri ->
         uri?.let { vm.upload(it) }
+    }
+
+    // A duplicated session connects by itself, with the copied credentials.
+    LaunchedEffect(tab.id, tab.autoConnect) {
+        if (tab.autoConnect && status == FilesStatus.Idle) {
+            onUpdate { it.copy(autoConnect = false) }
+            vm.connect(tab.host.trim(), tab.port.toIntOrNull() ?: 22, tab.user.trim(), tab.password, tab.mode)
+        }
     }
 
     LaunchedEffect(tab.host) {

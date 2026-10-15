@@ -15,7 +15,13 @@ data class SshSessionTab(
     val password: String = "",
     val mode: AuthMode = AuthMode.AUTO,
     val fromPeer: Boolean = false,
-)
+    /** Connect as soon as the tab is shown (set on a duplicated session). */
+    val autoConnect: Boolean = false,
+) {
+    /** `user@host` (or just the host) — how a session is named to the user. */
+    val label: String
+        get() = if (user.isBlank()) host else "$user@$host"
+}
 
 /** Keeps SSH/SFTP tab metadata stable while each tab owns a separate client. */
 class SshSessionTabsViewModel : ViewModel() {
@@ -65,6 +71,22 @@ class SshSessionTabsViewModel : ViewModel() {
         }
         _activeId.value = target.id
         return target.id
+    }
+
+    /**
+     * Open another session to the same machine: a new tab right after [id],
+     * with the same host, port, login and auth mode, which connects on its
+     * own. Returns null when [id] has no host to copy.
+     */
+    fun duplicate(id: Long): Long? {
+        val source = _tabs.value.firstOrNull { it.id == id }?.takeIf { it.host.isNotBlank() } ?: return null
+        val copy = source.copy(id = nextId++, autoConnect = true)
+        _tabs.update { tabs ->
+            val at = tabs.indexOfFirst { it.id == id } + 1
+            tabs.take(at) + copy + tabs.drop(at)
+        }
+        _activeId.value = copy.id
+        return copy.id
     }
 
     fun add(): Long {
