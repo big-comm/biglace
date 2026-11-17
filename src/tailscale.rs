@@ -1046,7 +1046,7 @@ fn run_tailscale_with_fallback(args: &[&str]) -> Result<()> {
     }
 }
 
-pub fn connect(server: &str, authkey: &str, hostname: &str) -> Result<()> {
+pub fn connect(server: &str, authkey: &str, pending_key: bool, hostname: &str) -> Result<()> {
     // Trim once up front so a pasted key/URL with a trailing space or newline
     // (the usual copy-paste artifact) doesn't reach `tailscale up` verbatim and
     // get rejected with an opaque "invalid key". Everything below uses the
@@ -1078,7 +1078,7 @@ pub fn connect(server: &str, authkey: &str, hostname: &str) -> Result<()> {
     // that would re-register the node on every connect (which is what let a
     // one-time key expire the node between sessions). The key is only needed to
     // (re)register: first login, a logged-out/expired node, or a new server.
-    if pre_status.registered && authkey.is_empty() {
+    if pre_status.registered && authkey.is_empty() && !pending_key {
         dbg("connect: cached registration present — trying keyless reconnect");
         if try_reconnect().is_ok() && wait_until_online() {
             dbg("connect: reconnected via cached registration (no key needed)");
@@ -1088,7 +1088,22 @@ pub fn connect(server: &str, authkey: &str, hostname: &str) -> Result<()> {
         dbg("connect: keyless reconnect didn't take — (re)authenticating with the key");
     }
 
-    // From here we need the key to register / re-authenticate.
+    // From here we need the key to register / re-authenticate. Otherwise read
+    // the key stored at enrollment here, on the worker thread: reading it with
+    // the config would make a locked keyring prompt at every start, even when
+    // the keyless reconnect above needs no key.
+    let stored = if authkey.is_empty() {
+        match crate::secrets::load_authkey(server) {
+            Ok(key) => key.unwrap_or_default(),
+            Err(error) => bail!(trf!(
+                "Couldn't read the saved pre-auth key: {error}",
+                "error" => error
+            )),
+        }
+    } else {
+        authkey.to_owned()
+    };
+    let authkey = stored.trim();
     if authkey.is_empty() {
         if pre_status.registered {
             bail!(tr!("The pre-auth key was rejected by the server. Generate a new key in the BigScale panel and try again."));

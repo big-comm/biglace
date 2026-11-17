@@ -5,7 +5,10 @@ use std::{collections::HashMap, fs, path::PathBuf};
 #[derive(Debug, Clone, Default, Serialize, Deserialize)]
 pub struct Config {
     pub server_url: String,
-    /// Loaded from the OS keyring; never serialized to TOML.
+    /// A key entered in this session, or a legacy plaintext key being migrated;
+    /// stored in the OS keyring and never serialized. [`load`] does not read the
+    /// keyring: [`crate::tailscale::connect`] does, only when the device has to
+    /// register.
     #[serde(default, skip_serializing)]
     pub authkey: String,
     pub auto_connect: bool,
@@ -14,6 +17,12 @@ pub struct Config {
     /// durable reconnect marker even when no enrollment key is available.
     #[serde(default)]
     pub enrolled: bool,
+
+    /// A key was saved and has not registered this device yet: the next
+    /// connect registers with it instead of resuming the registration
+    /// tailscaled may still hold for another account or server.
+    #[serde(default)]
+    pub pending_key: bool,
 
     /// Tailscale hostname for this device — the BigScale account identifier
     /// (e.g. `tales`), which becomes the device's DNS name (`tales.bigscale.net`).
@@ -158,8 +167,6 @@ pub fn load() -> Config {
                         Err(e) => eprintln!("[biglace] secrets: authkey migration failed: {e}"),
                     }
                 }
-            } else {
-                cfg.authkey = crate::secrets::load_authkey(&cfg.server_url).unwrap_or_default();
             }
             cfg
         }
@@ -331,6 +338,56 @@ mod tests {
         assert!(warning.is_some(), "the unstored key must be reported");
         assert!(dir.join("biglace/config.toml").exists());
 
+        let _ = fs::remove_dir_all(&dir);
+    }
+
+    /// Loading the config runs when the window is built, including the hidden
+    /// start at login, while the keyring may still be locked; it must not touch
+    /// the keyring.
+    #[cfg(target_os = "linux")]
+    #[test]
+    fn loading_leaves_the_keyring_alone() {
+        use std::os::unix::net::UnixListener;
+
+        let (_guard, dir) = isolated_env("lazykey");
+        let cfg = Config {
+            server_url: "https://vpn.example.org".into(),
+            enrolled: true,
+            ..Config::default()
+        };
+        save(&cfg).expect("config saved");
+        // A bus that never answers: a keyring lookup would connect to it and
+        // wait, so the load runs on its own thread and the test watches the
+        // socket.
+        let bus = dir.join("session-bus");
+        let listener = UnixListener::bind(&bus).expect("fake session bus");
+        listener.set_nonblocking(true).unwrap();
+        std::env::set_var(
+            "DBUS_SESSION_BUS_ADDRESS",
+            format!("unix:path={}", bus.display()),
+        );
+
+        let loading = std::thread::spawn(load);
+        let deadline = std::time::Instant::now() + std::time::Duration::from_secs(2);
+        let mut connected = false;
+        while !loading.is_finished() && std::time::Instant::now() < deadline {
+            if listener.accept().is_ok() {
+                // Dropping the connection ends the lookup with an error.
+                connected = true;
+                break;
+            }
+            std::thread::sleep(std::time::Duration::from_millis(10));
+        }
+        connected |= listener.accept().is_ok();
+        // A late lookup gets a refused connection instead of waiting forever.
+        drop(listener);
+        let loaded = loading.join().expect("load finished");
+        assert!(
+            !connected,
+            "loading the config connected to the session bus"
+        );
+        assert!(loaded.enrolled);
+        assert!(loaded.authkey.is_empty());
         let _ = fs::remove_dir_all(&dir);
     }
 

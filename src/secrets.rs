@@ -41,15 +41,15 @@ pub fn save_authkey(server_url: &str, authkey: &str) -> keyring::Result<()> {
     entry.set_password(authkey.trim())
 }
 
-pub fn load_authkey(server_url: &str) -> Option<String> {
-    let entry = authkey_entry(server_url)?;
+/// The key stored for `server_url`; `Ok(None)` when none is stored.
+pub fn load_authkey(server_url: &str) -> keyring::Result<Option<String>> {
+    let Some(entry) = authkey_entry(server_url) else {
+        return Ok(None);
+    };
     match entry.get_password() {
-        Ok(value) => Some(value),
-        Err(keyring::Error::NoEntry) => None,
-        Err(err) => {
-            eprintln!("[biglace] secrets: authkey load failed: {err}");
-            None
-        }
+        Ok(value) => Ok(Some(value)),
+        Err(keyring::Error::NoEntry) => Ok(None),
+        Err(err) => Err(err),
     }
 }
 

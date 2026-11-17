@@ -773,6 +773,7 @@ fn should_show_manual_setup(state: AppState, c: &config::Config) -> bool {
 
 fn mark_enrolled(mut c: config::Config) -> config::Config {
     c.enrolled = true;
+    c.pending_key = false;
     c
 }
 
@@ -913,6 +914,7 @@ fn wire_signals(ctx: &Ctx) {
                 c.authkey = key;
                 c.hostname = host;
                 c.enrolled = true;
+                c.pending_key = true;
                 config::save_with_authkey(&c)
             };
             ctx2.ui.sidebar.expander_manual.set_expanded(false);
@@ -1205,10 +1207,12 @@ fn do_connect(ctx: &Ctx, server: String, authkey: String, hostname: String) {
     // this attempt resolves (see apply_refresh).
     *ctx.connect_in_flight.borrow_mut() = true;
 
+    let pending_key = ctx.cfg.borrow().pending_key;
     let ctx2 = ctx.clone();
     run_in_background(
         move || {
-            let r = tailscale::connect(&server, &authkey, &hostname).map_err(|e| e.to_string());
+            let r = tailscale::connect(&server, &authkey, pending_key, &hostname)
+                .map_err(|e| e.to_string());
             match &r {
                 Ok(()) => eprintln!("[biglace] connect: ok"),
                 Err(e) => eprintln!("[biglace] connect: failed: {e}"),
@@ -2028,12 +2032,14 @@ mod tests {
             server_url: "https://vpn.example.org".into(),
             authkey: "hskey-auth-secret".into(),
             hostname: "workstation".into(),
+            pending_key: true,
             ..config::Config::default()
         };
 
         let enrolled = mark_enrolled(cfg);
 
         assert!(enrolled.enrolled);
+        assert!(!enrolled.pending_key, "the key has registered the device");
         assert_eq!(enrolled.server_url, "https://vpn.example.org");
         assert_eq!(enrolled.authkey, "hskey-auth-secret");
         assert_eq!(enrolled.hostname, "workstation");
