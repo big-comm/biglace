@@ -103,14 +103,7 @@ pub fn build() -> Content {
     let (page_service, btn_start_service) = build_service_page();
     stack.add_named(&page_service, Some("service"));
 
-    stack.add_named(
-        &build_status_page(
-            "dialog-password-symbolic",
-            &tr!("Sign in to connect"),
-            &tr!("Use the panel on the left to sign in or paste a pre-auth key."),
-        ),
-        Some("not-signed-in"),
-    );
+    stack.add_named(&build_not_signed_in_page(), Some("not-signed-in"));
 
     stack.add_named(
         &build_status_page(
@@ -184,6 +177,33 @@ fn build_status_page(icon: &str, title: &str, desc: &str) -> libadwaita::StatusP
         .title(title)
         .description(desc)
         .build()
+}
+
+/// First-run page: the invite is the main way in; the panel account and the
+/// manual key (left sidebar) stay available for admins.
+fn build_not_signed_in_page() -> libadwaita::StatusPage {
+    let page = build_status_page(
+        "dialog-password-symbolic",
+        &tr!("Sign in to connect"),
+        &tr!("Got an invite link? Use it to join the network. Admins can sign in with their panel account."),
+    );
+    let buttons = gtk4::Box::new(gtk4::Orientation::Vertical, 12);
+    buttons.set_halign(gtk4::Align::Center);
+    let btn_invite = gtk4::Button::builder()
+        .label(tr!("Join with an invite"))
+        .css_classes(["suggested-action", "pill"])
+        .action_name("win.join-invite")
+        .action_target(&"".to_variant())
+        .build();
+    let btn_panel = gtk4::Button::builder()
+        .label(tr!("Sign in with panel account"))
+        .css_classes(["flat"])
+        .action_name("win.panel-login")
+        .build();
+    buttons.append(&btn_invite);
+    buttons.append(&btn_panel);
+    page.set_child(Some(&buttons));
+    page
 }
 
 fn build_connecting_page() -> gtk4::Box {

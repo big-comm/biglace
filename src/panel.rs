@@ -119,7 +119,7 @@ fn is_loopback_host(host: &str) -> bool {
             .is_ok_and(|ip| ip.is_loopback())
 }
 
-fn read_json_limited<T: DeserializeOwned>(response: ureq::Response) -> Result<T> {
+pub(crate) fn read_json_limited<T: DeserializeOwned>(response: ureq::Response) -> Result<T> {
     if response
         .header("Content-Length")
         .and_then(|v| v.parse::<u64>().ok())

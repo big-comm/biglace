@@ -1,5 +1,6 @@
 mod content;
 mod dialogs;
+mod join_dialog;
 mod peer_row;
 mod sidebar;
 mod style;
@@ -783,6 +784,7 @@ fn mark_enrolled(mut c: config::Config) -> config::Config {
 
 fn setup_menu(ctx: &Ctx) {
     let menu = gtk4::gio::Menu::new();
+    menu.append(Some(&tr!("Join with an invite")), Some("win.join-invite::"));
     menu.append(
         Some(&tr!("Sign in with panel account")),
         Some("win.panel-login"),
@@ -831,6 +833,26 @@ fn setup_menu(ctx: &Ctx) {
         let sidebar_w = ctx.ui.sidebar.clone();
         action.connect_activate(move |_, _| {
             dialogs::show_panel_login(&win_w, &toast_w, &cfg2, &sidebar_w);
+        });
+        ctx.ui.win.add_action(&action);
+    }
+
+    {
+        // Parameter: the invite link to prefill ("" when opened from the menu).
+        // Also the entry point for `biglace://join?…` links (see main.rs).
+        let action = gtk4::gio::SimpleAction::new("join-invite", Some(glib::VariantTy::STRING));
+        let ctx2 = ctx.clone();
+        action.connect_activate(move |_, param| {
+            let link = param.and_then(|p| p.str()).filter(|s| !s.is_empty()).map(str::to_string);
+            if has_connect_config(&ctx2.cfg.borrow()) {
+                show_toast(
+                    &ctx2.ui.toast,
+                    &tr!("This device is already signed in. Sign out first to join with an invite."),
+                    6,
+                );
+                return;
+            }
+            join_dialog::show(&ctx2.ui.win, &ctx2.ui.toast, &ctx2.cfg, &ctx2.ui.sidebar, link);
         });
         ctx.ui.win.add_action(&action);
     }

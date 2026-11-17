@@ -2,6 +2,7 @@ mod agent;
 mod autostart;
 mod config;
 mod i18n;
+mod invite;
 mod launchers;
 mod panel;
 mod secrets;
@@ -43,7 +44,7 @@ pub static MALLOC_CONF: &[u8] = b"background_thread:true,dirty_decay_ms:1000,muz
 /// creates (feat → minor, fix/perf/docs/… → patch, breaking → major) by
 /// rewriting this assignment. Reading it from `CARGO_PKG_VERSION` hid it from
 /// gitrepo, which is how the version sat at 1.0.0 through dozens of releases.
-pub const APP_VERSION: &str = "1.14.0";
+pub const APP_VERSION: &str = "1.15.0";
 
 /// Date-based build stamp (`YY.MM.DD-HHMM`) — the scheme the GitHub release
 /// tags use. The PKGBUILD exports it as `BIGLACE_VERSION`; the update check
@@ -83,8 +84,18 @@ fn main() {
     // re-opening the window from an old entry that lacks the flag.
     autostart::migrate_if_enabled();
 
+    // An invite link (`biglace://join?…`) clicked in a browser or chat app
+    // arrives as an argument. It's the only argument handed to GApplication:
+    // with HANDLES_OPEN it's forwarded to the already-running instance, if
+    // any, and delivered to `open` below.
+    let join_link = std::env::args_os()
+        .skip(1)
+        .filter_map(|a| a.into_string().ok())
+        .find(|a| a.starts_with("biglace://"));
+
     let app = libadwaita::Application::builder()
         .application_id("org.communitybig.biglace")
+        .flags(gtk4::gio::ApplicationFlags::HANDLES_OPEN)
         .build();
 
     app.connect_activate(move |app| {
@@ -100,7 +111,35 @@ fn main() {
         window::build(app, start_hidden);
     });
 
-    std::process::exit(app.run_with_args(&["biglace"]).into());
+    app.connect_open(move |app, files, _hint| {
+        let win = match app.windows().first() {
+            Some(w) => w.clone(),
+            None => {
+                // Opened by a link: show the window even if autostart asked
+                // for the tray, since the user is about to type in it.
+                window::build(app, false);
+                match app.windows().first() {
+                    Some(w) => w.clone(),
+                    None => return,
+                }
+            }
+        };
+        win.present();
+        for file in files {
+            let uri = file.uri();
+            if uri.starts_with("biglace://join") {
+                let _ = gtk4::prelude::WidgetExt::activate_action(
+                    &win,
+                    "win.join-invite",
+                    Some(&gtk4::glib::Variant::from(uri.as_str())),
+                );
+            }
+        }
+    });
+
+    let mut argv = vec!["biglace".to_string()];
+    argv.extend(join_link);
+    std::process::exit(app.run_with_args(&argv).into());
 }
 
 #[cfg(test)]

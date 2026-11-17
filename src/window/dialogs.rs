@@ -790,7 +790,7 @@ pub(super) fn sanitize_hostname_while_typing(input: &str) -> String {
 /// and was set up with the default), fall back to whatever the user typed
 /// as the panel URL. The user clearly reaches the panel from outside, so
 /// that URL is also the right `--login-server` for tailscale.
-fn sanitize_server_url(server_from_response: &str, panel_url_typed: &str) -> String {
+pub(super) fn sanitize_server_url(server_from_response: &str, panel_url_typed: &str) -> String {
     let s = server_from_response.trim();
     let is_loopback = panel::url_is_local_server_response(s);
     let chosen = if s.is_empty() || is_loopback {

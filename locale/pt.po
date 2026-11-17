@@ -863,3 +863,141 @@ msgstr "via relay"
 
 #~ msgid "No other devices found."
 #~ msgstr "Nenhum outro dispositivo encontrado."
+
+#: src/window/join_dialog.rs:22
+msgid "That name is already in use on this network. How about \"{name}\"?"
+msgstr "Esse nome já está em uso nesta rede. Que tal \"{name}\"?"
+
+#: src/window/join_dialog.rs:25
+msgid "That name is already in use on this network. Try another one."
+msgstr "Esse nome já está em uso nesta rede. Tente outro."
+
+#: src/window/join_dialog.rs:26
+msgid "Type your name using at least two letters or digits."
+msgstr "Digite seu nome com pelo menos duas letras ou números."
+
+#: src/window/join_dialog.rs:28
+msgid "This invite has expired. Ask for a new one."
+msgstr "Este convite expirou. Peça um novo."
+
+#: src/window/join_dialog.rs:29
+msgid "This invite was already used. Ask for a new one."
+msgstr "Este convite já foi usado. Peça um novo."
+
+#: src/window/join_dialog.rs:30
+msgid "This invite was cancelled. Ask for a new one."
+msgstr "Este convite foi cancelado. Peça um novo."
+
+#: src/window/join_dialog.rs:31
+msgid "This invite is not valid. Check the link or ask for a new one."
+msgstr "Este convite não é válido. Confira o link ou peça um novo."
+
+#: src/window/join_dialog.rs:33
+msgid "Too many attempts. Wait a minute and try again."
+msgstr "Muitas tentativas. Aguarde um minuto e tente de novo."
+
+#: src/window/join_dialog.rs:35
+msgid ""
+"This server doesn't support invites yet. Sign in with a panel account "
+"instead."
+msgstr ""
+"Este servidor ainda não aceita convites. Entre com uma conta do painel."
+
+#: src/window/join_dialog.rs:37
+msgid "Could not reach the panel: {error}"
+msgstr "Não foi possível falar com o painel: {error}"
+
+#: src/window/join_dialog.rs:51 src/window/content.rs:193
+#: src/window/mod.rs:787
+msgid "Join with an invite"
+msgstr "Entrar com convite"
+
+#: src/window/join_dialog.rs:61
+msgid ""
+"Paste the invite link you received and type your name. Your account is "
+"created and this device joins the network."
+msgstr ""
+"Cole o link de convite que você recebeu e digite seu nome. Sua conta é "
+"criada e este dispositivo entra na rede."
+
+#: src/window/join_dialog.rs:67
+msgid "Invite link"
+msgstr "Link do convite"
+
+#: src/window/join_dialog.rs:70
+msgid "Your name"
+msgstr "Seu nome"
+
+#: src/window/join_dialog.rs:72
+msgid "How others will see you on the network, e.g. 'Maria' or 'Office PC'."
+msgstr ""
+"Como os outros verão você na rede, por exemplo 'Maria' ou 'PC do "
+"escritório'."
+
+#: src/window/join_dialog.rs:78
+msgid ""
+"The name this device shows to other peers. Lowercase letters, digits and "
+"hyphens. Example: 'maria-laptop'."
+msgstr ""
+"O nome que este dispositivo mostra aos outros pares. Letras minúsculas, "
+"números e hífens. Exemplo: 'maria-notebook'."
+
+#: src/window/join_dialog.rs:84
+msgid "Network"
+msgstr "Rede"
+
+#: src/window/join_dialog.rs:154
+msgid "Join"
+msgstr "Entrar"
+
+#: src/window/join_dialog.rs:158
+msgid "Joining…"
+msgstr "Entrando…"
+
+#: src/window/join_dialog.rs:219
+msgid ""
+"That doesn't look like an invite link. It starts with https:// and contains "
+"/join#."
+msgstr ""
+"Isso não parece um link de convite. Ele começa com https:// e contém /join#."
+
+#: src/window/join_dialog.rs:226
+msgid "Type your name."
+msgstr "Digite seu nome."
+
+#: src/window/join_dialog.rs:281
+msgid "Welcome, {name}! You joined the group {group}. Connecting…"
+msgstr "Bem-vindo(a), {name}! Você entrou no grupo {group}. Conectando…"
+
+#: src/window/join_dialog.rs:285
+msgid "Welcome, {name}! Connecting…"
+msgstr "Bem-vindo(a), {name}! Conectando…"
+
+#: src/window/content.rs:188
+msgid ""
+"Got an invite link? Use it to join the network. Admins can sign in with "
+"their panel account."
+msgstr ""
+"Recebeu um link de convite? Use-o para entrar na rede. Administradores podem"
+" entrar com a conta do painel."
+
+#: src/window/mod.rs:850
+msgid ""
+"This device is already signed in. Sign out first to join with an invite."
+msgstr ""
+"Este dispositivo já está conectado a uma conta. Saia primeiro para entrar "
+"com um convite."
+
+#: src/window/mod.rs:1142
+msgid "Could not start the Tailscale service."
+msgstr "Não foi possível iniciar o serviço do Tailscale."
+
+#: src/window/mod.rs:1219
+msgid ""
+"Saved, but the pre-auth key could not be stored in the system keyring "
+"({error}). This device can still reconnect; the key is only needed again to "
+"register it anew."
+msgstr ""
+"Salvo, mas a chave de pré-autenticação não pôde ser guardada no chaveiro do "
+"sistema ({error}). Este dispositivo ainda consegue reconectar; a chave só é "
+"necessária de novo para registrá-lo do zero."
