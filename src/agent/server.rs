@@ -205,9 +205,27 @@ fn respond(mut stream: &TcpStream, status: u16, body: &str) -> io::Result<()> {
 /// Pure routing: method + path + who's asking → status + body. Every route
 /// requires a tailnet identity; unauthenticated callers learn nothing, not
 /// even which paths exist.
+/// Tailnet account the BigScale panel runs as (scripts/entrypoint.sh there).
+const PANEL_LOGIN: &str = "_panel";
+
 fn route(method: &str, path: &str, identity: Option<&Identity>) -> (u16, String) {
     if identity.is_none() {
         return (403, "forbidden".into());
+    }
+    // The panel checking this device's key (see device_key). Only the panel
+    // may ask: proofs are useless to anyone else, but there's no reason to
+    // hand them out.
+    if let Some(challenge) = path.strip_prefix("/v1/proof/") {
+        if identity.map(|id| id.login.as_str()) != Some(PANEL_LOGIN) {
+            return (403, "forbidden".into());
+        }
+        if method != "GET" {
+            return (405, "method not allowed".into());
+        }
+        return match crate::device_key::prove(challenge) {
+            Some(json) => (200, json),
+            None => (400, "bad request".into()),
+        };
     }
     match (method, path) {
         ("GET", "/v1/hello") => match serde_json::to_string(&Hello::local()) {
@@ -325,6 +343,21 @@ mod tests {
             display_name: "Bruno".into(),
             device: "celbruno".into(),
         }
+    }
+
+    #[test]
+    fn only_the_panel_gets_key_proofs() {
+        let challenge = "A".repeat(43);
+        let path = format!("/v1/proof/{challenge}");
+        assert_eq!(route("GET", &path, None).0, 403);
+        assert_eq!(route("GET", &path, Some(&someone())).0, 403);
+        let panel = Identity {
+            login: PANEL_LOGIN.into(),
+            display_name: "panel".into(),
+            device: "panel".into(),
+        };
+        assert_eq!(route("POST", &path, Some(&panel)).0, 405);
+        assert_eq!(route("GET", "/v1/proof/short", Some(&panel)).0, 400);
     }
 
     #[test]

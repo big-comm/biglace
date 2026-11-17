@@ -117,6 +117,10 @@ pub fn server_url_ok(panel: &str, server_url: &str) -> bool {
 struct RedeemBody<'a> {
     invite: &'a str,
     name: &'a str,
+    /// Pinned by the panel to the device that registers with the key it
+    /// hands back (see device_key).
+    #[serde(skip_serializing_if = "Option::is_none")]
+    device_key: Option<String>,
 }
 
 #[derive(Debug, Clone, Deserialize)]
@@ -199,6 +203,7 @@ pub fn redeem(invite: &Invite, name: &str) -> std::result::Result<Joined, JoinEr
     let body = serde_json::to_value(RedeemBody {
         invite: &invite.token,
         name,
+        device_key: crate::device_key::public_key(),
     })
     .map_err(|e| JoinError::Other(e.to_string()))?;
     match agent
@@ -233,7 +238,12 @@ pub fn rejoin(
         return Err(JoinError::Other("panel address without HTTPS".into()));
     }
     let agent = panel::shared_agent().map_err(|e| JoinError::Other(e.to_string()))?;
-    let body = serde_json::json!({ "user": user, "reclaim": secret, "hostname": hostname });
+    let body = serde_json::json!({
+        "user": user,
+        "reclaim": secret,
+        "hostname": hostname,
+        "device_key": crate::device_key::public_key(),
+    });
     match agent
         .post(&format!("{panel_url}/api/rejoin"))
         .set("Content-Type", "application/json")
@@ -516,6 +526,12 @@ pub enum MemberError {
     Unsupported,
     /// The panel doesn't take this device as a person (tagged device…).
     NotAMember,
+    /// The panel couldn't confirm this device's key with its BigLace agent
+    /// (agent not running or not reachable from the panel).
+    Unverified,
+    /// The panel knows this device by another key (BigLace was reinstalled
+    /// or its key file lost): sign out and join again.
+    KeyMismatch,
     NotInGroup,
     /// The network has no access rules (everyone reaches everyone), so only
     /// the administrator may let people in.
@@ -531,13 +547,10 @@ fn member_call(
 ) -> std::result::Result<ureq::Response, MemberError> {
     let base = panel::panel_tailnet_url().ok_or(MemberError::Unsupported)?;
     let agent = panel::shared_agent().map_err(|e| MemberError::Other(e.to_string()))?;
-    let req = agent
-        .request(method, &format!("{base}{path}"))
-        .set("Accept", "application/json");
-    let res = match body {
-        Some(b) => req.set("Content-Type", "application/json").send_json(b),
-        None => req.call(),
-    };
+    let body = body.map(|b| b.to_string());
+    // Signed with this device's key: the source address alone is not proof
+    // (see device_key).
+    let res = crate::device_key::send(&agent, method, &format!("{base}{path}"), body.as_deref());
     match res {
         Ok(r) => Ok(r),
         Err(ureq::Error::Status(code, resp)) => {
@@ -548,6 +561,11 @@ fn member_call(
             Err(match (code, err.as_str()) {
                 (404, "") | (405, _) => MemberError::Unsupported,
                 (_, "not_a_member") => MemberError::NotAMember,
+                (401, "signature_required" | "bad_signature" | "stale_request" | "replayed") => {
+                    MemberError::Other(err)
+                }
+                (401, "device_unverified") => MemberError::Unverified,
+                (401, "device_key_mismatch") => MemberError::KeyMismatch,
                 (_, "not_in_group") => MemberError::NotInGroup,
                 (_, "open_network") => MemberError::OpenNetwork,
                 (429, _) => MemberError::TooMany,

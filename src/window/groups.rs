@@ -25,6 +25,12 @@ fn explain(err: &MemberError) -> String {
         MemberError::NotAMember => {
             tr!("This device isn't linked to a person's account, so it has no groups.")
         }
+        MemberError::KeyMismatch => tr!(
+            "The panel knows this device by a different key (BigLace was reinstalled?). Leave the network and join again to fix it."
+        ),
+        MemberError::Unverified => tr!(
+            "The panel couldn't confirm this device. Make sure BigLace is up to date and stays open while connected, then try again."
+        ),
         MemberError::OpenNetwork => tr!(
             "On this network everyone already reaches everyone, so groups aren't needed. The administrator can set access rules first."
         ),

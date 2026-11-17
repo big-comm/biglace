@@ -153,6 +153,10 @@ struct PreAuthRequest<'a> {
     password: &'a str,
     node_user: &'a str,
     hostname: &'a str,
+    /// This installation's device key: the panel pins it to the device that
+    /// registers with the key it hands out (see device_key).
+    #[serde(skip_serializing_if = "Option::is_none")]
+    device_key: Option<String>,
 }
 
 #[derive(Deserialize)]
@@ -171,6 +175,7 @@ pub fn request_preauth(creds: &PanelCredentials) -> Result<PreAuthResponse> {
         password: &creds.password,
         node_user: &creds.node,
         hostname: &creds.hostname,
+        device_key: crate::device_key::public_key(),
     };
 
     let response = agent
@@ -233,11 +238,8 @@ pub fn post_os_user(os_user: &str) -> Result<()> {
     let endpoint = format!("{base}/api/devices/me/os-user");
     let agent = shared_agent()?;
 
-    let response = agent
-        .post(&endpoint)
-        .set("Content-Type", "application/json")
-        .set("Accept", "application/json")
-        .send_json(serde_json::to_value(OsUserBody { os_user }).context("serialize body")?);
+    let body = serde_json::to_string(&OsUserBody { os_user }).context("serialize body")?;
+    let response = crate::device_key::send(&agent, "POST", &endpoint, Some(&body));
 
     match response {
         Ok(_) => Ok(()),
@@ -265,10 +267,7 @@ pub fn fetch_device_meta() -> Result<HashMap<String, String>> {
     let endpoint = format!("{base}/api/devices/os-users");
     let agent = shared_agent()?;
 
-    let resp = agent
-        .get(&endpoint)
-        .set("Accept", "application/json")
-        .call();
+    let resp = crate::device_key::send(&agent, "GET", &endpoint, None);
     match resp {
         // A 200 whose body isn't the expected map means the panel changed its
         // response shape (e.g. an upgrade) — degrade to the hostname-as-login

@@ -58,6 +58,12 @@ fn explain(err: &MemberError) -> String {
         MemberError::NotAMember => {
             tr!("This device can't send invites (it isn't linked to a person's account).")
         }
+        MemberError::KeyMismatch => tr!(
+            "The panel knows this device by a different key (BigLace was reinstalled?). Leave the network and join again to fix it."
+        ),
+        MemberError::Unverified => tr!(
+            "The panel couldn't confirm this device. Make sure BigLace is up to date and stays open while connected, then try again."
+        ),
         MemberError::NotInGroup => tr!("You are no longer in that group."),
         MemberError::OpenNetwork => tr!(
             "On this network everyone can reach everyone, so only the administrator can invite people."

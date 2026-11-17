@@ -1,6 +1,6 @@
 [package]
 name = "biglace"
-version = "1.18.0"
+version = "1.19.0"
 edition = "2021"
 authors = ["BigCommunity"]
 description = "Mesh VPN client with a graphical interface for Headscale/Tailscale"
@@ -31,6 +31,12 @@ async-channel = "2"
 # Device names: "José" → "jose" rather than dropping the accented letter.
 unicode-normalization = "0.1"
 qrcodegen = "1.8"
+# Device key: each installation signs its requests to the panel (Ed25519),
+# so a VM or container behind this machine can't speak for it.
+ed25519-dalek = "2"
+sha2 = "0.10"
+base64 = "0.22"
+getrandom = "0.2"
 
 # jemalloc: long-running desktop processes on glibc accumulate fragmentation
 # and glibc's malloc doesn't return free pages to the kernel. jemalloc has a
