@@ -19,6 +19,10 @@ pub struct Content {
     pub btn_invite: gtk4::Button,
     /// Below the sign-in buttons: holds the manual key setup.
     pub signin_extra: gtk4::Box,
+    /// "Sign in again as …": shown when this installation keeps the secret
+    /// of an account an invite created (see `invite::rejoin`).
+    pub btn_rejoin: gtk4::Button,
+    pub btn_join_invite: gtk4::Button,
     pub stack: gtk4::Stack,
     pub btn_start_service: gtk4::Button,
     pub self_row: libadwaita::ActionRow,
@@ -121,7 +125,7 @@ pub fn build() -> Content {
     let (page_service, btn_start_service) = build_service_page();
     stack.add_named(&page_service, Some("service"));
 
-    let (signin_page, signin_extra) = build_not_signed_in_page();
+    let (signin_page, signin_extra, btn_rejoin, btn_join_invite) = build_not_signed_in_page();
     stack.add_named(&signin_page, Some("not-signed-in"));
 
     stack.add_named(
@@ -166,6 +170,8 @@ pub fn build() -> Content {
         btn_menu,
         btn_invite,
         signin_extra,
+        btn_rejoin,
+        btn_join_invite,
         stack,
         btn_start_service,
         self_row,
@@ -202,7 +208,7 @@ fn build_status_page(icon: &str, title: &str, desc: &str) -> libadwaita::StatusP
 
 /// First-run page: the invite is the main way in; the panel account and the
 /// manual key (left sidebar) stay available for admins.
-fn build_not_signed_in_page() -> (libadwaita::StatusPage, gtk4::Box) {
+fn build_not_signed_in_page() -> (libadwaita::StatusPage, gtk4::Box, gtk4::Button, gtk4::Button) {
     let page = build_status_page(
         "dialog-password-symbolic",
         &tr!("Sign in to connect"),
@@ -210,6 +216,11 @@ fn build_not_signed_in_page() -> (libadwaita::StatusPage, gtk4::Box) {
     );
     let buttons = gtk4::Box::new(gtk4::Orientation::Vertical, 12);
     buttons.set_halign(gtk4::Align::Center);
+    let btn_rejoin = gtk4::Button::builder()
+        .css_classes(["suggested-action", "pill"])
+        .action_name("win.rejoin")
+        .visible(false)
+        .build();
     let btn_invite = gtk4::Button::builder()
         .label(tr!("Join with an invite"))
         .css_classes(["suggested-action", "pill"])
@@ -221,6 +232,7 @@ fn build_not_signed_in_page() -> (libadwaita::StatusPage, gtk4::Box) {
         .css_classes(["flat"])
         .action_name("win.panel-login")
         .build();
+    buttons.append(&btn_rejoin);
     buttons.append(&btn_invite);
     buttons.append(&btn_panel);
     // Manual key setup goes here (for admins), clamped to a readable width.
@@ -230,7 +242,7 @@ fn build_not_signed_in_page() -> (libadwaita::StatusPage, gtk4::Box) {
     buttons.append(&clamp);
     // AdwStatusPage scrolls on its own when the expander grows.
     page.set_child(Some(&buttons));
-    (page, extra)
+    (page, extra, btn_rejoin, btn_invite)
 }
 
 fn build_connecting_page() -> gtk4::Box {

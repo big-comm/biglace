@@ -30,6 +30,12 @@ pub struct Config {
     #[serde(default)]
     pub panel_username: String,
 
+    /// Account an invite created for this installation on `panel_url`. Its
+    /// reclaim secret (OS keyring) lets the person sign in again under the
+    /// same name after signing out. Empty when signed in any other way.
+    #[serde(default)]
+    pub account_user: String,
+
     /// Pinned peers, identified by hostname. Pinned peers sort to the top
     /// of the list regardless of online/offline state — handy when you have
     /// a frota of clients and only care about a handful day-to-day.

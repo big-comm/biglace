@@ -77,6 +77,9 @@ pub fn show_set_operator(parent: &libadwaita::ApplicationWindow) {
 /// credentials, and the sidebar reverts to the "not signed in" layout where
 /// they can pick freely between panel login (menu) and the manual-key
 /// expander.
+///
+/// An account an invite created gets a choice: keep it (sign in again later
+/// as the same name, from this computer) or delete it (the name is freed).
 pub fn confirm_sign_out(
     parent: &libadwaita::ApplicationWindow,
     overlay: &libadwaita::ToastOverlay,
@@ -86,19 +89,38 @@ pub fn confirm_sign_out(
     if !cfg.borrow().enrolled && cfg.borrow().authkey.is_empty() {
         return;
     }
+    let account = cfg.borrow().account_user.clone();
 
-    let dlg = libadwaita::MessageDialog::new(
-        Some(parent),
-        Some(&tr!("Sign out of current account?")),
-        Some(&tr!(
-            "This will disconnect from the network, sign this device out of \
-             the current control server, and forget the saved password. You'll \
-             then be able to sign in with a different account."
-        )),
-    );
-    dlg.add_response("cancel", &tr!("Cancel"));
-    dlg.add_response("ok", &tr!("Sign out"));
-    dlg.set_response_appearance("ok", libadwaita::ResponseAppearance::Destructive);
+    let dlg = if account.is_empty() {
+        let dlg = libadwaita::MessageDialog::new(
+            Some(parent),
+            Some(&tr!("Sign out of current account?")),
+            Some(&tr!(
+                "This will disconnect from the network, sign this device out of \
+                 the current control server, and forget the saved password. You'll \
+                 then be able to sign in with a different account."
+            )),
+        );
+        dlg.add_response("cancel", &tr!("Cancel"));
+        dlg.add_response("ok", &tr!("Sign out"));
+        dlg.set_response_appearance("ok", libadwaita::ResponseAppearance::Destructive);
+        dlg
+    } else {
+        let dlg = libadwaita::MessageDialog::new(
+            Some(parent),
+            Some(&tr!("Leave the network?")),
+            Some(&trf!(
+                "This device leaves the network and its name becomes free. Your account {user} is kept: you can come back later from this computer, without an invite.\n\nIf you won't come back, delete the account and the name {user} becomes free too.",
+                "user" => account
+            )),
+        );
+        dlg.add_response("cancel", &tr!("Cancel"));
+        dlg.add_response("delete", &tr!("Leave and delete account"));
+        dlg.add_response("ok", &tr!("Leave"));
+        dlg.set_response_appearance("delete", libadwaita::ResponseAppearance::Destructive);
+        dlg.set_response_appearance("ok", libadwaita::ResponseAppearance::Suggested);
+        dlg
+    };
     dlg.set_default_response(Some("cancel"));
     dlg.set_close_response("cancel");
 
@@ -107,38 +129,82 @@ pub fn confirm_sign_out(
     let cfg_w = cfg.clone();
     let sidebar_w = sidebar.clone();
     dlg.connect_response(None, move |dlg, resp| {
-        if resp != "ok" {
-            dlg.close();
-            return;
-        }
         dlg.close();
-        sign_out(&parent_w, &overlay_w, &cfg_w, &sidebar_w);
+        match resp {
+            "ok" => sign_out(&parent_w, &overlay_w, &cfg_w, &sidebar_w, false),
+            "delete" => sign_out(&parent_w, &overlay_w, &cfg_w, &sidebar_w, true),
+            _ => {}
+        }
     });
     dlg.present();
 }
 
+/// Time for the panel's reply to arrive before it removes this device (and
+/// with it the tunnel the reply travels on).
+const LEAVE_GRACE: std::time::Duration = std::time::Duration::from_secs(2);
+
 /// Tear down the current session, leaving the UI in the "not signed in"
-/// state. Runs `tailscale logout` on a background thread so the UI stays
-/// responsive — the logout call itself can block on network when the control
-/// server is unreachable.
+/// state. First asks the panel to remove this device (frees its name; with
+/// `delete_account`, the account too), then runs `tailscale logout` — on a
+/// background thread, as both can block on the network.
 fn sign_out(
     parent: &libadwaita::ApplicationWindow,
     overlay: &libadwaita::ToastOverlay,
     cfg: &Rc<RefCell<config::Config>>,
     _sidebar: &Sidebar,
+    delete_account: bool,
 ) {
     let parent_w = parent.clone();
     let overlay_w = overlay.clone();
     let cfg_w = cfg.clone();
     super::run_in_background(
-        move || tailscale::logout().map_err(|e| e.to_string()),
+        move || {
+            let left = crate::invite::leave(delete_account);
+            if delete_account && left.is_err() {
+                // Signing out anyway would leave the account behind while
+                // the person believes it's gone.
+                return Err(None);
+            }
+            match left {
+                Ok(left) => {
+                    std::thread::sleep(LEAVE_GRACE);
+                    // The server already dropped the device: logging out
+                    // only has to clear local state, its reply is moot.
+                    if tailscale::logout().is_err() {
+                        if let Err(e) = tailscale::disconnect() {
+                            eprintln!("[biglace] sign-out: disconnect failed: {e}");
+                        }
+                    }
+                    Ok(Some(left))
+                }
+                Err(_) => tailscale::logout().map(|()| None).map_err(|e| Some(e.to_string())),
+            }
+        },
         move |result| match result {
-            Ok(()) => forget_local_identity(&parent_w, &overlay_w, &cfg_w),
+            Ok(left) => {
+                let account_gone = left.as_ref().is_some_and(|l| l.account_deleted);
+                forget_local_identity(&parent_w, &overlay_w, &cfg_w, account_gone);
+                if let Some(l) = left.filter(|l| delete_account && !l.account_deleted) {
+                    super::show_toast(
+                        &overlay_w,
+                        &trf!(
+                            "Signed out. Your account was kept: {count} other device(s) still use it.",
+                            "count" => l.other_devices.to_string()
+                        ),
+                        8,
+                    );
+                }
+            }
+            Err(None) => super::show_toast(
+                &overlay_w,
+                &tr!("Couldn't delete the account: the panel can't be reached. Connect and try again."),
+                8,
+            ),
             // `tailscale logout` has to reach the control server. When that
             // server is down — exactly when someone may want to switch
             // accounts — the old code just toasted the error and left the user
             // stuck signed in. Offer to forget the identity on this computer.
-            Err(error) => offer_local_sign_out(&parent_w, &overlay_w, &cfg_w, &error),
+            Err(Some(error)) => offer_local_sign_out(&parent_w, &overlay_w, &cfg_w, &error),
         },
     );
 }
@@ -152,10 +218,12 @@ fn signed_out(cfg: &config::Config) -> config::Config {
 }
 
 /// Drop the saved identity (config + keyring entries) and refresh the UI.
+/// The invite-made account (and its secret) stays unless `account_gone`.
 fn forget_local_identity(
     parent: &libadwaita::ApplicationWindow,
     overlay: &libadwaita::ToastOverlay,
     cfg: &Rc<RefCell<config::Config>>,
+    account_gone: bool,
 ) {
     let (server_url, panel_url, panel_username) = {
         let c = cfg.borrow();
@@ -165,7 +233,11 @@ fn forget_local_identity(
             c.panel_username.clone(),
         )
     };
-    let updated = signed_out(&cfg.borrow());
+    let account_user = cfg.borrow().account_user.clone();
+    let mut updated = signed_out(&cfg.borrow());
+    if account_gone {
+        updated.account_user.clear();
+    }
     if let Err(error) = config::save(&updated) {
         super::show_toast(overlay, &trf!("Error: {error}", "error" => error), 6);
         return;
@@ -173,7 +245,12 @@ fn forget_local_identity(
     *cfg.borrow_mut() = updated;
     secrets::clear(&panel_url, &panel_username);
     secrets::clear_authkey(&server_url);
-    super::show_toast(overlay, &tr!("Signed out."), 3);
+    if account_gone {
+        secrets::clear_reclaim(&panel_url, &account_user);
+        super::show_toast(overlay, &tr!("Signed out and account deleted."), 4);
+    } else {
+        super::show_toast(overlay, &tr!("Signed out."), 3);
+    }
     gtk4::prelude::WidgetExt::activate_action(parent, "win.refresh", None).ok();
 }
 
@@ -215,7 +292,7 @@ fn offer_local_sign_out(
                     eprintln!("[biglace] sign-out: disconnect failed: {e}");
                 }
             },
-            move |()| forget_local_identity(&parent_t, &overlay_t, &cfg_t),
+            move |()| forget_local_identity(&parent_t, &overlay_t, &cfg_t, false),
         );
     });
     dlg.present();
@@ -491,6 +568,9 @@ pub fn show_panel_login(
                             let mut c = cfg3.borrow_mut();
                             c.panel_url = panel_url.clone();
                             c.panel_username = username.clone();
+                            // Signed in as a panel account now, not as the
+                            // invite-made one this installation had.
+                            c.account_user.clear();
                             c.server_url = server_url.clone();
                             c.authkey = resp.authkey.clone();
                             c.hostname = creds.hostname.clone();

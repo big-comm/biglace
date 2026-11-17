@@ -282,7 +282,7 @@ pub fn show_dialog(parent: &libadwaita::ApplicationWindow, page: &InvitesPage) {
         .transient_for(parent)
         .modal(true)
         .title(tr!("Invite someone"))
-        .default_width(440)
+        .default_width(480)
         .build();
     let outer = gtk4::Box::new(gtk4::Orientation::Vertical, 0);
     outer.append(&libadwaita::HeaderBar::new());
@@ -292,29 +292,55 @@ pub fn show_dialog(parent: &libadwaita::ApplicationWindow, page: &InvitesPage) {
     steps.set_vhomogeneous(false);
 
     // ── Step 1: options ──
+    // Radio rows instead of a drop-down: every choice gets a full line and
+    // a sentence saying what it means, and a screen reader hears both.
     let form = libadwaita::PreferencesPage::new();
-    let grp = libadwaita::PreferencesGroup::builder()
+    let grp_note = libadwaita::PreferencesGroup::builder()
         .description(tr!(
-            "The person you invite will reach your devices, and you theirs. \
-             You can also add them to one of your groups."
+            "The person you invite will reach your devices, and you theirs."
         ))
-        .build();
-    let groups = page.groups();
-    let mut choices = vec![tr!("No group — just the two of us")];
-    choices.extend(groups.iter().cloned());
-    let choice_refs: Vec<&str> = choices.iter().map(String::as_str).collect();
-    let row_group = libadwaita::ComboRow::builder()
-        .title(tr!("Also add to group"))
-        .model(&gtk4::StringList::new(&choice_refs))
         .build();
     let row_note = libadwaita::EntryRow::builder()
         .title(tr!("Who is it for? (optional)"))
         .build();
-    if !groups.is_empty() {
-        grp.add(&row_group);
+    grp_note.add(&row_note);
+    form.add(&grp_note);
+
+    let groups = page.groups();
+    let grp_access = libadwaita::PreferencesGroup::builder()
+        .title(tr!("Access"))
+        .build();
+    let mut radios: Vec<gtk4::CheckButton> = Vec::new();
+    let mut add_choice = |title: &str, subtitle: &str| {
+        let check = gtk4::CheckButton::new();
+        check.set_valign(gtk4::Align::Center);
+        if let Some(first) = radios.first() {
+            check.set_group(Some(first));
+        } else {
+            check.set_active(true);
+        }
+        let row = libadwaita::ActionRow::builder()
+            .title(title)
+            .subtitle(subtitle)
+            .activatable_widget(&check)
+            .build();
+        row.add_prefix(&check);
+        grp_access.add(&row);
+        radios.push(check);
+    };
+    add_choice(
+        &tr!("Just the two of us"),
+        &tr!("You see each other's devices, nobody else"),
+    );
+    for g in &groups {
+        add_choice(
+            &trf!("Also the group {group}", "group" => g),
+            &tr!("They join the group and see everyone in it"),
+        );
     }
-    grp.add(&row_note);
-    form.add(&grp);
+    if !groups.is_empty() {
+        form.add(&grp_access);
+    }
 
     let lbl_err = gtk4::Label::new(None);
     lbl_err.add_css_class("error");
@@ -396,10 +422,10 @@ pub fn show_dialog(parent: &libadwaita::ApplicationWindow, page: &InvitesPage) {
     {
         let (page, steps, picture, link_label, lbl_err) =
             (page.clone(), steps.clone(), picture.clone(), link_label.clone(), lbl_err.clone());
-        let (row_group, row_note) = (row_group.clone(), row_note.clone());
+        let row_note = row_note.clone();
         btn_create.connect_clicked(move |btn| {
             lbl_err.set_text("");
-            let idx = row_group.selected() as usize;
+            let idx = radios.iter().position(|r| r.is_active()).unwrap_or(0);
             let group = (idx > 0).then(|| groups.get(idx - 1).cloned()).flatten();
             let note = row_note.text().trim().to_string();
             btn.set_sensitive(false);

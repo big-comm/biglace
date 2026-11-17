@@ -8,6 +8,7 @@ use std::cell::{Cell, RefCell};
 use std::rc::Rc;
 
 use crate::config;
+use crate::secrets;
 use crate::invite::{self, JoinError};
 use crate::tr;
 use crate::trf;
@@ -16,13 +17,15 @@ use super::dialogs::{sanitize_hostname, sanitize_hostname_while_typing, sanitize
 use super::sidebar::Sidebar;
 
 /// Sentence explaining a failed join, for the dialog's error label.
-fn explain(err: &JoinError) -> String {
+pub(super) fn explain(err: &JoinError) -> String {
     match err {
         JoinError::NameTaken(Some(s)) => trf!(
-            "That name is already in use on this network. How about \"{name}\"?",
+            "That name already belongs to an account on this network, so we suggested \"{name}\". If the account is yours, sign in again from the computer where you used it, or ask the administrator to free the name.",
             "name" => s
         ),
-        JoinError::NameTaken(None) => tr!("That name is already in use on this network. Try another one."),
+        JoinError::NameTaken(None) => tr!(
+            "That name already belongs to an account on this network. Try another one, or ask the administrator to free it."
+        ),
         JoinError::InvalidName => tr!("Type your name using at least two letters or digits."),
         JoinError::InviteUnusable(reason) => match reason.as_str() {
             "expired" => tr!("This invite has expired. Ask for a new one."),
@@ -36,6 +39,61 @@ fn explain(err: &JoinError) -> String {
         }
         JoinError::Other(detail) => trf!("Could not reach the panel: {error}", "error" => detail),
     }
+}
+
+/// Save what the panel handed out (key, coordinator, account) and show
+/// `toast`. On error nothing usable was saved and the caller must not
+/// connect.
+pub(super) fn apply_joined(
+    overlay: &libadwaita::ToastOverlay,
+    cfg: &Rc<RefCell<config::Config>>,
+    sidebar: &Sidebar,
+    panel: &str,
+    joined: &invite::Joined,
+    device: &str,
+    toast: &str,
+) -> Result<(), String> {
+    let server_url = sanitize_server_url(&joined.server_url, panel);
+    sidebar.entry_server.set_text(&server_url);
+    sidebar.entry_key.set_text(&joined.authkey);
+    sidebar.entry_host.set_text(device);
+    sidebar.expander_manual.set_expanded(false);
+    // The secret first: without it a later sign-out can't offer "come back
+    // as …", so a keyring failure just means no such offer (logged).
+    let account_user = match &joined.reclaim {
+        Some(secret) => match secrets::save_reclaim(panel, &joined.user, secret) {
+            Ok(()) => joined.user.clone(),
+            Err(e) => {
+                eprintln!("[biglace] secrets: could not keep the account secret: {e}");
+                String::new()
+            }
+        },
+        None => String::new(),
+    };
+    let saved = {
+        let mut c = cfg.borrow_mut();
+        c.panel_url = panel.to_string();
+        c.panel_username.clear();
+        c.account_user = account_user;
+        c.server_url = server_url;
+        c.authkey = joined.authkey.clone();
+        c.hostname = device.to_string();
+        c.enrolled = true;
+        config::save_with_authkey(&c)
+    };
+    match saved {
+        Ok(None) => super::show_toast(overlay, toast, 5),
+        Ok(Some(reason)) => super::show_toast(overlay, &super::keyring_warning(&reason), 8),
+        Err(e) => return Err(e.to_string()),
+    }
+    Ok(())
+}
+
+/// After a join: refresh, and connect — a newcomer shouldn't need to find
+/// the Connect button.
+pub(super) fn start_connecting(win: &libadwaita::ApplicationWindow, sidebar: &Sidebar) {
+    gtk4::prelude::WidgetExt::activate_action(win, "win.refresh", None).ok();
+    sidebar.btn_connect.emit_clicked();
 }
 
 pub fn show(
@@ -210,6 +268,7 @@ pub fn show(
             (dlg.clone(), parent.clone(), overlay.clone(), cfg.clone(), sidebar.clone());
         let (er_link, er_name, er_device, lbl_err) =
             (er_link.clone(), er_name.clone(), er_device.clone(), lbl_err.clone());
+        let syncing = syncing.clone();
         btn_ok.connect_clicked(move |_| {
             lbl_err.set_text("");
             let invite = match invite::parse(&er_link.text()) {
@@ -231,7 +290,11 @@ pub fn show(
                 lbl_err.set_text(&msg);
                 return;
             }
+            // Writing back the cleaned name is not an edit by the person:
+            // the device name must keep following "Your name".
+            syncing.set(true);
             er_device.set_text(&device);
+            syncing.set(false);
 
             set_busy(true);
             let set_busy = set_busy.clone();
@@ -259,45 +322,20 @@ pub fn show(
                             return;
                         }
                     };
-                    let server_url = sanitize_server_url(&joined.server_url, &invite.panel);
-                    sidebar.entry_server.set_text(&server_url);
-                    sidebar.entry_key.set_text(&joined.authkey);
-                    sidebar.entry_host.set_text(&device);
-                    sidebar.expander_manual.set_expanded(false);
-                    let saved = {
-                        let mut c = cfg.borrow_mut();
-                        c.panel_url = invite.panel.clone();
-                        c.panel_username.clear();
-                        c.server_url = server_url;
-                        c.authkey = joined.authkey.clone();
-                        c.hostname = device.clone();
-                        c.enrolled = true;
-                        config::save_with_authkey(&c)
+                    let text = match &joined.group {
+                        Some(g) => trf!(
+                            "Welcome, {name}! You joined the group {group}. Connecting…",
+                            "name" => joined.user,
+                            "group" => g
+                        ),
+                        None => trf!("Welcome, {name}! Connecting…", "name" => joined.user),
                     };
-                    match saved {
-                        Ok(None) => {
-                            let text = match &joined.group {
-                                Some(g) => trf!(
-                                    "Welcome, {name}! You joined the group {group}. Connecting…",
-                                    "name" => joined.user,
-                                    "group" => g
-                                ),
-                                None => trf!("Welcome, {name}! Connecting…", "name" => joined.user),
-                            };
-                            super::show_toast(&overlay, &text, 5)
-                        }
-                        Ok(Some(reason)) => super::show_toast(&overlay, &super::keyring_warning(&reason), 8),
-                        Err(e) => {
-                            // Nothing was saved: don't try to connect with
-                            // a config the next start won't have.
-                            lbl_err.set_text(&trf!("Error: {error}", "error" => e));
-                            return;
-                        }
+                    if let Err(e) = apply_joined(&overlay, &cfg, &sidebar, &invite.panel, &joined, &device, &text) {
+                        lbl_err.set_text(&trf!("Error: {error}", "error" => e));
+                        return;
                     }
                     dlg.close();
-                    gtk4::prelude::WidgetExt::activate_action(&win, "win.refresh", None).ok();
-                    // A newcomer shouldn't need to find the Connect button.
-                    sidebar.btn_connect.emit_clicked();
+                    start_connecting(&win, &sidebar);
                 },
             );
         });

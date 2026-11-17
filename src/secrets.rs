@@ -12,6 +12,7 @@ use keyring::Entry;
 
 const SERVICE: &str = "biglace";
 const AUTHKEY_SERVICE: &str = "biglace-authkey";
+const RECLAIM_SERVICE: &str = "biglace-reclaim";
 
 fn account_id(panel_url: &str, username: &str) -> String {
     // Compose the panel URL + username so a user with multiple BigScale
@@ -60,6 +61,45 @@ pub fn clear_authkey(server_url: &str) {
     match entry.delete_credential() {
         Ok(()) | Err(keyring::Error::NoEntry) => {}
         Err(err) => eprintln!("[biglace] secrets: authkey clear failed: {err}"),
+    }
+}
+
+// ── Reclaim secret: signs this installation back in as the account an
+// invite created (see `invite::rejoin`). Keyed like panel passwords.
+
+fn reclaim_entry(panel_url: &str, user: &str) -> Option<Entry> {
+    if panel_url.trim().is_empty() || user.trim().is_empty() {
+        return None;
+    }
+    Entry::new(RECLAIM_SERVICE, &account_id(panel_url, user)).ok()
+}
+
+pub fn save_reclaim(panel_url: &str, user: &str, secret: &str) -> keyring::Result<()> {
+    let Some(entry) = reclaim_entry(panel_url, user) else {
+        return Ok(());
+    };
+    entry.set_password(secret.trim())
+}
+
+pub fn load_reclaim(panel_url: &str, user: &str) -> Option<String> {
+    let entry = reclaim_entry(panel_url, user)?;
+    match entry.get_password() {
+        Ok(value) => Some(value),
+        Err(keyring::Error::NoEntry) => None,
+        Err(err) => {
+            eprintln!("[biglace] secrets: reclaim load failed: {err}");
+            None
+        }
+    }
+}
+
+pub fn clear_reclaim(panel_url: &str, user: &str) {
+    let Some(entry) = reclaim_entry(panel_url, user) else {
+        return;
+    };
+    match entry.delete_credential() {
+        Ok(()) | Err(keyring::Error::NoEntry) => {}
+        Err(err) => eprintln!("[biglace] secrets: reclaim clear failed: {err}"),
     }
 }
 

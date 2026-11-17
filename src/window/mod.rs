@@ -832,6 +832,91 @@ fn should_show_manual_setup(state: AppState, c: &config::Config) -> bool {
     state != AppState::Connected && !has_connect_config(c)
 }
 
+/// Sign in again as the invite-made account this installation kept.
+fn rejoin(ctx: &Ctx) {
+    let Some(user) = rejoin_account(&ctx.cfg.borrow()) else {
+        return;
+    };
+    let (panel, host) = {
+        let c = ctx.cfg.borrow();
+        (c.panel_url.clone(), c.hostname.clone())
+    };
+    let host = if host.is_empty() {
+        dialogs::sanitize_hostname(&user)
+    } else {
+        host
+    };
+    let Some(secret) = crate::secrets::load_reclaim(&panel, &user) else {
+        forget_account(ctx, &panel, &user);
+        show_toast(
+            &ctx.ui.toast,
+            &tr!("The key to this account is no longer on this computer. Join with a new invite."),
+            8,
+        );
+        return;
+    };
+    let btn = ctx.ui.content.btn_rejoin.clone();
+    btn.set_sensitive(false);
+    let ctx2 = ctx.clone();
+    let (panel_w, user_w, host_w) = (panel.clone(), user.clone(), host.clone());
+    run_in_background(
+        move || crate::invite::rejoin(&panel_w, &user_w, &secret, &host_w),
+        move |result| {
+            btn.set_sensitive(true);
+            match result {
+                Ok(joined) => {
+                    let text = trf!("Welcome back, {name}! Connecting…", "name" => joined.user);
+                    match join_dialog::apply_joined(
+                        &ctx2.ui.toast,
+                        &ctx2.cfg,
+                        &ctx2.ui.sidebar,
+                        &panel,
+                        &joined,
+                        &host,
+                        &text,
+                    ) {
+                        Ok(()) => join_dialog::start_connecting(&ctx2.ui.win, &ctx2.ui.sidebar),
+                        Err(e) => show_toast(&ctx2.ui.toast, &trf!("Error: {error}", "error" => e), 8),
+                    }
+                }
+                Err(crate::invite::JoinError::InviteUnusable(_)) => {
+                    forget_account(&ctx2, &panel, &user);
+                    show_toast(
+                        &ctx2.ui.toast,
+                        &trf!(
+                            "The account {user} no longer exists on this network. Join with a new invite.",
+                            "user" => user
+                        ),
+                        8,
+                    );
+                }
+                Err(e) => show_toast(&ctx2.ui.toast, &join_dialog::explain(&e), 8),
+            }
+        },
+    );
+}
+
+/// Drop the kept account (it's gone, or its secret is): back to the plain
+/// "join with an invite" screen.
+fn forget_account(ctx: &Ctx, panel: &str, user: &str) {
+    crate::secrets::clear_reclaim(panel, user);
+    let updated = {
+        let mut c = ctx.cfg.borrow().clone();
+        c.account_user.clear();
+        c
+    };
+    if config::save(&updated).is_ok() {
+        *ctx.cfg.borrow_mut() = updated;
+    }
+    gtk4::prelude::WidgetExt::activate_action(&ctx.ui.win, "win.refresh", None).ok();
+}
+
+/// The invite-made account this signed-out installation can come back as.
+fn rejoin_account(c: &config::Config) -> Option<String> {
+    (!has_connect_config(c) && !c.account_user.is_empty() && !c.panel_url.is_empty())
+        .then(|| c.account_user.clone())
+}
+
 fn mark_enrolled(mut c: config::Config) -> config::Config {
     c.enrolled = true;
     c
@@ -985,6 +1070,13 @@ fn setup_menu(ctx: &Ctx) {
     }
 
     {
+        let action = gtk4::gio::SimpleAction::new("rejoin", None);
+        let ctx2 = ctx.clone();
+        action.connect_activate(move |_, _| rejoin(&ctx2));
+        ctx.ui.win.add_action(&action);
+    }
+
+    {
         let action = gtk4::gio::SimpleAction::new("invite-person", None);
         let ui = ctx.ui.clone();
         action.connect_activate(move |_, _| ui.invites.invite(&ui.win, &ui.toast));
@@ -1100,6 +1192,7 @@ fn wire_signals(ctx: &Ctx) {
                 c.server_url = server;
                 c.authkey = key;
                 c.hostname = host;
+                c.account_user.clear();
                 c.enrolled = true;
                 config::save_with_authkey(&c)
             };
@@ -1655,6 +1748,17 @@ fn apply_state(ctx: &Ctx, state: AppState, status: &Status, peers: &[Peer]) {
 
     // ── Identity card ──
     let configured = has_connect_config(&cfg_snap);
+    // Signed out but still holding an invite-made account: offer it first.
+    let rejoin_as = rejoin_account(&cfg_snap);
+    ui.content.btn_rejoin.set_visible(rejoin_as.is_some());
+    if let Some(user) = &rejoin_as {
+        ui.content
+            .btn_rejoin
+            .set_label(&trf!("Sign in again as {user}", "user" => user));
+        ui.content.btn_join_invite.remove_css_class("suggested-action");
+    } else {
+        ui.content.btn_join_invite.add_css_class("suggested-action");
+    }
     let has_identity = has_visible_identity(state, &cfg_snap);
     let show_manual_setup = should_show_manual_setup(state, &cfg_snap);
     // Pencil button is only useful once we have an identity to rename, so it

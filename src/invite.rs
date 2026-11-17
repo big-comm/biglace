@@ -125,7 +125,43 @@ pub struct Joined {
     pub server_url: String,
     /// Account name the panel created (sanitized from what the user typed).
     pub user: String,
+    #[serde(default)]
     pub group: Option<String>,
+    /// Secret for signing in again as `user` from this installation later
+    /// (kept in the OS keyring). Absent on panels older than 0.4.
+    #[serde(default)]
+    pub reclaim: Option<String>,
+}
+
+fn check_joined(panel: &str, joined: &Joined) -> std::result::Result<(), JoinError> {
+    if joined.authkey.trim().is_empty()
+        || joined.authkey.len() > 4096
+        || joined.authkey.chars().any(char::is_control)
+    {
+        return Err(JoinError::Other("panel returned an invalid pre-auth key".into()));
+    }
+    if !server_url_ok(panel, &joined.server_url) {
+        return Err(JoinError::Other(
+            "panel returned a coordinator address without HTTPS".into(),
+        ));
+    }
+    Ok(())
+}
+
+fn status_error(code: u16, resp: ureq::Response) -> JoinError {
+    let body = panel::read_json_limited::<ErrorBody>(resp).ok();
+    let (err, suggestion) = body
+        .map(|b| (b.error, b.suggestion))
+        .unwrap_or((None, None));
+    // An older panel without invites answers 404 with no error code.
+    let err = err.unwrap_or_else(|| {
+        if code == 404 {
+            "no_invites".into()
+        } else {
+            format!("HTTP {code}")
+        }
+    });
+    classify(&err, suggestion)
 }
 
 /// Why redeeming failed, in terms the dialog can explain.
@@ -174,34 +210,43 @@ pub fn redeem(invite: &Invite, name: &str) -> std::result::Result<Joined, JoinEr
         Ok(resp) => {
             let joined: Joined =
                 panel::read_json_limited(resp).map_err(|e| JoinError::Other(e.to_string()))?;
-            if joined.authkey.trim().is_empty()
-                || joined.authkey.len() > 4096
-                || joined.authkey.chars().any(char::is_control)
-            {
-                return Err(JoinError::Other("panel returned an invalid pre-auth key".into()));
-            }
-            if !server_url_ok(&invite.panel, &joined.server_url) {
-                return Err(JoinError::Other(
-                    "panel returned a coordinator address without HTTPS".into(),
-                ));
-            }
+            check_joined(&invite.panel, &joined)?;
             Ok(joined)
         }
-        Err(ureq::Error::Status(code, resp)) => {
-            let body = panel::read_json_limited::<ErrorBody>(resp).ok();
-            let (err, suggestion) = body
-                .map(|b| (b.error, b.suggestion))
-                .unwrap_or((None, None));
-            // An older panel without invites answers 404 with no error code.
-            let err = err.unwrap_or_else(|| {
-                if code == 404 {
-                    "no_invites".into()
-                } else {
-                    format!("HTTP {code}")
-                }
-            });
-            Err(classify(&err, suggestion))
+        Err(ureq::Error::Status(code, resp)) => Err(status_error(code, resp)),
+        Err(e) => Err(JoinError::Other(e.to_string())),
+    }
+}
+
+/// Sign in again as `user`, the account an invite created from this
+/// installation, with the secret kept from that join. `hostname` lets the
+/// panel drop this device's old offline entry so the name comes back as is.
+/// Blocking. `InviteUnusable("revoked")` means the account is gone.
+pub fn rejoin(
+    panel_url: &str,
+    user: &str,
+    secret: &str,
+    hostname: &str,
+) -> std::result::Result<Joined, JoinError> {
+    let panel_url = panel_url.trim_end_matches('/');
+    if !(panel_url.starts_with("https://") || panel::url_is_loopback(panel_url)) {
+        return Err(JoinError::Other("panel address without HTTPS".into()));
+    }
+    let agent = panel::shared_agent().map_err(|e| JoinError::Other(e.to_string()))?;
+    let body = serde_json::json!({ "user": user, "reclaim": secret, "hostname": hostname });
+    match agent
+        .post(&format!("{panel_url}/api/rejoin"))
+        .set("Content-Type", "application/json")
+        .set("Accept", "application/json")
+        .send_json(body)
+    {
+        Ok(resp) => {
+            let joined: Joined =
+                panel::read_json_limited(resp).map_err(|e| JoinError::Other(e.to_string()))?;
+            check_joined(panel_url, &joined)?;
+            Ok(joined)
         }
+        Err(ureq::Error::Status(code, resp)) => Err(status_error(code, resp)),
         Err(e) => Err(JoinError::Other(e.to_string())),
     }
 }
@@ -379,6 +424,49 @@ mod tests {
         assert!(seen[0].starts_with("POST /api/join HTTP/1.1"));
         assert!(seen[0].contains(TOKEN) && seen[0].contains("\"name\":\"Maria\""));
     }
+
+    /// Rejoin with the kept secret: success (new secret), then the account
+    /// is gone; a plain-HTTP panel off loopback is refused before any call.
+    #[test]
+    fn rejoin_talks_to_the_panel_rejoin_endpoint() {
+        use std::io::Write;
+        let listener = std::net::TcpListener::bind("127.0.0.1:0").unwrap();
+        let addr = listener.local_addr().unwrap();
+        let server = std::thread::spawn(move || {
+            let mut seen = Vec::new();
+            for (code, reason, body) in [
+                (200, "OK", r#"{"authkey":"hskey-auth-y","server_url":"https://vpn.example.org","user":"maria","reclaim":"new-secret"}"#),
+                (410, "Gone", r#"{"error":"revoked"}"#),
+            ] {
+                let (mut s, _) = listener.accept().unwrap();
+                seen.push(read_request(&mut s));
+                write!(
+                    s,
+                    "HTTP/1.1 {code} {reason}\r\nContent-Type: application/json\r\nContent-Length: {}\r\nConnection: close\r\n\r\n{body}",
+                    body.len()
+                )
+                .unwrap();
+            }
+            seen
+        });
+
+        let panel = format!("http://{addr}");
+        let joined = rejoin(&panel, "maria", "old-secret", "maria-laptop").unwrap();
+        assert_eq!(joined.authkey, "hskey-auth-y");
+        assert_eq!(joined.reclaim.as_deref(), Some("new-secret"));
+        assert_eq!(
+            rejoin(&panel, "maria", "old-secret", "maria-laptop").unwrap_err(),
+            JoinError::InviteUnusable("revoked".into())
+        );
+        let seen = server.join().unwrap();
+        assert!(seen[0].starts_with("POST /api/rejoin HTTP/1.1"));
+        assert!(seen[0].contains("\"reclaim\":\"old-secret\"") && seen[0].contains("\"hostname\":\"maria-laptop\""));
+
+        assert!(matches!(
+            rejoin("http://vpn.example.org", "maria", "s", "h"),
+            Err(JoinError::Other(_))
+        ));
+    }
 }
 
 // ─── Inviting (any member, over the tailnet) ─────────────────────────────────
@@ -468,6 +556,25 @@ fn member_call(
         }
         Err(e) => Err(MemberError::Other(e.to_string())),
     }
+}
+
+/// What the panel did when this device left the network.
+#[derive(Debug, Clone, Deserialize)]
+pub struct Left {
+    #[serde(default)]
+    pub account_deleted: bool,
+    /// Other devices still signed in to the account (it isn't deleted then).
+    #[serde(default)]
+    pub other_devices: u32,
+}
+
+/// Tell the panel this device is leaving: it removes the device (freeing its
+/// name) shortly after answering and, with `delete_account`, the account too
+/// when this was its last device. Blocking; needs the tunnel up.
+pub fn leave(delete_account: bool) -> std::result::Result<Left, MemberError> {
+    let body = serde_json::json!({ "delete_account": delete_account });
+    let r = member_call("POST", "/api/me/leave", Some(body))?;
+    panel::read_json_limited(r).map_err(|e| MemberError::Other(e.to_string()))
 }
 
 /// Our invites and the groups we can invite into. Blocking.
