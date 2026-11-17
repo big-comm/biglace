@@ -837,10 +837,15 @@ fn setup_menu(ctx: &Ctx) {
         ctx.ui.win.add_action(&action);
     }
 
-    {
-        // Parameter: the invite link to prefill ("" when opened from the menu).
-        // Also the entry point for `biglace://join?…` links (see main.rs).
-        let action = gtk4::gio::SimpleAction::new("join-invite", Some(glib::VariantTy::STRING));
+    // Two entry points to the same dialog. Parameter: the invite link to
+    // prefill ("" when opened from the menu).
+    // - `join-invite`: menu and first-run button; disabled while signed in
+    //   (see `apply_state`), like "Sign in with panel account".
+    // - `open-invite-link`: `biglace://join?…` links (see main.rs); always
+    //   enabled so a link clicked while signed in explains why nothing opens
+    //   instead of being silently ignored.
+    for name in ["join-invite", "open-invite-link"] {
+        let action = gtk4::gio::SimpleAction::new(name, Some(glib::VariantTy::STRING));
         let ctx2 = ctx.clone();
         action.connect_activate(move |_, param| {
             let link = param.and_then(|p| p.str()).filter(|s| !s.is_empty()).map(str::to_string);
@@ -1541,6 +1546,13 @@ fn apply_state(ctx: &Ctx, state: AppState, status: &Status, peers: &[Peer]) {
     if let Some(act) = ui
         .win
         .lookup_action("panel-login")
+        .and_downcast::<gtk4::gio::SimpleAction>()
+    {
+        act.set_enabled(!configured);
+    }
+    if let Some(act) = ui
+        .win
+        .lookup_action("join-invite")
         .and_downcast::<gtk4::gio::SimpleAction>()
     {
         act.set_enabled(!configured);

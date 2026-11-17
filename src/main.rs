@@ -44,7 +44,7 @@ pub static MALLOC_CONF: &[u8] = b"background_thread:true,dirty_decay_ms:1000,muz
 /// creates (feat → minor, fix/perf/docs/… → patch, breaking → major) by
 /// rewriting this assignment. Reading it from `CARGO_PKG_VERSION` hid it from
 /// gitrepo, which is how the version sat at 1.0.0 through dozens of releases.
-pub const APP_VERSION: &str = "1.15.0";
+pub const APP_VERSION: &str = "1.15.1";
 
 /// Date-based build stamp (`YY.MM.DD-HHMM`) — the scheme the GitHub release
 /// tags use. The PKGBUILD exports it as `BIGLACE_VERSION`; the update check
@@ -130,7 +130,7 @@ fn main() {
             if uri.starts_with("biglace://join") {
                 let _ = gtk4::prelude::WidgetExt::activate_action(
                     &win,
-                    "win.join-invite",
+                    "win.open-invite-link",
                     Some(&gtk4::glib::Variant::from(uri.as_str())),
                 );
             }
