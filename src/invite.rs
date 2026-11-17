@@ -270,6 +270,36 @@ mod tests {
         assert!(server_url_ok("http://127.0.0.1:3000", "http://bs-e2e:8080"));
     }
 
+    /// Shapes copied from the panel's /api/me/invites answers.
+    #[test]
+    fn member_api_answers_parse() {
+        let mine: MyInvites = serde_json::from_str(
+            r#"{"user":"tales","groups":["familia"],"invites":[{"id":"9f2c","group":"familia",
+            "mutual":false,"note":"vm","createdAt":"2026-11-17T20:01:02.000Z","expiresAt":null,
+            "maxUses":1,"uses":[{"user":"vm-teste","at":"2026-11-17T20:02:00.000Z"}],
+            "inviter":{"user":"tales","device":"tales"},"status":"used"}]}"#,
+        )
+        .unwrap();
+        assert_eq!(mine.groups, ["familia"]);
+        assert_eq!(mine.invites[0].uses[0].user, "vm-teste");
+        assert_eq!(mine.invites[0].status, "used");
+        let created: CreatedInvite = serde_json::from_str(
+            r#"{"invite":{"id":"a1","group":null,"note":"","createdAt":"2026-11-17T20:01:02.000Z",
+            "status":"active","uses":[]},"token":"x","link":"https://vpn.example.org/join#x"}"#,
+        )
+        .unwrap();
+        assert_eq!(created.link, "https://vpn.example.org/join#x");
+        assert!(cancel("../../admin").is_err(), "ids that could reshape the path are refused");
+    }
+
+    #[test]
+    fn qr_codes_are_square_and_decodable_sized() {
+        let m = qr_modules("https://vpn.example.org/join#AbCdEfGhIjKlMnOpQrStUvWxYz0123456789-_abcde").unwrap();
+        assert!(m.len() >= 21 && m.iter().all(|row| row.len() == m.len()));
+        // Finder pattern corner is dark.
+        assert!(m[0][0]);
+    }
+
     #[test]
     fn panel_error_codes_map_to_explainable_errors() {
         assert_eq!(
@@ -349,4 +379,123 @@ mod tests {
         assert!(seen[0].starts_with("POST /api/join HTTP/1.1"));
         assert!(seen[0].contains(TOKEN) && seen[0].contains("\"name\":\"Maria\""));
     }
+}
+
+// ─── Inviting (any member, over the tailnet) ─────────────────────────────────
+//
+// Talks to the panel's peer API on its tailnet address: the panel knows who
+// we are from the tunnel itself, so no password is involved. What an invite
+// grants is decided by the panel and bounded by what we have: the newcomer
+// reaches our devices (and we theirs), plus at most one group we're in.
+
+/// One invite we created.
+#[derive(Debug, Clone, Deserialize)]
+pub struct SentInvite {
+    pub id: String,
+    pub group: Option<String>,
+    #[serde(default)]
+    pub note: String,
+    #[serde(rename = "createdAt")]
+    pub created_at: String,
+    /// `active`, `used`, `expired` or `revoked`.
+    pub status: String,
+    #[serde(default)]
+    pub uses: Vec<InviteUse>,
+}
+
+#[derive(Debug, Clone, Deserialize)]
+pub struct InviteUse {
+    pub user: String,
+}
+
+#[derive(Debug, Clone, Deserialize)]
+pub struct MyInvites {
+    pub invites: Vec<SentInvite>,
+    /// Groups we're in — the only ones we can invite into.
+    pub groups: Vec<String>,
+}
+
+#[derive(Debug, Clone, Deserialize)]
+pub struct CreatedInvite {
+    /// Link to share (also what the QR code encodes).
+    pub link: String,
+}
+
+/// Why the member API can't be used.
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub enum MemberError {
+    /// Not on a BigScale network, or its panel predates member invites.
+    Unsupported,
+    /// The panel doesn't take this device as a person (tagged device…).
+    NotAMember,
+    NotInGroup,
+    /// The network has no access rules (everyone reaches everyone), so only
+    /// the administrator may let people in.
+    OpenNetwork,
+    TooMany,
+    Other(String),
+}
+
+fn member_call(
+    method: &str,
+    path: &str,
+    body: Option<serde_json::Value>,
+) -> std::result::Result<ureq::Response, MemberError> {
+    let base = panel::panel_tailnet_url().ok_or(MemberError::Unsupported)?;
+    let agent = panel::shared_agent().map_err(|e| MemberError::Other(e.to_string()))?;
+    let req = agent
+        .request(method, &format!("{base}{path}"))
+        .set("Accept", "application/json");
+    let res = match body {
+        Some(b) => req.set("Content-Type", "application/json").send_json(b),
+        None => req.call(),
+    };
+    match res {
+        Ok(r) => Ok(r),
+        Err(ureq::Error::Status(code, resp)) => {
+            let err = panel::read_json_limited::<ErrorBody>(resp)
+                .ok()
+                .and_then(|b| b.error)
+                .unwrap_or_default();
+            Err(match (code, err.as_str()) {
+                (404, "") | (405, _) => MemberError::Unsupported,
+                (_, "not_a_member") => MemberError::NotAMember,
+                (_, "not_in_group") => MemberError::NotInGroup,
+                (_, "open_network") => MemberError::OpenNetwork,
+                (429, _) => MemberError::TooMany,
+                _ => MemberError::Other(if err.is_empty() { format!("HTTP {code}") } else { err }),
+            })
+        }
+        Err(e) => Err(MemberError::Other(e.to_string())),
+    }
+}
+
+/// Our invites and the groups we can invite into. Blocking.
+pub fn my_invites() -> std::result::Result<MyInvites, MemberError> {
+    let r = member_call("GET", "/api/me/invites", None)?;
+    panel::read_json_limited(r).map_err(|e| MemberError::Other(e.to_string()))
+}
+
+/// Create an invite (optionally also into `group`). Blocking.
+pub fn create(group: Option<&str>, note: &str) -> std::result::Result<CreatedInvite, MemberError> {
+    let body = serde_json::json!({ "group": group, "note": note });
+    let r = member_call("POST", "/api/me/invites", Some(body))?;
+    panel::read_json_limited(r).map_err(|e| MemberError::Other(e.to_string()))
+}
+
+/// Cancel one of our invites. Blocking.
+pub fn cancel(id: &str) -> std::result::Result<(), MemberError> {
+    // Ids are hex from the panel; refuse anything that could reshape the path.
+    if id.is_empty() || !id.bytes().all(|b| b.is_ascii_hexdigit()) {
+        return Err(MemberError::Other("invalid invite id".into()));
+    }
+    member_call("DELETE", &format!("/api/me/invites/{id}"), None).map(|_| ())
+}
+
+/// The QR code for `text` as a square grid of dark (true) modules, without
+/// the quiet zone. Medium error correction, like the panel's QR.
+pub fn qr_modules(text: &str) -> Option<Vec<Vec<bool>>> {
+    let qr = qrcodegen::QrCode::encode_text(text, qrcodegen::QrCodeEcc::Medium).ok()?;
+    let n = qr.size();
+    Some((0..n).map(|y| (0..n).map(|x| qr.get_module(x, y)).collect()).collect())
 }

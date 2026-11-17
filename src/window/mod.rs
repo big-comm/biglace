@@ -1,5 +1,6 @@
 mod content;
 mod dialogs;
+mod invites;
 mod join_dialog;
 mod peer_row;
 mod sidebar;
@@ -50,6 +51,7 @@ struct Ui {
     toast: libadwaita::ToastOverlay,
     sidebar: sidebar::Sidebar,
     content: content::Content,
+    invites: invites::InvitesPage,
 }
 
 /// Cross-thread handle to the tray indicator. Wrapped in `Rc<RefCell<Option<…>>>`
@@ -169,18 +171,72 @@ pub fn build(app: &libadwaita::Application, start_hidden: bool) {
 
     let toast = libadwaita::ToastOverlay::new();
 
-    let split = libadwaita::OverlaySplitView::builder()
-        .min_sidebar_width(280.0)
-        .max_sidebar_width(340.0)
-        .sidebar_width_fraction(0.36)
-        .show_sidebar(true)
+    // Navigation sidebar (sections + this device) | the selected section.
+    // Collapses to one pane with a back button on narrow windows.
+    let split = libadwaita::NavigationSplitView::builder()
+        .min_sidebar_width(220.0)
+        .max_sidebar_width(280.0)
+        .sidebar_width_fraction(0.26)
         .build();
 
     let sidebar_widgets = sidebar::build();
     let content_widgets = content::build();
 
-    split.set_sidebar(Some(&sidebar_widgets.toolbar));
-    split.set_content(Some(&content_widgets.toolbar));
+    // The section pages share one "Invite someone" button style.
+    let btn_invite_hero = gtk4::Button::builder()
+        .child(
+            &libadwaita::ButtonContent::builder()
+                .icon_name("contact-new-symbolic")
+                .label(tr!("Invite someone"))
+                .build(),
+        )
+        .css_classes(["suggested-action", "pill"])
+        .action_name("win.invite-person")
+        .build();
+    let invites_page = invites::InvitesPage::build(&btn_invite_hero);
+
+    let sections = gtk4::Stack::new();
+    sections.set_transition_type(gtk4::StackTransitionType::Crossfade);
+    sections.add_named(&content_widgets.toolbar, Some("devices"));
+    sections.add_named(&invites_page.toolbar, Some("invites"));
+
+    let side_page = libadwaita::NavigationPage::builder()
+        .title("BigLace")
+        .child(&sidebar_widgets.toolbar)
+        .build();
+    let content_page = libadwaita::NavigationPage::builder()
+        .title(tr!("Devices"))
+        .child(&sections)
+        .build();
+    split.set_sidebar(Some(&side_page));
+    split.set_content(Some(&content_page));
+
+    {
+        let (sections, split, content_page, invites_page) =
+            (sections.clone(), split.clone(), content_page.clone(), invites_page.clone());
+        sidebar_widgets.nav.connect_row_activated(move |_, row| {
+            let id = row.widget_name();
+            sections.set_visible_child_name(&id);
+            let title = match id.as_str() {
+                "invites" => {
+                    invites_page.refresh();
+                    tr!("Invites")
+                }
+                _ => tr!("Devices"),
+            };
+            content_page.set_title(&title);
+            split.set_show_content(true);
+        });
+    }
+
+    let breakpoint = libadwaita::Breakpoint::new(
+        libadwaita::BreakpointCondition::parse("max-width: 640sp").expect("valid breakpoint"),
+    );
+    breakpoint.add_setter(&split, "collapsed", Some(&true.to_value()));
+    win.add_breakpoint(breakpoint);
+
+    // The manual key setup lives on the sign-in page now.
+    content_widgets.signin_extra.append(&sidebar_widgets.manual_group);
 
     toast.set_child(Some(&split));
     win.set_content(Some(&toast));
@@ -192,6 +248,7 @@ pub fn build(app: &libadwaita::Application, start_hidden: bool) {
         toast: toast.clone(),
         sidebar: sidebar_widgets,
         content: content_widgets,
+        invites: invites_page,
     };
 
     let (refresh_tx, refresh_rx) = async_channel::unbounded::<()>();
@@ -780,22 +837,87 @@ fn mark_enrolled(mut c: config::Config) -> config::Config {
     c
 }
 
+/// Preferences window: the behaviour switches (built in `sidebar`), the
+/// tailscale operator shortcut, and signing out. Built once, hidden on close.
+fn build_preferences(ui: &Ui) -> (libadwaita::PreferencesWindow, gtk4::Button) {
+    let win = libadwaita::PreferencesWindow::builder()
+        .transient_for(&ui.win)
+        .modal(true)
+        .hide_on_close(true)
+        .search_enabled(false)
+        .title(tr!("Preferences"))
+        .build();
+    let page = libadwaita::PreferencesPage::builder()
+        .title(tr!("General"))
+        .icon_name("preferences-system-symbolic")
+        .build();
+    ui.sidebar.prefs_group.set_title(&tr!("Behaviour"));
+    page.add(&ui.sidebar.prefs_group);
+
+    let system = libadwaita::PreferencesGroup::builder()
+        .title(tr!("System"))
+        .build();
+    let operator = libadwaita::ActionRow::builder()
+        .title(tr!("Make this user the tailscale operator"))
+        .subtitle(tr!("Lets BigLace manage the connection without asking for a password each time"))
+        .activatable(true)
+        .build();
+    // `win.*` actions live on the main window, not on this one: forward.
+    {
+        let main = ui.win.clone();
+        operator.connect_activated(move |_| {
+            let _ = gtk4::prelude::WidgetExt::activate_action(&main, "win.set-operator", None);
+        });
+    }
+    operator.add_suffix(&gtk4::Image::from_icon_name("go-next-symbolic"));
+    system.add(&operator);
+    page.add(&system);
+
+    let account = libadwaita::PreferencesGroup::builder()
+        .title(tr!("Account"))
+        .description(tr!("Signing out removes this device's identity from BigLace. You will need a new invite or key to join again."))
+        .build();
+    let sign_out = gtk4::Button::builder()
+        .label(tr!("Sign out"))
+        .css_classes(["destructive-action", "pill"])
+        .halign(gtk4::Align::Start)
+        .build();
+    {
+        let (main, prefs) = (ui.win.clone(), win.clone());
+        sign_out.connect_clicked(move |_| {
+            prefs.close();
+            let _ = gtk4::prelude::WidgetExt::activate_action(&main, "win.sign-out", None);
+        });
+    }
+    account.add(&sign_out);
+    page.add(&account);
+
+    win.add(&page);
+    (win, sign_out)
+}
+
 // ─── Menu (hamburger) ────────────────────────────────────────────────────────
 
 fn setup_menu(ctx: &Ctx) {
     let menu = gtk4::gio::Menu::new();
-    menu.append(Some(&tr!("Join with an invite")), Some("win.join-invite::"));
-    menu.append(
+    // Sections: what you do with the network, then joining it, then the
+    // app itself.
+    let people = gtk4::gio::Menu::new();
+    people.append(Some(&tr!("Invite someone")), Some("win.invite-person"));
+    people.append(Some(&tr!("Invites you sent")), Some("win.show-invites"));
+    menu.append_section(None, &people);
+    let account = gtk4::gio::Menu::new();
+    account.append(Some(&tr!("Join with an invite")), Some("win.join-invite::"));
+    account.append(
         Some(&tr!("Sign in with panel account")),
         Some("win.panel-login"),
     );
-    menu.append(Some(&tr!("Sign out")), Some("win.sign-out"));
-    menu.append(
-        Some(&tr!("Make this user the tailscale operator")),
-        Some("win.set-operator"),
-    );
-    menu.append(Some(&tr!("View tailscaled logs")), Some("win.view-logs"));
-    menu.append(Some(&tr!("About BigLace")), Some("win.about"));
+    menu.append_section(None, &account);
+    let app_section = gtk4::gio::Menu::new();
+    app_section.append(Some(&tr!("Preferences")), Some("win.preferences"));
+    app_section.append(Some(&tr!("View tailscaled logs")), Some("win.view-logs"));
+    app_section.append(Some(&tr!("About BigLace")), Some("win.about"));
+    menu.append_section(None, &app_section);
     ctx.ui.content.btn_menu.set_menu_model(Some(&menu));
 
     {
@@ -860,6 +982,42 @@ fn setup_menu(ctx: &Ctx) {
             join_dialog::show(&ctx2.ui.win, &ctx2.ui.toast, &ctx2.cfg, &ctx2.ui.sidebar, link);
         });
         ctx.ui.win.add_action(&action);
+    }
+
+    {
+        let action = gtk4::gio::SimpleAction::new("invite-person", None);
+        let ui = ctx.ui.clone();
+        action.connect_activate(move |_, _| ui.invites.invite(&ui.win, &ui.toast));
+        ctx.ui.win.add_action(&action);
+    }
+
+    {
+        let action = gtk4::gio::SimpleAction::new("show-invites", None);
+        let nav = ctx.ui.sidebar.nav.clone();
+        action.connect_activate(move |_, _| {
+            let idx = sidebar::SECTIONS.iter().position(|s| *s == "invites").unwrap_or(0);
+            if let Some(row) = nav.row_at_index(idx as i32) {
+                nav.select_row(Some(&row));
+                row.emit_activate();
+            }
+        });
+        ctx.ui.win.add_action(&action);
+    }
+
+    {
+        let action = gtk4::gio::SimpleAction::new("preferences", None);
+        let (prefs, sign_out) = build_preferences(&ctx.ui);
+        let main = ctx.ui.win.clone();
+        action.connect_activate(move |_, _| {
+            // Mirror the main window's gating (nothing to sign out of yet).
+            let can = main.lookup_action("sign-out").is_some_and(|a| a.is_enabled());
+            sign_out.set_sensitive(can);
+            prefs.present();
+        });
+        ctx.ui.win.add_action(&action);
+        if let Some(app) = ctx.ui.win.application() {
+            app.set_accels_for_action("win.preferences", &["<Control>comma"]);
+        }
     }
 
     {
@@ -1492,6 +1650,8 @@ fn apply_state(ctx: &Ctx, state: AppState, status: &Status, peers: &[Peer]) {
         AppState::Connected => "connected",
     };
     ui.content.stack.set_visible_child_name(page);
+    // Inviting needs the panel, reached over the tunnel.
+    ui.content.btn_invite.set_visible(state == AppState::Connected);
 
     // ── Identity card ──
     let configured = has_connect_config(&cfg_snap);

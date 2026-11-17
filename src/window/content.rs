@@ -15,6 +15,10 @@ pub struct Content {
     pub update_badge: gtk4::Label,
     pub btn_refresh: gtk4::Button,
     pub btn_menu: gtk4::MenuButton,
+    /// "Invite" — shown while connected.
+    pub btn_invite: gtk4::Button,
+    /// Below the sign-in buttons: holds the manual key setup.
+    pub signin_extra: gtk4::Box,
     pub stack: gtk4::Stack,
     pub btn_start_service: gtk4::Button,
     pub self_row: libadwaita::ActionRow,
@@ -63,6 +67,20 @@ pub fn build() -> Content {
         .build();
     header.pack_end(&btn_refresh);
 
+    let btn_invite = gtk4::Button::builder()
+        .child(
+            &libadwaita::ButtonContent::builder()
+                .icon_name("contact-new-symbolic")
+                .label(tr!("Invite"))
+                .build(),
+        )
+        .tooltip_text(tr!("Invite someone to your network"))
+        .action_name("win.invite-person")
+        .visible(false)
+        .build();
+    btn_invite.add_css_class("suggested-action");
+    header.pack_end(&btn_invite);
+
     // Header badges — visibility is toggled in apply_state(). Keep them in the
     // start area so they sit just left of the title without crowding the menu
     // button on the right.
@@ -103,7 +121,8 @@ pub fn build() -> Content {
     let (page_service, btn_start_service) = build_service_page();
     stack.add_named(&page_service, Some("service"));
 
-    stack.add_named(&build_not_signed_in_page(), Some("not-signed-in"));
+    let (signin_page, signin_extra) = build_not_signed_in_page();
+    stack.add_named(&signin_page, Some("not-signed-in"));
 
     stack.add_named(
         &build_status_page(
@@ -145,6 +164,8 @@ pub fn build() -> Content {
         update_badge,
         btn_refresh,
         btn_menu,
+        btn_invite,
+        signin_extra,
         stack,
         btn_start_service,
         self_row,
@@ -181,7 +202,7 @@ fn build_status_page(icon: &str, title: &str, desc: &str) -> libadwaita::StatusP
 
 /// First-run page: the invite is the main way in; the panel account and the
 /// manual key (left sidebar) stay available for admins.
-fn build_not_signed_in_page() -> libadwaita::StatusPage {
+fn build_not_signed_in_page() -> (libadwaita::StatusPage, gtk4::Box) {
     let page = build_status_page(
         "dialog-password-symbolic",
         &tr!("Sign in to connect"),
@@ -202,8 +223,14 @@ fn build_not_signed_in_page() -> libadwaita::StatusPage {
         .build();
     buttons.append(&btn_invite);
     buttons.append(&btn_panel);
+    // Manual key setup goes here (for admins), clamped to a readable width.
+    let extra = gtk4::Box::new(gtk4::Orientation::Vertical, 0);
+    extra.set_margin_top(24);
+    let clamp = libadwaita::Clamp::builder().maximum_size(480).child(&extra).build();
+    buttons.append(&clamp);
+    // AdwStatusPage scrolls on its own when the expander grows.
     page.set_child(Some(&buttons));
-    page
+    (page, extra)
 }
 
 fn build_connecting_page() -> gtk4::Box {

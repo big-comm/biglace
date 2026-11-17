@@ -210,7 +210,7 @@ pub fn request_preauth(creds: &PanelCredentials) -> Result<PreAuthResponse> {
 /// 100.64/10 → node via the engine), so the request MUST hit the panel's
 /// tailnet interface — the public FQDN would land on a reverse proxy and the
 /// panel would see the proxy's IP instead of the peer's.
-fn panel_tailnet_url() -> Option<String> {
+pub(crate) fn panel_tailnet_url() -> Option<String> {
     let ip = crate::tailscale::panel_peer_ip()?;
     Some(format!("http://{ip}:3000"))
 }

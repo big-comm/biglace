@@ -3,9 +3,19 @@ use libadwaita::prelude::*;
 
 use crate::tr;
 
+/// Sections listed in the navigation sidebar, in order. The row's widget
+/// name is the section id (also the content stack's child name).
+pub const SECTIONS: &[&str] = &["devices", "invites"];
+
 #[derive(Clone)]
 pub struct Sidebar {
     pub toolbar: libadwaita::ToolbarView,
+    /// Section navigation (Devices, Invites…).
+    pub nav: gtk4::ListBox,
+    /// Behaviour switches — shown in the Preferences window.
+    pub prefs_group: libadwaita::PreferencesGroup,
+    /// Manual server/key setup — shown on the "sign in" page.
+    pub manual_group: libadwaita::PreferencesGroup,
     pub identity_row: libadwaita::ActionRow,
     pub btn_edit_host: gtk4::Button,
     pub expander_manual: libadwaita::ExpanderRow,
@@ -40,11 +50,37 @@ pub fn build() -> Sidebar {
         .vexpand(true)
         .build();
 
-    let outer = gtk4::Box::new(gtk4::Orientation::Vertical, 18);
-    outer.set_margin_start(12);
-    outer.set_margin_end(12);
+    let outer = gtk4::Box::new(gtk4::Orientation::Vertical, 12);
+    outer.set_margin_start(6);
+    outer.set_margin_end(6);
     outer.set_margin_top(6);
     outer.set_margin_bottom(12);
+
+    // ── Sections ──
+    let nav = gtk4::ListBox::new();
+    nav.add_css_class("navigation-sidebar");
+    nav.update_property(&[gtk4::accessible::Property::Label(&tr!("Sections"))]);
+    for (id, icon, label) in [
+        ("devices", "computer-symbolic", tr!("Devices")),
+        ("invites", "mail-send-symbolic", tr!("Invites")),
+    ] {
+        let line = gtk4::Box::new(gtk4::Orientation::Horizontal, 12);
+        line.set_margin_top(4);
+        line.set_margin_bottom(4);
+        line.append(&gtk4::Image::from_icon_name(icon));
+        let text = gtk4::Label::new(Some(&label));
+        text.set_xalign(0.0);
+        line.append(&text);
+        let row = gtk4::ListBoxRow::builder().child(&line).name(id).build();
+        nav.append(&row);
+    }
+    nav.select_row(nav.row_at_index(0).as_ref());
+    outer.append(&nav);
+
+    // Pushes "this device" to the bottom, like a chat app's user panel.
+    let spacer = gtk4::Box::new(gtk4::Orientation::Vertical, 0);
+    spacer.set_vexpand(true);
+    outer.append(&spacer);
 
     // ── Identity card ──
     let grp_identity = libadwaita::PreferencesGroup::new();
@@ -153,7 +189,9 @@ pub fn build() -> Sidebar {
     save_row.set_activatable_widget(Some(&btn_save_manual));
     expander_manual.add_row(&save_row);
 
-    grp_identity.add(&expander_manual);
+    let manual_group = libadwaita::PreferencesGroup::new();
+    manual_group.add(&expander_manual);
+    grp_identity.add_css_class("device-card");
     outer.append(&grp_identity);
 
     // ── Preferences card ──
@@ -239,14 +277,13 @@ pub fn build() -> Sidebar {
     notify_row.set_activatable_widget(Some(&switch_notify));
     grp_prefs.add(&notify_row);
 
-    outer.append(&grp_prefs);
-
     // ── Connect / Disconnect button ──
     let btn_connect = gtk4::Button::builder()
         .label(tr!("Connect"))
         .css_classes(["suggested-action", "pill"])
-        .halign(gtk4::Align::Center)
-        .margin_top(8)
+        .halign(gtk4::Align::Fill)
+        .margin_start(6)
+        .margin_end(6)
         .tooltip_text(tr!(
             "Join or leave the mesh network. When connected, this device \
              becomes reachable by the other peers in your account."
@@ -259,6 +296,9 @@ pub fn build() -> Sidebar {
 
     Sidebar {
         toolbar,
+        nav,
+        prefs_group: grp_prefs,
+        manual_group,
         identity_row,
         btn_edit_host,
         expander_manual,

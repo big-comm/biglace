@@ -40,6 +40,42 @@ const CSS: &str = r#"
     background-color: alpha(@accent_color, 0.18);
     color: @accent_color;
 }
+
+/* ── Navigation sidebar ── */
+.navigation-sidebar row {
+    border-radius: 10px;
+    margin: 1px 0;
+}
+.navigation-sidebar row image {
+    opacity: 0.85;
+}
+/* "This device" card at the bottom of the sidebar. */
+.device-card {
+    margin: 0 6px;
+}
+
+/* ── Invites ── */
+.invite-hero {
+    padding: 20px 22px;
+    border-radius: 14px;
+    background-image: linear-gradient(135deg,
+        alpha(@accent_bg_color, 0.16),
+        alpha(@accent_bg_color, 0.04));
+}
+/* The QR code keeps a white quiet zone in dark mode too: phone cameras
+   need the contrast. */
+.qr-code {
+    border-radius: 12px;
+    background-color: #ffffff;
+    padding: 4px;
+    box-shadow: 0 1px 4px alpha(black, 0.18);
+}
+.invite-link {
+    font-size: 0.9em;
+    padding: 8px 12px;
+    border-radius: 8px;
+    background-color: alpha(@card_fg_color, 0.06);
+}
 "#;
 
 pub fn install() {

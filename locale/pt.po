@@ -808,9 +808,6 @@ msgstr "via relay"
 #~ msgid "Terminal"
 #~ msgstr "Terminal"
 
-#~ msgid "Copied!"
-#~ msgstr "Copiado!"
-
 #~ msgid "Key generated successfully."
 #~ msgstr "Chave gerada com sucesso."
 
@@ -1001,3 +998,205 @@ msgstr ""
 "Salvo, mas a chave de pré-autenticação não pôde ser guardada no chaveiro do "
 "sistema ({error}). Este dispositivo ainda consegue reconectar; a chave só é "
 "necessária de novo para registrá-lo do zero."
+
+#: src/window/mod.rs:190 src/window/mod.rs:906 src/window/invites.rs:279
+msgid "Invite someone"
+msgstr "Convidar pessoa"
+
+#: src/window/mod.rs:208 src/window/mod.rs:225 src/window/sidebar.rs:64
+msgid "Devices"
+msgstr "Dispositivos"
+
+#: src/window/mod.rs:223 src/window/sidebar.rs:65 src/window/invites.rs:91
+msgid "Invites"
+msgstr "Convites"
+
+#: src/window/mod.rs:848 src/window/mod.rs:917
+msgid "Preferences"
+msgstr "Preferências"
+
+#: src/window/mod.rs:851
+msgid "General"
+msgstr "Geral"
+
+#: src/window/mod.rs:854
+msgid "Behaviour"
+msgstr "Comportamento"
+
+#: src/window/mod.rs:858
+msgid "System"
+msgstr "Sistema"
+
+#: src/window/mod.rs:862
+msgid ""
+"Lets BigLace manage the connection without asking for a password each time"
+msgstr "Permite que o BigLace gerencie a conexão sem pedir senha toda vez"
+
+#: src/window/mod.rs:877
+msgid "Account"
+msgstr "Conta"
+
+#: src/window/mod.rs:878
+msgid ""
+"Signing out removes this device's identity from BigLace. You will need a new"
+" invite or key to join again."
+msgstr ""
+"Sair da conta remove a identidade deste dispositivo do BigLace. Para entrar "
+"de novo, você vai precisar de um novo convite ou chave."
+
+#: src/window/mod.rs:907 src/window/invites.rs:126
+msgid "Invites you sent"
+msgstr "Convites enviados"
+
+#: src/window/sidebar.rs:62
+msgid "Sections"
+msgstr "Seções"
+
+#: src/window/content.rs:74 src/window/invites.rs:234
+msgid "Invite"
+msgstr "Convidar"
+
+#: src/window/content.rs:77
+msgid "Invite someone to your network"
+msgstr "Convide alguém para a sua rede"
+
+#: src/window/dialogs.rs:188
+msgid "Couldn't reach the server"
+msgstr "Não foi possível falar com o servidor"
+
+#: src/window/dialogs.rs:190
+msgid ""
+"The control server didn't confirm the sign-out: {error}\n"
+"\n"
+"You can still sign out on this computer: BigLace forgets the saved key and account and disconnects. The server keeps listing this device until an administrator removes it."
+msgstr ""
+"O servidor de controle não confirmou a saída: {error}\n"
+"\n"
+"Você ainda pode sair neste computador: o BigLace esquece a chave e a conta salvas e desconecta. O servidor continua listando este dispositivo até um administrador removê-lo."
+
+#: src/window/dialogs.rs:195
+msgid "Sign out on this computer"
+msgstr "Sair neste computador"
+
+#: src/window/invites.rs:55
+msgid ""
+"Invites from BigLace need a BigScale server that supports them. Ask your "
+"administrator to update the server, or to create the invite in the panel."
+msgstr ""
+"Convites pelo BigLace precisam de um servidor BigScale que aceite esse "
+"recurso. Peça ao administrador para atualizar o servidor ou criar o convite "
+"no painel."
+
+#: src/window/invites.rs:59
+msgid ""
+"This device can't send invites (it isn't linked to a person's account)."
+msgstr ""
+"Este dispositivo não pode enviar convites (ele não está ligado à conta de "
+"uma pessoa)."
+
+#: src/window/invites.rs:61
+msgid "You are no longer in that group."
+msgstr "Você não está mais nesse grupo."
+
+#: src/window/invites.rs:62
+msgid "You have too many pending invites. Cancel some or try again tomorrow."
+msgstr ""
+"Você tem convites pendentes demais. Cancele alguns ou tente de novo amanhã."
+
+#: src/window/invites.rs:69
+msgid "Waiting to be used"
+msgstr "Aguardando uso"
+
+#: src/window/invites.rs:70
+msgid "Used"
+msgstr "Usado"
+
+#: src/window/invites.rs:71
+msgid "Expired"
+msgstr "Expirado"
+
+#: src/window/invites.rs:72
+msgid "Cancelled"
+msgstr "Cancelado"
+
+#: src/window/invites.rs:109
+msgid "Bring someone to your network"
+msgstr "Traga alguém para a sua rede"
+
+#: src/window/invites.rs:113
+msgid ""
+"Create a link or QR code and send it to the person. When they join, you two "
+"can reach each other's devices — no administrator needed. The link works "
+"once and stays valid until it's used or you cancel it."
+msgstr ""
+"Crie um link ou QR code e envie para a pessoa. Quando ela entrar, vocês dois"
+" acessam os dispositivos um do outro — sem precisar de administrador. O link"
+" funciona uma vez e vale até ser usado ou você cancelar."
+
+#: src/window/invites.rs:135
+msgid "No invites yet"
+msgstr "Nenhum convite ainda"
+
+#: src/window/invites.rs:156
+msgid "Invites unavailable"
+msgstr "Convites indisponíveis"
+
+#: src/window/invites.rs:232
+msgid "{user} joined"
+msgstr "{user} entrou"
+
+#: src/window/invites.rs:238
+msgid "group {group}"
+msgstr "grupo {group}"
+
+#: src/window/invites.rs:258
+msgid "Cancel this invite: the link stops working"
+msgstr "Cancelar este convite: o link para de funcionar"
+
+#: src/window/invites.rs:293
+msgid ""
+"The person you invite will reach your devices, and you theirs. You can also "
+"add them to one of your groups."
+msgstr ""
+"A pessoa convidada vai acessar seus dispositivos, e você os dela. Você "
+"também pode colocá-la em um dos seus grupos."
+
+#: src/window/invites.rs:298
+msgid "No group — just the two of us"
+msgstr "Sem grupo — só nós dois"
+
+#: src/window/invites.rs:302
+msgid "Also add to group"
+msgstr "Colocar também no grupo"
+
+#: src/window/invites.rs:306
+msgid "Who is it for? (optional)"
+msgstr "Para quem é? (opcional)"
+
+#: src/window/invites.rs:321
+msgid "Create invite"
+msgstr "Criar convite"
+
+#: src/window/invites.rs:346
+msgid "QR code of the invite link"
+msgstr "QR code do link de convite"
+
+#: src/window/invites.rs:348
+msgid ""
+"Send the link or let the person scan the code with their phone. It works "
+"once and stays valid until used or cancelled."
+msgstr ""
+"Envie o link ou peça para a pessoa ler o código com o celular. Funciona uma "
+"vez e vale até ser usado ou cancelado."
+
+#: src/window/invites.rs:361
+msgid "Copy link"
+msgstr "Copiar link"
+
+#: src/window/invites.rs:366
+msgid "Done"
+msgstr "Concluído"
+
+#: src/window/invites.rs:388
+msgid "Copied!"
+msgstr "Copiado!"
