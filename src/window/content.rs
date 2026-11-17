@@ -21,8 +21,7 @@ pub struct Content {
     pub signin_extra: gtk4::Box,
     /// "Sign in again as …": shown when this installation keeps the secret
     /// of an account an invite created (see `invite::rejoin`).
-    pub btn_rejoin: gtk4::Button,
-    pub btn_join_invite: gtk4::Button,
+    pub btn_rejoin: libadwaita::ActionRow,
     pub stack: gtk4::Stack,
     pub btn_start_service: gtk4::Button,
     pub self_row: libadwaita::ActionRow,
@@ -125,7 +124,7 @@ pub fn build() -> Content {
     let (page_service, btn_start_service) = build_service_page();
     stack.add_named(&page_service, Some("service"));
 
-    let (signin_page, signin_extra, btn_rejoin, btn_join_invite) = build_not_signed_in_page();
+    let (signin_page, signin_extra, btn_rejoin) = build_not_signed_in_page();
     stack.add_named(&signin_page, Some("not-signed-in"));
 
     stack.add_named(
@@ -171,7 +170,6 @@ pub fn build() -> Content {
         btn_invite,
         signin_extra,
         btn_rejoin,
-        btn_join_invite,
         stack,
         btn_start_service,
         self_row,
@@ -208,41 +206,68 @@ fn build_status_page(icon: &str, title: &str, desc: &str) -> libadwaita::StatusP
 
 /// First-run page: the invite is the main way in; the panel account and the
 /// manual key (left sidebar) stay available for admins.
-fn build_not_signed_in_page() -> (libadwaita::StatusPage, gtk4::Box, gtk4::Button, gtk4::Button) {
+fn build_not_signed_in_page() -> (libadwaita::StatusPage, gtk4::Box, libadwaita::ActionRow) {
     let page = build_status_page(
         "dialog-password-symbolic",
-        &tr!("Sign in to connect"),
-        &tr!("Got an invite link? Use it to join the network. Admins can sign in with their panel account."),
+        &tr!("Join the network"),
+        &tr!("Choose how you're going to sign in."),
     );
-    let buttons = gtk4::Box::new(gtk4::Orientation::Vertical, 12);
-    buttons.set_halign(gtk4::Align::Center);
-    let btn_rejoin = gtk4::Button::builder()
-        .css_classes(["suggested-action", "pill"])
-        .action_name("win.rejoin")
-        .visible(false)
-        .build();
-    let btn_invite = gtk4::Button::builder()
-        .label(tr!("Join with an invite"))
-        .css_classes(["suggested-action", "pill"])
-        .action_name("win.join-invite")
-        .action_target(&"".to_variant())
-        .build();
-    let btn_panel = gtk4::Button::builder()
-        .label(tr!("Sign in with panel account"))
-        .css_classes(["flat"])
-        .action_name("win.panel-login")
-        .build();
-    buttons.append(&btn_rejoin);
-    buttons.append(&btn_invite);
-    buttons.append(&btn_panel);
-    // Manual key setup goes here (for admins), clamped to a readable width.
+    // One clear choice per row, each saying who it's for. Rows are
+    // actionable list rows, so keyboard and screen readers get them as
+    // buttons with a title and an explanation.
+    let choices = gtk4::ListBox::new();
+    choices.add_css_class("boxed-list");
+    choices.set_selection_mode(gtk4::SelectionMode::None);
+    choices.update_property(&[gtk4::accessible::Property::Label(&tr!("Ways to sign in"))]);
+    let choice = |icon: &str, title: &str, subtitle: &str, action: &str| {
+        let row = libadwaita::ActionRow::builder()
+            .title(title)
+            .subtitle(subtitle)
+            .activatable(true)
+            .action_name(action)
+            .build();
+        row.add_prefix(&gtk4::Image::from_icon_name(icon));
+        row.add_suffix(&gtk4::Image::from_icon_name("go-next-symbolic"));
+        row
+    };
+    let row_rejoin = choice(
+        "view-refresh-symbolic",
+        "",
+        &tr!("Your account was kept on this computer. No invite needed."),
+        "win.rejoin",
+    );
+    row_rejoin.set_visible(false);
+    let row_invite = choice(
+        "mail-send-symbolic",
+        &tr!("I have an invite"),
+        &tr!("Someone on the network sent you a link or a QR code."),
+        "win.join-invite",
+    );
+    row_invite.set_action_target_value(Some(&"".to_variant()));
+    let row_key = choice(
+        "dialog-password-symbolic",
+        &tr!("I have an access key"),
+        &tr!("A key the administrator created for you (starts with hskey-auth-)."),
+        "win.use-key",
+    );
+    let row_admin = choice(
+        "emblem-system-symbolic",
+        &tr!("I'm the administrator"),
+        &tr!("Sign in with the BigScale panel's admin username and password."),
+        "win.panel-login",
+    );
+    choices.append(&row_rejoin);
+    choices.append(&row_invite);
+    choices.append(&row_key);
+    choices.append(&row_admin);
+
+    let body = gtk4::Box::new(gtk4::Orientation::Vertical, 0);
+    body.append(&choices);
+    // Kept for the manual key fields' home (not shown on this page).
     let extra = gtk4::Box::new(gtk4::Orientation::Vertical, 0);
-    extra.set_margin_top(24);
-    let clamp = libadwaita::Clamp::builder().maximum_size(480).child(&extra).build();
-    buttons.append(&clamp);
-    // AdwStatusPage scrolls on its own when the expander grows.
-    page.set_child(Some(&buttons));
-    (page, extra, btn_rejoin, btn_invite)
+    let clamp = libadwaita::Clamp::builder().maximum_size(480).child(&body).build();
+    page.set_child(Some(&clamp));
+    (page, extra, row_rejoin)
 }
 
 fn build_connecting_page() -> gtk4::Box {

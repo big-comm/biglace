@@ -328,7 +328,7 @@ pub fn show_panel_login(
     let dlg = libadwaita::Window::builder()
         .transient_for(parent)
         .modal(true)
-        .title(tr!("Connect via panel account"))
+        .title(tr!("Sign in as administrator"))
         .default_width(480)
         .build();
 
@@ -339,11 +339,11 @@ pub fn show_panel_login(
 
     let pref_page = libadwaita::PreferencesPage::new();
     let grp = libadwaita::PreferencesGroup::builder()
-        .title(tr!("Panel credentials"))
+        .title(tr!("Panel administrator"))
         .description(tr!(
-            "Sign in with your BigScale panel username and password. \
-             A device identity will be created on the network automatically — \
-             no manual key needed."
+            "Only for whoever administers the BigScale panel: use the panel's admin \
+             username and password. This device joins the network under the name \
+             below. Everyone else joins with an invite or an access key."
         ))
         .build();
 
@@ -356,7 +356,7 @@ pub fn show_panel_login(
          The https:// scheme is added automatically if you omit it."
     )));
     let er_user = libadwaita::EntryRow::builder()
-        .title(tr!("Username"))
+        .title(tr!("Panel admin username"))
         .build();
     er_user.set_tooltip_text(Some(&tr!(
         "Your panel username — the one you use to sign in to the web panel."

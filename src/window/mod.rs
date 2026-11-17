@@ -862,6 +862,82 @@ fn should_show_manual_setup(state: AppState, c: &config::Config) -> bool {
     state != AppState::Connected && !has_connect_config(c)
 }
 
+/// "I have an access key": server, key and device name in one small dialog.
+/// Saving and connecting reuse the manual-setup path (validation, keyring).
+fn show_key_dialog(ctx: &Ctx) {
+    let dlg = libadwaita::Window::builder()
+        .transient_for(&ctx.ui.win)
+        .modal(true)
+        .title(tr!("Sign in with an access key"))
+        .default_width(460)
+        .build();
+    let outer = gtk4::Box::new(gtk4::Orientation::Vertical, 0);
+    outer.append(&libadwaita::HeaderBar::new());
+    let page = libadwaita::PreferencesPage::new();
+    let grp = libadwaita::PreferencesGroup::builder()
+        .description(tr!(
+            "Paste the key the administrator gave you. It's used once, to register this device."
+        ))
+        .build();
+    let er_server = libadwaita::EntryRow::builder()
+        .title(tr!("Server URL"))
+        .input_purpose(gtk4::InputPurpose::Url)
+        .build();
+    let er_key = libadwaita::PasswordEntryRow::builder().title(tr!("Access key")).build();
+    let er_host = libadwaita::EntryRow::builder()
+        .title(tr!("Device name on the network"))
+        .build();
+    {
+        let c = ctx.cfg.borrow();
+        er_server.set_text(&c.server_url);
+        er_host.set_text(if c.hostname.is_empty() { "" } else { &c.hostname });
+    }
+    if er_host.text().is_empty() {
+        er_host.set_text(&dialogs::sanitize_hostname(&config::os_user()));
+    }
+    grp.add(&er_server);
+    grp.add(&er_key);
+    grp.add(&er_host);
+    page.add(&grp);
+    outer.append(&page);
+    let btns = gtk4::Box::new(gtk4::Orientation::Horizontal, 8);
+    btns.set_halign(gtk4::Align::End);
+    btns.set_margin_start(16);
+    btns.set_margin_end(16);
+    btns.set_margin_bottom(16);
+    let cancel = gtk4::Button::with_label(&tr!("Cancel"));
+    let ok = gtk4::Button::builder()
+        .label(tr!("Connect"))
+        .css_classes(["suggested-action"])
+        .build();
+    btns.append(&cancel);
+    btns.append(&ok);
+    outer.append(&btns);
+    dlg.set_content(Some(&outer));
+    {
+        let dlg = dlg.clone();
+        cancel.connect_clicked(move |_| dlg.close());
+    }
+    {
+        let (ctx2, dlg, er_key) = (ctx.clone(), dlg.clone(), er_key.clone());
+        ok.connect_clicked(move |_| {
+            let key = er_key.text().trim().to_string();
+            let sb = &ctx2.ui.sidebar;
+            sb.entry_server.set_text(&er_server.text());
+            sb.entry_key.set_text(&key);
+            sb.entry_host.set_text(&er_host.text());
+            // The manual-setup save validates and reports problems itself.
+            sb.btn_save_manual.emit_clicked();
+            if !key.is_empty() && ctx2.cfg.borrow().authkey == key {
+                dlg.close();
+                sb.btn_connect.emit_clicked();
+            }
+        });
+    }
+    dlg.present();
+    er_key.grab_focus();
+}
+
 /// Sign in again as the invite-made account this installation kept.
 fn rejoin(ctx: &Ctx) {
     let Some(user) = rejoin_account(&ctx.cfg.borrow()) else {
@@ -1100,6 +1176,13 @@ fn setup_menu(ctx: &Ctx) {
             }
             join_dialog::show(&ctx2.ui.win, &ctx2.ui.toast, &ctx2.cfg, &ctx2.ui.sidebar, link);
         });
+        ctx.ui.win.add_action(&action);
+    }
+
+    {
+        let action = gtk4::gio::SimpleAction::new("use-key", None);
+        let ctx2 = ctx.clone();
+        action.connect_activate(move |_, _| show_key_dialog(&ctx2));
         ctx.ui.win.add_action(&action);
     }
 
@@ -1821,10 +1904,7 @@ fn apply_state(ctx: &Ctx, state: AppState, status: &Status, peers: &[Peer]) {
     if let Some(user) = &rejoin_as {
         ui.content
             .btn_rejoin
-            .set_label(&trf!("Sign in again as {user}", "user" => user));
-        ui.content.btn_join_invite.remove_css_class("suggested-action");
-    } else {
-        ui.content.btn_join_invite.add_css_class("suggested-action");
+            .set_title(&trf!("Sign in again as {user}", "user" => user));
     }
     let has_identity = has_visible_identity(state, &cfg_snap);
     let show_manual_setup = should_show_manual_setup(state, &cfg_snap);
