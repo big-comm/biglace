@@ -131,6 +131,20 @@ fn path() -> PathBuf {
     PathBuf::from(home).join("Library/Application Support/biglace/config.toml")
 }
 
+/// A private (0600) file next to the config, for small secrets when the OS
+/// keyring is unavailable (e.g. a desktop without a Secret Service).
+pub fn private_file(name: &str) -> PathBuf {
+    path().with_file_name(name)
+}
+
+pub fn write_private_file(name: &str, data: &[u8]) -> std::io::Result<()> {
+    let p = private_file(name);
+    if let Some(dir) = p.parent() {
+        fs::create_dir_all(dir)?;
+    }
+    write_private(&p, data)
+}
+
 pub fn load() -> Config {
     let p = path();
     let s = match fs::read_to_string(&p) {

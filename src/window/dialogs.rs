@@ -85,6 +85,7 @@ pub fn confirm_sign_out(
     overlay: &libadwaita::ToastOverlay,
     cfg: &Rc<RefCell<config::Config>>,
     sidebar: &Sidebar,
+    online: bool,
 ) {
     if !cfg.borrow().enrolled && cfg.borrow().authkey.is_empty() {
         return;
@@ -119,6 +120,17 @@ pub fn confirm_sign_out(
         dlg.add_response("ok", &tr!("Leave"));
         dlg.set_response_appearance("delete", libadwaita::ResponseAppearance::Destructive);
         dlg.set_response_appearance("ok", libadwaita::ResponseAppearance::Suggested);
+        // Deleting goes through the panel, reached over the tunnel.
+        if !online {
+            dlg.set_response_enabled("delete", false);
+            dlg.set_extra_child(Some(
+                &gtk4::Label::builder()
+                    .label(tr!("Connect first to delete the account."))
+                    .css_classes(["dim-label", "caption"])
+                    .wrap(true)
+                    .build(),
+            ));
+        }
         dlg
     };
     dlg.set_default_response(Some("cancel"));
@@ -131,8 +143,8 @@ pub fn confirm_sign_out(
     dlg.connect_response(None, move |dlg, resp| {
         dlg.close();
         match resp {
-            "ok" => sign_out(&parent_w, &overlay_w, &cfg_w, &sidebar_w, false),
-            "delete" => sign_out(&parent_w, &overlay_w, &cfg_w, &sidebar_w, true),
+            "ok" => sign_out(&parent_w, &overlay_w, &cfg_w, &sidebar_w, false, online),
+            "delete" => sign_out(&parent_w, &overlay_w, &cfg_w, &sidebar_w, true, online),
             _ => {}
         }
     });
@@ -153,13 +165,22 @@ fn sign_out(
     cfg: &Rc<RefCell<config::Config>>,
     _sidebar: &Sidebar,
     delete_account: bool,
+    online: bool,
 ) {
+    // Both steps below can take seconds: say something right away.
+    super::show_toast(overlay, &tr!("Signing out…"), 3);
     let parent_w = parent.clone();
     let overlay_w = overlay.clone();
     let cfg_w = cfg.clone();
     super::run_in_background(
         move || {
-            let left = crate::invite::leave(delete_account);
+            // Offline, the panel is unreachable: asking would only stall the
+            // sign-out on a connect timeout.
+            let left = if online {
+                crate::invite::leave(delete_account)
+            } else {
+                Err(crate::invite::MemberError::Unsupported)
+            };
             if delete_account && left.is_err() {
                 // Signing out anyway would leave the account behind while
                 // the person believes it's gone.

@@ -599,6 +599,93 @@ pub fn cancel(id: &str) -> std::result::Result<(), MemberError> {
     member_call("DELETE", &format!("/api/me/invites/{id}"), None).map(|_| ())
 }
 
+// ─── Groups (any member, over the tailnet) ──────────────────────────────────
+
+/// A group we're in.
+#[derive(Debug, Clone, Deserialize)]
+pub struct GroupInfo {
+    pub name: String,
+    /// `member`: created by someone from BigLace; `network`: by the admin.
+    pub kind: String,
+    #[serde(default)]
+    pub owner: Option<String>,
+    #[serde(default)]
+    pub members: Vec<String>,
+}
+
+impl GroupInfo {
+    pub fn is_member_group(&self) -> bool {
+        self.kind == "member"
+    }
+}
+
+#[derive(Debug, Clone, Deserialize)]
+pub struct MyGroups {
+    pub user: String,
+    /// In the network's `admins` group: may open the admin panel.
+    #[serde(default)]
+    pub is_admin: bool,
+    pub groups: Vec<GroupInfo>,
+}
+
+/// Group names the panel accepts: lowercase letters, digits and hyphens.
+pub fn group_name_ok(name: &str) -> bool {
+    let b = name.as_bytes();
+    !b.is_empty()
+        && b.len() <= 32
+        && b[0].is_ascii_alphanumeric()
+        && b.iter().all(|c| c.is_ascii_lowercase() || c.is_ascii_digit() || *c == b'-')
+        && name != "admins"
+}
+
+/// Path segment for a name or user, refusing anything that could reshape it.
+fn segment(s: &str) -> std::result::Result<&str, MemberError> {
+    if !s.is_empty() && s.len() <= 64 && s.bytes().all(|c| c.is_ascii_alphanumeric() || c == b'-' || c == b'_') {
+        Ok(s)
+    } else {
+        Err(MemberError::Other("invalid name".into()))
+    }
+}
+
+pub fn my_groups() -> std::result::Result<MyGroups, MemberError> {
+    let r = member_call("GET", "/api/me/groups", None)?;
+    panel::read_json_limited(r).map_err(|e| MemberError::Other(e.to_string()))
+}
+
+pub fn create_group(name: &str) -> std::result::Result<GroupInfo, MemberError> {
+    let r = member_call("POST", "/api/me/groups", Some(serde_json::json!({ "name": name })))?;
+    panel::read_json_limited(r).map_err(|e| MemberError::Other(e.to_string()))
+}
+
+pub fn delete_group(name: &str) -> std::result::Result<(), MemberError> {
+    member_call("DELETE", &format!("/api/me/groups/{}", segment(name)?), None).map(|_| ())
+}
+
+/// The owner removing `user`, or ourselves leaving.
+pub fn remove_member(group: &str, user: &str) -> std::result::Result<(), MemberError> {
+    member_call(
+        "DELETE",
+        &format!("/api/me/groups/{}/members/{}", segment(group)?, segment(user)?),
+        None,
+    )
+    .map(|_| ())
+}
+
+#[derive(Deserialize)]
+struct AdminLink {
+    url: String,
+}
+
+/// One-time link signing the browser in to the admin panel (admins only).
+pub fn admin_login() -> std::result::Result<String, MemberError> {
+    let r = member_call("POST", "/api/me/admin-login", Some(serde_json::json!({})))?;
+    let link: AdminLink = panel::read_json_limited(r).map_err(|e| MemberError::Other(e.to_string()))?;
+    if !(link.url.starts_with("https://") || panel::url_is_loopback(&link.url)) {
+        return Err(MemberError::Other("panel returned a link without HTTPS".into()));
+    }
+    Ok(link.url)
+}
+
 /// The QR code for `text` as a square grid of dark (true) modules, without
 /// the quiet zone. Medium error correction, like the panel's QR.
 pub fn qr_modules(text: &str) -> Option<Vec<Vec<bool>>> {

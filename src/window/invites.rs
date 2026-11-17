@@ -215,9 +215,19 @@ impl InvitesPage {
 
     /// Open "Invite someone" with fresh groups, or explain why we can't.
     pub fn invite(&self, parent: &libadwaita::ApplicationWindow, toast: &libadwaita::ToastOverlay) {
+        self.invite_to(parent, toast, None);
+    }
+
+    /// Same, with `group` already chosen (from the Groups section).
+    pub fn invite_to(
+        &self,
+        parent: &libadwaita::ApplicationWindow,
+        toast: &libadwaita::ToastOverlay,
+        group: Option<String>,
+    ) {
         let (page, parent, toast) = (self.clone(), parent.clone(), toast.clone());
         self.refresh_then(move |err| match err {
-            None => show_dialog(&parent, &page),
+            None => show_dialog(&parent, &page, group.as_deref()),
             Some(e) => super::show_toast(&toast, &explain(&e), 8),
         });
     }
@@ -277,7 +287,7 @@ impl InvitesPage {
 
 /// "Invite someone": pick an optional group and a note, then show the QR
 /// code and link to share.
-pub fn show_dialog(parent: &libadwaita::ApplicationWindow, page: &InvitesPage) {
+pub fn show_dialog(parent: &libadwaita::ApplicationWindow, page: &InvitesPage, preselect: Option<&str>) {
     let dlg = libadwaita::Window::builder()
         .transient_for(parent)
         .modal(true)
@@ -340,6 +350,9 @@ pub fn show_dialog(parent: &libadwaita::ApplicationWindow, page: &InvitesPage) {
     }
     if !groups.is_empty() {
         form.add(&grp_access);
+    }
+    if let Some(i) = preselect.and_then(|p| groups.iter().position(|g| g == p)) {
+        radios[i + 1].set_active(true);
     }
 
     let lbl_err = gtk4::Label::new(None);

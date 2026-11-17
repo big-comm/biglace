@@ -74,33 +74,59 @@ fn reclaim_entry(panel_url: &str, user: &str) -> Option<Entry> {
     Entry::new(RECLAIM_SERVICE, &account_id(panel_url, user)).ok()
 }
 
-pub fn save_reclaim(panel_url: &str, user: &str, secret: &str) -> keyring::Result<()> {
-    let Some(entry) = reclaim_entry(panel_url, user) else {
-        return Ok(());
-    };
-    entry.set_password(secret.trim())
+// Without a keyring (common on minimal desktops) the secret goes to a 0600
+// file next to the config instead: losing it would silently take away
+// "sign in again as …", which is the whole point of keeping it.
+const RECLAIM_FILE: &str = "account.secret";
+
+fn reclaim_file_read(panel_url: &str, user: &str) -> Option<String> {
+    let text = std::fs::read_to_string(crate::config::private_file(RECLAIM_FILE)).ok()?;
+    let mut lines = text.lines();
+    let (id, secret) = (lines.next()?, lines.next()?);
+    (id == account_id(panel_url, user) && !secret.is_empty()).then(|| secret.to_string())
+}
+
+fn reclaim_file_clear() {
+    match std::fs::remove_file(crate::config::private_file(RECLAIM_FILE)) {
+        Ok(()) => {}
+        Err(e) if e.kind() == std::io::ErrorKind::NotFound => {}
+        Err(e) => eprintln!("[biglace] secrets: reclaim file clear failed: {e}"),
+    }
+}
+
+pub fn save_reclaim(panel_url: &str, user: &str, secret: &str) -> std::io::Result<()> {
+    if let Some(entry) = reclaim_entry(panel_url, user) {
+        match entry.set_password(secret.trim()) {
+            Ok(()) => {
+                reclaim_file_clear();
+                return Ok(());
+            }
+            Err(err) => eprintln!("[biglace] secrets: keyring unavailable for the account secret ({err}); using a private file"),
+        }
+    }
+    let data = format!("{}\n{}\n", account_id(panel_url, user), secret.trim());
+    crate::config::write_private_file(RECLAIM_FILE, data.as_bytes())
 }
 
 pub fn load_reclaim(panel_url: &str, user: &str) -> Option<String> {
-    let entry = reclaim_entry(panel_url, user)?;
-    match entry.get_password() {
-        Ok(value) => Some(value),
-        Err(keyring::Error::NoEntry) => None,
-        Err(err) => {
-            eprintln!("[biglace] secrets: reclaim load failed: {err}");
-            None
+    if let Some(entry) = reclaim_entry(panel_url, user) {
+        match entry.get_password() {
+            Ok(value) => return Some(value),
+            Err(keyring::Error::NoEntry) => {}
+            Err(err) => eprintln!("[biglace] secrets: reclaim load failed: {err}"),
         }
     }
+    reclaim_file_read(panel_url, user)
 }
 
 pub fn clear_reclaim(panel_url: &str, user: &str) {
-    let Some(entry) = reclaim_entry(panel_url, user) else {
-        return;
-    };
-    match entry.delete_credential() {
-        Ok(()) | Err(keyring::Error::NoEntry) => {}
-        Err(err) => eprintln!("[biglace] secrets: reclaim clear failed: {err}"),
+    if let Some(entry) = reclaim_entry(panel_url, user) {
+        match entry.delete_credential() {
+            Ok(()) | Err(keyring::Error::NoEntry) => {}
+            Err(err) => eprintln!("[biglace] secrets: reclaim clear failed: {err}"),
+        }
     }
+    reclaim_file_clear();
 }
 
 /// Persist `password` for the given panel/user. Errors (no keyring daemon,

@@ -1,5 +1,6 @@
 mod content;
 mod dialogs;
+mod groups;
 mod invites;
 mod join_dialog;
 mod peer_row;
@@ -52,6 +53,9 @@ struct Ui {
     sidebar: sidebar::Sidebar,
     content: content::Content,
     invites: invites::InvitesPage,
+    groups: groups::GroupsPage,
+    /// Holds "Open admin panel" while we're a network admin.
+    admin_menu: gtk4::gio::Menu,
 }
 
 /// Cross-thread handle to the tray indicator. Wrapped in `Rc<RefCell<Option<…>>>`
@@ -194,10 +198,25 @@ pub fn build(app: &libadwaita::Application, start_hidden: bool) {
         .action_name("win.invite-person")
         .build();
     let invites_page = invites::InvitesPage::build(&btn_invite_hero);
+    // Admins get "Open admin panel" in the menu; the Groups page learns
+    // whether we are one each time it asks the panel.
+    let admin_menu = gtk4::gio::Menu::new();
+    let groups_page = {
+        let admin_menu = admin_menu.clone();
+        groups::GroupsPage::build(&win, &toast, &invites_page, move |is_admin| {
+            let shown = admin_menu.n_items() > 0;
+            if is_admin && !shown {
+                admin_menu.append(Some(&tr!("Open admin panel")), Some("win.open-admin"));
+            } else if !is_admin && shown {
+                admin_menu.remove_all();
+            }
+        })
+    };
 
     let sections = gtk4::Stack::new();
     sections.set_transition_type(gtk4::StackTransitionType::Crossfade);
     sections.add_named(&content_widgets.toolbar, Some("devices"));
+    sections.add_named(&groups_page.toolbar, Some("groups"));
     sections.add_named(&invites_page.toolbar, Some("invites"));
 
     let side_page = libadwaita::NavigationPage::builder()
@@ -212,8 +231,13 @@ pub fn build(app: &libadwaita::Application, start_hidden: bool) {
     split.set_content(Some(&content_page));
 
     {
-        let (sections, split, content_page, invites_page) =
-            (sections.clone(), split.clone(), content_page.clone(), invites_page.clone());
+        let (sections, split, content_page, invites_page, groups_page) = (
+            sections.clone(),
+            split.clone(),
+            content_page.clone(),
+            invites_page.clone(),
+            groups_page.clone(),
+        );
         sidebar_widgets.nav.connect_row_activated(move |_, row| {
             let id = row.widget_name();
             sections.set_visible_child_name(&id);
@@ -221,6 +245,10 @@ pub fn build(app: &libadwaita::Application, start_hidden: bool) {
                 "invites" => {
                     invites_page.refresh();
                     tr!("Invites")
+                }
+                "groups" => {
+                    groups_page.refresh();
+                    tr!("Groups")
                 }
                 _ => tr!("Devices"),
             };
@@ -249,6 +277,8 @@ pub fn build(app: &libadwaita::Application, start_hidden: bool) {
         sidebar: sidebar_widgets,
         content: content_widgets,
         invites: invites_page,
+        groups: groups_page,
+        admin_menu,
     };
 
     let (refresh_tx, refresh_rx) = async_channel::unbounded::<()>();
@@ -997,7 +1027,9 @@ fn setup_menu(ctx: &Ctx) {
         Some(&tr!("Sign in with panel account")),
         Some("win.panel-login"),
     );
+    account.append(Some(&tr!("Leave the network…")), Some("win.sign-out"));
     menu.append_section(None, &account);
+    menu.append_section(None, &ctx.ui.admin_menu);
     let app_section = gtk4::gio::Menu::new();
     app_section.append(Some(&tr!("Preferences")), Some("win.preferences"));
     app_section.append(Some(&tr!("View tailscaled logs")), Some("win.view-logs"));
@@ -1070,6 +1102,31 @@ fn setup_menu(ctx: &Ctx) {
     }
 
     {
+        let action = gtk4::gio::SimpleAction::new("open-admin", None);
+        let ui = ctx.ui.clone();
+        action.connect_activate(move |_, _| {
+            let ui = ui.clone();
+            run_in_background(crate::invite::admin_login, move |r| match r {
+                Ok(url) => {
+                    let launcher = gtk4::UriLauncher::new(&url);
+                    let toast = ui.toast.clone();
+                    launcher.launch(Some(&ui.win), gtk4::gio::Cancellable::NONE, move |res| {
+                        if let Err(e) = res {
+                            show_toast(&toast, &trf!("Could not open the browser: {error}", "error" => e), 8);
+                        }
+                    });
+                }
+                Err(_) => show_toast(
+                    &ui.toast,
+                    &tr!("You can't open the admin panel: you're not an administrator of this network, or the panel can't be reached."),
+                    8,
+                ),
+            });
+        });
+        ctx.ui.win.add_action(&action);
+    }
+
+    {
         let action = gtk4::gio::SimpleAction::new("rejoin", None);
         let ctx2 = ctx.clone();
         action.connect_activate(move |_, _| rejoin(&ctx2));
@@ -1118,8 +1175,9 @@ fn setup_menu(ctx: &Ctx) {
         let toast_w = ctx.ui.toast.clone();
         let cfg2 = ctx.cfg.clone();
         let sidebar_w = ctx.ui.sidebar.clone();
+        let online = ctx.current_online.clone();
         action.connect_activate(move |_, _| {
-            dialogs::confirm_sign_out(&win_w, &toast_w, &cfg2, &sidebar_w);
+            dialogs::confirm_sign_out(&win_w, &toast_w, &cfg2, &sidebar_w, online.get());
         });
         ctx.ui.win.add_action(&action);
     }
@@ -1672,7 +1730,14 @@ fn apply_state(ctx: &Ctx, state: AppState, status: &Status, peers: &[Peer]) {
     let cfg_snap = ctx.cfg.borrow().clone();
 
     // Record online state for the reconnect worker to read off-thread.
-    ctx.current_online.set(state == AppState::Connected);
+    let was_online = ctx.current_online.replace(state == AppState::Connected);
+    // Groups (and whether we're an admin) come from the panel over the
+    // tunnel: ask on connect, forget on disconnect.
+    match (was_online, state == AppState::Connected) {
+        (false, true) => ui.groups.refresh(),
+        (true, false) => ui.groups.clear(),
+        _ => {}
+    }
 
     // ── Status dot + label in content header ──
     for c in ["idle", "connected", "connecting", "error"] {
@@ -1827,6 +1892,16 @@ fn apply_state(ctx: &Ctx, state: AppState, status: &Status, peers: &[Peer]) {
         .and_downcast::<gtk4::gio::SimpleAction>()
     {
         act.set_enabled(configured);
+    }
+    // Inviting talks to the panel over the tunnel: only while connected.
+    for name in ["invite-person", "show-invites"] {
+        if let Some(act) = ui
+            .win
+            .lookup_action(name)
+            .and_downcast::<gtk4::gio::SimpleAction>()
+        {
+            act.set_enabled(state == AppState::Connected);
+        }
     }
 
     // ── Connect / Disconnect button ──
