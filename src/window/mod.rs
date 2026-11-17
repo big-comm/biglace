@@ -15,6 +15,7 @@ use std::sync::atomic::{AtomicBool, Ordering};
 use std::sync::{Arc, Mutex};
 use std::time::Duration;
 
+use crate::agent;
 use crate::autostart;
 use crate::config;
 use crate::panel;
@@ -290,6 +291,8 @@ pub fn build(app: &libadwaita::Application, start_hidden: bool) {
 
     // Background workers (latency, health, auto-reconnect, self-update).
     spawn_latency_worker(&ctx);
+    // Answer other BigLace peers on this device's tailnet address.
+    agent::server::start();
     spawn_health_worker(&ctx);
     spawn_reconnect_worker(&ctx);
     spawn_update_check(&ctx);
@@ -809,7 +812,7 @@ fn setup_menu(ctx: &Ctx) {
 
     {
         let action = gtk4::gio::SimpleAction::new("view-logs", None);
-        action.connect_activate(move |_, _| tailscale::open_logs());
+        action.connect_activate(move |_, _| crate::launchers::open_logs());
         ctx.ui.win.add_action(&action);
     }
 
@@ -1306,6 +1309,7 @@ fn refresh_state(ctx: &Ctx) {
         return;
     }
     let done = ctx.refresh_done_tx.clone();
+    let refresh_tx = ctx.refresh_tx.clone();
     let device_meta = ctx.device_meta.clone();
     let in_flight = ctx.refresh_in_flight.clone();
     let pending = ctx.refresh_pending.clone();
@@ -1326,6 +1330,16 @@ fn refresh_state(ctx: &Ctx) {
                         }
                     }
                 }
+                // Which peers run BigLace: read what's known now, and probe
+                // the stale ones in the background — a changed answer asks
+                // for another refresh, which picks the new value up here.
+                for p in peers.iter_mut().filter(|p| p.online) {
+                    p.agent = agent::client::cached(&p.ipv4);
+                }
+                let tx = refresh_tx.clone();
+                agent::client::refresh(&peers, move || {
+                    let _ = tx.try_send(());
+                });
                 RefreshData::Live { status, peers }
             };
             let _ = done.try_send(data);
@@ -1709,6 +1723,7 @@ fn compute_peer_signature(sorted: &[&Peer], cfg: &config::Config) -> u64 {
         }
         cfg.is_favorite(&p.hostname).hash(&mut h);
         cfg.peer_overrides.get(&p.hostname).hash(&mut h);
+        p.agent.as_ref().map(|a| &a.version).hash(&mut h);
     }
     h.finish()
 }
@@ -1963,6 +1978,8 @@ mod tests {
             tags: Vec::new(),
             exit_node_offered: false,
             exit_node_active: false,
+            link: tailscale::Link::Idle,
+            agent: None,
         }
     }
 
@@ -1999,6 +2016,26 @@ mod tests {
                 assert_eq!(delivered_on, main_thread, "result must come back on it");
             })
             .unwrap();
+    }
+
+    #[test]
+    fn discovering_or_upgrading_a_peer_agent_rebuilds_its_row() {
+        let cfg = config::Config::default();
+        let plain = test_peer("nodekey:a", "box", true);
+        let mut with_agent = plain.clone();
+        with_agent.agent = Some(agent::Hello::local());
+        let mut upgraded = with_agent.clone();
+        if let Some(a) = upgraded.agent.as_mut() {
+            a.version = "99.0.0".into();
+        }
+        let sig = |p: &Peer| compute_peer_signature(&[p], &cfg);
+        assert_ne!(sig(&plain), sig(&with_agent));
+        assert_ne!(sig(&with_agent), sig(&upgraded));
+        // The link flips with traffic; it lives in the subtitle and must not
+        // force a full rebuild (that would close expanded rows).
+        let mut relayed = plain.clone();
+        relayed.link = tailscale::Link::Relay("bigscale".into());
+        assert_eq!(sig(&plain), sig(&relayed));
     }
 
     #[test]

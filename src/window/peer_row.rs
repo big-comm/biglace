@@ -55,6 +55,13 @@ pub fn compose_subtitle(
     {
         bits.push(format!("{ms:.0} ms"));
     }
+    if peer.online {
+        match &peer.link {
+            tailscale::Link::Direct => bits.push(tr!("direct")),
+            tailscale::Link::Relay(_) => bits.push(tr!("via relay")),
+            tailscale::Link::Idle => {}
+        }
+    }
     bits.join("  ·  ")
 }
 
@@ -249,7 +256,7 @@ pub fn build(peer: &Peer, ctx: &PeerCtx) -> libadwaita::ExpanderRow {
             let toast = toast_files.clone();
             spawn_launcher(toast, move || {
                 let target = tailscale::pick_target(&host, &ip);
-                tailscale::open_files(&target, &user)
+                crate::launchers::open_files(&target, &user)
             });
         });
         row.add_suffix(&btn_files);
@@ -271,7 +278,7 @@ pub fn build(peer: &Peer, ctx: &PeerCtx) -> libadwaita::ExpanderRow {
             let toast = toast_term.clone();
             spawn_launcher(toast, move || {
                 let target = tailscale::pick_target(&host, &ip);
-                tailscale::open_terminal(&target, &user)
+                crate::launchers::open_terminal(&target, &user)
             });
         });
         row.add_suffix(&btn_term);
@@ -310,6 +317,13 @@ pub fn build(peer: &Peer, ctx: &PeerCtx) -> libadwaita::ExpanderRow {
             "avatar-default-symbolic",
             &tr!("Owner"),
             &peer.user,
+        ));
+    }
+    if let Some(agent) = &peer.agent {
+        row.add_row(&detail_row(
+            "org.communitybig.biglace-symbolic",
+            "BigLace",
+            &agent.version,
         ));
     }
 
