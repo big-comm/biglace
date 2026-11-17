@@ -1036,6 +1036,8 @@ fn setup_menu(ctx: &Ctx) {
     app_section.append(Some(&tr!("About BigLace")), Some("win.about"));
     menu.append_section(None, &app_section);
     ctx.ui.content.btn_menu.set_menu_model(Some(&menu));
+    ctx.ui.groups.menu_btn.set_menu_model(Some(&menu));
+    ctx.ui.invites.menu_btn.set_menu_model(Some(&menu));
 
     {
         let action = gtk4::gio::SimpleAction::new("about", None);

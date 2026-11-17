@@ -78,6 +78,7 @@ pub fn group_name_from(input: &str) -> String {
 #[derive(Clone)]
 pub struct GroupsPage {
     pub toolbar: libadwaita::ToolbarView,
+    pub menu_btn: gtk4::MenuButton,
     stack: gtk4::Stack,
     list: gtk4::ListBox,
     error_page: libadwaita::StatusPage,
@@ -113,6 +114,12 @@ impl GroupsPage {
             .icon_name("view-refresh-symbolic")
             .tooltip_text(tr!("Refresh"))
             .build();
+        // Same main menu as the Devices page (model set in setup_menu).
+        let menu_btn = gtk4::MenuButton::builder()
+            .icon_name("open-menu-symbolic")
+            .tooltip_text(tr!("Main menu"))
+            .build();
+        header.pack_end(&menu_btn);
         header.pack_start(&btn_new);
         header.pack_end(&btn_refresh);
         toolbar.add_top_bar(&header);
@@ -177,6 +184,7 @@ impl GroupsPage {
 
         let page = Self {
             toolbar,
+            menu_btn,
             stack,
             list,
             error_page,

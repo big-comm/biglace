@@ -1126,7 +1126,12 @@ pub fn connect(server: &str, authkey: &str, hostname: &str) -> Result<()> {
     // that would re-register the node on every connect (which is what let a
     // one-time key expire the node between sessions). The key is only needed to
     // (re)register: first login, a logged-out/expired node, or a new server.
-    if pre_status.registered && authkey.is_empty() {
+    // Also when a key is saved: an enrollment key is one-time, so once the
+    // node is registered on this same server, re-authenticating with it
+    // (--force-reauth) can only fail and log the device out. Only a
+    // different server, or a dead registration, needs the key.
+    let same_server = current_control_url().is_some_and(|c| same_url(&c, server));
+    if pre_status.registered && (authkey.is_empty() || same_server) {
         dbg("connect: cached registration present — trying keyless reconnect");
         if try_reconnect().is_ok() && wait_until_online() {
             dbg("connect: reconnected via cached registration (no key needed)");
@@ -1187,6 +1192,23 @@ pub fn connect(server: &str, authkey: &str, hostname: &str) -> Result<()> {
         bail!(h);
     }
     bail!(tr!("Failed to connect — check the server URL and key."))
+}
+
+/// Control server the daemon is configured for (`tailscale debug prefs`).
+fn current_control_url() -> Option<String> {
+    let mut command = Command::new(tailscale_cmd());
+    command.args(["debug", "prefs"]);
+    let out = command_output_timeout(&mut command, Duration::from_secs(5)).ok()?;
+    if !out.status.success() {
+        return None;
+    }
+    let v: serde_json::Value = serde_json::from_slice(&out.stdout).ok()?;
+    v.get("ControlURL")?.as_str().map(str::to_string)
+}
+
+fn same_url(a: &str, b: &str) -> bool {
+    let norm = |s: &str| s.trim().trim_end_matches('/').to_ascii_lowercase();
+    !a.trim().is_empty() && norm(a) == norm(b)
 }
 
 /// A keyless reconnect is a bare `tailscale up`, which keeps the daemon's

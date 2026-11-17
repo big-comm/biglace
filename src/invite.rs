@@ -561,10 +561,9 @@ fn member_call(
             Err(match (code, err.as_str()) {
                 (404, "") | (405, _) => MemberError::Unsupported,
                 (_, "not_a_member") => MemberError::NotAMember,
-                (401, "signature_required" | "bad_signature" | "stale_request" | "replayed") => {
-                    MemberError::Other(err)
-                }
-                (401, "device_unverified") => MemberError::Unverified,
+                // Unsigned (no device key could be made) or not provable.
+                (401, "signature_required" | "device_unverified") => MemberError::Unverified,
+                (401, "bad_signature" | "stale_request" | "replayed") => MemberError::Other(err),
                 (401, "device_key_mismatch") => MemberError::KeyMismatch,
                 (_, "not_in_group") => MemberError::NotInGroup,
                 (_, "open_network") => MemberError::OpenNetwork,

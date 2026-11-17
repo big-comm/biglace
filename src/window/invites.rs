@@ -86,6 +86,7 @@ fn status_label(status: &str) -> String {
 #[derive(Clone)]
 pub struct InvitesPage {
     pub toolbar: libadwaita::ToolbarView,
+    pub menu_btn: gtk4::MenuButton,
     stack: gtk4::Stack,
     list: gtk4::ListBox,
     error_page: libadwaita::StatusPage,
@@ -102,6 +103,12 @@ impl InvitesPage {
             .icon_name("view-refresh-symbolic")
             .tooltip_text(tr!("Refresh"))
             .build();
+        // Same main menu as the Devices page (model set in setup_menu).
+        let menu_btn = gtk4::MenuButton::builder()
+            .icon_name("open-menu-symbolic")
+            .tooltip_text(tr!("Main menu"))
+            .build();
+        header.pack_end(&menu_btn);
         header.pack_end(&btn_refresh);
         toolbar.add_top_bar(&header);
 
@@ -173,6 +180,7 @@ impl InvitesPage {
 
         let page = Self {
             toolbar,
+            menu_btn,
             stack,
             list,
             error_page,
