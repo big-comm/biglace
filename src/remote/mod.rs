@@ -69,6 +69,10 @@ pub enum Kind {
     KeyFrame = 9,
     /// Voice room, both ways: JSON `{ "muted": bool }`.
     RoomState = 10,
+    /// Chat, sender → receiver: one JSON message (see `crate::chat`).
+    Chat = 11,
+    /// Chat, receiver → sender: JSON list of the message ids stored.
+    ChatAck = 12,
 }
 
 /// Screen protocol revision the viewer asks for.
@@ -95,6 +99,8 @@ impl Kind {
             8 => Some(Self::Audio),
             9 => Some(Self::KeyFrame),
             10 => Some(Self::RoomState),
+            11 => Some(Self::Chat),
+            12 => Some(Self::ChatAck),
             _ => None,
         }
     }

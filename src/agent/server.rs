@@ -136,6 +136,16 @@ fn handle(stream: TcpStream, peer: SocketAddr, auth: &Authenticator) {
         return;
     };
     let identity = auth(peer.ip());
+    // Chat messages from another device.
+    if path == crate::chat::PATH {
+        match (&identity, method.as_str()) {
+            (Some(id), "GET") => crate::chat::accept(stream, peer.ip(), &parse_headers(&head), id, &path),
+            _ => {
+                let _ = respond(&stream, 403, "forbidden");
+            }
+        }
+        return;
+    }
     // A voice-room peer keeps the connection too.
     if path.starts_with(crate::room::PATH_PREFIX) {
         match (&identity, method.as_str()) {

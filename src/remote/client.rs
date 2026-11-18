@@ -550,7 +550,7 @@ pub(crate) fn decode_loop_with(
                 }
             }
             Kind::Pong => shared.clock.pong(&payload),
-            Kind::Input | Kind::Ping | Kind::KeyFrame | Kind::Audio | Kind::RoomState => {}
+            Kind::Input | Kind::Ping | Kind::KeyFrame | Kind::Audio | Kind::RoomState | Kind::Chat | Kind::ChatAck => {}
             Kind::Error => anyhow::bail!("{}", String::from_utf8_lossy(&payload)),
         }
     }

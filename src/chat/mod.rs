@@ -1,0 +1,752 @@
+//! Chat: messages between people of the network, one to one or in a group,
+//! sent straight between their computers — the server never sees them.
+//!
+//! - Delivery: the sender's BigLace opens a signed connection to each
+//!   recipient device's agent (`/v1/chat`, checked like a voice-room
+//!   connection) and sends the messages; the receiver answers with the ids it
+//!   stored. Whatever isn't acknowledged waits in a local outbox and is
+//!   retried while that device is reachable, so messages to someone offline
+//!   arrive when they're back. A copy goes to our own other devices too.
+//! - Trust: the sender is who the tunnel and the device key say, never what
+//!   the message claims; a group message is kept only if both of us are in
+//!   that group.
+//! - History lives on each computer (one JSON file per conversation, 0600).
+
+pub mod markdown;
+
+use std::collections::{HashMap, HashSet};
+use std::io::{BufReader, Write};
+use std::net::{IpAddr, TcpStream};
+use std::path::{Path, PathBuf};
+use std::sync::{Mutex, OnceLock};
+use std::time::{Duration, Instant};
+
+use serde::{Deserialize, Serialize};
+
+use crate::remote::{read_frame, write_frame, Kind};
+use crate::tailscale::{self, Identity};
+
+/// Agent path of a chat delivery connection.
+pub const PATH: &str = "/v1/chat";
+/// Longest message accepted (bytes of text).
+pub const MAX_TEXT: usize = 16 * 1024;
+/// Messages kept per conversation (the oldest go first).
+const KEEP: usize = 5000;
+/// Incoming messages accepted per sender and minute.
+const RATE_PER_MINUTE: usize = 120;
+/// How often the outbox is retried (sooner when kicked).
+const RETRY: Duration = Duration::from_secs(15);
+
+/// Which conversation: `dm` with a person, or a `group`.
+#[derive(Debug, Clone, PartialEq, Eq, Hash, PartialOrd, Ord, Serialize, Deserialize)]
+pub struct ConvId {
+    pub kind: String,
+    pub name: String,
+}
+
+impl ConvId {
+    pub fn direct(user: &str) -> Self {
+        Self { kind: "dm".into(), name: user.into() }
+    }
+    pub fn group(name: &str) -> Self {
+        Self { kind: "group".into(), name: name.into() }
+    }
+    pub fn is_group(&self) -> bool {
+        self.kind == "group"
+    }
+    /// File-safe key (`dm-bruna`, `group-familia`).
+    pub fn key(&self) -> String {
+        format!("{}-{}", self.kind, self.name)
+    }
+    fn valid(&self) -> bool {
+        (self.kind == "dm" || self.kind == "group") && name_ok(&self.name)
+    }
+}
+
+/// Account and group names as the panel spells them.
+fn name_ok(s: &str) -> bool {
+    !s.is_empty() && s.len() <= 64 && s.bytes().all(|c| c.is_ascii_alphanumeric() || c == b'-' || c == b'_')
+}
+
+/// One message, as kept in the history.
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+pub struct Message {
+    pub id: String,
+    /// Account that wrote it.
+    pub from: String,
+    /// Their device.
+    #[serde(default)]
+    pub device: String,
+    pub text: String,
+    /// When it was written (ms since the epoch, sender's clock).
+    pub at: u64,
+    /// Written by us (on this or another of our devices).
+    pub mine: bool,
+    /// Recipients (accounts) whose device stored it.
+    #[serde(default)]
+    pub delivered: Vec<String>,
+}
+
+#[derive(Debug, Clone, Default, Serialize, Deserialize)]
+struct Conversation {
+    messages: Vec<Message>,
+    /// Messages received and not seen yet.
+    #[serde(default)]
+    unread: u32,
+}
+
+/// What travels between devices.
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+struct Wire {
+    id: String,
+    /// The sender's view: `dm` names the recipient.
+    conv: ConvId,
+    text: String,
+    at: u64,
+}
+
+/// A message waiting to reach one device.
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+struct Pending {
+    wire: Wire,
+    /// Account behind the device (ours for the copies to our devices).
+    to_user: String,
+    /// The device: tailnet node id (stable even if its address changes).
+    node: String,
+}
+
+/// A conversation, as the list shows it.
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct Summary {
+    pub id: ConvId,
+    pub last: Option<Message>,
+    pub unread: u32,
+}
+
+/// What the window learns.
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub enum ChatEvent {
+    /// Messages of this conversation changed (new, delivered…).
+    Changed(ConvId),
+    /// Someone else's message arrived (for notifications).
+    Incoming { conv: ConvId, message: Message },
+}
+
+/// The history and the outbox, on disk under `dir`.
+struct Store {
+    dir: PathBuf,
+    convs: HashMap<ConvId, Conversation>,
+    outbox: Vec<Pending>,
+}
+
+impl Store {
+    fn open(dir: &Path) -> Self {
+        let mut convs = HashMap::new();
+        if let Ok(entries) = std::fs::read_dir(dir) {
+            for e in entries.flatten() {
+                let name = e.file_name().to_string_lossy().to_string();
+                let Some(stem) = name.strip_suffix(".json") else { continue };
+                let Some((kind, conv_name)) = stem.split_once('-') else { continue };
+                let id = ConvId { kind: kind.into(), name: conv_name.into() };
+                if !id.valid() {
+                    continue;
+                }
+                if let Ok(Ok(c)) = std::fs::read(e.path()).map(|b| serde_json::from_slice::<Conversation>(&b)) {
+                    convs.insert(id, c);
+                }
+            }
+        }
+        let outbox = std::fs::read(dir.join("outbox"))
+            .ok()
+            .and_then(|b| serde_json::from_slice(&b).ok())
+            .unwrap_or_default();
+        Self { dir: dir.to_path_buf(), convs, outbox }
+    }
+
+    fn save(&self, id: &ConvId) {
+        let Some(c) = self.convs.get(id) else { return };
+        if let Ok(json) = serde_json::to_vec(c) {
+            write_private(&self.dir.join(format!("{}.json", id.key())), &json);
+        }
+    }
+
+    fn save_outbox(&self) {
+        if let Ok(json) = serde_json::to_vec(&self.outbox) {
+            write_private(&self.dir.join("outbox"), &json);
+        }
+    }
+
+    /// Add `m` to `id` unless it's already there. True if added.
+    fn add(&mut self, id: &ConvId, m: Message, count_unread: bool) -> bool {
+        let c = self.convs.entry(id.clone()).or_default();
+        if c.messages.iter().any(|x| x.id == m.id) {
+            return false;
+        }
+        // Keep the order by time (a late copy may arrive after newer ones).
+        let pos = c.messages.iter().rposition(|x| x.at <= m.at).map_or(0, |p| p + 1);
+        c.messages.insert(pos, m);
+        if c.messages.len() > KEEP {
+            let extra = c.messages.len() - KEEP;
+            c.messages.drain(..extra);
+        }
+        if count_unread {
+            c.unread += 1;
+        }
+        self.save(id);
+        true
+    }
+
+    fn summaries(&self) -> Vec<Summary> {
+        let mut out: Vec<Summary> = self
+            .convs
+            .iter()
+            .map(|(id, c)| Summary { id: id.clone(), last: c.messages.last().cloned(), unread: c.unread })
+            .collect();
+        out.sort_by(|a, b| b.last.as_ref().map(|m| m.at).cmp(&a.last.as_ref().map(|m| m.at)).then(a.id.cmp(&b.id)));
+        out
+    }
+
+    /// `user`'s device stored message `id` of `conv` (key of the sender's view).
+    fn delivered(&mut self, conv: &ConvId, id: &str, user: &str) -> bool {
+        let Some(c) = self.convs.get_mut(conv) else { return false };
+        let Some(m) = c.messages.iter_mut().find(|m| m.id == id) else { return false };
+        if m.delivered.iter().any(|u| u == user) {
+            return false;
+        }
+        m.delivered.push(user.to_string());
+        self.save(conv);
+        true
+    }
+}
+
+fn write_private(path: &Path, data: &[u8]) {
+    use std::os::unix::fs::OpenOptionsExt;
+    if let Some(dir) = path.parent() {
+        let _ = std::fs::create_dir_all(dir);
+    }
+    let tmp = path.with_extension("tmp");
+    let ok = std::fs::OpenOptions::new()
+        .write(true)
+        .create(true)
+        .truncate(true)
+        .mode(0o600)
+        .open(&tmp)
+        .and_then(|mut f| f.write_all(data));
+    if ok.is_ok() {
+        let _ = std::fs::rename(&tmp, path);
+    }
+}
+
+// ─── Who we are and our groups (from the panel, refreshed now and then) ─────
+
+#[derive(Default, Clone)]
+struct Me {
+    user: String,
+    /// Group → its members.
+    groups: HashMap<String, Vec<String>>,
+    fetched: Option<Instant>,
+}
+
+fn me_slot() -> &'static Mutex<Me> {
+    static ME: OnceLock<Mutex<Me>> = OnceLock::new();
+    ME.get_or_init(|| Mutex::new(Me::default()))
+}
+
+/// Our account and groups, asking the panel when unknown or older than
+/// `max_age`. Blocking.
+fn me(max_age: Duration) -> Option<Me> {
+    let cur = me_slot().lock().ok()?.clone();
+    if !cur.user.is_empty() && cur.fetched.is_some_and(|t| t.elapsed() < max_age) {
+        return Some(cur);
+    }
+    match crate::invite::my_groups() {
+        Ok(mine) => {
+            let fresh = Me {
+                user: mine.user,
+                groups: mine.groups.into_iter().map(|g| (g.name, g.members)).collect(),
+                fetched: Some(Instant::now()),
+            };
+            if let Ok(mut slot) = me_slot().lock() {
+                *slot = fresh.clone();
+            }
+            Some(fresh)
+        }
+        Err(_) => (!cur.user.is_empty()).then_some(cur),
+    }
+}
+
+/// Ask the panel again (if our groups are older than 30 s). Blocking.
+/// Returns our account name.
+pub fn my_groups_refresh() -> Option<String> {
+    me(Duration::from_secs(30)).map(|m| m.user)
+}
+
+/// Our account name, if known.
+pub fn my_user() -> Option<String> {
+    me_slot().lock().ok().map(|m| m.user.clone()).filter(|u| !u.is_empty())
+}
+
+/// Groups we're in (names), if known.
+pub fn my_groups() -> Vec<String> {
+    let mut g: Vec<String> = me_slot().lock().map(|m| m.groups.keys().cloned().collect()).unwrap_or_default();
+    g.sort();
+    g
+}
+
+// ─── The shared store and the window's channel ──────────────────────────────
+
+fn chat_dir() -> PathBuf {
+    // Development builds: a scratch history (BIGLACE_CHAT_DIR), so previews
+    // never touch the real one.
+    #[cfg(debug_assertions)]
+    if let Ok(dir) = std::env::var("BIGLACE_CHAT_DIR") {
+        return PathBuf::from(dir);
+    }
+    gtk4::glib::user_data_dir().join("biglace").join("chat")
+}
+
+/// Development builds only (BIGLACE_PREVIEW=chat with BIGLACE_CHAT_DIR): a
+/// sample history to look at the chat without a second person.
+#[cfg(debug_assertions)]
+pub fn seed_preview() -> Option<ConvId> {
+    if std::env::var("BIGLACE_PREVIEW").as_deref() != Ok("chat") || std::env::var("BIGLACE_CHAT_DIR").is_err() {
+        return None;
+    }
+    let now = now_ms();
+    let day = 24 * 60 * 60 * 1000;
+    let m = |id: &str, from: &str, mine: bool, text: &str, at: u64, delivered: &[&str]| Message {
+        id: id.into(),
+        from: from.into(),
+        device: "notebook".into(),
+        text: text.into(),
+        at,
+        mine,
+        delivered: delivered.iter().map(|s| s.to_string()).collect(),
+    };
+    let dm = ConvId::direct("bruna");
+    let grp = ConvId::group("familia");
+    let mut s = store().lock().ok()?;
+    for msg in [
+        m("p1", "bruna", false, "Oi! Conseguiu entrar na rede? 😊", now - day - 3_600_000, &[]),
+        m("p2", "tales", true, "Consegui sim! Agora dá pra **ver a tela** do seu notebook quando precisar.", now - day - 3_500_000, &["bruna"]),
+        m("p3", "bruna", false, "Que ótimo 🎉", now - 600_000, &[]),
+        m("p4", "bruna", false, "Me manda o link daquele tutorial?\n\n- instalar o *BigLace*\n- abrir o convite\n- digitar o nome", now - 590_000, &[]),
+        m("p5", "tales", true, "Claro: [biglinux.com.br](https://www.biglinux.com.br) — e o comando é `sudo pacman -Syu`", now - 300_000, &["bruna"]),
+        m("p6", "tales", true, "👍", now - 120_000, &[]),
+        m("p7", "tales", true, "Vou te ligar na **sala** daqui a pouco", now - 30_000, &[]),
+    ] {
+        s.add(&dm, msg, false);
+    }
+    for msg in [
+        m("g1", "bruno", false, "Bom dia, família! ☀️", now - 7_200_000, &[]),
+        m("g2", "maria", false, "Bom dia!! Alguém vai no almoço de domingo?", now - 7_100_000, &[]),
+        m("g3", "tales", true, "Eu vou! ~~Levo a sobremesa~~ levo o refri 😅", now - 7_000_000, &["bruno", "maria"]),
+        m("g4", "bruno", false, "```\nalmoço: domingo 12h\nlocal: casa da vó\n```", now - 60_000, &[]),
+    ] {
+        s.add(&grp, msg, true);
+    }
+    Some(dm)
+}
+
+fn store() -> &'static Mutex<Store> {
+    static STORE: OnceLock<Mutex<Store>> = OnceLock::new();
+    STORE.get_or_init(|| Mutex::new(Store::open(&chat_dir())))
+}
+
+type Channel = (async_channel::Sender<ChatEvent>, async_channel::Receiver<ChatEvent>);
+
+fn channel() -> &'static Channel {
+    static CH: OnceLock<Channel> = OnceLock::new();
+    CH.get_or_init(async_channel::unbounded)
+}
+
+pub fn events() -> async_channel::Receiver<ChatEvent> {
+    channel().1.clone()
+}
+
+fn emit(e: ChatEvent) {
+    let _ = channel().0.try_send(e);
+}
+
+pub fn conversations() -> Vec<Summary> {
+    store().lock().map(|s| s.summaries()).unwrap_or_default()
+}
+
+pub fn messages(id: &ConvId) -> Vec<Message> {
+    store().lock().ok().and_then(|s| s.convs.get(id).map(|c| c.messages.clone())).unwrap_or_default()
+}
+
+/// The conversation is on screen: nothing unread in it anymore.
+pub fn mark_read(id: &ConvId) {
+    if let Ok(mut s) = store().lock() {
+        if let Some(c) = s.convs.get_mut(id) {
+            if c.unread > 0 {
+                c.unread = 0;
+                s.save(id);
+            }
+        }
+    }
+}
+
+pub fn unread_total() -> u32 {
+    store().lock().map(|s| s.convs.values().map(|c| c.unread).sum()).unwrap_or(0)
+}
+
+/// Make sure a conversation exists (an empty one shows in the list).
+pub fn open(id: &ConvId) {
+    if let Ok(mut s) = store().lock() {
+        s.convs.entry(id.clone()).or_default();
+    }
+}
+
+fn new_id() -> String {
+    let mut b = [0u8; 12];
+    let _ = getrandom::getrandom(&mut b);
+    b.iter().map(|x| format!("{x:02x}")).collect()
+}
+
+fn now_ms() -> u64 {
+    crate::remote::now_us() / 1000
+}
+
+/// Write `text` in `conv`. Blocking (looks up who should get it): call off
+/// the UI thread.
+pub fn send(conv: &ConvId, text: &str) -> Result<(), String> {
+    let text = text.trim_end();
+    if text.trim().is_empty() {
+        return Ok(());
+    }
+    if !conv.valid() {
+        return Err("invalid conversation".into());
+    }
+    if text.len() > MAX_TEXT {
+        return Err(crate::tr!("message too long"));
+    }
+    let me = me(Duration::from_secs(300)).ok_or_else(|| crate::tr!("not signed in to a BigScale network"))?;
+    let recipients: Vec<String> = if conv.is_group() {
+        me.groups
+            .get(&conv.name)
+            .ok_or_else(|| crate::tr!("you are not in that group"))?
+            .iter()
+            .filter(|u| **u != me.user)
+            .cloned()
+            .collect()
+    } else {
+        vec![conv.name.clone()]
+    };
+    let wire = Wire { id: new_id(), conv: conv.clone(), text: text.to_string(), at: now_ms() };
+    let device = tailscale::get_status().hostname.unwrap_or_default();
+    let message = Message {
+        id: wire.id.clone(),
+        from: me.user.clone(),
+        device,
+        text: wire.text.clone(),
+        at: wire.at,
+        mine: true,
+        delivered: vec![],
+    };
+    // Every device of every recipient, and our own other devices.
+    let peers = tailscale::get_peers();
+    let mut pending = Vec::new();
+    for p in &peers {
+        if p.user.is_empty() || p.id.is_empty() {
+            continue;
+        }
+        if recipients.contains(&p.user) || p.user == me.user {
+            pending.push(Pending { wire: wire.clone(), to_user: p.user.clone(), node: p.id.clone() });
+        }
+    }
+    if let Ok(mut s) = store().lock() {
+        s.add(conv, message, false);
+        s.outbox.extend(pending);
+        s.save_outbox();
+    }
+    emit(ChatEvent::Changed(conv.clone()));
+    kick();
+    Ok(())
+}
+
+// ─── Delivery ───────────────────────────────────────────────────────────────
+
+/// Wakes the delivery worker; the receiver is taken once by `start`.
+type Kick = (std::sync::mpsc::SyncSender<()>, Mutex<Option<std::sync::mpsc::Receiver<()>>>);
+
+fn kick_slot() -> &'static Kick {
+    static K: OnceLock<Kick> = OnceLock::new();
+    K.get_or_init(|| {
+        let (tx, rx) = std::sync::mpsc::sync_channel(1);
+        (tx, Mutex::new(Some(rx)))
+    })
+}
+
+/// Try the outbox now (a message was written, someone came online…).
+pub fn kick() {
+    let _ = kick_slot().0.try_send(());
+}
+
+/// Start the delivery worker (once).
+pub fn start() {
+    let Some(rx) = kick_slot().1.lock().ok().and_then(|mut r| r.take()) else { return };
+    let _ = std::thread::Builder::new().name("biglace-chat".into()).spawn(move || loop {
+        let _ = rx.recv_timeout(RETRY);
+        deliver_pending();
+    });
+}
+
+fn deliver_pending() {
+    let outbox = store().lock().map(|s| s.outbox.clone()).unwrap_or_default();
+    if outbox.is_empty() {
+        return;
+    }
+    let peers = tailscale::get_peers();
+    let mut by_node: HashMap<String, Vec<Pending>> = HashMap::new();
+    for p in outbox {
+        by_node.entry(p.node.clone()).or_default().push(p);
+    }
+    for (node, items) in by_node {
+        let Some(peer) = peers.iter().find(|p| p.id == node) else {
+            // That device left the network: nothing will ever reach it.
+            if !peers.is_empty() {
+                drop_pending(&items);
+            }
+            continue;
+        };
+        if !peer.online || peer.ipv4.is_empty() {
+            continue;
+        }
+        match deliver_to(&peer.ipv4, &items) {
+            Ok(acked) => {
+                let mut changed = HashSet::new();
+                if let Ok(mut s) = store().lock() {
+                    for p in items.iter().filter(|p| acked.contains(&p.wire.id)) {
+                        s.outbox.retain(|x| !(x.node == p.node && x.wire.id == p.wire.id));
+                        let me = my_user().unwrap_or_default();
+                        if p.to_user != me && s.delivered(&p.wire.conv, &p.wire.id, &p.to_user) {
+                            changed.insert(p.wire.conv.clone());
+                        }
+                    }
+                    s.save_outbox();
+                }
+                for c in changed {
+                    emit(ChatEvent::Changed(c));
+                }
+            }
+            Err(e) => tailscale::dbg(&format!("chat: {} unreachable: {e}", peer.hostname)),
+        }
+    }
+}
+
+fn drop_pending(items: &[Pending]) {
+    if let Ok(mut s) = store().lock() {
+        s.outbox.retain(|x| !items.iter().any(|p| p.node == x.node && p.wire.id == x.wire.id));
+        s.save_outbox();
+    }
+}
+
+/// Send `items` to the agent at `ip`; the ids it stored.
+fn deliver_to(ip: &str, items: &[Pending]) -> Result<HashSet<String>, String> {
+    let (stream, mut reader) =
+        crate::remote::client::dial(ip, PATH, &[], Duration::from_secs(8)).map_err(|e| format!("{e:?}"))?;
+    let mut w = stream.try_clone().map_err(|e| e.to_string())?;
+    for p in items {
+        let json = serde_json::to_vec(&p.wire).map_err(|e| e.to_string())?;
+        write_frame(&mut w, Kind::Chat, &json).map_err(|e| e.to_string())?;
+    }
+    let _ = stream.set_read_timeout(Some(Duration::from_secs(8)));
+    let mut acked = HashSet::new();
+    while acked.len() < items.len() {
+        match read_frame(&mut reader) {
+            Ok((Kind::ChatAck, payload)) => {
+                if let Ok(ids) = serde_json::from_slice::<Vec<String>>(&payload) {
+                    acked.extend(ids);
+                }
+            }
+            Ok(_) => {}
+            Err(_) => break,
+        }
+    }
+    let _ = stream.shutdown(std::net::Shutdown::Both);
+    Ok(acked)
+}
+
+// ─── Receiving ──────────────────────────────────────────────────────────────
+
+fn respond(mut stream: &TcpStream, status: u16, reason: &str) {
+    let _ = write!(stream, "HTTP/1.1 {status} {reason}\r\nContent-Length: 0\r\nConnection: close\r\n\r\n");
+    let _ = stream.flush();
+}
+
+fn rate_ok(sender: &str) -> bool {
+    static SEEN: OnceLock<Mutex<HashMap<String, Vec<Instant>>>> = OnceLock::new();
+    let Ok(mut seen) = SEEN.get_or_init(Default::default).lock() else { return false };
+    let now = Instant::now();
+    let list = seen.entry(sender.to_string()).or_default();
+    list.retain(|t| now.duration_since(*t) < Duration::from_secs(60));
+    if list.len() >= RATE_PER_MINUTE {
+        return false;
+    }
+    list.push(now);
+    true
+}
+
+/// Where a message from `sender` belongs on this computer, or `None` to
+/// drop it. `me`: our account and groups.
+fn place(wire: &Wire, sender: &str, me: &Me) -> Option<(ConvId, bool)> {
+    if !wire.conv.valid() || wire.text.len() > MAX_TEXT || wire.id.is_empty() || wire.id.len() > 64 {
+        return None;
+    }
+    let mine = sender == me.user;
+    if wire.conv.is_group() {
+        let members = me.groups.get(&wire.conv.name)?;
+        if !members.iter().any(|m| m == sender) {
+            return None;
+        }
+        Some((wire.conv.clone(), mine))
+    } else if mine {
+        // A copy of what we wrote to someone, from another of our devices.
+        Some((wire.conv.clone(), true))
+    } else if wire.conv.name == me.user {
+        Some((ConvId::direct(sender), false))
+    } else {
+        // Addressed to someone else.
+        None
+    }
+}
+
+/// A device delivers messages to us (agent thread).
+pub fn accept(stream: TcpStream, peer: IpAddr, headers: &HashMap<String, String>, identity: &Identity, path: &str) {
+    let local = stream
+        .local_addr()
+        .map(|a| format!("{}:{}", a.ip(), a.port()))
+        .unwrap_or_default();
+    if let Err(why) = crate::remote::host::verify_caller(headers, peer, &local, path) {
+        tailscale::dbg(&format!("chat: refused {}@{}: {why}", identity.login, identity.device));
+        return respond(&stream, 401, "Unauthorized");
+    }
+    let Some(mut me) = me(Duration::from_secs(600)) else {
+        return respond(&stream, 503, "Unavailable");
+    };
+    let _ = write!(&stream, "HTTP/1.1 200 OK\r\nContent-Type: application/x-biglace-chat\r\n\r\n");
+    let _ = stream.set_read_timeout(Some(Duration::from_secs(20)));
+    let Ok(read_half) = stream.try_clone() else { return };
+    let mut reader = BufReader::new(read_half);
+    let mut writer = stream;
+    let sender = identity.login.clone();
+    let mut refreshed = false;
+    while let Ok((Kind::Chat, payload)) = read_frame(&mut reader) {
+        let Ok(wire) = serde_json::from_slice::<Wire>(&payload) else { continue };
+        if !rate_ok(&sender) {
+            break;
+        }
+        let mut placed = place(&wire, &sender, &me);
+        // A group we don't know of yet (just created, or just joined)?
+        if placed.is_none() && wire.conv.is_group() && !refreshed {
+            refreshed = true;
+            if let Some(fresh) = self::me(Duration::ZERO) {
+                me = fresh;
+                placed = place(&wire, &sender, &me);
+            }
+        }
+        if let Some((conv, mine)) = placed {
+            let message = Message {
+                id: wire.id.clone(),
+                from: sender.clone(),
+                device: identity.device.clone(),
+                text: wire.text.clone(),
+                at: wire.at,
+                mine,
+                delivered: vec![],
+            };
+            let added = store().lock().map(|mut s| s.add(&conv, message.clone(), !mine)).unwrap_or(false);
+            if added {
+                emit(ChatEvent::Changed(conv.clone()));
+                if !mine {
+                    emit(ChatEvent::Incoming { conv, message });
+                }
+            }
+        }
+        // Acknowledged either way: kept, a duplicate, or not for us — the
+        // sender stops retrying.
+        let ack = serde_json::to_vec(&[&wire.id]).unwrap_or_default();
+        if write_frame(&mut writer, Kind::ChatAck, &ack).is_err() {
+            break;
+        }
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    fn me() -> Me {
+        Me {
+            user: "tales".into(),
+            groups: HashMap::from([("familia".into(), vec!["tales".into(), "bruna".into()])]),
+            fetched: None,
+        }
+    }
+
+    fn wire(conv: ConvId) -> Wire {
+        Wire { id: "a1".into(), conv, text: "oi".into(), at: 1 }
+    }
+
+    #[test]
+    fn messages_land_where_they_belong() {
+        let me = me();
+        // Bruna writes to me.
+        assert_eq!(place(&wire(ConvId::direct("tales")), "bruna", &me), Some((ConvId::direct("bruna"), false)));
+        // Bruna writes to someone else: not for this computer.
+        assert_eq!(place(&wire(ConvId::direct("bruno")), "bruna", &me), None);
+        // My other device copies what I wrote to Bruno.
+        assert_eq!(place(&wire(ConvId::direct("bruno")), "tales", &me), Some((ConvId::direct("bruno"), true)));
+        // Group: only from its members, only for groups I'm in.
+        assert_eq!(place(&wire(ConvId::group("familia")), "bruna", &me), Some((ConvId::group("familia"), false)));
+        assert_eq!(place(&wire(ConvId::group("familia")), "bruno", &me), None);
+        assert_eq!(place(&wire(ConvId::group("trabalho")), "bruna", &me), None);
+        // Junk.
+        assert_eq!(place(&wire(ConvId { kind: "dm".into(), name: "../x".into() }), "bruna", &me), None);
+        assert_eq!(place(&wire(ConvId { kind: "x".into(), name: "tales".into() }), "bruna", &me), None);
+        let mut big = wire(ConvId::direct("tales"));
+        big.text = "a".repeat(MAX_TEXT + 1);
+        assert_eq!(place(&big, "bruna", &me), None);
+    }
+
+    #[test]
+    fn history_is_kept_in_order_without_duplicates() {
+        let dir = std::env::temp_dir().join(format!("biglace-chat-test-{}", new_id()));
+        let conv = ConvId::direct("bruna");
+        let m = |id: &str, at: u64| Message {
+            id: id.into(),
+            from: "bruna".into(),
+            device: "nb".into(),
+            text: id.into(),
+            at,
+            mine: false,
+            delivered: vec![],
+        };
+        {
+            let mut s = Store::open(&dir);
+            assert!(s.add(&conv, m("b", 20), true));
+            assert!(s.add(&conv, m("a", 10), true));
+            assert!(!s.add(&conv, m("a", 10), true), "duplicate");
+            assert!(s.add(&conv, m("c", 30), true));
+            s.outbox.push(Pending { wire: wire(conv.clone()), to_user: "bruna".into(), node: "n1".into() });
+            s.save_outbox();
+            assert!(s.delivered(&conv, "c", "bruna"));
+            assert!(!s.delivered(&conv, "c", "bruna"), "already marked");
+        }
+        // Reopened from disk: same history, same outbox, files private.
+        let s = Store::open(&dir);
+        let ids: Vec<&str> = s.convs[&conv].messages.iter().map(|m| m.id.as_str()).collect();
+        assert_eq!(ids, ["a", "b", "c"]);
+        assert_eq!(s.convs[&conv].unread, 3);
+        assert_eq!(s.convs[&conv].messages[2].delivered, ["bruna"]);
+        assert_eq!(s.outbox.len(), 1);
+        let summaries = s.summaries();
+        assert_eq!(summaries[0].last.as_ref().map(|m| m.id.as_str()), Some("c"));
+        use std::os::unix::fs::PermissionsExt;
+        let mode = std::fs::metadata(dir.join("dm-bruna.json")).unwrap().permissions().mode();
+        assert_eq!(mode & 0o777, 0o600);
+        let _ = std::fs::remove_dir_all(&dir);
+    }
+}

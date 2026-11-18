@@ -5,7 +5,7 @@ use crate::tr;
 
 /// Sections listed in the navigation sidebar, in order. The row's widget
 /// name is the section id (also the content stack's child name).
-pub const SECTIONS: &[&str] = &["devices", "rooms", "groups", "invites"];
+pub const SECTIONS: &[&str] = &["devices", "chat", "rooms", "groups", "invites"];
 
 #[derive(Clone)]
 pub struct Sidebar {
@@ -30,6 +30,8 @@ pub struct Sidebar {
     pub switch_auto_reconnect: gtk4::Switch,
     pub switch_notify: gtk4::Switch,
     pub btn_connect: gtk4::Button,
+    /// Unread messages, on the Chat row (hidden at zero).
+    pub chat_badge: gtk4::Label,
 }
 
 pub fn build() -> Sidebar {
@@ -57,11 +59,16 @@ pub fn build() -> Sidebar {
     outer.set_margin_bottom(12);
 
     // ── Sections ──
+    let chat_badge = gtk4::Label::new(None);
+    chat_badge.add_css_class("unread-badge");
+    chat_badge.set_visible(false);
+    chat_badge.set_valign(gtk4::Align::Center);
     let nav = gtk4::ListBox::new();
     nav.add_css_class("navigation-sidebar");
     nav.update_property(&[gtk4::accessible::Property::Label(&tr!("Sections"))]);
     for (id, icon, label) in [
         ("devices", "computer-symbolic", tr!("Devices")),
+        ("chat", "chat-message-new-symbolic", tr!("Chat")),
         ("rooms", "call-start-symbolic", tr!("Rooms")),
         ("groups", "system-users-symbolic", tr!("Groups")),
         ("invites", "mail-send-symbolic", tr!("Invites")),
@@ -72,7 +79,11 @@ pub fn build() -> Sidebar {
         line.append(&gtk4::Image::from_icon_name(icon));
         let text = gtk4::Label::new(Some(&label));
         text.set_xalign(0.0);
+        text.set_hexpand(true);
         line.append(&text);
+        if id == "chat" {
+            line.append(&chat_badge);
+        }
         let row = gtk4::ListBoxRow::builder().child(&line).name(id).build();
         nav.append(&row);
     }
@@ -313,5 +324,6 @@ pub fn build() -> Sidebar {
         switch_auto_reconnect,
         switch_notify,
         btn_connect,
+        chat_badge,
     }
 }

@@ -65,6 +65,74 @@ const CSS: &str = r#"
 /* The QR code keeps a white quiet zone in dark mode too: phone cameras
    need the contrast. */
 /* Someone controls this screen: impossible to miss, still part of the app. */
+/* ── Chat ── */
+.unread-badge {
+    min-width: 20px;
+    padding: 1px 7px;
+    border-radius: 999px;
+    background-color: @accent_bg_color;
+    color: @accent_fg_color;
+    font-weight: 800;
+    font-size: 0.8em;
+}
+.chat-list row { border-radius: 12px; margin: 2px 4px; }
+.chat-header { padding: 8px 14px; }
+.chat-backdrop {
+    background-image: linear-gradient(180deg,
+        alpha(@accent_bg_color, 0.06),
+        alpha(@accent_bg_color, 0.015));
+}
+.chat-messages { padding: 6px 0 14px 0; }
+.bubble {
+    padding: 7px 12px 5px 12px;
+    border-radius: 18px;
+    box-shadow: 0 1px 2px alpha(black, 0.12);
+}
+.bubble.theirs {
+    background-color: @card_bg_color;
+    color: @card_fg_color;
+    border-bottom-left-radius: 6px;
+}
+.bubble.mine {
+    background-color: @accent_bg_color;
+    color: @accent_fg_color;
+    border-bottom-right-radius: 6px;
+}
+.bubble.theirs.continues { border-top-left-radius: 6px; }
+.bubble.mine.continues { border-top-right-radius: 6px; }
+.bubble label { color: inherit; }
+.bubble.mine label link, .bubble.mine label > link { color: @accent_fg_color; text-decoration: underline; }
+.bubble-name { font-weight: 700; font-size: 0.9em; }
+.bubble .bubble-name.name-color-0 { color: #e66100; }
+.bubble .bubble-name.name-color-1 { color: #2ec27e; }
+.bubble .bubble-name.name-color-2 { color: #1c71d8; }
+.bubble .bubble-name.name-color-3 { color: #c061cb; }
+.bubble .bubble-name.name-color-4 { color: #e5a50a; }
+.bubble .bubble-name.name-color-5 { color: #26a1a2; }
+.bubble-meta { font-size: 0.72em; opacity: 0.7; }
+.bubble-meta .tick { font-weight: 800; letter-spacing: -2px; }
+.bubble.mine .bubble-meta .tick.delivered { opacity: 1; }
+.bubble.theirs .bubble-meta .tick.delivered { color: @accent_color; }
+.bubble-jumbo { padding: 0 4px; }
+.bubble-jumbo .bubble-meta { opacity: 0.55; }
+.jumbo-emoji { font-size: 44px; }
+.day-pill {
+    padding: 2px 12px;
+    border-radius: 999px;
+    background-color: alpha(@card_fg_color, 0.08);
+    font-size: 0.8em;
+    font-weight: 600;
+}
+.chat-composer { padding: 8px 12px 12px 12px; }
+.chat-input-frame {
+    border-radius: 20px;
+    background-color: @card_bg_color;
+    box-shadow: inset 0 0 0 1px alpha(@card_fg_color, 0.10);
+}
+.chat-input-frame:focus-within { box-shadow: inset 0 0 0 2px alpha(@accent_color, 0.6); }
+textview.chat-input, textview.chat-input > text { background: transparent; }
+.chat-send { min-width: 40px; min-height: 40px; }
+
 /* ── Voice rooms ── */
 /* Ring around the avatar: lights up and pulses while the person talks. */
 .speaking-ring {

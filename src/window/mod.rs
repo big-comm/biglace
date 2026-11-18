@@ -1,3 +1,4 @@
+mod chat;
 mod content;
 mod dialogs;
 mod groups;
@@ -57,6 +58,7 @@ struct Ui {
     invites: invites::InvitesPage,
     groups: groups::GroupsPage,
     rooms: rooms::RoomsPage,
+    chat: chat::ChatPage,
     /// Holds "Open admin panel" while we're a network admin.
     admin_menu: gtk4::gio::Menu,
     /// "Someone is controlling this screen — End access".
@@ -221,6 +223,9 @@ pub fn build(app: &libadwaita::Application, start_hidden: bool) {
     let sections = gtk4::Stack::new();
     sections.set_transition_type(gtk4::StackTransitionType::Crossfade);
     sections.add_named(&content_widgets.toolbar, Some("devices"));
+    let chat_page = chat::ChatPage::build(&win, &toast, &sidebar_widgets.chat_badge);
+    sections.add_named(&chat_page.toolbar, Some("chat"));
+    crate::chat::start();
     let rooms_page = rooms::RoomsPage::build(&toast);
     sections.add_named(&rooms_page.toolbar, Some("rooms"));
     sections.add_named(&groups_page.toolbar, Some("groups"));
@@ -238,18 +243,21 @@ pub fn build(app: &libadwaita::Application, start_hidden: bool) {
     split.set_content(Some(&content_page));
 
     {
-        let (sections, split, content_page, invites_page, groups_page, rooms_page) = (
+        let (sections, split, content_page, invites_page, groups_page, rooms_page, chat_page) = (
             sections.clone(),
             split.clone(),
             content_page.clone(),
             invites_page.clone(),
             groups_page.clone(),
             rooms_page.clone(),
+            chat_page.clone(),
         );
         sidebar_widgets.nav.connect_row_activated(move |_, row| {
             let id = row.widget_name();
             sections.set_visible_child_name(&id);
+            chat_page.set_visible(id == "chat");
             let title = match id.as_str() {
+                "chat" => tr!("Chat"),
                 "invites" => {
                     invites_page.refresh();
                     tr!("Invites")
@@ -269,6 +277,22 @@ pub fn build(app: &libadwaita::Application, start_hidden: bool) {
         });
     }
 
+    #[cfg(debug_assertions)]
+    if let Some(conv) = crate::chat::seed_preview() {
+        let (nav, chat_page) = (sidebar_widgets.nav.clone(), chat_page.clone());
+        glib::timeout_add_seconds_local_once(2, move || {
+            let mut child = nav.first_child();
+            while let Some(w) = child {
+                if w.widget_name() == "chat" {
+                    if let Some(row) = w.downcast_ref::<gtk4::ListBoxRow>() {
+                        nav.emit_by_name::<()>("row-activated", &[row]);
+                    }
+                }
+                child = w.next_sibling();
+            }
+            glib::timeout_add_seconds_local_once(2, move || chat_page.preview_open(&conv));
+        });
+    }
     #[cfg(debug_assertions)]
     if crate::room::preview() {
         let (nav, rooms_page) = (sidebar_widgets.nav.clone(), rooms_page.clone());
@@ -318,6 +342,7 @@ pub fn build(app: &libadwaita::Application, start_hidden: bool) {
         invites: invites_page,
         groups: groups_page,
         rooms: rooms_page,
+        chat: chat_page,
         admin_menu,
         remote_banner,
     };
@@ -1164,6 +1189,7 @@ fn setup_menu(ctx: &Ctx) {
     ctx.ui.content.btn_menu.set_menu_model(Some(&menu));
     ctx.ui.groups.menu_btn.set_menu_model(Some(&menu));
     ctx.ui.rooms.menu_btn.set_menu_model(Some(&menu));
+    ctx.ui.chat.menu_btn.set_menu_model(Some(&menu));
     ctx.ui.invites.menu_btn.set_menu_model(Some(&menu));
 
     {
@@ -1895,7 +1921,11 @@ fn apply_state(ctx: &Ctx, state: AppState, status: &Status, peers: &[Peer]) {
     // Groups (and whether we're an admin) come from the panel over the
     // tunnel: ask on connect, forget on disconnect.
     match (was_online, state == AppState::Connected) {
-        (false, true) => ui.groups.refresh(),
+        (false, true) => {
+            ui.groups.refresh();
+            // Back online: whatever waited in the chat outbox goes out.
+            crate::chat::kick();
+        }
         (true, false) => {
             ui.groups.clear();
             // Off the network: out of any voice room too.
