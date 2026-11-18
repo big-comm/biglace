@@ -256,9 +256,14 @@ impl RoomsPage {
             RoomEvent::State { group: Some(group), muted, members } => {
                 self.in_title.set_title(&trf!("Room {group}", "group" => group));
                 let talking = members.iter().filter(|m| m.talking).count();
+                let people = if members.len() == 1 {
+                    tr!("1 person")
+                } else {
+                    trf!("{count} people", "count" => members.len().to_string())
+                };
                 self.in_title.set_subtitle(&trf!(
-                    "{count} people · {talking} talking",
-                    "count" => members.len().to_string(),
+                    "{people} · {talking} talking",
+                    "people" => people,
                     "talking" => talking.to_string()
                 ));
                 self.syncing.set(true);

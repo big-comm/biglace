@@ -378,7 +378,11 @@ impl GroupsPage {
 
     fn row(&self, g: &GroupInfo, me: &str) -> libadwaita::ExpanderRow {
         let owner_is_me = g.owner.as_deref() == Some(me);
-        let people = trf!("{count} people", "count" => g.members.len().to_string());
+        let people = if g.members.len() == 1 {
+            tr!("1 person")
+        } else {
+            trf!("{count} people", "count" => g.members.len().to_string())
+        };
         let origin = match (&g.owner, g.is_member_group()) {
             (Some(_), true) if owner_is_me => tr!("Created by you"),
             (Some(o), true) => trf!("Created by {user}", "user" => o),
