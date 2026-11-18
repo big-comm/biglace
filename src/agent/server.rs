@@ -146,6 +146,16 @@ fn handle(stream: TcpStream, peer: SocketAddr, auth: &Authenticator) {
         }
         return;
     }
+    // Our profile photo (anyone the network lets reach us).
+    if path == crate::avatars::PATH || path == crate::avatars::HASH_PATH {
+        match (&identity, method.as_str()) {
+            (Some(_), "GET") => crate::avatars::serve(stream, &path),
+            _ => {
+                let _ = respond(&stream, 403, "forbidden");
+            }
+        }
+        return;
+    }
     // A file someone was sent in a chat, fetched from here.
     if path.starts_with(crate::chat::files::PATH_PREFIX) {
         match (&identity, method.as_str()) {

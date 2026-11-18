@@ -1022,32 +1022,19 @@ fn change_photo(ui: &Ui) {
         run_in_background(
             move || -> Result<(String, Vec<u8>), String> {
                 let jpeg = crate::avatars::prepare(&path)?;
-                let me = crate::chat::my_groups_refresh().ok_or_else(|| tr!("not signed in to a BigScale network"))?;
-                crate::invite::set_avatar(&jpeg).map_err(photo_error)?;
+                let me = crate::chat::my_groups_refresh().unwrap_or_default();
+                crate::avatars::set_own(&me, Some(&jpeg))?;
                 Ok((me, jpeg))
             },
             move |r| match r {
-                Ok((me, jpeg)) => {
-                    crate::avatars::set_own(&me, Some(&jpeg));
+                Ok((me, _)) => {
+                    crate::avatars::refresh_mine(&me);
                     show_toast(&ui2.toast, &tr!("Photo updated. Everyone you're connected to will see it."), 4);
                 }
                 Err(e) => show_toast(&ui2.toast, &trf!("Could not change the photo: {error}", "error" => e), 8),
             },
         );
     });
-}
-
-/// Why a photo couldn't be changed, in words.
-fn photo_error(e: crate::invite::MemberError) -> String {
-    use crate::invite::MemberError;
-    match e {
-        MemberError::Unsupported => tr!(
-            "this network's server doesn't keep profile photos yet — its administrator needs to update the BigScale panel"
-        ),
-        MemberError::NotAMember => tr!("this device isn't signed in as a person on the network"),
-        MemberError::Other(s) => s,
-        other => format!("{other:?}"),
-    }
 }
 
 fn has_connect_config(c: &config::Config) -> bool {
@@ -1418,15 +1405,16 @@ fn setup_menu(ctx: &Ctx) {
         action.connect_activate(move |_, _| {
             let ui2 = ui.clone();
             run_in_background(
-                || crate::invite::remove_avatar().map(|()| crate::chat::my_user()),
+                || {
+                    let me = crate::chat::my_user().unwrap_or_default();
+                    crate::avatars::set_own(&me, None).map(|()| me)
+                },
                 move |r| match r {
                     Ok(me) => {
-                        if let Some(me) = me {
-                            crate::avatars::set_own(&me, None);
-                        }
+                        crate::avatars::refresh_mine(&me);
                         show_toast(&ui2.toast, &tr!("Photo removed."), 3);
                     }
-                    Err(e) => show_toast(&ui2.toast, &trf!("Could not remove the photo: {error}", "error" => photo_error(e)), 8),
+                    Err(e) => show_toast(&ui2.toast, &trf!("Could not remove the photo: {error}", "error" => e), 8),
                 },
             );
         });
