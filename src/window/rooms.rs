@@ -372,6 +372,7 @@ fn member_row(m: &MemberView) -> MemberRow {
     row.add_css_class("room-member");
 
     let avatar = libadwaita::Avatar::new(40, Some(&m.user), true);
+    crate::avatars::bind(&avatar, &m.user);
     let ring = gtk4::Box::new(gtk4::Orientation::Horizontal, 0);
     ring.add_css_class("speaking-ring");
     ring.set_valign(gtk4::Align::Center);

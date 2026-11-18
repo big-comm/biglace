@@ -906,6 +906,51 @@ pub fn redeem_as_member(invite: &Invite, preview: bool) -> std::result::Result<G
     panel::read_json_limited(r).map_err(|e| MemberError::Other(e.to_string()))
 }
 
+// ─── Profile photos (stored on the panel, cached by each BigLace) ──────────
+
+/// Largest photo accepted back from the panel.
+const MAX_PHOTO: u64 = 64 * 1024;
+
+/// Set our photo: a small JPEG or PNG (the caller prepares it).
+pub fn set_avatar(image: &[u8]) -> std::result::Result<(), MemberError> {
+    use base64::Engine;
+    let body = serde_json::json!({ "image": base64::engine::general_purpose::STANDARD.encode(image) });
+    member_call("PUT", "/api/me/avatar", Some(body)).map(|_| ())
+}
+
+pub fn remove_avatar() -> std::result::Result<(), MemberError> {
+    member_call("DELETE", "/api/me/avatar", None).map(|_| ())
+}
+
+#[derive(Deserialize)]
+struct AvatarHashes {
+    #[serde(default)]
+    avatars: std::collections::HashMap<String, String>,
+}
+
+/// Which of `users` have a photo we may see, with its version.
+pub fn avatar_hashes(users: &[String]) -> std::result::Result<std::collections::HashMap<String, String>, MemberError> {
+    let r = member_call("POST", "/api/me/avatars", Some(serde_json::json!({ "users": users })))?;
+    panel::read_json_limited::<AvatarHashes>(r)
+        .map(|h| h.avatars)
+        .map_err(|e| MemberError::Other(e.to_string()))
+}
+
+/// `user`'s photo (JPEG or PNG bytes).
+pub fn fetch_avatar(user: &str) -> std::result::Result<Vec<u8>, MemberError> {
+    use std::io::Read;
+    let r = member_call("GET", &format!("/api/me/avatars/{}", segment(user)?), None)?;
+    let mut body = Vec::new();
+    r.into_reader()
+        .take(MAX_PHOTO + 1)
+        .read_to_end(&mut body)
+        .map_err(|e| MemberError::Other(e.to_string()))?;
+    if body.len() as u64 > MAX_PHOTO {
+        return Err(MemberError::Other("photo too large".into()));
+    }
+    Ok(body)
+}
+
 #[derive(Deserialize)]
 struct AdminLink {
     url: String,

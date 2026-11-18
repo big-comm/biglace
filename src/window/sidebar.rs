@@ -32,6 +32,8 @@ pub struct Sidebar {
     pub btn_connect: gtk4::Button,
     /// Unread messages, on the Chat row (hidden at zero).
     pub chat_badge: gtk4::Label,
+    /// Our photo on the identity card.
+    pub avatar: libadwaita::Avatar,
 }
 
 pub fn build() -> Sidebar {
@@ -105,10 +107,19 @@ pub fn build() -> Sidebar {
         "Your identity on this mesh — the device name shown to other peers \
          and the network you're connected to."
     )));
-    let avatar = gtk4::Image::from_icon_name("avatar-default-symbolic");
-    avatar.set_pixel_size(28);
-    avatar.add_css_class("dim-label");
-    identity_row.add_prefix(&avatar);
+    // Our photo; click to change it.
+    let avatar = libadwaita::Avatar::new(36, None, true);
+    let photo_menu = gtk4::gio::Menu::new();
+    photo_menu.append(Some(&tr!("Change photo…")), Some("win.avatar-change"));
+    photo_menu.append(Some(&tr!("Remove photo")), Some("win.avatar-remove"));
+    let avatar_btn = gtk4::MenuButton::builder()
+        .child(&avatar)
+        .menu_model(&photo_menu)
+        .css_classes(["flat", "circular", "avatar-button"])
+        .valign(gtk4::Align::Center)
+        .tooltip_text(tr!("Your photo"))
+        .build();
+    identity_row.add_prefix(&avatar_btn);
 
     // Pencil button that opens the rename-device dialog. Hidden while
     // signed-out (`apply_state` toggles visibility) so the row stays clean on
@@ -325,5 +336,6 @@ pub fn build() -> Sidebar {
         switch_notify,
         btn_connect,
         chat_badge,
+        avatar,
     }
 }

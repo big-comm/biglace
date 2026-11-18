@@ -305,11 +305,13 @@ impl ChatPage {
             self.conv_avatar.set_text(Some(&id.name));
             self.conv_avatar.set_icon_name(Some("system-users-symbolic"));
             self.conv_avatar.set_show_initials(false);
+            crate::avatars::unbind(&self.conv_avatar);
             self.conv_subtitle.set_text(&tr!("Group"));
         } else {
             self.conv_avatar.set_text(Some(&id.name));
             self.conv_avatar.set_icon_name(None);
             self.conv_avatar.set_show_initials(true);
+            crate::avatars::bind(&self.conv_avatar, &id.name);
             self.conv_subtitle.set_text(&tr!("Direct conversation"));
         }
         for m in chat::messages(id) {
@@ -436,7 +438,7 @@ impl ChatPage {
         let continues = prev
             .as_ref()
             .is_some_and(|p| p.from == m.from && p.mine == m.mine && m.at.saturating_sub(p.at) < BLOCK_GAP_MS && day_of(p.at) == day_of(m.at));
-        let (widget, tick) = bubble(m, group && !m.mine && !continues, continues);
+        let (widget, tick) = bubble(m, group && !m.mine && !continues, continues, group && !m.mine);
         if animate {
             let rev = gtk4::Revealer::builder()
                 .transition_type(gtk4::RevealerTransitionType::SlideUp)
@@ -535,6 +537,8 @@ impl ChatPage {
                     let avatar = libadwaita::Avatar::new(32, Some(&id.name), !id.is_group());
                     if id.is_group() {
                         avatar.set_icon_name(Some("system-users-symbolic"));
+                    } else {
+                        crate::avatars::bind(&avatar, &id.name);
                     }
                     row.add_prefix(&avatar);
                     if online {
@@ -584,6 +588,8 @@ fn conv_row(c: &chat::Summary) -> gtk4::ListBoxRow {
     let avatar = libadwaita::Avatar::new(42, Some(&c.id.name), !c.id.is_group());
     if c.id.is_group() {
         avatar.set_icon_name(Some("system-users-symbolic"));
+    } else {
+        crate::avatars::bind(&avatar, &c.id.name);
     }
     line.append(&avatar);
     let texts = gtk4::Box::new(gtk4::Orientation::Vertical, 2);
@@ -630,12 +636,23 @@ fn conv_row(c: &chat::Summary) -> gtk4::ListBoxRow {
 
 /// A message bubble (or a big emoji); returns the widget and, for our own
 /// messages, the tick label to update when it's delivered.
-fn bubble(m: &Message, show_name: bool, continues: bool) -> (gtk4::Widget, Option<gtk4::Label>) {
-    let outer = gtk4::Box::new(gtk4::Orientation::Vertical, 2);
+fn bubble(m: &Message, show_name: bool, continues: bool, avatar_slot: bool) -> (gtk4::Widget, Option<gtk4::Label>) {
+    let outer = gtk4::Box::new(gtk4::Orientation::Horizontal, 8);
     outer.set_halign(if m.mine { gtk4::Align::End } else { gtk4::Align::Start });
     outer.set_margin_top(if continues { 1 } else { 8 });
     outer.set_margin_start(if m.mine { 64 } else { 10 });
     outer.set_margin_end(if m.mine { 10 } else { 64 });
+    // Groups: who's talking, by face (first message of each block).
+    if avatar_slot {
+        let a = libadwaita::Avatar::new(32, Some(&m.from), true);
+        a.set_valign(gtk4::Align::Start);
+        if continues {
+            a.set_opacity(0.0);
+        } else {
+            crate::avatars::bind(&a, &m.from);
+        }
+        outer.append(&a);
+    }
 
     let jumbo = markdown::is_jumbo_emoji(&m.text);
     let b = gtk4::Box::new(gtk4::Orientation::Vertical, 2);

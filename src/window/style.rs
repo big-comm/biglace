@@ -65,6 +65,9 @@ const CSS: &str = r#"
 /* The QR code keeps a white quiet zone in dark mode too: phone cameras
    need the contrast. */
 /* Someone controls this screen: impossible to miss, still part of the app. */
+/* Identity card: our photo is a button (change / remove). */
+.avatar-button { padding: 0; min-width: 0; min-height: 0; border-radius: 999px; }
+
 /* ── Chat ── */
 .unread-badge {
     min-width: 20px;

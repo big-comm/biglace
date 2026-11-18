@@ -228,6 +228,7 @@ pub fn build(app: &libadwaita::Application, start_hidden: bool) {
     let chat_page = chat::ChatPage::build(&win, &toast, &sidebar_widgets.chat_badge);
     sections.add_named(&chat_page.toolbar, Some("chat"));
     crate::chat::start();
+    crate::avatars::start();
     let rooms_page = rooms::RoomsPage::build(&toast);
     sections.add_named(&rooms_page.toolbar, Some("rooms"));
     sections.add_named(&groups_page.toolbar, Some("groups"));
@@ -927,6 +928,44 @@ fn url_host(url: &str) -> Option<&str> {
     (!host.is_empty()).then_some(host)
 }
 
+/// "Change photo…": pick a picture, square it, send it to the panel.
+fn change_photo(ui: &Ui) {
+    let filter = gtk4::FileFilter::new();
+    filter.set_name(Some(&tr!("Pictures")));
+    filter.add_mime_type("image/jpeg");
+    filter.add_mime_type("image/png");
+    filter.add_mime_type("image/webp");
+    let filters = gtk4::gio::ListStore::new::<gtk4::FileFilter>();
+    filters.append(&filter);
+    let dialog = gtk4::FileDialog::builder()
+        .title(tr!("Choose your photo"))
+        .modal(true)
+        .filters(&filters)
+        .default_filter(&filter)
+        .build();
+    let ui = ui.clone();
+    dialog.open(Some(&ui.win.clone()), gtk4::gio::Cancellable::NONE, move |res| {
+        let Ok(file) = res else { return };
+        let Some(path) = file.path() else { return };
+        let ui2 = ui.clone();
+        run_in_background(
+            move || -> Result<(String, Vec<u8>), String> {
+                let jpeg = crate::avatars::prepare(&path)?;
+                let me = crate::chat::my_groups_refresh().ok_or_else(|| tr!("not signed in to a BigScale network"))?;
+                crate::invite::set_avatar(&jpeg).map_err(|e| format!("{e:?}"))?;
+                Ok((me, jpeg))
+            },
+            move |r| match r {
+                Ok((me, jpeg)) => {
+                    crate::avatars::set_own(&me, Some(&jpeg));
+                    show_toast(&ui2.toast, &tr!("Photo updated. Everyone you're connected to will see it."), 4);
+                }
+                Err(e) => show_toast(&ui2.toast, &trf!("Could not change the photo: {error}", "error" => e), 8),
+            },
+        );
+    });
+}
+
 fn has_connect_config(c: &config::Config) -> bool {
     !c.server_url.trim().is_empty() && (c.enrolled || !c.authkey.trim().is_empty())
 }
@@ -1279,6 +1318,32 @@ fn setup_menu(ctx: &Ctx) {
                 return;
             }
             join_dialog::show(&ctx2.ui.win, &ctx2.ui.toast, &ctx2.cfg, &ctx2.ui.sidebar, link);
+        });
+        ctx.ui.win.add_action(&action);
+    }
+
+    // Our profile photo (identity card menu).
+    {
+        let action = gtk4::gio::SimpleAction::new("avatar-change", None);
+        let ui = ctx.ui.clone();
+        action.connect_activate(move |_, _| change_photo(&ui));
+        ctx.ui.win.add_action(&action);
+        let action = gtk4::gio::SimpleAction::new("avatar-remove", None);
+        let ui = ctx.ui.clone();
+        action.connect_activate(move |_, _| {
+            let ui2 = ui.clone();
+            run_in_background(
+                || crate::invite::remove_avatar().map(|()| crate::chat::my_user()),
+                move |r| match r {
+                    Ok(me) => {
+                        if let Some(me) = me {
+                            crate::avatars::set_own(&me, None);
+                        }
+                        show_toast(&ui2.toast, &tr!("Photo removed."), 3);
+                    }
+                    Err(e) => show_toast(&ui2.toast, &trf!("Could not remove the photo: {error}", "error" => format!("{e:?}")), 6),
+                },
+            );
         });
         ctx.ui.win.add_action(&action);
     }
@@ -1925,6 +1990,14 @@ fn apply_state(ctx: &Ctx, state: AppState, status: &Status, peers: &[Peer]) {
     match (was_online, state == AppState::Connected) {
         (false, true) => {
             ui.groups.refresh();
+            // Our photo on the identity card.
+            let avatar = ui.sidebar.avatar.clone();
+            run_in_background(crate::chat::my_groups_refresh, move |me| {
+                if let Some(me) = me {
+                    avatar.set_text(Some(&me));
+                    crate::avatars::bind(&avatar, &me);
+                }
+            });
             // Back online: whatever waited in the chat outbox goes out.
             crate::chat::kick();
         }

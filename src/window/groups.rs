@@ -407,7 +407,9 @@ impl GroupsPage {
                 .title(glib::markup_escape_text(m).as_str())
                 .subtitle(tags.join(" · "))
                 .build();
-            member.add_prefix(&gtk4::Image::from_icon_name("avatar-default-symbolic"));
+            let avatar = libadwaita::Avatar::new(32, Some(m), true);
+            crate::avatars::bind(&avatar, m);
+            member.add_prefix(&avatar);
             if owner_is_me && m != me {
                 let btn = gtk4::Button::builder()
                     .icon_name("list-remove-symbolic")
@@ -889,9 +891,9 @@ fn person_row(p: &Person, chosen: &Rc<RefCell<Vec<String>>>, send: &gtk4::Button
         .subtitle(details.join(" · "))
         .build();
     row.set_widget_name(&p.user);
-    let avatar = gtk4::Image::from_icon_name("avatar-default-symbolic");
-    if p.online {
-        avatar.add_css_class("success");
+    let avatar = libadwaita::Avatar::new(32, Some(&p.user), true);
+    if p.state != "typed" {
+        crate::avatars::bind(&avatar, &p.user);
     }
     row.add_prefix(&avatar);
     if p.state == "available" || p.state == "typed" {
