@@ -262,7 +262,7 @@ mod tests {
 mod end_to_end {
     use super::*;
     use std::net::{TcpListener, TcpStream};
-    use std::sync::{Arc, Mutex};
+    use std::sync::Mutex;
     use std::time::{Duration, Instant};
 
     #[test]
