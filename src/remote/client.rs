@@ -125,6 +125,20 @@ pub fn open(ip: &str, events: async_channel::Sender<Event>) -> Result<Session, O
         .spawn(move || {
             let why = match decode_loop(reader, &events) {
                 Ok(()) => String::new(),
+                // The host closed the connection ("End access", or it quit):
+                // a normal end, not an error to show.
+                Err(e)
+                    if e.downcast_ref::<std::io::Error>().is_some_and(|io| {
+                        matches!(
+                            io.kind(),
+                            std::io::ErrorKind::UnexpectedEof
+                                | std::io::ErrorKind::ConnectionReset
+                                | std::io::ErrorKind::ConnectionAborted
+                        )
+                    }) =>
+                {
+                    String::new()
+                }
                 Err(e) => e.to_string(),
             };
             let _ = events.send_blocking(Event::Ended(why));
