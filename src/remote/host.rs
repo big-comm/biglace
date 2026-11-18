@@ -283,7 +283,7 @@ fn open_source(stop: &StopHandle) -> anyhow::Result<Source> {
     if super::wayland_session() {
         let portal = super::portal::start()?;
         let head = format!(
-            "pipewiresrc fd={} path={} do-timestamp=true keepalive-time=1000 always-copy=true \
+            "pipewiresrc name=capture fd={} path={} do-timestamp=true keepalive-time=1000 always-copy=true \
              ! {}",
             portal.fd.as_raw_fd(),
             portal.node,
@@ -450,19 +450,32 @@ fn stream_screen(
         .by_name("sink")
         .and_then(|e| e.downcast::<gst_app::AppSink>().ok())
         .ok_or_else(|| anyhow::anyhow!("no appsink"))?;
-    // X11: drop captured frames of an unchanged screen before they cost a
-    // conversion and an encode.
-    if let (Some(dirty), Some(pad)) = (dirty, pipeline.by_name("capture").and_then(|c| c.static_pad("src"))) {
-        let last = Mutex::new(Instant::now() - IDLE_FRAME_EVERY);
-        pad.add_probe(gst::PadProbeType::BUFFER, move |_, _| {
-            let mut last = last.lock().unwrap_or_else(|e| e.into_inner());
-            if dirty.swap(false, Ordering::AcqRel) || last.elapsed() >= IDLE_FRAME_EVERY {
-                *last = Instant::now();
+    // Right after capture: stamp each frame with the moment it was really
+    // captured (a source that can't keep the requested rate — ximagesrc
+    // asked for 60 fps on a machine doing 25 — timestamps frames on a
+    // schedule that drifts further behind every second), and on X11 drop
+    // frames of an unchanged screen before they cost a conversion and an
+    // encode.
+    if let Some(capture) = pipeline.by_name("capture") {
+        if let Some(pad) = capture.static_pad("src") {
+            let last = Mutex::new(Instant::now() - IDLE_FRAME_EVERY);
+            let element = capture.downgrade();
+            pad.add_probe(gst::PadProbeType::BUFFER, move |_, info| {
+                if let Some(dirty) = &dirty {
+                    let mut last = last.lock().unwrap_or_else(|e| e.into_inner());
+                    if dirty.swap(false, Ordering::AcqRel) || last.elapsed() >= IDLE_FRAME_EVERY {
+                        *last = Instant::now();
+                    } else {
+                        return gst::PadProbeReturn::Drop;
+                    }
+                }
+                let now = element.upgrade().and_then(|e| e.current_running_time());
+                if let (Some(now), Some(gst::PadProbeData::Buffer(buffer))) = (now, info.data.as_mut()) {
+                    buffer.make_mut().set_pts(now);
+                }
                 gst::PadProbeReturn::Ok
-            } else {
-                gst::PadProbeReturn::Drop
-            }
-        });
+            });
+        }
     }
     pipeline.set_state(gst::State::Playing)?;
 

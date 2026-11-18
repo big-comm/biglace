@@ -370,9 +370,9 @@ mod tests {
         if gst::ElementFactory::find("avdec_h264").is_none() {
             return;
         }
-        let measure = |dec: &str| -> f64 {
+        let measure = |dec: &str, enc: (&str, &str), fps: u64| -> f64 {
             let host = gst::parse::launch(&crate::remote::host::pipeline_desc(
-                "videotestsrc is-live=true num-buffers=120 pattern=ball ! video/x-raw,width=1920,height=1080,framerate=30/1 ! videoconvert",
+                &format!("videotestsrc is-live=true num-buffers={} pattern=ball ! video/x-raw,width=1280,height=720,framerate={fps}/1 ! videoconvert", fps * 4),
                 enc,
             ))
             .unwrap()
@@ -387,13 +387,13 @@ mod tests {
             let vsink = viewer.by_name("sink").unwrap().downcast::<gstreamer_app::AppSink>().unwrap();
             viewer.set_state(gst::State::Playing).unwrap();
             let start = Instant::now();
-            let captured_at = |n: u64| start + Duration::from_micros(n * 1_000_000 / 30);
+            let captured_at = |n: u64| start + Duration::from_micros(n * 1_000_000 / fps);
             let collector = std::thread::spawn(move || {
                 let mut lat = Vec::new();
                 while let Some(s) = vsink.try_pull_sample(gst::ClockTime::from_seconds(2)) {
                     let now = Instant::now();
-                    let n = s.buffer().and_then(|b| b.pts()).map(|p| p.nseconds() / 33_333_333).unwrap_or(0);
-                    if n > 10 {
+                    let n = s.buffer().and_then(|b| b.pts()).map(|p| p.nseconds() * fps / 1_000_000_000).unwrap_or(0);
+                    if n > 2 {
                         lat.push((n, now));
                     }
                 }
@@ -403,7 +403,7 @@ mod tests {
             let mut frame = 0u64;
             while let Some(s) = hsink.try_pull_sample(gst::ClockTime::from_seconds(3)) {
                 let mut buf = gst::Buffer::from_mut_slice(s.buffer().unwrap().map_readable().unwrap().as_slice().to_vec());
-                buf.get_mut().unwrap().set_pts(gst::ClockTime::from_nseconds(frame * 33_333_333 + 1_000_000));
+                buf.get_mut().unwrap().set_pts(gst::ClockTime::from_nseconds(frame * 1_000_000_000 / fps + 1_000_000));
                 src.push_buffer(buf).unwrap();
                 frame += 1;
             }
@@ -417,11 +417,20 @@ mod tests {
                 .collect();
             ms.iter().sum::<f64>() / ms.len().max(1) as f64
         };
-        let ours = measure(decoder());
-        eprintln!("latency with {}: {ours:.1} ms (encoder: {})", decoder(), enc.0);
-        let auto = measure("avdec_h264");
-        eprintln!("latency with avdec_h264 defaults: {auto:.1} ms");
-        assert!(ours < 120.0, "encode+decode latency {ours:.1} ms");
+        let mut encoders = vec![enc];
+        let x264 = ("x264enc tune=zerolatency speed-preset=ultrafast sliced-threads=true threads=2 pass=qual quantizer=20 bitrate=30000 vbv-buf-capacity=100 key-int-max=120 bframes=0 b-adapt=false", "Y444");
+        if enc.0 != x264.0 && gst::ElementFactory::find("x264enc").is_some() {
+            encoders.push(x264);
+        }
+        for e in encoders {
+            for fps in [30, 2] {
+                let ms = measure(decoder(), e, fps);
+                eprintln!("{fps:>2} fps  {ms:7.1} ms  {}", e.0.split_whitespace().next().unwrap_or(""));
+                // A frame held back costs a whole frame interval: at 2 fps
+                // that's 500 ms. Bound both cases.
+                assert!(ms < 120.0, "{} at {fps} fps: {ms:.1} ms", e.0);
+            }
+        }
     }
 
     /// Encode a test pattern like a host does, send it over a real TCP
