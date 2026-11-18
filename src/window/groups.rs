@@ -53,6 +53,7 @@ fn explain(err: &MemberError) -> String {
             "used" => tr!("This invite was already used. Ask for a new one."),
             "expired" => tr!("This invite expired. Ask for a new one."),
             "revoked" | "unknown" => tr!("This invite is no longer valid. Ask for a new one."),
+            "pending" => tr!("This invite is still waiting for an administrator's approval."),
             "too_many_attempts" => tr!("Too many attempts. Wait a minute and try again."),
             other => trf!("Could not reach the panel: {error}", "error" => other),
         },

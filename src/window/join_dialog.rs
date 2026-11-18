@@ -31,6 +31,9 @@ pub(super) fn explain(err: &JoinError) -> String {
             "expired" => tr!("This invite has expired. Ask for a new one."),
             "used" => tr!("This invite was already used. Ask for a new one."),
             "revoked" => tr!("This invite was cancelled. Ask for a new one."),
+            "pending" => tr!(
+                "This invite is waiting for the network administrator's approval. Try again once the person who invited you says it was approved."
+            ),
             _ => tr!("This invite is not valid. Check the link or ask for a new one."),
         },
         JoinError::TooManyAttempts => tr!("Too many attempts. Wait a minute and try again."),

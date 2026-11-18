@@ -191,7 +191,7 @@ fn classify(code: &str, suggestion: Option<String>) -> JoinError {
     match code {
         "name_taken" => JoinError::NameTaken(suggestion),
         "invalid_name" => JoinError::InvalidName,
-        "unknown" | "expired" | "used" | "revoked" => JoinError::InviteUnusable(code.to_string()),
+        "unknown" | "expired" | "used" | "revoked" | "pending" => JoinError::InviteUnusable(code.to_string()),
         "too_many_attempts" => JoinError::TooManyAttempts,
         other => JoinError::Other(other.to_string()),
     }
@@ -406,7 +406,7 @@ mod tests {
             JoinError::NameTaken(Some("maria-2".into()))
         );
         assert_eq!(classify("invalid_name", None), JoinError::InvalidName);
-        for c in ["unknown", "expired", "used", "revoked"] {
+        for c in ["unknown", "expired", "used", "revoked", "pending"] {
             assert_eq!(classify(c, None), JoinError::InviteUnusable(c.into()));
         }
         assert_eq!(classify("too_many_attempts", None), JoinError::TooManyAttempts);
