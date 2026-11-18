@@ -688,6 +688,57 @@ pub fn remove_member(group: &str, user: &str) -> std::result::Result<(), MemberE
     .map(|_| ())
 }
 
+// ─── Voice rooms (presence on the panel; sound goes peer to peer) ──────────
+
+/// Someone in a group's voice room.
+#[derive(Debug, Clone, PartialEq, Eq, Deserialize)]
+pub struct Participant {
+    pub user: String,
+    pub device: String,
+    /// Tailnet IPv4 — where the others connect for the sound.
+    pub ip: String,
+    #[serde(default)]
+    pub muted: bool,
+}
+
+#[derive(Debug, Clone, Deserialize)]
+pub struct RoomInfo {
+    pub group: String,
+    #[serde(default)]
+    pub participants: Vec<Participant>,
+}
+
+#[derive(Deserialize)]
+struct RoomsResp {
+    rooms: Vec<RoomInfo>,
+}
+
+#[derive(Deserialize)]
+struct Roster {
+    participants: Vec<Participant>,
+}
+
+/// The rooms of our groups and who's in them.
+pub fn rooms() -> std::result::Result<Vec<RoomInfo>, MemberError> {
+    let r = member_call("GET", "/api/me/rooms", None)?;
+    panel::read_json_limited::<RoomsResp>(r)
+        .map(|r| r.rooms)
+        .map_err(|e| MemberError::Other(e.to_string()))
+}
+
+/// Enter (or stay in — repeat every few seconds) `group`'s room.
+pub fn room_join(group: &str, muted: bool) -> std::result::Result<Vec<Participant>, MemberError> {
+    let body = serde_json::json!({ "muted": muted });
+    let r = member_call("POST", &format!("/api/me/rooms/{}/join", segment(group)?), Some(body))?;
+    panel::read_json_limited::<Roster>(r)
+        .map(|r| r.participants)
+        .map_err(|e| MemberError::Other(e.to_string()))
+}
+
+pub fn room_leave(group: &str) -> std::result::Result<(), MemberError> {
+    member_call("POST", &format!("/api/me/rooms/{}/leave", segment(group)?), Some(serde_json::json!({}))).map(|_| ())
+}
+
 #[derive(Deserialize)]
 struct AdminLink {
     url: String,

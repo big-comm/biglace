@@ -136,6 +136,16 @@ fn handle(stream: TcpStream, peer: SocketAddr, auth: &Authenticator) {
         return;
     };
     let identity = auth(peer.ip());
+    // A voice-room peer keeps the connection too.
+    if path.starts_with(crate::room::PATH_PREFIX) {
+        match (&identity, method.as_str()) {
+            (Some(id), "GET") => crate::room::accept(stream, peer.ip(), &parse_headers(&head), id, &path),
+            _ => {
+                let _ = respond(&stream, 403, "forbidden");
+            }
+        }
+        return;
+    }
     // A remote-screen session keeps the connection: hand it over.
     if path == crate::remote::SCREEN_PATH {
         match (&identity, method.as_str()) {

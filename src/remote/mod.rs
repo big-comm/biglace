@@ -67,6 +67,8 @@ pub enum Kind {
     Audio = 8,
     /// Viewer → host: send a keyframe now (empty payload).
     KeyFrame = 9,
+    /// Voice room, both ways: JSON `{ "muted": bool }`.
+    RoomState = 10,
 }
 
 /// Screen protocol revision the viewer asks for.
@@ -92,6 +94,7 @@ impl Kind {
             7 => Some(Self::Pong),
             8 => Some(Self::Audio),
             9 => Some(Self::KeyFrame),
+            10 => Some(Self::RoomState),
             _ => None,
         }
     }

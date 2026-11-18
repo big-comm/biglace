@@ -7,6 +7,7 @@ mod invite;
 mod launchers;
 mod panel;
 mod remote;
+mod room;
 mod secrets;
 mod tailscale;
 // Cross-platform façade: ksni (StatusNotifierItem / D-Bus) on Linux,
@@ -46,7 +47,7 @@ pub static MALLOC_CONF: &[u8] = b"background_thread:true,dirty_decay_ms:1000,muz
 /// creates (feat → minor, fix/perf/docs/… → patch, breaking → major) by
 /// rewriting this assignment. Reading it from `CARGO_PKG_VERSION` hid it from
 /// gitrepo, which is how the version sat at 1.0.0 through dozens of releases.
-pub const APP_VERSION: &str = "1.25.0";
+pub const APP_VERSION: &str = "1.26.0";
 
 /// Date-based build stamp (`YY.MM.DD-HHMM`) — the scheme the GitHub release
 /// tags use. The PKGBUILD exports it as `BIGLACE_VERSION`; the update check
@@ -99,6 +100,10 @@ fn main() {
         .application_id("org.communitybig.biglace")
         .flags(gtk4::gio::ApplicationFlags::HANDLES_OPEN)
         .build();
+
+    // Quitting leaves the voice room (the others see it at once instead of
+    // after the panel's 30 s timeout).
+    app.connect_shutdown(|_| room::leave());
 
     app.connect_activate(move |app| {
         // Single-instance: launching biglace again (or the desktop entry being

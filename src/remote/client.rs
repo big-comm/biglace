@@ -94,7 +94,15 @@ impl Drop for Session {
 /// Ask `ip` for its screen. Blocks until the person there answers (up to
 /// [`ANSWER_TIMEOUT`]); call it on a worker thread. Events (frames, end)
 /// are delivered on `events`.
-pub fn open(ip: &str, events: async_channel::Sender<Event>) -> Result<Session, OpenError> {
+/// Open a signed request to `path` on the agent at `ip` and wait for the
+/// answer (up to `answer_within`: the screen waits for the person there to
+/// click). On 200, the connection and a reader positioned after the headers.
+pub(crate) fn dial(
+    ip: &str,
+    path: &str,
+    extra_headers: &[(&str, &str)],
+    answer_within: Duration,
+) -> Result<(TcpStream, BufReader<TcpStream>), OpenError> {
     let addr: IpAddr = ip.parse().map_err(|_| OpenError::Other("bad address".into()))?;
     let sock = SocketAddr::new(addr, crate::agent::PORT);
     let stream = TcpStream::connect_timeout(&sock, CONNECT_TIMEOUT).map_err(|e| OpenError::Other(e.to_string()))?;
@@ -102,13 +110,12 @@ pub fn open(ip: &str, events: async_channel::Sender<Event>) -> Result<Session, O
         IpAddr::V6(v6) => format!("[{v6}]:{}", crate::agent::PORT),
         IpAddr::V4(v4) => format!("{v4}:{}", crate::agent::PORT),
     };
-    let url = format!("http://{host}{}", super::SCREEN_PATH);
+    let url = format!("http://{host}{path}");
     let signed = device_key::sign_headers("GET", &url, "").ok_or(OpenError::Unverified)?;
-    let mut req = format!(
-        "GET {} HTTP/1.1\r\nHost: {host}\r\nX-BigLace-Screen: {}\r\n",
-        super::SCREEN_PATH,
-        super::SCREEN_PROTOCOL
-    );
+    let mut req = format!("GET {path} HTTP/1.1\r\nHost: {host}\r\n");
+    for (name, value) in extra_headers {
+        req.push_str(&format!("{name}: {value}\r\n"));
+    }
     for (name, value) in signed {
         req.push_str(&format!("{name}: {value}\r\n"));
     }
@@ -117,7 +124,7 @@ pub fn open(ip: &str, events: async_channel::Sender<Event>) -> Result<Session, O
     (&stream).write_all(req.as_bytes()).map_err(|e| OpenError::Other(e.to_string()))?;
 
     // Status line + headers.
-    let _ = stream.set_read_timeout(Some(ANSWER_TIMEOUT));
+    let _ = stream.set_read_timeout(Some(answer_within));
     let mut reader = BufReader::new(stream.try_clone().map_err(|e| OpenError::Other(e.to_string()))?);
     let mut status = String::new();
     reader.read_line(&mut status).map_err(|_| OpenError::Denied)?;
@@ -137,6 +144,16 @@ pub fn open(ip: &str, events: async_channel::Sender<Event>) -> Result<Session, O
     }
     let _ = stream.set_read_timeout(None);
     let _ = stream.set_nodelay(true);
+    Ok((stream, reader))
+}
+
+pub fn open(ip: &str, events: async_channel::Sender<Event>) -> Result<Session, OpenError> {
+    let (stream, reader) = dial(
+        ip,
+        super::SCREEN_PATH,
+        &[("X-BigLace-Screen", super::SCREEN_PROTOCOL)],
+        ANSWER_TIMEOUT,
+    )?;
 
     // Input (and clock pings): written by their own thread so the UI never
     // blocks on the network.
@@ -533,7 +550,7 @@ pub(crate) fn decode_loop_with(
                 }
             }
             Kind::Pong => shared.clock.pong(&payload),
-            Kind::Input | Kind::Ping | Kind::KeyFrame | Kind::Audio => {}
+            Kind::Input | Kind::Ping | Kind::KeyFrame | Kind::Audio | Kind::RoomState => {}
             Kind::Error => anyhow::bail!("{}", String::from_utf8_lossy(&payload)),
         }
     }

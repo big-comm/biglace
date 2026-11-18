@@ -103,7 +103,19 @@ fn panel_key_for(peer: IpAddr) -> PanelAnswer {
 
 /// Check the viewer's signed request and that the BigLace at its address
 /// holds the signing key. Returns a short reason on failure (for the log).
-fn verify_viewer(headers: &HashMap<String, String>, peer: IpAddr, local: &str) -> Result<(), &'static str> {
+pub(crate) fn verify_viewer(headers: &HashMap<String, String>, peer: IpAddr, local: &str) -> Result<(), &'static str> {
+    verify_caller(headers, peer, local, super::SCREEN_PATH)
+}
+
+/// Check a peer's request to `path` on this agent: signed by the peer's
+/// device key, fresh, not replayed, and the key really is that device's (the
+/// panel's pin, else the peer's own agent proves it).
+pub(crate) fn verify_caller(
+    headers: &HashMap<String, String>,
+    peer: IpAddr,
+    local: &str,
+    path: &str,
+) -> Result<(), &'static str> {
     let get = |name: &str| headers.get(name).map(String::as_str).unwrap_or("");
     let (public, time, nonce, sig, host) = (
         get("x-biglace-key"),
@@ -124,7 +136,7 @@ fn verify_viewer(headers: &HashMap<String, String>, peer: IpAddr, local: &str) -
     if now.abs_diff(t) > SKEW.as_secs() {
         return Err("stale");
     }
-    let message = device_key::request_message("GET", host, super::SCREEN_PATH, t, nonce, "");
+    let message = device_key::request_message("GET", host, path, t, nonce, "");
     if !device_key::verify(public, &message, sig) {
         return Err("bad signature");
     }

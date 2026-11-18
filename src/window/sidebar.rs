@@ -5,7 +5,7 @@ use crate::tr;
 
 /// Sections listed in the navigation sidebar, in order. The row's widget
 /// name is the section id (also the content stack's child name).
-pub const SECTIONS: &[&str] = &["devices", "groups", "invites"];
+pub const SECTIONS: &[&str] = &["devices", "rooms", "groups", "invites"];
 
 #[derive(Clone)]
 pub struct Sidebar {
@@ -62,6 +62,7 @@ pub fn build() -> Sidebar {
     nav.update_property(&[gtk4::accessible::Property::Label(&tr!("Sections"))]);
     for (id, icon, label) in [
         ("devices", "computer-symbolic", tr!("Devices")),
+        ("rooms", "call-start-symbolic", tr!("Rooms")),
         ("groups", "system-users-symbolic", tr!("Groups")),
         ("invites", "mail-send-symbolic", tr!("Invites")),
     ] {

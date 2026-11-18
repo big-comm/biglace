@@ -5,6 +5,7 @@ mod invites;
 mod join_dialog;
 mod peer_row;
 mod remote_ui;
+mod rooms;
 mod sidebar;
 mod style;
 
@@ -55,6 +56,7 @@ struct Ui {
     content: content::Content,
     invites: invites::InvitesPage,
     groups: groups::GroupsPage,
+    rooms: rooms::RoomsPage,
     /// Holds "Open admin panel" while we're a network admin.
     admin_menu: gtk4::gio::Menu,
     /// "Someone is controlling this screen — End access".
@@ -219,6 +221,8 @@ pub fn build(app: &libadwaita::Application, start_hidden: bool) {
     let sections = gtk4::Stack::new();
     sections.set_transition_type(gtk4::StackTransitionType::Crossfade);
     sections.add_named(&content_widgets.toolbar, Some("devices"));
+    let rooms_page = rooms::RoomsPage::build(&toast);
+    sections.add_named(&rooms_page.toolbar, Some("rooms"));
     sections.add_named(&groups_page.toolbar, Some("groups"));
     sections.add_named(&invites_page.toolbar, Some("invites"));
 
@@ -234,12 +238,13 @@ pub fn build(app: &libadwaita::Application, start_hidden: bool) {
     split.set_content(Some(&content_page));
 
     {
-        let (sections, split, content_page, invites_page, groups_page) = (
+        let (sections, split, content_page, invites_page, groups_page, rooms_page) = (
             sections.clone(),
             split.clone(),
             content_page.clone(),
             invites_page.clone(),
             groups_page.clone(),
+            rooms_page.clone(),
         );
         sidebar_widgets.nav.connect_row_activated(move |_, row| {
             let id = row.widget_name();
@@ -252,6 +257,10 @@ pub fn build(app: &libadwaita::Application, start_hidden: bool) {
                 "groups" => {
                     groups_page.refresh();
                     tr!("Groups")
+                }
+                "rooms" => {
+                    rooms_page.refresh();
+                    tr!("Rooms")
                 }
                 _ => tr!("Devices"),
             };
@@ -291,6 +300,7 @@ pub fn build(app: &libadwaita::Application, start_hidden: bool) {
         content: content_widgets,
         invites: invites_page,
         groups: groups_page,
+        rooms: rooms_page,
         admin_menu,
         remote_banner,
     };
@@ -1129,6 +1139,7 @@ fn setup_menu(ctx: &Ctx) {
     menu.append_section(None, &app_section);
     ctx.ui.content.btn_menu.set_menu_model(Some(&menu));
     ctx.ui.groups.menu_btn.set_menu_model(Some(&menu));
+    ctx.ui.rooms.menu_btn.set_menu_model(Some(&menu));
     ctx.ui.invites.menu_btn.set_menu_model(Some(&menu));
 
     {
@@ -1836,7 +1847,13 @@ fn apply_state(ctx: &Ctx, state: AppState, status: &Status, peers: &[Peer]) {
     // tunnel: ask on connect, forget on disconnect.
     match (was_online, state == AppState::Connected) {
         (false, true) => ui.groups.refresh(),
-        (true, false) => ui.groups.clear(),
+        (true, false) => {
+            ui.groups.clear();
+            // Off the network: out of any voice room too.
+            if crate::room::active_group().is_some() {
+                std::thread::spawn(crate::room::leave);
+            }
+        }
         _ => {}
     }
 
