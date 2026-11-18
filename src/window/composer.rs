@@ -44,6 +44,9 @@ pub struct Composer {
     emoji: OpenEmoji,
 }
 
+/// Tallest the message box grows before it scrolls.
+const MAX_INPUT_HEIGHT: i32 = 180;
+
 /// Set later (the picker belongs to the page around the composer).
 type OpenEmoji = std::rc::Rc<std::cell::RefCell<Option<Box<dyn Fn()>>>>;
 
@@ -52,8 +55,6 @@ impl Composer {
         let view = gtk4::TextView::builder()
             .wrap_mode(gtk4::WrapMode::WordChar)
             .accepts_tab(false)
-            .top_margin(10)
-            .bottom_margin(10)
             .left_margin(14)
             .right_margin(14)
             .build();
@@ -81,10 +82,10 @@ impl Composer {
         let placeholder = gtk4::Label::new(Some(&tr!("Message")));
         placeholder.add_css_class("dim-label");
         placeholder.set_halign(gtk4::Align::Start);
-        placeholder.set_valign(gtk4::Align::Start);
-        // Same spot as the text cursor: the view's margins.
+        // Same spot as the text cursor: the view's left margin, and both
+        // centred vertically in the frame.
+        placeholder.set_valign(gtk4::Align::Center);
         placeholder.set_margin_start(14);
-        placeholder.set_margin_top(10);
         placeholder.set_can_target(false);
         {
             let placeholder = placeholder.clone();
@@ -94,8 +95,15 @@ impl Composer {
         let scroll = gtk4::ScrolledWindow::builder()
             .hscrollbar_policy(gtk4::PolicyType::Never)
             .propagate_natural_height(true)
-            .max_content_height(180)
+            .max_content_height(MAX_INPUT_HEIGHT)
+            // The breathing room goes around the scroller: a text view's own
+            // top/bottom margins get counted twice by it, which left the
+            // single line sitting high in a too-tall box.
+            .margin_top(10)
+            .margin_bottom(10)
+            .vscrollbar_policy(gtk4::PolicyType::Never)
             .hexpand(true)
+            .valign(gtk4::Align::Center)
             .child(&view)
             .build();
         let widget = gtk4::Overlay::new();
@@ -104,6 +112,32 @@ impl Composer {
         widget.add_css_class("chat-input-frame");
         widget.set_hexpand(true);
 
+        // A scrollbar needs ~58 px of height even when there's nothing to
+        // scroll, which made a one-line box too tall: it's only turned on
+        // once the text outgrows the box.
+        {
+            let (sc, view) = (scroll.clone(), view.clone());
+            let fit = move || {
+                let scroll = &sc;
+                let (_, natural, _, _) = view.measure(gtk4::Orientation::Vertical, view.width().max(1));
+                let policy = if natural > MAX_INPUT_HEIGHT { gtk4::PolicyType::Automatic } else { gtk4::PolicyType::Never };
+                if scroll.vscrollbar_policy() != policy {
+                    scroll.set_vscrollbar_policy(policy);
+                }
+            };
+            buf.connect_changed(move |_| {
+                let fit = fit.clone();
+                gtk4::glib::idle_add_local_once(fit);
+            });
+            // While it all fits, nothing is scrolled away (the view would
+            // otherwise keep the offset it had before the box grew).
+            let sc = scroll.clone();
+            scroll.vadjustment().connect_value_changed(move |adj| {
+                if sc.vscrollbar_policy() == gtk4::PolicyType::Never && adj.value() != 0.0 {
+                    adj.set_value(0.0);
+                }
+            });
+        }
         let c = Self { widget, view, emoji: Default::default() };
         c.setup_actions(win);
         c

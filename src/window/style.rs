@@ -49,6 +49,18 @@ const CSS: &str = r#"
 .navigation-sidebar row image {
     opacity: 0.85;
 }
+/* Unread dot on the Chat icon while the sidebar is a rail of icons. */
+.rail-dot {
+    min-width: 8px;
+    min-height: 8px;
+    margin: -3px -4px 0 0;
+    border-radius: 999px;
+    background-color: @accent_bg_color;
+    box-shadow: 0 0 0 2px @sidebar_bg_color;
+    opacity: 0;
+    transition: opacity 200ms ease;
+}
+.navigation-sidebar.rail .rail-dot { opacity: 1; }
 /* "This device" card at the bottom of the sidebar. */
 .device-card {
     margin: 0 6px;
@@ -67,6 +79,19 @@ const CSS: &str = r#"
 /* Someone controls this screen: impossible to miss, still part of the app. */
 /* Identity card: our photo is a button (change / remove). */
 .avatar-button { padding: 0; min-width: 0; min-height: 0; border-radius: 999px; }
+/* Camera on our photo: says "click here to change it". */
+.avatar-camera {
+    padding: 3px;
+    border-radius: 999px;
+    background-color: @accent_bg_color;
+    color: @accent_fg_color;
+    box-shadow: 0 0 0 2px @card_bg_color;
+    transition: transform 150ms ease;
+}
+.avatar-button:hover .avatar-camera { transform: scale(1.15); }
+/* Rail of icons: the icon sits in the middle of the narrow sidebar. */
+.navigation-sidebar row { transition: padding 260ms cubic-bezier(0.33, 1, 0.68, 1); }
+.navigation-sidebar.rail row { padding-left: 20px; }
 
 /* ── Chat ── */
 .unread-badge {

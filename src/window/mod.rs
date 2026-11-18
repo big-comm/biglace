@@ -32,6 +32,11 @@ use crate::tr;
 use crate::tray;
 use crate::trf;
 
+/// The sidebar's width: a share of the window, within these bounds.
+const SIDEBAR_MIN: f64 = 220.0;
+const SIDEBAR_MAX: f64 = 280.0;
+const SIDEBAR_FRACTION: f64 = 0.26;
+
 #[derive(Clone, Copy, PartialEq, Eq, Debug)]
 enum AppState {
     ServiceStopped,
@@ -187,9 +192,9 @@ pub fn build(app: &libadwaita::Application, start_hidden: bool) {
     // Navigation sidebar (sections + this device) | the selected section.
     // Collapses to one pane with a back button on narrow windows.
     let split = libadwaita::NavigationSplitView::builder()
-        .min_sidebar_width(220.0)
-        .max_sidebar_width(280.0)
-        .sidebar_width_fraction(0.26)
+        .min_sidebar_width(SIDEBAR_MIN)
+        .max_sidebar_width(SIDEBAR_MAX)
+        .sidebar_width_fraction(SIDEBAR_FRACTION)
         .build();
 
     let sidebar_widgets = sidebar::build();
@@ -245,6 +250,69 @@ pub fn build(app: &libadwaita::Application, start_hidden: bool) {
     split.set_sidebar(Some(&side_page));
     split.set_content(Some(&content_page));
 
+    // In Chat the sidebar folds into a rail of icons, giving the
+    // conversations room; elsewhere it unfolds again.
+    let set_rail = {
+        let (split, sidebar) = (split.clone(), sidebar_widgets.clone());
+        let anim: Rc<RefCell<Option<libadwaita::TimedAnimation>>> = Default::default();
+        let railed = Rc::new(std::cell::Cell::new(false));
+        move |rail: bool| {
+            // A narrow window shows one pane at a time: no rail there.
+            let rail = rail && !split.is_collapsed();
+            if railed.replace(rail) == rail {
+                return;
+            }
+            sidebar.set_rail(rail);
+            if let Some(a) = anim.borrow_mut().take() {
+                a.skip();
+            }
+            if split.is_collapsed() {
+                split.set_min_sidebar_width(SIDEBAR_MIN);
+                split.set_max_sidebar_width(SIDEBAR_MAX);
+                return;
+            }
+            let full = (split.width() as f64 * SIDEBAR_FRACTION).clamp(SIDEBAR_MIN, SIDEBAR_MAX);
+            let (from, to) = if rail { (full, sidebar::RAIL_WIDTH) } else { (sidebar::RAIL_WIDTH, full) };
+            let target = {
+                let split = split.clone();
+                libadwaita::CallbackAnimationTarget::new(move |w| {
+                    split.set_min_sidebar_width(w);
+                    split.set_max_sidebar_width(w);
+                })
+            };
+            let a = libadwaita::TimedAnimation::builder()
+                .widget(&split)
+                .value_from(from)
+                .value_to(to)
+                .duration(260)
+                .easing(libadwaita::Easing::EaseOutCubic)
+                .target(&target)
+                .build();
+            if !rail {
+                // Back to following the window's width.
+                let split = split.clone();
+                a.connect_done(move |_| {
+                    split.set_min_sidebar_width(SIDEBAR_MIN);
+                    split.set_max_sidebar_width(SIDEBAR_MAX);
+                });
+            }
+            a.play();
+            *anim.borrow_mut() = Some(a);
+        }
+    };
+    let set_rail = Rc::new(set_rail);
+    {
+        let (set_rail, nav) = (set_rail.clone(), sidebar_widgets.nav.clone());
+        split.connect_collapsed_notify(move |split| {
+            let in_chat = nav.selected_row().is_some_and(|r| r.widget_name() == "chat");
+            if split.is_collapsed() {
+                set_rail(false);
+            } else {
+                set_rail(in_chat);
+            }
+        });
+    }
+
     {
         let (sections, split, content_page, invites_page, groups_page, rooms_page, chat_page) = (
             sections.clone(),
@@ -255,9 +323,11 @@ pub fn build(app: &libadwaita::Application, start_hidden: bool) {
             rooms_page.clone(),
             chat_page.clone(),
         );
+        let set_rail = set_rail.clone();
         sidebar_widgets.nav.connect_row_activated(move |_, row| {
             let id = row.widget_name();
             sections.set_visible_child_name(&id);
+            set_rail(id == "chat");
             chat_page.set_visible(id == "chat");
             let title = match id.as_str() {
                 "chat" => tr!("Chat"),
@@ -1214,6 +1284,7 @@ fn setup_menu(ctx: &Ctx) {
     people.append(Some(&tr!("Invites you sent")), Some("win.show-invites"));
     menu.append_section(None, &people);
     let account = gtk4::gio::Menu::new();
+    account.append(Some(&tr!("Change profile photo…")), Some("win.avatar-change"));
     account.append(Some(&tr!("Join with an invite")), Some("win.join-invite::"));
     account.append(
         Some(&tr!("Sign in with panel account")),
@@ -1992,10 +2063,13 @@ fn apply_state(ctx: &Ctx, state: AppState, status: &Status, peers: &[Peer]) {
             ui.groups.refresh();
             // Our photo on the identity card.
             let avatar = ui.sidebar.avatar.clone();
+            let rail_avatar = ui.sidebar.rail_avatar.clone();
             run_in_background(crate::chat::my_groups_refresh, move |me| {
                 if let Some(me) = me {
                     avatar.set_text(Some(&me));
                     crate::avatars::bind(&avatar, &me);
+                    rail_avatar.set_text(Some(&me));
+                    crate::avatars::bind(&rail_avatar, &me);
                 }
             });
             // Back online: whatever waited in the chat outbox goes out.

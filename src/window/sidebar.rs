@@ -34,6 +34,56 @@ pub struct Sidebar {
     pub chat_badge: gtk4::Label,
     /// Our photo on the identity card.
     pub avatar: libadwaita::Avatar,
+    /// The same photo, shown alone while the sidebar is a narrow rail.
+    pub rail_avatar: libadwaita::Avatar,
+    /// What changes when the sidebar folds into a rail of icons.
+    rail: Rail,
+}
+
+/// The parts that fold away (or appear) in the icons-only rail.
+#[derive(Clone)]
+struct Rail {
+    labels: Vec<(gtk4::ListBoxRow, gtk4::Revealer, String)>,
+    title: gtk4::Stack,
+    bottom: gtk4::Stack,
+    nav: gtk4::ListBox,
+}
+
+/// Width of the icons-only rail.
+pub const RAIL_WIDTH: f64 = 68.0;
+
+impl Sidebar {
+    /// Fold the sidebar into a rail of icons (or unfold it). Only the
+    /// contents change here; the caller animates the width alongside.
+    pub fn set_rail(&self, rail: bool) {
+        let r = &self.rail;
+        for (row, revealer, label) in &r.labels {
+            revealer.set_reveal_child(!rail);
+            row.set_tooltip_text(rail.then_some(label.as_str()));
+        }
+        r.title.set_visible_child_name(if rail { "rail" } else { "full" });
+        r.bottom.set_visible_child_name(if rail { "rail" } else { "full" });
+        if rail {
+            r.nav.add_css_class("rail");
+        } else {
+            r.nav.remove_css_class("rail");
+        }
+    }
+}
+
+/// Our photo with a little camera on its corner: it's clickable, and
+/// that's where the picture is changed.
+fn with_camera(avatar: &libadwaita::Avatar) -> gtk4::Overlay {
+    let camera = gtk4::Image::from_icon_name("camera-photo-symbolic");
+    camera.set_pixel_size(10);
+    camera.add_css_class("avatar-camera");
+    camera.set_halign(gtk4::Align::End);
+    camera.set_valign(gtk4::Align::End);
+    camera.set_can_target(false);
+    let overlay = gtk4::Overlay::new();
+    overlay.set_child(Some(avatar));
+    overlay.add_overlay(&camera);
+    overlay
 }
 
 pub fn build() -> Sidebar {
@@ -45,12 +95,24 @@ pub fn build() -> Sidebar {
     header.set_show_start_title_buttons(false);
     let title = gtk4::Label::new(Some("BigLace"));
     title.add_css_class("heading");
-    header.set_title_widget(Some(&title));
+    let title_rail = gtk4::Image::from_icon_name(crate::APP_ID);
+    title_rail.set_pixel_size(28);
+    let title_stack = gtk4::Stack::builder()
+        .transition_type(gtk4::StackTransitionType::Crossfade)
+        .transition_duration(220)
+        .hhomogeneous(false)
+        .interpolate_size(true)
+        .build();
+    title_stack.add_named(&title, Some("full"));
+    title_stack.add_named(&title_rail, Some("rail"));
+    header.set_title_widget(Some(&title_stack));
     toolbar.add_top_bar(&header);
 
     // ─── Body ─────────────────────────────────────────────────────────────
     let scroll = gtk4::ScrolledWindow::builder()
-        .hscrollbar_policy(gtk4::PolicyType::Never)
+        // External: the rail may be narrower than the folded-away contents
+        // (they're clipped while they slide out).
+        .hscrollbar_policy(gtk4::PolicyType::External)
         .vexpand(true)
         .build();
 
@@ -68,6 +130,7 @@ pub fn build() -> Sidebar {
     let nav = gtk4::ListBox::new();
     nav.add_css_class("navigation-sidebar");
     nav.update_property(&[gtk4::accessible::Property::Label(&tr!("Sections"))]);
+    let mut labels = Vec::new();
     for (id, icon, label) in [
         ("devices", "computer-symbolic", tr!("Devices")),
         ("chat", "chat-message-new-symbolic", tr!("Chat")),
@@ -75,19 +138,47 @@ pub fn build() -> Sidebar {
         ("groups", "system-users-symbolic", tr!("Groups")),
         ("invites", "mail-send-symbolic", tr!("Invites")),
     ] {
-        let line = gtk4::Box::new(gtk4::Orientation::Horizontal, 12);
+        let line = gtk4::Box::new(gtk4::Orientation::Horizontal, 0);
         line.set_margin_top(4);
         line.set_margin_bottom(4);
-        line.append(&gtk4::Image::from_icon_name(icon));
+        let image = gtk4::Image::from_icon_name(icon);
+        if id == "chat" {
+            // In the rail the count can't fit: a dot on the icon says it.
+            let dot = gtk4::Box::builder()
+                .css_classes(["rail-dot"])
+                .halign(gtk4::Align::End)
+                .valign(gtk4::Align::Start)
+                .can_target(false)
+                .build();
+            chat_badge.bind_property("visible", &dot, "visible").sync_create().build();
+            let overlay = gtk4::Overlay::new();
+            overlay.set_child(Some(&image));
+            overlay.add_overlay(&dot);
+            line.append(&overlay);
+        } else {
+            line.append(&image);
+        }
+        let text_box = gtk4::Box::new(gtk4::Orientation::Horizontal, 8);
+        text_box.set_margin_start(12);
         let text = gtk4::Label::new(Some(&label));
         text.set_xalign(0.0);
         text.set_hexpand(true);
-        line.append(&text);
+        text.set_ellipsize(gtk4::pango::EllipsizeMode::End);
+        text_box.append(&text);
         if id == "chat" {
-            line.append(&chat_badge);
+            text_box.append(&chat_badge);
         }
+        let revealer = gtk4::Revealer::builder()
+            .transition_type(gtk4::RevealerTransitionType::SlideRight)
+            .transition_duration(220)
+            .reveal_child(true)
+            .hexpand(true)
+            .child(&text_box)
+            .build();
+        line.append(&revealer);
         let row = gtk4::ListBoxRow::builder().child(&line).name(id).build();
         nav.append(&row);
+        labels.push((row, revealer, label));
     }
     nav.select_row(nav.row_at_index(0).as_ref());
     outer.append(&nav);
@@ -113,11 +204,11 @@ pub fn build() -> Sidebar {
     photo_menu.append(Some(&tr!("Change photo…")), Some("win.avatar-change"));
     photo_menu.append(Some(&tr!("Remove photo")), Some("win.avatar-remove"));
     let avatar_btn = gtk4::MenuButton::builder()
-        .child(&avatar)
+        .child(&with_camera(&avatar))
         .menu_model(&photo_menu)
         .css_classes(["flat", "circular", "avatar-button"])
         .valign(gtk4::Align::Center)
-        .tooltip_text(tr!("Your photo"))
+        .tooltip_text(tr!("Change your photo"))
         .build();
     identity_row.add_prefix(&avatar_btn);
 
@@ -216,7 +307,8 @@ pub fn build() -> Sidebar {
     let manual_group = libadwaita::PreferencesGroup::new();
     manual_group.add(&expander_manual);
     grp_identity.add_css_class("device-card");
-    outer.append(&grp_identity);
+    let bottom_full = gtk4::Box::new(gtk4::Orientation::Vertical, 12);
+    bottom_full.append(&grp_identity);
 
     // ── Preferences card ──
     let grp_prefs = libadwaita::PreferencesGroup::new();
@@ -313,14 +405,38 @@ pub fn build() -> Sidebar {
              becomes reachable by the other peers in your account."
         ))
         .build();
-    outer.append(&btn_connect);
+    bottom_full.append(&btn_connect);
+
+    // The rail keeps only our photo (same menu).
+    let rail_avatar = libadwaita::Avatar::new(36, None, true);
+    let rail_avatar_btn = gtk4::MenuButton::builder()
+        .child(&with_camera(&rail_avatar))
+        .menu_model(&photo_menu)
+        .css_classes(["flat", "circular", "avatar-button"])
+        .halign(gtk4::Align::Center)
+        .valign(gtk4::Align::End)
+        .tooltip_text(tr!("Your photo"))
+        .build();
+    identity_row
+        .bind_property("title", &rail_avatar_btn, "tooltip-text")
+        .build();
+    let bottom = gtk4::Stack::builder()
+        .transition_type(gtk4::StackTransitionType::Crossfade)
+        .transition_duration(220)
+        .hhomogeneous(false)
+        .vhomogeneous(false)
+        .interpolate_size(true)
+        .build();
+    bottom.add_named(&bottom_full, Some("full"));
+    bottom.add_named(&rail_avatar_btn, Some("rail"));
+    outer.append(&bottom);
 
     scroll.set_child(Some(&outer));
     toolbar.set_content(Some(&scroll));
 
     Sidebar {
         toolbar,
-        nav,
+        nav: nav.clone(),
         prefs_group: grp_prefs,
         manual_group,
         identity_row,
@@ -337,5 +453,7 @@ pub fn build() -> Sidebar {
         btn_connect,
         chat_badge,
         avatar,
+        rail_avatar,
+        rail: Rail { labels, title: title_stack, bottom, nav },
     }
 }
