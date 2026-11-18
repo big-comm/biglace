@@ -39,6 +39,16 @@ impl StopHandle {
         }
     }
 
+    /// Not tied to one connection (a room share: many viewers).
+    pub(crate) fn detached() -> Self {
+        static NEXT: AtomicU64 = AtomicU64::new(1 << 40);
+        Self {
+            id: NEXT.fetch_add(1, Ordering::Relaxed),
+            flag: Arc::new(AtomicBool::new(false)),
+            stream: Arc::new(Mutex::new(None)),
+        }
+    }
+
     pub fn stop(&self) {
         self.flag.store(true, Ordering::Release);
         if let Ok(mut s) = self.stream.lock() {
@@ -239,7 +249,7 @@ pub fn serve(stream: TcpStream, peer: IpAddr, headers: &HashMap<String, String>,
 }
 
 /// Where the viewer's input goes on this host.
-enum InputSink {
+pub(crate) enum InputSink {
     #[cfg(target_os = "linux")]
     X11(Option<Box<super::input_x11::Injector>>),
     #[cfg(target_os = "linux")]
@@ -247,7 +257,7 @@ enum InputSink {
 }
 
 impl InputSink {
-    fn apply(&mut self, event: Input) {
+    pub(crate) fn apply(&mut self, event: Input) {
         match self {
             #[cfg(target_os = "linux")]
             Self::X11(Some(inj)) => inj.apply(&event),
@@ -263,14 +273,14 @@ impl InputSink {
 
 /// The screen source, as the head of a GStreamer pipeline description, plus
 /// what keeps it alive (the portal's PipeWire fd) and where input goes.
-struct Source {
+pub(crate) struct Source {
     /// Full pipeline descriptions to try, best first (see `stream_screen`).
-    pipelines: Vec<String>,
+    pub(crate) pipelines: Vec<String>,
     /// X11: raised by XDamage when the screen changed (None = always send).
-    dirty: Option<Arc<AtomicBool>>,
-    sink: InputSink,
+    pub(crate) dirty: Option<Arc<AtomicBool>>,
+    pub(crate) sink: InputSink,
     #[cfg(target_os = "linux")]
-    _fd: Option<std::os::fd::OwnedFd>,
+    pub(crate) _fd: Option<std::os::fd::OwnedFd>,
 }
 
 // What follows each source, up to raw video the encoder chain takes. Every
@@ -315,7 +325,7 @@ fn wayland_zero_copy(fd: i32, node: u32) -> Option<String> {
 }
 
 #[cfg(target_os = "linux")]
-fn open_source(stop: &StopHandle) -> anyhow::Result<Source> {
+pub(crate) fn open_source(stop: &StopHandle) -> anyhow::Result<Source> {
     use std::os::fd::AsRawFd;
     if super::wayland_session() {
         let portal = super::portal::start()?;
@@ -353,7 +363,7 @@ fn open_source(stop: &StopHandle) -> anyhow::Result<Source> {
 }
 
 #[cfg(not(target_os = "linux"))]
-fn open_source(_stop: &StopHandle) -> anyhow::Result<Source> {
+pub(crate) fn open_source(_stop: &StopHandle) -> anyhow::Result<Source> {
     anyhow::bail!("screen sharing is not available on this system")
 }
 
@@ -442,7 +452,12 @@ fn run_session(mut stream: TcpStream, stop: &StopHandle, protocol: u32) {
                 }
             });
     }
-    if let Err(e) = stream_screen(&writer, &pipelines, dirty, stop, timestamps, &want_key) {
+    let send = |kind: Kind, payload: &[u8]| -> anyhow::Result<()> {
+        let mut w = writer.lock().map_err(|_| anyhow::anyhow!("lock"))?;
+        write_frame(&mut *w, kind, payload)?;
+        Ok(())
+    };
+    if let Err(e) = stream_screen(&send, &pipelines, dirty, stop, timestamps, &want_key) {
         tailscale::dbg(&format!("remote: capture ended: {e}"));
     }
 }
@@ -614,7 +629,7 @@ fn stamp_and_gate(pipeline: &gstreamer::Pipeline, dirty: Option<Arc<AtomicBool>>
 const IDLE_FRAME_EVERY: Duration = Duration::from_secs(1);
 
 pub(crate) fn stream_screen(
-    writer: &Mutex<TcpStream>,
+    send: &dyn Fn(Kind, &[u8]) -> anyhow::Result<()>,
     pipelines: &[String],
     dirty: Option<Arc<AtomicBool>>,
     stop: &StopHandle,
@@ -669,9 +684,7 @@ pub(crate) fn stream_screen(
                     };
                     let info = VideoInfo { width: w as u32, height: h as u32, chroma: Some(chroma.into()) };
                     if last_info.as_ref() != Some(&info) {
-                        let mut w = writer.lock().map_err(|_| anyhow::anyhow!("lock"))?;
-                        write_frame(&mut *w, Kind::Info, &serde_json::to_vec(&info)?)?;
-                        drop(w);
+                        send(Kind::Info, &serde_json::to_vec(&info)?)?;
                         last_info = Some(info);
                     }
                 }
@@ -689,11 +702,9 @@ pub(crate) fn stream_screen(
                 let mut payload = Vec::with_capacity(8 + map.len());
                 payload.extend_from_slice(&captured.to_be_bytes());
                 payload.extend_from_slice(map.as_slice());
-                let mut w = writer.lock().map_err(|_| anyhow::anyhow!("lock"))?;
-                write_frame(&mut *w, Kind::VideoTs, &payload)?;
+                send(Kind::VideoTs, &payload)?;
             } else {
-                let mut w = writer.lock().map_err(|_| anyhow::anyhow!("lock"))?;
-                write_frame(&mut *w, Kind::Video, map.as_slice())?;
+                send(Kind::Video, map.as_slice())?;
             }
             frames += 1;
             bytes += map.len();

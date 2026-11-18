@@ -232,6 +232,23 @@ popover.emoji-picker > contents { padding: 0; border-radius: 16px; }
 .emoji-tabs button { min-height: 30px; }
 
 /* ── Voice rooms ── */
+/* Showing your screen to the room. */
+.share-banner {
+    padding: 6px 16px;
+    border-radius: 999px;
+    background-color: alpha(@error_color, 0.14);
+    color: @error_color;
+    font-weight: 700;
+}
+.screen-tag {
+    padding: 2px 10px;
+    border-radius: 999px;
+    background-color: alpha(@accent_bg_color, 0.16);
+    color: @accent_color;
+    font-size: 0.82em;
+    font-weight: 700;
+}
+.live-pill.controlling { background-color: @success_bg_color; }
 /* Ring around the avatar: lights up and pulses while the person talks. */
 .speaking-ring {
     padding: 3px;

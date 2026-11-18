@@ -24,6 +24,11 @@ use crate::invite::{self, Participant};
 use crate::remote::{now_us, read_frame, write_frame, Kind};
 use crate::tailscale::{self, Identity};
 
+pub mod stage;
+
+/// Agent path to watch a screen shared with a room: `/v1/stage/<group>`.
+pub const STAGE_PREFIX: &str = "/v1/stage/";
+
 /// Agent path of a room connection: `/v1/room/<group>`.
 pub const PATH_PREFIX: &str = "/v1/room/";
 /// Presence refresh (the panel forgets a participant after 30 s).
@@ -61,6 +66,12 @@ pub struct MemberView {
     /// Sound path to them is up (always true for yourself).
     pub connected: bool,
     pub talking: bool,
+    /// Showing their screen to the room.
+    pub sharing: bool,
+    /// Watching *our* screen (we're presenting), and the viewer's id.
+    pub watching: Option<u64>,
+    /// Controls our screen right now.
+    pub controlling: bool,
 }
 
 /// What the window learns about the room.
@@ -70,8 +81,12 @@ pub enum RoomEvent {
     State {
         group: Option<String>,
         muted: bool,
+        /// We're showing our screen.
+        presenting: bool,
         members: Vec<MemberView>,
     },
+    /// Someone watching our screen asks to control it.
+    ControlRequest { viewer: u64, user: String },
     /// Something went wrong (shown once, the room may continue).
     Problem(String),
 }
@@ -97,6 +112,7 @@ struct Peer {
     writer: Arc<Mutex<TcpStream>>,
     stream: TcpStream,
     muted: Arc<AtomicBool>,
+    sharing: Arc<AtomicBool>,
     last_voice_us: Arc<AtomicU64>,
 }
 
@@ -139,11 +155,22 @@ impl Room {
         let talking = |last: u64| last != 0 && now.saturating_sub(last) < TALKING_HOLD_US;
         let peers = self.peers.lock().map(|p| {
             p.iter()
-                .map(|(ip, peer)| (ip.clone(), (peer.muted.load(Ordering::Relaxed), peer.last_voice_us.load(Ordering::Relaxed))))
+                .map(|(ip, peer)| {
+                    (
+                        ip.clone(),
+                        (
+                            peer.muted.load(Ordering::Relaxed),
+                            peer.last_voice_us.load(Ordering::Relaxed),
+                            peer.sharing.load(Ordering::Relaxed),
+                        ),
+                    )
+                })
                 .collect::<HashMap<_, _>>()
         });
         let peers = peers.unwrap_or_default();
         let me_muted = self.muted.load(Ordering::Relaxed);
+        let presenting = stage::presenting();
+        let audience = stage::audience();
         let members = self
             .roster
             .lock()
@@ -153,7 +180,11 @@ impl Room {
             .map(|p| {
                 let me = p.ip == self.my_ip;
                 let live = peers.get(&p.ip);
+                let watching = audience.get(&p.ip);
                 MemberView {
+                    sharing: if me { presenting } else { live.is_some_and(|l| l.2) },
+                    watching: watching.map(|w| w.0),
+                    controlling: watching.is_some_and(|w| w.1),
                     me,
                     muted: if me { me_muted } else { live.map_or(p.muted, |l| l.0) },
                     connected: me || live.is_some(),
@@ -168,7 +199,7 @@ impl Room {
                 }
             })
             .collect();
-        RoomEvent::State { group: Some(self.group.clone()), muted: me_muted, members }
+        RoomEvent::State { group: Some(self.group.clone()), muted: me_muted, presenting, members }
     }
 
     /// Connect to the peers we're meant to dial; drop the ones who left.
@@ -208,17 +239,23 @@ impl Room {
         let Ok(writer) = stream.try_clone() else { return };
         let writer = Arc::new(Mutex::new(writer));
         let muted = Arc::new(AtomicBool::new(false));
+        let sharing = Arc::new(AtomicBool::new(false));
         let last_voice = Arc::new(AtomicU64::new(0));
         // Tell them our state right away.
         if let Ok(mut w) = writer.lock() {
-            let state = serde_json::json!({ "muted": self.muted.load(Ordering::Relaxed) }).to_string();
-            let _ = write_frame(&mut *w, Kind::RoomState, state.as_bytes());
+            let _ = write_frame(&mut *w, Kind::RoomState, self.state_json().as_bytes());
         }
         let Ok(stream_for_peer) = stream.try_clone() else { return };
         if let Ok(mut peers) = self.peers.lock() {
             peers.insert(
                 ip.to_string(),
-                Peer { writer, stream: stream_for_peer, muted: muted.clone(), last_voice_us: last_voice.clone() },
+                Peer {
+                    writer,
+                    stream: stream_for_peer,
+                    muted: muted.clone(),
+                    sharing: sharing.clone(),
+                    last_voice_us: last_voice.clone(),
+                },
             );
         }
         emit(self.view());
@@ -248,6 +285,7 @@ impl Room {
                     Ok((Kind::RoomState, payload)) => {
                         if let Ok(v) = serde_json::from_slice::<serde_json::Value>(&payload) {
                             muted.store(v.get("muted").and_then(|m| m.as_bool()).unwrap_or(false), Ordering::Relaxed);
+                            sharing.store(v.get("sharing").and_then(|m| m.as_bool()).unwrap_or(false), Ordering::Relaxed);
                             emit(room.view());
                         }
                     }
@@ -292,8 +330,13 @@ impl Room {
         }
     }
 
+    /// What the others need to know about us.
+    fn state_json(&self) -> String {
+        serde_json::json!({ "muted": self.muted.load(Ordering::Relaxed), "sharing": stage::presenting() }).to_string()
+    }
+
     fn send_state(&self) {
-        let state = serde_json::json!({ "muted": self.muted.load(Ordering::Relaxed) }).to_string();
+        let state = self.state_json();
         let writers: Vec<Arc<Mutex<TcpStream>>> = self
             .peers
             .lock()
@@ -511,6 +554,7 @@ pub fn join_with(group: &str, mic_desc: &str) -> Result<(), String> {
 
 /// Leave the room we're in, if any. Blocking (tells the panel).
 pub fn leave() {
+    stage::stop();
     let Some(room) = current().lock().ok().and_then(|mut c| c.take()) else {
         return;
     };
@@ -519,7 +563,7 @@ pub fn leave() {
         peers.clear();
     }
     let _ = invite::room_leave(&room.group);
-    emit(RoomEvent::State { group: None, muted: false, members: vec![] });
+    emit(RoomEvent::State { group: None, muted: false, presenting: false, members: vec![] });
 }
 
 /// Mute or unmute our microphone for everyone.

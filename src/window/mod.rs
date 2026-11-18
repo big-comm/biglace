@@ -1,5 +1,6 @@
 mod chat;
 mod chat_media;
+mod chat_theme;
 mod composer;
 mod content;
 mod emoji_picker;
@@ -189,6 +190,7 @@ pub fn build(app: &libadwaita::Application, start_hidden: bool) {
         .build();
 
     let toast = libadwaita::ToastOverlay::new();
+    chat_theme::apply_scheme(&chat_theme::load());
 
     // Navigation sidebar (sections + this device) | the selected section.
     // Collapses to one pane with a back button on narrow windows.

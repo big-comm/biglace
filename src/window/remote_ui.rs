@@ -252,6 +252,17 @@ fn update_countdown(body: &gtk4::Widget, left: u32) {
 
 /// Open `name`'s screen (peer at `ip`) in a new window.
 pub fn open_viewer(ip: &str, name: &str, toast: &libadwaita::ToastOverlay) {
+    open_viewer_as(ip, name, toast, None);
+}
+
+/// Watch the screen `name` shows to the voice room of `group` (view only,
+/// with "Request control").
+pub fn open_stage_viewer(ip: &str, name: &str, group: &str, toast: &libadwaita::ToastOverlay) {
+    open_viewer_as(ip, name, toast, Some(group.to_string()));
+}
+
+fn open_viewer_as(ip: &str, name: &str, toast: &libadwaita::ToastOverlay, stage: Option<String>) {
+    let watching = stage.is_some();
     let win = libadwaita::Window::builder()
         .title(trf!("Screen of {name}", "name" => name))
         .default_width(1100)
@@ -283,8 +294,26 @@ pub fn open_viewer(ip: &str, name: &str, toast: &libadwaita::ToastOverlay) {
     dot.set_valign(gtk4::Align::Center);
     live.append(&dot);
     live.append(&gtk4::Label::new(Some(&tr!("LIVE"))));
-    live.set_tooltip_text(Some(&tr!("You are seeing and controlling this screen right now")));
+    live.set_tooltip_text(Some(&if watching {
+        tr!("You are watching this screen right now")
+    } else {
+        tr!("You are seeing and controlling this screen right now")
+    }));
     header.pack_start(&live);
+    // Room share: view only until the presenter hands over control.
+    let btn_control = gtk4::Button::builder()
+        .child(
+            &libadwaita::ButtonContent::builder()
+                .icon_name("input-mouse-symbolic")
+                .label(tr!("Request control"))
+                .build(),
+        )
+        .tooltip_text(trf!("Ask {name} to let you use the mouse and keyboard", "name" => name))
+        .visible(watching)
+        .build();
+    header.pack_start(&btn_control);
+    // 0 idle, 1 asked, 2 in control.
+    let control_state = Rc::new(Cell::new(0u8));
     toolbar.add_top_bar(&header);
 
     // Pixel for pixel whenever the window is big enough (scaling is what
@@ -302,7 +331,11 @@ pub fn open_viewer(ip: &str, name: &str, toast: &libadwaita::ToastOverlay) {
     let waiting = libadwaita::StatusPage::builder()
         .icon_name("video-display-symbolic")
         .title(trf!("Waiting for {name}…", "name" => name))
-        .description(tr!("The person at that computer needs to allow the access."))
+        .description(if watching {
+            tr!("Connecting to the screen shared with the room.")
+        } else {
+            tr!("The person at that computer needs to allow the access.")
+        })
         .build();
     let stack = gtk4::Stack::new();
     stack.add_named(&waiting, Some("waiting"));
@@ -333,15 +366,43 @@ pub fn open_viewer(ip: &str, name: &str, toast: &libadwaita::ToastOverlay) {
     let (tx, rx) = async_channel::bounded::<client::Event>(4);
     let (open_tx, open_rx) = async_channel::bounded::<Result<client::Session, client::OpenError>>(1);
     let ip_w = ip.to_string();
+    let stage_w = stage.clone();
     std::thread::spawn(move || {
-        let _ = open_tx.send_blocking(client::open(&ip_w, tx));
+        let opened = match &stage_w {
+            Some(group) => client::open_stage(&ip_w, group, tx),
+            None => client::open(&ip_w, tx),
+        };
+        let _ = open_tx.send_blocking(opened);
     });
 
     let name_s = name.to_string();
     let toast = toast.clone();
     {
+        let (session, btn, state, name_s, toast) =
+            (session.clone(), btn_control.clone(), control_state.clone(), name_s.clone(), toast.clone());
+        btn_control.connect_clicked(move |b| {
+            let guard = session.borrow();
+            let Some(s) = guard.as_ref() else { return };
+            match state.get() {
+                0 => {
+                    s.ask_control();
+                    state.set(1);
+                    set_control_look(&btn, 1, &name_s);
+                    super::show_toast(&toast, &trf!("Asked {name} for control…", "name" => name_s), 4);
+                }
+                2 => {
+                    s.release_control();
+                    state.set(0);
+                    set_control_look(b, 0, &name_s);
+                }
+                _ => {}
+            }
+        });
+    }
+    {
         let (win, session, stack, picture, video, title) =
             (win.clone(), session.clone(), stack.clone(), picture.clone(), video.clone(), title.clone());
+        let (btn_control, control_state, live) = (btn_control.clone(), control_state.clone(), live.clone());
         let sized = Cell::new(false);
         glib::spawn_future_local(async move {
             match open_rx.recv().await {
@@ -398,6 +459,31 @@ pub fn open_viewer(ip: &str, name: &str, toast: &libadwaita::ToastOverlay) {
                         );
                         picture.set_paintable(Some(&tex));
                     }
+                    client::Event::Control(granted) => {
+                        if !watching {
+                            continue;
+                        }
+                        if let Some(s) = session.borrow().as_ref() {
+                            s.set_input(granted);
+                        }
+                        let before = control_state.replace(if granted { 2 } else { 0 });
+                        set_control_look(&btn_control, control_state.get(), &name_s);
+                        if granted {
+                            live.add_css_class("controlling");
+                            picture.grab_focus();
+                            super::show_toast(&toast, &trf!("You're controlling {name}'s screen now.", "name" => name_s), 4);
+                        } else {
+                            live.remove_css_class("controlling");
+                            let msg = match before {
+                                1 => trf!("{name} didn't give you control.", "name" => name_s),
+                                2 => trf!("{name} took control back.", "name" => name_s),
+                                _ => String::new(),
+                            };
+                            if !msg.is_empty() {
+                                super::show_toast(&toast, &msg, 4);
+                            }
+                        }
+                    }
                     client::Event::Ended(why) => {
                         let msg = if why.is_empty() {
                             trf!("The access to {name}'s screen ended.", "name" => name_s)
@@ -441,6 +527,21 @@ pub fn open_viewer(ip: &str, name: &str, toast: &libadwaita::ToastOverlay) {
         });
     }
     win.present();
+}
+
+fn set_control_look(b: &gtk4::Button, state: u8, name: &str) {
+    let (icon, label) = match state {
+        1 => ("content-loading-symbolic", trf!("Waiting for {name}…", "name" => name)),
+        2 => ("input-mouse-symbolic", tr!("Give back control")),
+        _ => ("input-mouse-symbolic", tr!("Request control")),
+    };
+    b.set_child(Some(&libadwaita::ButtonContent::builder().icon_name(icon).label(label).build()));
+    b.set_sensitive(state != 1);
+    if state == 2 {
+        b.add_css_class("suggested-action");
+    } else {
+        b.remove_css_class("suggested-action");
+    }
 }
 
 /// Open the viewer at the remote screen's size (1:1 pixels) when it fits on

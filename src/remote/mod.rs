@@ -73,6 +73,10 @@ pub enum Kind {
     Chat = 11,
     /// Chat, receiver → sender: JSON list of the message ids stored.
     ChatAck = 12,
+    /// Room screen share, both ways (JSON): viewer → presenter
+    /// `{"ask": true}` / `{"release": true}`; presenter → viewer
+    /// `{"granted": bool}`.
+    Control = 13,
 }
 
 /// Screen protocol revision the viewer asks for.
@@ -101,6 +105,7 @@ impl Kind {
             10 => Some(Self::RoomState),
             11 => Some(Self::Chat),
             12 => Some(Self::ChatAck),
+            13 => Some(Self::Control),
             _ => None,
         }
     }
@@ -328,7 +333,12 @@ mod end_to_end {
                 enc,
             );
             let pipelines = [broken, host::pipeline_desc(head, enc)];
-            let _ = host::stream_screen(&writer, &pipelines, None, &stop, true, &std::sync::atomic::AtomicBool::new(false));
+            let send = |kind: Kind, payload: &[u8]| -> anyhow::Result<()> {
+                let mut w = writer.lock().map_err(|_| anyhow::anyhow!("lock"))?;
+                write_frame(&mut *w, kind, payload)?;
+                Ok(())
+            };
+            let _ = host::stream_screen(&send, &pipelines, None, &stop, true, &std::sync::atomic::AtomicBool::new(false));
         });
         let stream = TcpStream::connect(addr).unwrap();
         let (tx, rx) = async_channel::bounded(256);

@@ -86,8 +86,13 @@ impl ChatPage {
             .icon_name("open-menu-symbolic")
             .tooltip_text(tr!("Main menu"))
             .build();
+        let btn_theme = gtk4::Button::builder()
+            .icon_name("applications-graphics-symbolic")
+            .tooltip_text(tr!("Chat theme"))
+            .build();
         header.pack_start(&btn_new);
         header.pack_end(&menu_btn);
+        header.pack_end(&btn_theme);
         toolbar.add_top_bar(&header);
 
         // ── Left: conversations ──
@@ -340,6 +345,14 @@ impl ChatPage {
             });
         }
         page.setup_drop(&conv_overlay);
+        super::chat_theme::apply(&page.toolbar, &page.scroll, &super::chat_theme::load());
+        {
+            let page = page.clone();
+            btn_theme.connect_clicked(move |_| {
+                let p = page.clone();
+                super::chat_theme::show_dialog(&page.win, move |t| super::chat_theme::apply(&p.toolbar, &p.scroll, t));
+            });
+        }
 
         // Enter sends; Shift+Enter is a new line.
         {

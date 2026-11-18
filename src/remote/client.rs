@@ -53,10 +53,14 @@ pub enum Event {
     Info(VideoInfo),
     Frame(Frame),
     Stats(Stats),
+    /// Room share: whether we may control the screen now.
+    Control(bool),
     Ended(String),
 }
 
 pub(crate) enum Outgoing {
+    /// Room share: JSON for a `Control` frame.
+    Control(String),
     Input(Input),
     Ping,
     /// Ask the host for a keyframe (after switching decoders).
@@ -68,11 +72,31 @@ pub struct Session {
     input: mpsc::Sender<Outgoing>,
     stream: TcpStream,
     muted: Arc<std::sync::atomic::AtomicBool>,
+    /// Our input goes to the host (always for remote access; in a room
+    /// share only once the presenter gave us control).
+    input_on: Arc<std::sync::atomic::AtomicBool>,
 }
 
 impl Session {
     pub fn send(&self, event: Input) {
-        let _ = self.input.send(Outgoing::Input(event));
+        if self.input_on.load(Ordering::Relaxed) {
+            let _ = self.input.send(Outgoing::Input(event));
+        }
+    }
+
+    /// Room share: ask the presenter for control.
+    pub fn ask_control(&self) {
+        let _ = self.input.send(Outgoing::Control(r#"{"ask":true}"#.into()));
+    }
+
+    /// Room share: hand control back.
+    pub fn release_control(&self) {
+        self.input_on.store(false, Ordering::Relaxed);
+        let _ = self.input.send(Outgoing::Control(r#"{"release":true}"#.into()));
+    }
+
+    pub(crate) fn set_input(&self, on: bool) {
+        self.input_on.store(on, Ordering::Relaxed);
     }
 
     /// Mute or unmute the host's sound here.
@@ -154,7 +178,23 @@ pub fn open(ip: &str, events: async_channel::Sender<Event>) -> Result<Session, O
         &[("X-BigLace-Screen", super::SCREEN_PROTOCOL)],
         ANSWER_TIMEOUT,
     )?;
+    start_session(stream, reader, events, true)
+}
 
+/// Watch what `ip` shares with the voice room of `group` (view only until
+/// they give us control).
+pub fn open_stage(ip: &str, group: &str, events: async_channel::Sender<Event>) -> Result<Session, OpenError> {
+    let path = format!("{}{group}", crate::room::STAGE_PREFIX);
+    let (stream, reader) = dial(ip, &path, &[("X-BigLace-Screen", super::SCREEN_PROTOCOL)], Duration::from_secs(10))?;
+    start_session(stream, reader, events, false)
+}
+
+fn start_session(
+    stream: TcpStream,
+    reader: BufReader<TcpStream>,
+    events: async_channel::Sender<Event>,
+    input: bool,
+) -> Result<Session, OpenError> {
     // Input (and clock pings): written by their own thread so the UI never
     // blocks on the network.
     let (tx, rx) = mpsc::channel::<Outgoing>();
@@ -169,6 +209,7 @@ pub fn open(ip: &str, events: async_channel::Sender<Event>) -> Result<Session, O
                         Err(_) => continue,
                     },
                     Outgoing::Ping => write_frame(&mut writer, Kind::Ping, &super::now_us().to_be_bytes()),
+                    Outgoing::Control(json) => write_frame(&mut writer, Kind::Control, json.as_bytes()),
                     Outgoing::KeyFrame => write_frame(&mut writer, Kind::KeyFrame, &[]),
                 };
                 if r.is_err() {
@@ -214,7 +255,7 @@ pub fn open(ip: &str, events: async_channel::Sender<Event>) -> Result<Session, O
             let _ = events.send_blocking(Event::Ended(why));
         });
 
-    Ok(Session { input: tx, stream, muted })
+    Ok(Session { input: tx, stream, muted, input_on: Arc::new(std::sync::atomic::AtomicBool::new(input)) })
 }
 
 /// H.264 decoder for the viewer. Software decoding must not use frame
@@ -550,6 +591,13 @@ pub(crate) fn decode_loop_with(
                 }
             }
             Kind::Pong => shared.clock.pong(&payload),
+            Kind::Control => {
+                let granted = serde_json::from_slice::<serde_json::Value>(&payload)
+                    .ok()
+                    .and_then(|v| v.get("granted").and_then(serde_json::Value::as_bool))
+                    .unwrap_or(false);
+                let _ = events.send_blocking(Event::Control(granted));
+            }
             Kind::Input | Kind::Ping | Kind::KeyFrame | Kind::Audio | Kind::RoomState | Kind::Chat | Kind::ChatAck => {}
             Kind::Error => anyhow::bail!("{}", String::from_utf8_lossy(&payload)),
         }
@@ -700,6 +748,7 @@ mod tests {
                     frames += 1;
                 }
                 Event::Stats(st) => stats = Some(st),
+                Event::Control(_) => {}
                 Event::Ended(_) => break,
             }
             if frames >= 5 && stats.is_some() {

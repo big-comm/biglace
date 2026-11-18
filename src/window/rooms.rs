@@ -22,6 +22,10 @@ pub struct RoomsPage {
     in_title: libadwaita::WindowTitle,
     members: gtk4::ListBox,
     btn_mute: gtk4::ToggleButton,
+    /// Show my screen to the room (or stop).
+    btn_share: gtk4::Button,
+    /// "You're showing your screen · 2 watching".
+    share_banner: gtk4::Label,
     error_page: libadwaita::StatusPage,
     toast: libadwaita::ToastOverlay,
     /// Reflects the room state while updating the mute toggle ourselves.
@@ -30,6 +34,11 @@ pub struct RoomsPage {
     /// The people rows, kept (and updated in place) so their animations
     /// run smoothly across updates. Keyed by address.
     member_rows: Rc<RefCell<Vec<(String, MemberRow)>>>,
+    /// The group whose room we're in, and who was sharing (to announce a
+    /// new share once).
+    group: Rc<RefCell<Option<String>>>,
+    sharing: Rc<RefCell<std::collections::HashSet<String>>>,
+    presenting: Rc<std::cell::Cell<bool>>,
 }
 
 /// One person in the room: avatar with a ring that lights up while they
@@ -40,6 +49,14 @@ struct MemberRow {
     muted_icon: gtk4::Image,
     wave: gtk4::DrawingArea,
     muted: Rc<std::cell::Cell<bool>>,
+    /// "Screen" / "watching" / "in control" tag.
+    screen_tag: gtk4::Label,
+    /// Watch their screen.
+    btn_watch: gtk4::Button,
+    /// (We're presenting) give or take back control.
+    btn_control: gtk4::Button,
+    /// The latest state of this person.
+    view: Rc<RefCell<MemberView>>,
 }
 
 impl RoomsPage {
@@ -123,8 +140,16 @@ impl RoomsPage {
             )
             .css_classes(["pill", "destructive-action"])
             .build();
+        let btn_share = gtk4::Button::builder().css_classes(["pill"]).build();
+        set_share_look(&btn_share, false);
         controls.append(&btn_mute);
+        controls.append(&btn_share);
         controls.append(&btn_leave);
+        let share_banner = gtk4::Label::new(None);
+        share_banner.add_css_class("share-banner");
+        share_banner.set_halign(gtk4::Align::Center);
+        share_banner.set_visible(false);
+        in_box.insert_child_after(&share_banner, Some(&in_title));
         in_box.append(&controls);
         let in_room = libadwaita::Clamp::builder().maximum_size(720).child(&in_box).build();
         let in_room = gtk4::ScrolledWindow::builder()
@@ -159,12 +184,34 @@ impl RoomsPage {
             in_title,
             members,
             btn_mute,
+            btn_share,
+            share_banner,
             error_page,
             toast: toast.clone(),
             syncing: Rc::new(std::cell::Cell::new(false)),
             rooms: Rc::default(),
             member_rows: Rc::default(),
+            group: Rc::default(),
+            sharing: Rc::default(),
+            presenting: Rc::default(),
         };
+        {
+            let page = page.clone();
+            page.btn_share.clone().connect_clicked(move |b| {
+                if page.presenting.get() {
+                    std::thread::spawn(room::stage::stop);
+                    return;
+                }
+                b.set_sensitive(false);
+                let (page, b) = (page.clone(), b.clone());
+                super::run_in_background(room::stage::start, move |r| {
+                    b.set_sensitive(true);
+                    if let Err(e) = r {
+                        super::show_toast(&page.toast, &trf!("Could not share the screen: {error}", "error" => e), 6);
+                    }
+                });
+            });
+        }
         {
             let page = page.clone();
             btn_refresh.connect_clicked(move |_| page.refresh());
@@ -276,10 +323,14 @@ impl RoomsPage {
             muted,
             connected: true,
             talking: false,
+            sharing: user == "bruna",
+            watching: None,
+            controlling: false,
         };
         self.on_event(RoomEvent::State {
             group: Some("familia".into()),
             muted: false,
+            presenting: false,
             members: vec![
                 m("tales", "notebook", "100.64.0.100", true, false),
                 m("bruna", "notebook-bruna", "100.64.0.101", false, false),
@@ -288,11 +339,41 @@ impl RoomsPage {
                 m("joao", "pc-sala", "100.64.0.104", false, true),
             ],
         });
+        // A few seconds later: we show our screen; Bruno watches, Maria
+        // has control.
+        let page = self.clone();
+        glib::timeout_add_seconds_local_once(6, move || {
+            let mut members = vec![
+                m("tales", "notebook", "100.64.0.100", true, false),
+                m("bruna", "notebook-bruna", "100.64.0.101", false, false),
+                m("bruno", "desktop", "100.64.0.102", false, false),
+                m("maria", "celular", "100.64.0.103", false, false),
+            ];
+            members[0].sharing = true;
+            members[1].sharing = false;
+            members[2].watching = Some(1);
+            members[3].watching = Some(2);
+            members[3].controlling = true;
+            page.on_event(RoomEvent::State { group: Some("familia".into()), muted: false, presenting: true, members });
+        });
     }
 
     fn on_event(&self, ev: RoomEvent) {
         match ev {
-            RoomEvent::State { group: Some(group), muted, members } => {
+            RoomEvent::State { group: Some(group), muted, presenting, members } => {
+                *self.group.borrow_mut() = Some(group.clone());
+                self.presenting.set(presenting);
+                set_share_look(&self.btn_share, presenting);
+                let watchers = members.iter().filter(|m| m.watching.is_some()).count();
+                self.share_banner.set_visible(presenting);
+                self.share_banner.set_text(&if watchers == 0 {
+                    tr!("📺 You're showing your screen to the room")
+                } else if watchers == 1 {
+                    tr!("📺 You're showing your screen · 1 person watching")
+                } else {
+                    trf!("📺 You're showing your screen · {count} people watching", "count" => watchers.to_string())
+                });
+                self.announce_shares(&group, &members);
                 self.in_title.set_title(&trf!("Room {group}", "group" => group));
                 let talking = members.iter().filter(|m| m.talking).count();
                 let people = if members.len() == 1 {
@@ -312,7 +393,11 @@ impl RoomsPage {
                 self.fill_members(&members);
                 self.stack.set_visible_child_name("room");
             }
+            RoomEvent::ControlRequest { viewer, user } => self.ask_control(viewer, &user),
             RoomEvent::State { group: None, .. } => {
+                *self.group.borrow_mut() = None;
+                self.sharing.borrow_mut().clear();
+                self.presenting.set(false);
                 self.stack.set_visible_child_name("lobby");
                 self.refresh();
             }
@@ -335,7 +420,7 @@ impl RoomsPage {
             let r = match existing {
                 Some(r) => r,
                 None => {
-                    let r = member_row(m);
+                    let r = member_row(m, self);
                     self.members.append(&r.row);
                     rows.push((m.ip.clone(), r.clone()));
                     r
@@ -361,15 +446,145 @@ impl RoomsPage {
                 tr!("quiet")
             };
             r.row.update_property(&[gtk4::accessible::Property::Description(&label)]);
+            *r.view.borrow_mut() = m.clone();
+            // Screen share: watch them, or (when we present) their status
+            // and control.
+            let (tag, tip) = if m.sharing && !m.me {
+                (tr!("Sharing screen"), String::new())
+            } else if m.controlling {
+                (tr!("In control"), tr!("Controls your screen now"))
+            } else if m.watching.is_some() {
+                (tr!("Watching"), tr!("Watching your screen"))
+            } else if m.me && m.sharing {
+                (tr!("Sharing screen"), String::new())
+            } else {
+                (String::new(), String::new())
+            };
+            r.screen_tag.set_text(&tag);
+            r.screen_tag.set_tooltip_text((!tip.is_empty()).then_some(tip.as_str()));
+            r.screen_tag.set_visible(!tag.is_empty());
+            r.btn_watch.set_visible(m.sharing && !m.me);
+            r.btn_control.set_visible(m.watching.is_some());
+            set_control_look(&r.btn_control, m.controlling);
         }
     }
+
+    /// Someone starts showing their screen: say so, with "Watch".
+    fn announce_shares(&self, group: &str, members: &[MemberView]) {
+        let now: std::collections::HashSet<String> =
+            members.iter().filter(|m| m.sharing && !m.me).map(|m| m.ip.clone()).collect();
+        let before = self.sharing.replace(now.clone());
+        for m in members.iter().filter(|m| now.contains(&m.ip) && !before.contains(&m.ip)) {
+            let t = libadwaita::Toast::builder()
+                .title(glib::markup_escape_text(&trf!("{user} is showing their screen", "user" => m.user)).as_str())
+                .button_label(tr!("Watch"))
+                .timeout(8)
+                .build();
+            let (ip, user, group, toast) = (m.ip.clone(), m.user.clone(), group.to_string(), self.toast.clone());
+            t.connect_button_clicked(move |_| super::remote_ui::open_stage_viewer(&ip, &user, &group, &toast));
+            self.toast.add_toast(t);
+        }
+    }
+
+    /// A viewer asks to control our screen.
+    fn ask_control(&self, viewer: u64, user: &str) {
+        let Some(win) = self.toolbar.root().and_downcast::<gtk4::Window>() else { return };
+        let dlg = libadwaita::MessageDialog::builder()
+            .transient_for(&win)
+            .modal(true)
+            .heading(trf!("{user} asks to control your screen", "user" => user))
+            .body(tr!("They'll be able to use your mouse and keyboard. You can take control back at any time."))
+            .build();
+        dlg.add_response("deny", &tr!("Deny"));
+        dlg.add_response("allow", &tr!("Allow"));
+        dlg.set_response_appearance("allow", libadwaita::ResponseAppearance::Suggested);
+        dlg.set_default_response(Some("deny"));
+        dlg.set_close_response("deny");
+        dlg.connect_response(None, move |_, r| {
+            if r == "allow" {
+                std::thread::spawn(move || room::stage::grant(viewer));
+            } else {
+                std::thread::spawn(move || room::stage::deny(viewer));
+            }
+        });
+        // Unanswered for a while: no.
+        let d = dlg.clone();
+        glib::timeout_add_seconds_local_once(60, move || d.close());
+        dlg.present();
+    }
+}
+
+fn set_share_look(b: &gtk4::Button, presenting: bool) {
+    let (icon, label) = if presenting {
+        ("media-playback-stop-symbolic", tr!("Stop sharing"))
+    } else {
+        ("video-display-symbolic", tr!("Share screen"))
+    };
+    b.set_child(Some(&libadwaita::ButtonContent::builder().icon_name(icon).label(label).build()));
+    b.set_tooltip_text(Some(&if presenting {
+        tr!("Stop showing your screen to the room")
+    } else {
+        tr!("Show your screen to everyone in the room")
+    }));
+    if presenting {
+        b.add_css_class("destructive-action");
+        b.remove_css_class("suggested-action");
+    } else {
+        b.remove_css_class("destructive-action");
+        b.add_css_class("suggested-action");
+    }
+}
+
+fn set_control_look(b: &gtk4::Button, controlling: bool) {
+    b.set_label(&if controlling { tr!("Take back control") } else { tr!("Give control") });
+    b.set_tooltip_text(Some(&if controlling {
+        tr!("Stop them from using your mouse and keyboard")
+    } else {
+        tr!("Let them use your mouse and keyboard")
+    }));
 }
 
 /// Build one person's row: avatar + speaking ring, and the wave meter that
 /// animates from their live sound level (`room::level`).
-fn member_row(m: &MemberView) -> MemberRow {
+fn member_row(m: &MemberView, page: &RoomsPage) -> MemberRow {
     let row = libadwaita::ActionRow::new();
     row.add_css_class("room-member");
+    let view = Rc::new(RefCell::new(m.clone()));
+    let screen_tag = gtk4::Label::new(None);
+    screen_tag.add_css_class("screen-tag");
+    screen_tag.set_valign(gtk4::Align::Center);
+    screen_tag.set_visible(false);
+    let btn_watch = gtk4::Button::builder()
+        .child(&libadwaita::ButtonContent::builder().icon_name("video-display-symbolic").label(tr!("Watch")).build())
+        .css_classes(["suggested-action"])
+        .valign(gtk4::Align::Center)
+        .visible(false)
+        .build();
+    {
+        let (view, page) = (view.clone(), page.clone());
+        btn_watch.connect_clicked(move |_| {
+            let v = view.borrow().clone();
+            if let Some(group) = page.group.borrow().clone() {
+                super::remote_ui::open_stage_viewer(&v.ip, &v.user, &group, &page.toast);
+            }
+        });
+    }
+    let btn_control = gtk4::Button::builder().valign(gtk4::Align::Center).visible(false).build();
+    {
+        let view = view.clone();
+        btn_control.connect_clicked(move |_| {
+            let v = view.borrow().clone();
+            match (v.controlling, v.watching) {
+                (true, _) => {
+                    std::thread::spawn(room::stage::revoke);
+                }
+                (false, Some(id)) => {
+                    std::thread::spawn(move || room::stage::grant(id));
+                }
+                _ => {}
+            }
+        });
+    }
 
     let avatar = libadwaita::Avatar::new(40, Some(&m.user), true);
     crate::avatars::bind(&avatar, &m.user);
@@ -393,6 +608,9 @@ fn member_row(m: &MemberView) -> MemberRow {
     wave.add_css_class("voice-wave");
     wave.set_tooltip_text(Some(&tr!("Sound level")));
     row.add_suffix(&wave);
+    row.add_suffix(&screen_tag);
+    row.add_suffix(&btn_watch);
+    row.add_suffix(&btn_control);
 
     let muted = Rc::new(std::cell::Cell::new(m.muted));
     // Smoothed level: rises fast with the voice, falls gently.
@@ -452,7 +670,7 @@ fn member_row(m: &MemberView) -> MemberRow {
             glib::ControlFlow::Continue
         });
     }
-    MemberRow { row, muted_icon, wave, muted }
+    MemberRow { row, muted_icon, wave, muted, screen_tag, btn_watch, btn_control, view }
 }
 
 fn set_mute_look(b: &gtk4::ToggleButton) {
