@@ -278,13 +278,22 @@ mod end_to_end {
             let writer = Mutex::new(s);
             let stopper = stop.clone();
             std::thread::spawn(move || {
-                std::thread::sleep(Duration::from_secs(5));
+                std::thread::sleep(Duration::from_secs(7));
                 stopper.stop();
             });
             // 60 fps asked; the source takes 40 ms per frame (25 fps).
             let head = "videotestsrc is-live=true pattern=ball ! video/x-raw,width=640,height=360,framerate=60/1 \
                         ! identity name=capture sleep-time=40000 ! videoconvert";
-            let _ = host::stream_screen(&writer, head, None, &stop, true);
+            let enc = host::encoder().unwrap();
+            // First a pipeline that can't negotiate (DMA-BUF from a source
+            // that has none, as on a compositor without it): the host must
+            // fall back to the next one.
+            let broken = host::pipeline_desc(
+                "videotestsrc is-live=true ! video/x-raw(memory:DMABuf) ! identity name=capture",
+                enc,
+            );
+            let pipelines = [broken, host::pipeline_desc(head, enc)];
+            let _ = host::stream_screen(&writer, &pipelines, None, &stop, true);
         });
         let stream = TcpStream::connect(addr).unwrap();
         let (tx, rx) = async_channel::bounded(256);

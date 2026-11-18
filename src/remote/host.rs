@@ -251,7 +251,8 @@ impl InputSink {
 /// The screen source, as the head of a GStreamer pipeline description, plus
 /// what keeps it alive (the portal's PipeWire fd) and where input goes.
 struct Source {
-    head: String,
+    /// Full pipeline descriptions to try, best first (see `stream_screen`).
+    pipelines: Vec<String>,
     /// X11: raised by XDamage when the screen changed (None = always send).
     dirty: Option<Arc<AtomicBool>>,
     sink: InputSink,
@@ -266,15 +267,38 @@ struct Source {
 const WAYLAND_TAIL: &str = "videoconvert n-threads=2";
 const X11_TAIL: &str = "video/x-raw,framerate=60/1 ! videoconvert n-threads=2";
 
-/// Full pipeline: `head` (source + conversion) → H.264 → appsink.
-pub(crate) fn pipeline_desc(head: &str, (enc, format): (&str, &str)) -> String {
+/// From raw frames (already in the encoder's format) to the appsink:
+/// a leaky one-frame queue (stale frames are dropped, never queued), the
+/// encoder, and H.264 access units with SPS/PPS on every keyframe.
+fn encode_tail(enc: &str) -> String {
     format!(
-        "{head} ! video/x-raw,format={format} \
-         ! queue max-size-buffers=1 max-size-bytes=0 max-size-time=0 leaky=downstream \
+        "queue max-size-buffers=1 max-size-bytes=0 max-size-time=0 leaky=downstream \
          ! {enc} ! h264parse config-interval=-1 \
          ! video/x-h264,stream-format=byte-stream,alignment=au \
          ! appsink name=sink sync=false max-buffers=2"
     )
+}
+
+/// Full pipeline: `head` (source + conversion) → H.264 → appsink.
+pub(crate) fn pipeline_desc(head: &str, (enc, format): (&str, &str)) -> String {
+    format!("{head} ! video/x-raw,format={format} ! {}", encode_tail(enc))
+}
+
+/// Zero-copy Wayland pipeline: the compositor's frames stay in GPU memory
+/// (DMA-BUF), the GPU converts them (vapostproc) and encodes them
+/// (vah264enc) — no readback, no CPU conversion. What gnome-remote-desktop
+/// does on GPUs; None when this machine has no VA-API encoder.
+#[cfg(target_os = "linux")]
+fn wayland_zero_copy(fd: i32, node: u32) -> Option<String> {
+    use gstreamer as gst;
+    let (enc, _) = encoder().filter(|(e, _)| e.starts_with("vah264enc"))?;
+    gst::ElementFactory::find("vapostproc")?;
+    Some(format!(
+        "pipewiresrc name=capture fd={fd} path={node} do-timestamp=true keepalive-time=1000 \
+         ! video/x-raw(memory:DMABuf) ! vapostproc \
+         ! video/x-raw(memory:VAMemory),format=NV12 ! {}",
+        encode_tail(enc)
+    ))
 }
 
 #[cfg(target_os = "linux")]
@@ -282,15 +306,18 @@ fn open_source(stop: &StopHandle) -> anyhow::Result<Source> {
     use std::os::fd::AsRawFd;
     if super::wayland_session() {
         let portal = super::portal::start()?;
-        let head = format!(
-            "pipewiresrc name=capture fd={} path={} do-timestamp=true keepalive-time=1000 always-copy=true \
-             ! {}",
-            portal.fd.as_raw_fd(),
-            portal.node,
-            WAYLAND_TAIL
+        let (fd, node) = (portal.fd.as_raw_fd(), portal.node);
+        let enc = encoder().ok_or_else(|| anyhow::anyhow!("no H.264 encoder"))?;
+        // Copy path, for compositors or GPUs without DMA-BUF/VA-API.
+        let copy = pipeline_desc(
+            &format!(
+                "pipewiresrc name=capture fd={fd} path={node} do-timestamp=true keepalive-time=1000 always-copy=true \
+                 ! {WAYLAND_TAIL}"
+            ),
+            enc,
         );
         Ok(Source {
-            head,
+            pipelines: wayland_zero_copy(fd, node).into_iter().chain([copy]).collect(),
             dirty: None,
             sink: InputSink::Portal(portal.input),
             _fd: Some(portal.fd),
@@ -298,10 +325,14 @@ fn open_source(stop: &StopHandle) -> anyhow::Result<Source> {
     } else {
         let dirty = Arc::new(AtomicBool::new(true));
         let watching = super::damage_x11::watch(dirty.clone(), stop.flag.clone());
+        let enc = encoder().ok_or_else(|| anyhow::anyhow!("no H.264 encoder"))?;
         Ok(Source {
             dirty: watching.then_some(dirty),
             // The viewer draws the pointer itself (no video delay on it).
-            head: format!("ximagesrc name=capture use-damage=false show-pointer=false ! {X11_TAIL}"),
+            pipelines: vec![pipeline_desc(
+                &format!("ximagesrc name=capture use-damage=false show-pointer=false ! {X11_TAIL}"),
+                enc,
+            )],
             sink: InputSink::X11(super::input_x11::Injector::connect().map(Box::new)),
             _fd: None,
         })
@@ -341,7 +372,7 @@ fn run_session(mut stream: TcpStream, stop: &StopHandle, timestamps: bool) {
             return;
         }
     };
-    let Source { head, mut sink, dirty, .. } = source;
+    let Source { pipelines, mut sink, dirty, .. } = source;
     #[cfg(target_os = "linux")]
     let _keep_fd = source._fd;
     // Video and pong replies write from two threads.
@@ -382,7 +413,7 @@ fn run_session(mut stream: TcpStream, stop: &StopHandle, timestamps: bool) {
     }
 
     drop(stream);
-    if let Err(e) = stream_screen(&writer, &head, dirty, stop, timestamps) {
+    if let Err(e) = stream_screen(&writer, &pipelines, dirty, stop, timestamps) {
         tailscale::dbg(&format!("remote: capture ended: {e}"));
     }
 }
@@ -425,65 +456,122 @@ pub fn encoder() -> Option<(&'static str, &'static str)> {
     None
 }
 
-/// Still screen: one frame a second keeps the session (and a late keyframe)
-/// alive; everything else waits for a change.
-const IDLE_FRAME_EVERY: Duration = Duration::from_secs(1);
-
-pub(crate) fn stream_screen(
-    writer: &Mutex<TcpStream>,
-    head: &str,
+/// Build and start `desc`; Ok once it produced its first encoded frame
+/// (within a few seconds), with that frame. Errors leave nothing running.
+fn start_pipeline(
+    desc: &str,
     dirty: Option<Arc<AtomicBool>>,
-    stop: &StopHandle,
-    timestamps: bool,
-) -> anyhow::Result<()> {
+) -> anyhow::Result<(gstreamer::Pipeline, gstreamer_app::AppSink, gstreamer::Sample)> {
     use gstreamer as gst;
     use gstreamer::prelude::*;
     use gstreamer_app as gst_app;
 
-    gst::init()?;
-    let enc = encoder().ok_or_else(|| anyhow::anyhow!("no H.264 encoder"))?;
-    let desc = pipeline_desc(head, enc);
-    let pipeline = gst::parse::launch(&desc)?
+    let pipeline = gst::parse::launch(desc)?
         .downcast::<gst::Pipeline>()
         .map_err(|_| anyhow::anyhow!("not a pipeline"))?;
     let sink = pipeline
         .by_name("sink")
         .and_then(|e| e.downcast::<gst_app::AppSink>().ok())
         .ok_or_else(|| anyhow::anyhow!("no appsink"))?;
-    // Right after capture: stamp each frame with the moment it was really
-    // captured (a source that can't keep the requested rate — ximagesrc
-    // asked for 60 fps on a machine doing 25 — timestamps frames on a
-    // schedule that drifts further behind every second), and on X11 drop
-    // frames of an unchanged screen before they cost a conversion and an
-    // encode.
-    if let Some(capture) = pipeline.by_name("capture") {
-        if let Some(pad) = capture.static_pad("src") {
-            let last = Mutex::new(Instant::now() - IDLE_FRAME_EVERY);
-            let element = capture.downgrade();
-            pad.add_probe(gst::PadProbeType::BUFFER, move |_, info| {
-                if let Some(dirty) = &dirty {
-                    let mut last = last.lock().unwrap_or_else(|e| e.into_inner());
-                    if dirty.swap(false, Ordering::AcqRel) || last.elapsed() >= IDLE_FRAME_EVERY {
-                        *last = Instant::now();
-                    } else {
-                        return gst::PadProbeReturn::Drop;
-                    }
+    stamp_and_gate(&pipeline, dirty);
+    if pipeline.set_state(gst::State::Playing).is_err() {
+        let _ = pipeline.set_state(gst::State::Null);
+        anyhow::bail!("could not start");
+    }
+    let deadline = Instant::now() + FIRST_FRAME_WITHIN;
+    while Instant::now() < deadline {
+        if let Some(sample) = sink.try_pull_sample(gst::ClockTime::from_mseconds(200)) {
+            return Ok((pipeline, sink, sample));
+        }
+        if let Some(bus) = pipeline.bus() {
+            if let Some(msg) = bus.pop_filtered(&[gst::MessageType::Error]) {
+                let _ = pipeline.set_state(gst::State::Null);
+                if let gst::MessageView::Error(e) = msg.view() {
+                    anyhow::bail!("{}", e.error());
                 }
-                let now = element.upgrade().and_then(|e| e.current_running_time());
-                if let (Some(now), Some(gst::PadProbeData::Buffer(buffer))) = (now, info.data.as_mut()) {
-                    buffer.make_mut().set_pts(now);
-                }
-                gst::PadProbeReturn::Ok
-            });
+                anyhow::bail!("pipeline error");
+            }
         }
     }
-    pipeline.set_state(gst::State::Playing)?;
+    let _ = pipeline.set_state(gst::State::Null);
+    anyhow::bail!("no frame within {:?}", FIRST_FRAME_WITHIN)
+}
+
+/// A pipeline that hasn't produced a frame by then is given up on.
+const FIRST_FRAME_WITHIN: Duration = Duration::from_secs(4);
+
+/// Right after capture: stamp each frame with the moment it was really
+/// captured (a source that can't keep the requested rate — ximagesrc
+/// asked for 60 fps on a machine doing 25 — timestamps frames on a
+/// schedule that drifts further behind every second), and on X11 drop
+/// frames of an unchanged screen before they cost a conversion and an
+/// encode.
+fn stamp_and_gate(pipeline: &gstreamer::Pipeline, dirty: Option<Arc<AtomicBool>>) {
+    use gstreamer as gst;
+    use gstreamer::prelude::*;
+    let Some(capture) = pipeline.by_name("capture") else { return };
+    let Some(pad) = capture.static_pad("src") else { return };
+    let last = Mutex::new(Instant::now() - IDLE_FRAME_EVERY);
+    let element = capture.downgrade();
+    pad.add_probe(gst::PadProbeType::BUFFER, move |_, info| {
+        if let Some(dirty) = &dirty {
+            let mut last = last.lock().unwrap_or_else(|e| e.into_inner());
+            if dirty.swap(false, Ordering::AcqRel) || last.elapsed() >= IDLE_FRAME_EVERY {
+                *last = Instant::now();
+            } else {
+                return gst::PadProbeReturn::Drop;
+            }
+        }
+        let now = element.upgrade().and_then(|e| e.current_running_time());
+        if let (Some(now), Some(gst::PadProbeData::Buffer(buffer))) = (now, info.data.as_mut()) {
+            buffer.make_mut().set_pts(now);
+        }
+        gst::PadProbeReturn::Ok
+    });
+}
+
+/// Still screen: one frame a second keeps the session (and a late keyframe)
+/// alive; everything else waits for a change.
+const IDLE_FRAME_EVERY: Duration = Duration::from_secs(1);
+
+pub(crate) fn stream_screen(
+    writer: &Mutex<TcpStream>,
+    pipelines: &[String],
+    dirty: Option<Arc<AtomicBool>>,
+    stop: &StopHandle,
+    timestamps: bool,
+) -> anyhow::Result<()> {
+    use gstreamer as gst;
+    use gstreamer::prelude::*;
+
+    gst::init()?;
+    // Best pipeline first; one that can't start (no DMA-BUF from this
+    // compositor, a driver refusing a format…) gives way to the next.
+    let mut started = None;
+    let mut last_err = anyhow::anyhow!("no capture pipeline");
+    for (i, desc) in pipelines.iter().enumerate() {
+        match start_pipeline(desc, dirty.clone()) {
+            Ok(p) => {
+                tailscale::dbg(&format!("remote: capture pipeline #{i} running"));
+                started = Some(p);
+                break;
+            }
+            Err(e) => {
+                tailscale::dbg(&format!("remote: capture pipeline #{i} failed: {e}"));
+                last_err = e;
+            }
+        }
+    }
+    let Some((pipeline, sink, first)) = started else {
+        return Err(last_err);
+    };
+    let mut pending = Some(first);
 
     let result = (|| -> anyhow::Result<()> {
         let mut last_info: Option<VideoInfo> = None;
         let (mut frames, mut bytes, mut since) = (0u32, 0usize, std::time::Instant::now());
         while !stop.stopped() {
-            let Some(sample) = sink.try_pull_sample(gst::ClockTime::from_mseconds(500)) else {
+            let Some(sample) = pending.take().or_else(|| sink.try_pull_sample(gst::ClockTime::from_mseconds(500))) else {
                 if sink.is_eos() {
                     anyhow::bail!("capture stopped");
                 }
@@ -539,6 +627,34 @@ pub(crate) fn stream_screen(
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    /// The GPU half of the zero-copy chain (convert + encode on VA-API) must
+    /// produce H.264 wherever a VA encoder exists.
+    #[test]
+    fn va_zero_copy_chain_encodes() {
+        use gstreamer as gst;
+        use gstreamer::prelude::*;
+        gst::init().unwrap();
+        let Some((enc, _)) = encoder().filter(|(e, _)| e.starts_with("vah264enc")) else {
+            eprintln!("no VA-API encoder here; skipping");
+            return;
+        };
+        if gst::ElementFactory::find("vapostproc").is_none() {
+            return;
+        }
+        let desc = format!(
+            "videotestsrc num-buffers=20 ! video/x-raw,width=1280,height=720 ! vapostproc \
+             ! video/x-raw(memory:VAMemory),format=NV12 ! {}",
+            encode_tail(enc)
+        );
+        let pipeline = gst::parse::launch(&desc).unwrap().downcast::<gst::Pipeline>().unwrap();
+        let sink = pipeline.by_name("sink").unwrap().downcast::<gstreamer_app::AppSink>().unwrap();
+        pipeline.set_state(gst::State::Playing).unwrap();
+        let sample = sink.try_pull_sample(gst::ClockTime::from_seconds(10));
+        pipeline.set_state(gst::State::Null).unwrap();
+        let caps = sample.expect("VA chain produced nothing").caps().unwrap().structure(0).unwrap().to_owned();
+        assert_eq!(caps.name(), "video/x-h264");
+    }
     use gstreamer as gst;
     use gstreamer::prelude::*;
 
