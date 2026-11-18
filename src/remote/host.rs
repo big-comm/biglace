@@ -73,6 +73,34 @@ fn seen_nonces() -> &'static Mutex<HashMap<String, Instant>> {
     SEEN.get_or_init(|| Mutex::new(HashMap::new()))
 }
 
+enum PanelAnswer {
+    Key(String),
+    Unknown,
+}
+
+/// The key the BigScale panel pinned for the device at `peer`, asked with a
+/// request signed by this device. `Unknown` when there's no panel, it's
+/// unreachable, or it has no key for that device.
+fn panel_key_for(peer: IpAddr) -> PanelAnswer {
+    let Some(base) = crate::panel::panel_tailnet_url() else {
+        return PanelAnswer::Unknown;
+    };
+    let Ok(agent) = crate::panel::shared_agent() else {
+        return PanelAnswer::Unknown;
+    };
+    #[derive(serde::Deserialize)]
+    struct Answer {
+        key: String,
+    }
+    match device_key::send(&agent, "GET", &format!("{base}/api/devices/key/{peer}"), None) {
+        Ok(resp) => match crate::panel::read_json_limited::<Answer>(resp) {
+            Ok(a) => PanelAnswer::Key(a.key),
+            Err(_) => PanelAnswer::Unknown,
+        },
+        Err(_) => PanelAnswer::Unknown,
+    }
+}
+
 /// Check the viewer's signed request and that the BigLace at its address
 /// holds the signing key. Returns a short reason on failure (for the log).
 fn verify_viewer(headers: &HashMap<String, String>, peer: IpAddr, local: &str) -> Result<(), &'static str> {
@@ -108,8 +136,16 @@ fn verify_viewer(headers: &HashMap<String, String>, peer: IpAddr, local: &str) -
             return Err("replayed");
         }
     }
-    // The viewer's own BigLace must vouch for the key: something behind its
-    // machine (a VM, a container) shares the address but not the key.
+    // Is that key really the viewer device's? Something behind its machine
+    // (a VM, a container) shares the address but not the key.
+    match panel_key_for(peer) {
+        // The panel pinned this device's key when it enrolled: authoritative.
+        PanelAnswer::Key(pinned) if pinned == public => return Ok(()),
+        PanelAnswer::Key(_) => return Err("key differs from the one the panel knows"),
+        // No panel (plain headscale) or no key there yet: ask the viewer's
+        // own BigLace, over the tunnel, to prove it holds the key.
+        PanelAnswer::Unknown => {}
+    }
     let challenge = device_key::new_challenge().ok_or("no randomness")?;
     let host_part = match peer {
         IpAddr::V6(v6) => format!("[{v6}]"),
