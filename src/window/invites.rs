@@ -69,6 +69,9 @@ fn explain(err: &MemberError) -> String {
             "On this network everyone can reach everyone, so only the administrator can invite people."
         ),
         MemberError::TooMany => tr!("You have too many pending invites. Cancel some or try again tomorrow."),
+        MemberError::Other(detail) if detail == "admins_only" => {
+            tr!("On this network only administrators invite new people. You can still invite people already on the network into your groups.")
+        }
         MemberError::Other(detail) => trf!("Could not reach the panel: {error}", "error" => detail),
     }
 }
@@ -79,6 +82,7 @@ fn status_label(status: &str) -> String {
         "used" => tr!("Used"),
         "expired" => tr!("Expired"),
         "revoked" => tr!("Cancelled"),
+        "pending" => tr!("Waiting for an administrator's approval"),
         other => other.to_string(),
     }
 }
@@ -241,6 +245,11 @@ impl InvitesPage {
     ) {
         let (page, parent, toast) = (self.clone(), parent.clone(), toast.clone());
         self.refresh_then(move |err| match err {
+            None if !page.state.borrow().as_ref().is_none_or(|s| s.can_invite) => super::show_toast(
+                &toast,
+                &explain(&MemberError::Other("admins_only".into())),
+                8,
+            ),
             None => show_dialog(&parent, &page, group.as_deref()),
             Some(e) => super::show_toast(&toast, &explain(&e), 8),
         });
@@ -447,8 +456,8 @@ pub fn show_dialog(parent: &libadwaita::ApplicationWindow, page: &InvitesPage, p
         });
     }
     {
-        let (page, steps, picture, link_label, lbl_err) =
-            (page.clone(), steps.clone(), picture.clone(), link_label.clone(), lbl_err.clone());
+        let (page, steps, picture, link_label, lbl_err, hint) =
+            (page.clone(), steps.clone(), picture.clone(), link_label.clone(), lbl_err.clone(), hint.clone());
         let row_note = row_note.clone();
         btn_create.connect_clicked(move |btn| {
             lbl_err.set_text("");
@@ -456,13 +465,14 @@ pub fn show_dialog(parent: &libadwaita::ApplicationWindow, page: &InvitesPage, p
             let group = (idx > 0).then(|| groups.get(idx - 1).cloned()).flatten();
             let note = row_note.text().trim().to_string();
             btn.set_sensitive(false);
-            let (page, steps, picture, link_label, lbl_err, btn) = (
+            let (page, steps, picture, link_label, lbl_err, btn, hint) = (
                 page.clone(),
                 steps.clone(),
                 picture.clone(),
                 link_label.clone(),
                 lbl_err.clone(),
                 btn.clone(),
+                hint.clone(),
             );
             super::run_in_background(
                 move || invite::create(group.as_deref(), &note),
@@ -474,6 +484,11 @@ pub fn show_dialog(parent: &libadwaita::ApplicationWindow, page: &InvitesPage, p
                                 picture.set_paintable(Some(&tex));
                             }
                             link_label.set_text(&created.link);
+                            if created.awaits_approval() {
+                                hint.set_text(&tr!(
+                                    "This network asks an administrator to approve each invite: the link starts working once they do. Its status shows in Invites."
+                                ));
+                            }
                             steps.set_visible_child_name("share");
                             page.refresh();
                         }

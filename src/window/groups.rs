@@ -620,6 +620,21 @@ impl GroupsPage {
             .build();
         body.append(&search);
 
+        // Inviting someone not listed (the network shows only our
+        // contacts): by the exact name they have here.
+        let by_name = libadwaita::ActionRow::builder()
+            .activatable(true)
+            .subtitle(tr!("If someone on the network has exactly this name, they get the invitation."))
+            .visible(false)
+            .build();
+        by_name.add_prefix(&gtk4::Image::from_icon_name("list-add-symbolic"));
+        let by_name_list = gtk4::ListBox::new();
+        by_name_list.add_css_class("boxed-list");
+        by_name_list.set_selection_mode(gtk4::SelectionMode::None);
+        by_name_list.append(&by_name);
+        by_name_list.set_visible(false);
+        body.append(&by_name_list);
+
         let list = gtk4::ListBox::new();
         list.add_css_class("boxed-list");
         list.set_selection_mode(gtk4::SelectionMode::None);
@@ -639,9 +654,23 @@ impl GroupsPage {
                 q.is_empty() || row.widget_name().to_lowercase().contains(&q)
             });
         }
+        let contacts_only = Rc::new(std::cell::Cell::new(false));
+        let chosen: Rc<RefCell<Vec<String>>> = Rc::default();
         {
-            let list = list.clone();
-            search.connect_search_changed(move |_| list.invalidate_filter());
+            let (list, by_name, by_name_list, contacts_only) =
+                (list.clone(), by_name.clone(), by_name_list.clone(), contacts_only.clone());
+            search.connect_search_changed(move |s| {
+                list.invalidate_filter();
+                let typed = s.text().trim().to_lowercase();
+                let listed = std::iter::successors(list.first_child(), |w| w.next_sibling())
+                    .any(|w| w.widget_name() == typed.as_str());
+                let show = contacts_only.get() && invite::user_name_ok(&typed) && !listed;
+                if show {
+                    by_name.set_title(glib::markup_escape_text(&trf!("Invite \"{name}\"", "name" => typed)).as_str());
+                }
+                by_name.set_visible(show);
+                by_name_list.set_visible(show);
+            });
         }
 
         let err = gtk4::Label::new(None);
@@ -664,7 +693,6 @@ impl GroupsPage {
         outer.append(&body);
         dlg.set_content(Some(&outer));
 
-        let chosen: Rc<RefCell<Vec<String>>> = Rc::default();
         {
             let (page, dlg, group) = (self.clone(), dlg.clone(), group.to_string());
             link.connect_clicked(move |_| {
@@ -703,14 +731,33 @@ impl GroupsPage {
             });
         }
 
+        {
+            let (list, search, chosen, send) = (list.clone(), search.clone(), chosen.clone(), send.clone());
+            by_name.connect_activated(move |_| {
+                let typed = search.text().trim().to_lowercase();
+                let person = Person { user: typed, online: false, state: "typed".into() };
+                let row = person_row(&person, &chosen, &send);
+                list.append(&row);
+                libadwaita::prelude::ActionRowExt::activate(&row);
+                search.set_text("");
+            });
+        }
         let g = group.to_string();
-        let (list2, status2, send2) = (list.clone(), status.clone(), send.clone());
+        let (list2, status2, send2, intro2) = (list.clone(), status.clone(), send.clone(), intro.clone());
         super::run_in_background(
             move || invite::people(&g),
             move |r| match r {
-                Ok(people) => {
-                    status2.set_title(&tr!("Nobody else is on the network yet."));
-                    for p in &people {
+                Ok(found) => {
+                    if found.directory == "contacts" {
+                        contacts_only.set(true);
+                        intro2.set_text(&tr!(
+                            "Listed are the people you're already connected to. To invite someone else on the network, type their exact name. Each one gets the invitation in BigLace and decides whether to join."
+                        ));
+                        status2.set_title(&tr!("Nobody you're connected to yet. Type someone's exact name to invite them."));
+                    } else {
+                        status2.set_title(&tr!("Nobody else is on the network yet."));
+                    }
+                    for p in &found.people {
                         list2.append(&person_row(p, &chosen, &send2));
                     }
                 }
@@ -826,7 +873,11 @@ fn notification_id(request: &str) -> String {
 /// One person in the "Invite to this group" list: a check box when they can
 /// be asked, or why not.
 fn person_row(p: &Person, chosen: &Rc<RefCell<Vec<String>>>, send: &gtk4::Button) -> libadwaita::ActionRow {
-    let mut details = vec![if p.online { tr!("online") } else { tr!("offline") }];
+    let mut details = match p.state.as_str() {
+        "typed" => vec![tr!("typed name")],
+        _ if p.online => vec![tr!("online")],
+        _ => vec![tr!("offline")],
+    };
     match p.state.as_str() {
         "member" => details.push(tr!("already in the group")),
         "pending" => details.push(tr!("invitation sent, waiting")),
@@ -842,7 +893,7 @@ fn person_row(p: &Person, chosen: &Rc<RefCell<Vec<String>>>, send: &gtk4::Button
         avatar.add_css_class("success");
     }
     row.add_prefix(&avatar);
-    if p.state == "available" {
+    if p.state == "available" || p.state == "typed" {
         let check = gtk4::CheckButton::builder().valign(gtk4::Align::Center).build();
         check.update_property(&[gtk4::accessible::Property::Label(&trf!("Invite {user}", "user" => p.user))]);
         row.add_suffix(&check);

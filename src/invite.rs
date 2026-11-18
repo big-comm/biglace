@@ -266,6 +266,31 @@ mod tests {
     use super::*;
 
     #[test]
+    fn network_settings_reach_the_app() {
+        let mine: MyInvites = serde_json::from_str(r#"{"invites":[],"groups":[]}"#).unwrap();
+        assert!(mine.can_invite, "older panels let every member invite");
+        let mine: MyInvites =
+            serde_json::from_str(r#"{"invites":[],"groups":[],"policy":"admins","can_invite":false}"#).unwrap();
+        assert!(!mine.can_invite);
+        let made: CreatedInvite =
+            serde_json::from_str(r#"{"link":"https://p/join#x","invite":{"status":"pending","id":"a"}}"#).unwrap();
+        assert!(made.awaits_approval());
+        let made: CreatedInvite = serde_json::from_str(r#"{"link":"https://p/join#x"}"#).unwrap();
+        assert!(!made.awaits_approval());
+        let found: People = serde_json::from_str(r#"{"people":[]}"#).unwrap();
+        assert_eq!(found.directory, "");
+    }
+
+    #[test]
+    fn typed_user_names() {
+        assert!(user_name_ok("bruna"));
+        assert!(user_name_ok("bigrato-2"));
+        for bad in ["", "Bruna", "a b", "../x", "a@b", &"a".repeat(65)] {
+            assert!(!user_name_ok(bad), "{bad}");
+        }
+    }
+
+    #[test]
     fn request_ids_cannot_reshape_the_path() {
         assert!(request_id("a1b2c3d4e5f6a1b2c3d4e5f6").is_ok());
         for bad in ["", "../x", "ab/cd", "abc?x=1", &"a".repeat(65)] {
@@ -530,12 +555,33 @@ pub struct MyInvites {
     pub invites: Vec<SentInvite>,
     /// Groups we're in — the only ones we can invite into.
     pub groups: Vec<String>,
+    /// Whether we may create invites (false: administrators only).
+    #[serde(default = "yes")]
+    pub can_invite: bool,
+}
+
+fn yes() -> bool {
+    true
 }
 
 #[derive(Debug, Clone, Deserialize)]
 pub struct CreatedInvite {
     /// Link to share (also what the QR code encodes).
     pub link: String,
+    #[serde(default)]
+    pub invite: Option<CreatedStatus>,
+}
+
+#[derive(Debug, Clone, Deserialize)]
+pub struct CreatedStatus {
+    /// `pending`: works only after an administrator approves it.
+    pub status: String,
+}
+
+impl CreatedInvite {
+    pub fn awaits_approval(&self) -> bool {
+        self.invite.as_ref().is_some_and(|i| i.status == "pending")
+    }
 }
 
 /// Why the member API can't be used.
@@ -772,9 +818,13 @@ pub struct Person {
     pub state: String,
 }
 
-#[derive(Deserialize)]
-struct People {
-    people: Vec<Person>,
+#[derive(Debug, Clone, Deserialize)]
+pub struct People {
+    pub people: Vec<Person>,
+    /// `contacts`: only people we're connected to are listed; anyone else
+    /// by exact name. `network`: everyone.
+    #[serde(default)]
+    pub directory: String,
 }
 
 /// "Come into my group?" — sent or received, not answered yet.
@@ -807,11 +857,17 @@ fn request_id(id: &str) -> std::result::Result<&str, MemberError> {
 }
 
 /// People on the network we could ask into `group` (one we're in).
-pub fn people(group: &str) -> std::result::Result<Vec<Person>, MemberError> {
+pub fn people(group: &str) -> std::result::Result<People, MemberError> {
     let r = member_call("GET", &format!("/api/me/groups/{}/people", segment(group)?), None)?;
-    panel::read_json_limited::<People>(r)
-        .map(|p| p.people)
-        .map_err(|e| MemberError::Other(e.to_string()))
+    panel::read_json_limited::<People>(r).map_err(|e| MemberError::Other(e.to_string()))
+}
+
+/// An account name as the panel spells them (what someone types to invite
+/// a person by name).
+pub fn user_name_ok(name: &str) -> bool {
+    !name.is_empty()
+        && name.len() <= 64
+        && name.bytes().all(|c| c.is_ascii_lowercase() || c.is_ascii_digit() || c == b'-')
 }
 
 /// Ask `users` into `group`. Returns how many requests went out.
