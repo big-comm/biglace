@@ -205,9 +205,13 @@ pub fn can_host() -> bool {
             if gstreamer::init().is_err() || host::encoder().is_none() {
                 return false;
             }
-            let source = if wayland_session() { "pipewiresrc" } else { "ximagesrc" };
-            let display = wayland_session() || std::env::var_os("DISPLAY").is_some();
-            display && gstreamer::ElementFactory::find(source).is_some()
+            if wayland_session() {
+                // The portal must really work here (some setups point it at
+                // another desktop's backends, which offer nothing).
+                gstreamer::ElementFactory::find("pipewiresrc").is_some() && portal::available()
+            } else {
+                std::env::var_os("DISPLAY").is_some() && gstreamer::ElementFactory::find("ximagesrc").is_some()
+            }
         })
     }
     #[cfg(not(target_os = "linux"))]

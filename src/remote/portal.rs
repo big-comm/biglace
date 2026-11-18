@@ -15,6 +15,20 @@ use super::Input;
 
 const TOKEN_FILE: &str = "remote-desktop.token";
 
+/// Shown to the viewer when this desktop's remote-desktop portal has no
+/// working backend.
+pub const NO_PORTAL: &str = "this computer's desktop has no working remote-desktop portal \
+     (xdg-desktop-portal). Check its configuration in ~/.config/xdg-desktop-portal/";
+
+/// Whether the desktop's remote-desktop portal can actually share a screen
+/// and take input. Blocking (a D-Bus round trip); call once.
+pub fn available() -> bool {
+    zbus::block_on(async {
+        let Ok(rd) = RemoteDesktop::new().await else { return false };
+        rd.available_device_types().await.is_ok_and(|d| !d.is_empty())
+    })
+}
+
 // evdev button codes (linux/input-event-codes.h).
 const BTN_LEFT: i32 = 0x110;
 const BTN_RIGHT: i32 = 0x111;
@@ -54,6 +68,13 @@ pub fn start() -> anyhow::Result<Portal> {
                 let setup = async {
                     let rd = RemoteDesktop::new().await?;
                     let sc = Screencast::new().await?;
+                    // A portal frontend with no backend for these (e.g. a
+                    // portals.conf pointing GNOME at another desktop's
+                    // backends) offers nothing: say so instead of failing
+                    // on an obscure "invalid argument" later.
+                    if rd.available_device_types().await.map_or(true, |d| d.is_empty()) {
+                        anyhow::bail!(NO_PORTAL);
+                    }
                     let session = rd.create_session(Default::default()).await?;
                     let token = saved_token();
                     rd.select_devices(
@@ -64,10 +85,18 @@ pub fn start() -> anyhow::Result<Portal> {
                             .set_restore_token(token.as_deref()),
                     )
                     .await?;
+                    // No pointer in the frames (the viewer draws its own):
+                    // Hidden where offered, else Metadata (also kept out of
+                    // the frames); some compositors offer only one of them.
+                    let modes = sc.available_cursor_modes().await.unwrap_or(CursorMode::EMBEDDED);
+                    let cursor = [CursorMode::HIDDEN, CursorMode::METADATA, CursorMode::EMBEDDED]
+                        .into_iter()
+                        .find(|m| modes.contains(*m))
+                        .unwrap_or(CursorMode::EMBEDDED);
                     sc.select_sources(
                         &session,
                         SelectSourcesOptions::default()
-                            .set_cursor_mode(CursorMode::HIDDEN)
+                            .set_cursor_mode(cursor)
                             .set_sources(SourceType::MONITOR)
                             .set_multiple(false),
                     )
