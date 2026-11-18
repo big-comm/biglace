@@ -150,6 +150,9 @@ pub fn open_viewer(ip: &str, name: &str, toast: &libadwaita::ToastOverlay) {
         .vexpand(true)
         .build();
     picture.update_property(&[gtk4::accessible::Property::Label(&trf!("Screen of {name}", "name" => name))]);
+    // The remote screen already draws its own pointer; ours on top of it
+    // would be a second, slightly lagging arrow.
+    picture.set_cursor_from_name(Some("none"));
     let waiting = libadwaita::StatusPage::builder()
         .icon_name("video-display-symbolic")
         .title(trf!("Waiting for {name}…", "name" => name))
@@ -203,7 +206,7 @@ pub fn open_viewer(ip: &str, name: &str, toast: &libadwaita::ToastOverlay) {
                             "That computer couldn't confirm this device. Make sure both run an up-to-date BigLace."
                         ),
                         client::OpenError::Unavailable => trf!(
-                            "{name}'s computer can't share its screen yet (it needs an X11 session).",
+                            "{name}'s computer can't share its screen (screen sharing isn't available there).",
                             "name" => name_s
                         ),
                         client::OpenError::Other(d) => trf!("Could not connect: {error}", "error" => d),

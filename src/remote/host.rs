@@ -188,35 +188,109 @@ pub fn serve(stream: TcpStream, peer: IpAddr, headers: &HashMap<String, String>,
     tailscale::dbg(&format!("remote: session ended for {}@{}", identity.login, identity.device));
 }
 
-fn run_session(stream: TcpStream, stop: &StopHandle) {
+/// Where the viewer's input goes on this host.
+enum InputSink {
+    #[cfg(target_os = "linux")]
+    X11(Option<Box<super::input_x11::Injector>>),
+    #[cfg(target_os = "linux")]
+    Portal(async_channel::Sender<Input>),
+}
+
+impl InputSink {
+    fn apply(&mut self, event: Input) {
+        match self {
+            #[cfg(target_os = "linux")]
+            Self::X11(Some(inj)) => inj.apply(&event),
+            #[cfg(target_os = "linux")]
+            Self::X11(None) => {}
+            #[cfg(target_os = "linux")]
+            Self::Portal(tx) => {
+                let _ = tx.send_blocking(event);
+            }
+        }
+    }
+}
+
+/// The screen source, as the head of a GStreamer pipeline description, plus
+/// what keeps it alive (the portal's PipeWire fd) and where input goes.
+struct Source {
+    head: String,
+    sink: InputSink,
+    #[cfg(target_os = "linux")]
+    _fd: Option<std::os::fd::OwnedFd>,
+}
+
+#[cfg(target_os = "linux")]
+fn open_source() -> anyhow::Result<Source> {
+    use std::os::fd::AsRawFd;
+    if super::wayland_session() {
+        let portal = super::portal::start()?;
+        let head = format!(
+            "pipewiresrc fd={} path={} do-timestamp=true keepalive-time=1000 always-copy=true \
+             ! videoconvert ! videorate ! video/x-raw,framerate=30/1",
+            portal.fd.as_raw_fd(),
+            portal.node
+        );
+        Ok(Source {
+            head,
+            sink: InputSink::Portal(portal.input),
+            _fd: Some(portal.fd),
+        })
+    } else {
+        Ok(Source {
+            head: "ximagesrc use-damage=false show-pointer=true ! video/x-raw,framerate=30/1 ! videoconvert".into(),
+            sink: InputSink::X11(super::input_x11::Injector::connect().map(Box::new)),
+            _fd: None,
+        })
+    }
+}
+
+#[cfg(not(target_os = "linux"))]
+fn open_source() -> anyhow::Result<Source> {
+    anyhow::bail!("screen sharing is not available on this system")
+}
+
+fn run_session(mut stream: TcpStream, stop: &StopHandle) {
     let _ = stream.set_write_timeout(Some(WRITE_TIMEOUT));
     let _ = stream.set_read_timeout(None);
     let _ = stream.set_nodelay(true);
 
-    // Input: replayed as it arrives, on its own thread.
+    let source = match open_source() {
+        Ok(s) => s,
+        Err(e) => {
+            tailscale::dbg(&format!("remote: no screen source: {e}"));
+            let _ = write_frame(&mut stream, Kind::Error, e.to_string().as_bytes());
+            return;
+        }
+    };
+    let Source { head, mut sink, .. } = source;
     #[cfg(target_os = "linux")]
+    let _keep_fd = source._fd;
+
+    // Input: replayed as it arrives, on its own thread.
     if let Ok(mut reader) = stream.try_clone() {
         let stop = stop.clone();
         let _ = std::thread::Builder::new()
             .name("biglace-remote-input".into())
             .spawn(move || {
-                let mut injector = super::input_x11::Injector::connect();
                 while !stop.stopped() {
                     match read_frame(&mut reader) {
                         Ok((Kind::Input, payload)) => {
-                            if let (Some(inj), Ok(event)) = (injector.as_mut(), serde_json::from_slice::<Input>(&payload)) {
-                                inj.apply(&event);
+                            if let Ok(event) = serde_json::from_slice::<Input>(&payload) {
+                                sink.apply(event);
                             }
                         }
                         Ok(_) => {}
                         Err(_) => break,
                     }
                 }
+                // Dropping the sink ends the portal session too.
+                drop(sink);
                 stop.stop();
             });
     }
 
-    if let Err(e) = stream_screen(stream, stop) {
+    if let Err(e) = stream_screen(stream, &head, stop) {
         tailscale::dbg(&format!("remote: capture ended: {e}"));
     }
 }
@@ -236,7 +310,7 @@ pub fn encoder() -> Option<&'static str> {
     None
 }
 
-fn stream_screen(mut stream: TcpStream, stop: &StopHandle) -> anyhow::Result<()> {
+fn stream_screen(mut stream: TcpStream, head: &str, stop: &StopHandle) -> anyhow::Result<()> {
     use gstreamer as gst;
     use gstreamer::prelude::*;
     use gstreamer_app as gst_app;
@@ -244,8 +318,7 @@ fn stream_screen(mut stream: TcpStream, stop: &StopHandle) -> anyhow::Result<()>
     gst::init()?;
     let enc = encoder().ok_or_else(|| anyhow::anyhow!("no H.264 encoder"))?;
     let desc = format!(
-        "ximagesrc use-damage=false show-pointer=true \
-         ! video/x-raw,framerate=30/1 ! videoconvert ! video/x-raw,format=I420 \
+        "{head} ! video/x-raw,format=I420 \
          ! {enc} ! h264parse config-interval=-1 \
          ! video/x-h264,stream-format=byte-stream,alignment=au \
          ! appsink name=sink sync=false max-buffers=8"

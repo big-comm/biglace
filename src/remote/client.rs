@@ -202,6 +202,7 @@ fn decode_loop(mut reader: BufReader<TcpStream>, events: &async_channel::Sender<
                     }
                 }
                 Kind::Input => {}
+                Kind::Error => anyhow::bail!("{}", String::from_utf8_lossy(&payload)),
             }
         }
     })();

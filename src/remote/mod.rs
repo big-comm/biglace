@@ -16,6 +16,8 @@ pub mod client;
 pub mod host;
 #[cfg(target_os = "linux")]
 mod input_x11;
+#[cfg(target_os = "linux")]
+mod portal;
 
 use serde::{Deserialize, Serialize};
 use std::io::{self, Read, Write};
@@ -39,6 +41,8 @@ pub enum Kind {
     Video = 2,
     /// Viewer → host: JSON [`Input`].
     Input = 3,
+    /// Host → viewer: why the session can't go on (UTF-8 text).
+    Error = 4,
 }
 
 impl Kind {
@@ -47,6 +51,7 @@ impl Kind {
             1 => Some(Self::Info),
             2 => Some(Self::Video),
             3 => Some(Self::Input),
+            4 => Some(Self::Error),
             _ => None,
         }
     }
@@ -143,22 +148,27 @@ pub(crate) fn emit(event: HostEvent) -> bool {
     channel().0.send_blocking(event).is_ok()
 }
 
-/// Whether this device can be a remote-screen host right now: a Linux X11
-/// session (Wayland hosts come with the screen-cast portal) with the
-/// GStreamer pieces the host pipeline needs.
+/// A Wayland session (GNOME, Plasma…): capture and input go through the
+/// remote-desktop portal instead of X11.
+pub fn wayland_session() -> bool {
+    std::env::var_os("WAYLAND_DISPLAY").is_some()
+        || std::env::var("XDG_SESSION_TYPE").is_ok_and(|t| t == "wayland")
+}
+
+/// Whether this device can be a remote-screen host: Linux with the GStreamer
+/// pieces the host pipeline needs — X11 (XTest) or Wayland (portal +
+/// PipeWire).
 pub fn can_host() -> bool {
     #[cfg(target_os = "linux")]
     {
         static OK: OnceLock<bool> = OnceLock::new();
         *OK.get_or_init(|| {
-            // An X11 session: $DISPLAY without a Wayland compositor (GNOME
-            // and Plasma on Wayland also set $DISPLAY, for XWayland apps —
-            // capturing that would show a blank screen).
-            let x11 = std::env::var_os("DISPLAY").is_some()
-                && std::env::var_os("WAYLAND_DISPLAY").is_none()
-                && std::env::var("XDG_SESSION_TYPE").map_or(true, |t| t != "wayland");
-            x11 && gstreamer::init().is_ok() && host::encoder().is_some()
-                && gstreamer::ElementFactory::find("ximagesrc").is_some()
+            if gstreamer::init().is_err() || host::encoder().is_none() {
+                return false;
+            }
+            let source = if wayland_session() { "pipewiresrc" } else { "ximagesrc" };
+            let display = wayland_session() || std::env::var_os("DISPLAY").is_some();
+            display && gstreamer::ElementFactory::find(source).is_some()
         })
     }
     #[cfg(not(target_os = "linux"))]
