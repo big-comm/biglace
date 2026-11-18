@@ -41,8 +41,10 @@ impl Tray for BigLaceTray {
     fn icon_name(&self) -> String {
         // Symbolic SVG ships under usr/share/icons/hicolor/symbolic/apps/.
         // Themes recolor it to the panel's foreground, so we get a true
-        // monochrome indicator on light and dark panels alike.
-        "org.communitybig.biglace-symbolic".into()
+        // monochrome indicator on light and dark panels alike. Not named
+        // "<app id>-symbolic": docks like XFCE's docklike prefer that name
+        // over the app icon and would show the bare glyph in the dock.
+        "org.communitybig.biglace-tray-symbolic".into()
     }
 
     fn tool_tip(&self) -> ToolTip {

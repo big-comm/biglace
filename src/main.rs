@@ -47,7 +47,8 @@ pub static MALLOC_CONF: &[u8] = b"background_thread:true,dirty_decay_ms:1000,muz
 /// creates (feat → minor, fix/perf/docs/… → patch, breaking → major) by
 /// rewriting this assignment. Reading it from `CARGO_PKG_VERSION` hid it from
 /// gitrepo, which is how the version sat at 1.0.0 through dozens of releases.
-pub const APP_VERSION: &str = "1.26.0";
+pub const APP_VERSION: &str = "1.27.0";
+pub const APP_ID: &str = "org.communitybig.biglace";
 
 /// Date-based build stamp (`YY.MM.DD-HHMM`) — the scheme the GitHub release
 /// tags use. The PKGBUILD exports it as `BIGLACE_VERSION`; the update check
@@ -96,14 +97,24 @@ fn main() {
         .filter_map(|a| a.into_string().ok())
         .find(|a| a.starts_with("biglace://"));
 
+    // On X11 the window's WM_CLASS comes from the program name; panels like
+    // XFCE's match it against StartupWMClass to find the .desktop entry (and
+    // so the app icon). With the binary name ("biglace") they don't, and fall
+    // back to a generic icon.
+    gtk4::glib::set_prgname(Some(APP_ID));
     let app = libadwaita::Application::builder()
-        .application_id("org.communitybig.biglace")
+        .application_id(APP_ID)
         .flags(gtk4::gio::ApplicationFlags::HANDLES_OPEN)
         .build();
 
     // Quitting leaves the voice room (the others see it at once instead of
     // after the panel's 30 s timeout).
     app.connect_shutdown(|_| room::leave());
+
+    // The window icon too (X11 _NET_WM_ICON): docks that draw the window's
+    // own icon (XFCE's docklike, via libwnck) show the app icon, not a
+    // generic one.
+    app.connect_startup(|_| gtk4::Window::set_default_icon_name(APP_ID));
 
     app.connect_activate(move |app| {
         // Single-instance: launching biglace again (or the desktop entry being

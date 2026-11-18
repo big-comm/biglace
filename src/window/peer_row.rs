@@ -335,7 +335,7 @@ pub fn build(peer: &Peer, ctx: &PeerCtx) -> libadwaita::ExpanderRow {
     }
     if let Some(agent) = &peer.agent {
         row.add_row(&detail_row(
-            "org.communitybig.biglace-symbolic",
+            "org.communitybig.biglace-tray-symbolic",
             "BigLace",
             &agent.version,
         ));

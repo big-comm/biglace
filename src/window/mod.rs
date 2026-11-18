@@ -876,6 +876,13 @@ fn apply_config_to_widgets(ui: &Ui, c: &config::Config) {
     ui.sidebar.switch_notify.set_active(c.notify_peer_changes);
 }
 
+/// Host part of a URL ("https://vpn.example.org:443/x" → "vpn.example.org:443").
+fn url_host(url: &str) -> Option<&str> {
+    let rest = url.trim().split_once("://")?.1;
+    let host = rest.split('/').next()?;
+    (!host.is_empty()).then_some(host)
+}
+
 fn has_connect_config(c: &config::Config) -> bool {
     !c.server_url.trim().is_empty() && (c.enrolled || !c.authkey.trim().is_empty())
 }
@@ -1194,11 +1201,36 @@ fn setup_menu(ctx: &Ctx) {
         action.connect_activate(move |_, param| {
             let link = param.and_then(|p| p.str()).filter(|s| !s.is_empty()).map(str::to_string);
             if has_connect_config(&ctx2.cfg.borrow()) {
-                show_toast(
-                    &ctx2.ui.toast,
-                    &tr!("This device is already signed in. Sign out first to join with an invite."),
-                    6,
-                );
+                // Already on a network: a link to that same network brings
+                // us into its group instead of creating another account.
+                let inv = link.as_deref().and_then(|l| crate::invite::parse(l).ok());
+                // BigScale serves panel and coordinator from the same host;
+                // devices signed in with a plain key have no panel URL saved.
+                let same_network = inv.as_ref().is_some_and(|i| {
+                    let c = ctx2.cfg.borrow();
+                    [&c.panel_url, &c.server_url].iter().any(|u| url_host(u) == Some(i.host()))
+                });
+                match inv {
+                    Some(inv) if same_network && ctx2.current_online.get() => ctx2.ui.groups.open_link(inv),
+                    Some(_) if same_network => show_toast(
+                        &ctx2.ui.toast,
+                        &tr!("Connect to the network first, then open the invite link again."),
+                        6,
+                    ),
+                    Some(inv) => show_toast(
+                        &ctx2.ui.toast,
+                        &trf!(
+                            "This invite is for another network ({host}). Sign out first to join it.",
+                            "host" => inv.host()
+                        ),
+                        8,
+                    ),
+                    None => show_toast(
+                        &ctx2.ui.toast,
+                        &tr!("This device is already signed in. Sign out first to join with an invite."),
+                        6,
+                    ),
+                }
                 return;
             }
             join_dialog::show(&ctx2.ui.win, &ctx2.ui.toast, &ctx2.cfg, &ctx2.ui.sidebar, link);
@@ -2420,6 +2452,16 @@ fn notify_peer_change(_name: &str, _online: bool) {}
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    #[test]
+    fn invite_links_match_the_network_by_host() {
+        assert_eq!(url_host("https://vpn.example.org"), Some("vpn.example.org"));
+        assert_eq!(url_host("https://vpn.example.org:8443/x"), Some("vpn.example.org:8443"));
+        assert_eq!(url_host(""), None);
+        assert_eq!(url_host("vpn.example.org"), None);
+        let inv = crate::invite::parse("https://vpn.example.org/join#abcdefghijklmnopqrstuvwxyz").unwrap();
+        assert_eq!(url_host("https://vpn.example.org/"), Some(inv.host()));
+    }
 
     #[test]
     fn active_network_has_visible_identity_without_saved_config() {

@@ -10,7 +10,7 @@ use libadwaita::prelude::*;
 use std::cell::RefCell;
 use std::rc::Rc;
 
-use crate::invite::{self, GroupInfo, MemberError, MyGroups};
+use crate::invite::{self, GroupInfo, GroupRequest, GroupRequests, MemberError, MyGroups, Person};
 use crate::tr;
 use crate::trf;
 
@@ -46,6 +46,14 @@ fn explain(err: &MemberError) -> String {
             "owner_cannot_leave" => tr!("You created this group: delete it instead of leaving."),
             "not_member_group" => tr!("This group belongs to the administrator; only they can change it."),
             "not_found" => tr!("That person is no longer in the group."),
+            "group_gone" => tr!("That group no longer exists, or whoever invited you left it."),
+            "no_such_user" => tr!("That person is no longer on the network."),
+            "already_member" => tr!("You're already in that group."),
+            "nothing_to_join" => tr!("This invite only brings new people into the network, and you're already in it."),
+            "used" => tr!("This invite was already used. Ask for a new one."),
+            "expired" => tr!("This invite expired. Ask for a new one."),
+            "revoked" | "unknown" => tr!("This invite is no longer valid. Ask for a new one."),
+            "too_many_attempts" => tr!("Too many attempts. Wait a minute and try again."),
             other => trf!("Could not reach the panel: {error}", "error" => other),
         },
     }
@@ -81,6 +89,12 @@ pub struct GroupsPage {
     pub menu_btn: gtk4::MenuButton,
     stack: gtk4::Stack,
     list: gtk4::ListBox,
+    /// "Join my group?" requests waiting for us to answer.
+    requests_box: gtk4::Box,
+    requests: gtk4::ListBox,
+    /// Requests already announced with a desktop notification.
+    notified: Rc<RefCell<std::collections::HashSet<String>>>,
+    incoming: Rc<RefCell<Vec<GroupRequest>>>,
     error_page: libadwaita::StatusPage,
     state: Rc<RefCell<Option<MyGroups>>>,
     win: libadwaita::ApplicationWindow,
@@ -137,6 +151,19 @@ impl GroupsPage {
         intro.add_css_class("dim-label");
         body.append(&intro);
 
+        let requests_box = gtk4::Box::new(gtk4::Orientation::Vertical, 8);
+        let requests_title = gtk4::Label::new(Some(&tr!("Invitations for you")));
+        requests_title.add_css_class("heading");
+        requests_title.set_xalign(0.0);
+        requests_box.append(&requests_title);
+        let requests = gtk4::ListBox::new();
+        requests.add_css_class("boxed-list");
+        requests.set_selection_mode(gtk4::SelectionMode::None);
+        requests.update_property(&[gtk4::accessible::Property::Label(&tr!("Invitations for you"))]);
+        requests_box.append(&requests);
+        requests_box.set_visible(false);
+        body.append(&requests_box);
+
         let list = gtk4::ListBox::new();
         list.add_css_class("boxed-list");
         list.set_selection_mode(gtk4::SelectionMode::None);
@@ -187,6 +214,10 @@ impl GroupsPage {
             menu_btn,
             stack,
             list,
+            requests_box,
+            requests,
+            notified: Rc::default(),
+            incoming: Rc::default(),
             error_page,
             state: Rc::new(RefCell::new(None)),
             win: win.clone(),
@@ -202,6 +233,24 @@ impl GroupsPage {
             let page = page.clone();
             btn_refresh.connect_clicked(move |_| page.refresh());
         }
+        // New "join my group?" requests while connected (the list is only
+        // loaded while signed in and online — see clear()).
+        {
+            let page = page.clone();
+            glib::timeout_add_seconds_local(60, move || {
+                if page.state.borrow().is_some() {
+                    let p = page.clone();
+                    super::run_in_background(invite::group_requests, move |r| {
+                        if let Ok(r) = r {
+                            if p.state.borrow().is_some() {
+                                p.show_requests(&r);
+                            }
+                        }
+                    });
+                }
+                glib::ControlFlow::Continue
+            });
+        }
         page
     }
 
@@ -211,13 +260,14 @@ impl GroupsPage {
             self.stack.set_visible_child_name("loading");
         }
         let page = self.clone();
-        super::run_in_background(invite::my_groups, move |result| match result {
-            Ok(mine) => {
+        // Requests are optional: an older panel without them still lists groups.
+        let load = || invite::my_groups().map(|g| (g, invite::group_requests().unwrap_or_default()));
+        super::run_in_background(load, move |result| match result {
+            Ok((mine, requests)) => {
                 (page.on_admin)(mine.is_admin);
                 page.fill(&mine);
-                page.stack
-                    .set_visible_child_name(if mine.groups.is_empty() { "empty" } else { "list" });
                 *page.state.borrow_mut() = Some(mine);
+                page.show_requests(&requests);
             }
             Err(e) => {
                 (page.on_admin)(false);
@@ -233,6 +283,88 @@ impl GroupsPage {
     pub fn clear(&self) {
         *self.state.borrow_mut() = None;
         (self.on_admin)(false);
+    }
+
+    /// Which page to show: the list when there are groups or requests.
+    fn show_list_or_empty(&self) {
+        let groups = self.state.borrow().as_ref().is_some_and(|m| !m.groups.is_empty());
+        let requests = !self.incoming.borrow().is_empty();
+        self.stack
+            .set_visible_child_name(if groups || requests { "list" } else { "empty" });
+    }
+
+    /// Show the requests waiting for us; announce the new ones.
+    fn show_requests(&self, r: &GroupRequests) {
+        if *self.incoming.borrow() != r.incoming {
+            while let Some(child) = self.requests.first_child() {
+                self.requests.remove(&child);
+            }
+            for req in &r.incoming {
+                self.requests.append(&self.request_row(req));
+            }
+            self.requests_box.set_visible(!r.incoming.is_empty());
+            *self.incoming.borrow_mut() = r.incoming.clone();
+        }
+        let app = self.win.application();
+        let mut notified = self.notified.borrow_mut();
+        for req in &r.incoming {
+            if notified.insert(req.id.clone()) {
+                if let Some(app) = &app {
+                    let n = gtk4::gio::Notification::new(&tr!("Invitation to a group"));
+                    n.set_body(Some(&trf!(
+                        "{user} invites you to the group {group}. Open BigLace to accept or decline.",
+                        "user" => req.from,
+                        "group" => req.group
+                    )));
+                    app.send_notification(Some(&notification_id(&req.id)), &n);
+                }
+            }
+        }
+        drop(notified);
+        self.show_list_or_empty();
+    }
+
+    fn request_row(&self, req: &GroupRequest) -> libadwaita::ActionRow {
+        let row = libadwaita::ActionRow::builder()
+            .title(glib::markup_escape_text(&trf!(
+                "{user} invites you to {group}",
+                "user" => req.from,
+                "group" => req.group
+            )).as_str())
+            .subtitle(tr!("Joining lets you and the group's members reach each other's devices."))
+            .build();
+        row.add_prefix(&gtk4::Image::from_icon_name("mail-unread-symbolic"));
+        let decline = gtk4::Button::builder()
+            .label(tr!("Decline"))
+            .valign(gtk4::Align::Center)
+            .css_classes(["flat"])
+            .build();
+        let accept = gtk4::Button::builder()
+            .label(tr!("Accept"))
+            .valign(gtk4::Align::Center)
+            .css_classes(["suggested-action"])
+            .build();
+        for (btn, yes) in [(&decline, false), (&accept, true)] {
+            let (page, id, group) = (self.clone(), req.id.clone(), req.group.clone());
+            let (a, d) = (accept.clone(), decline.clone());
+            btn.connect_clicked(move |_| {
+                a.set_sensitive(false);
+                d.set_sensitive(false);
+                if let Some(app) = page.win.application() {
+                    app.withdraw_notification(&notification_id(&id));
+                }
+                let done = if yes {
+                    trf!("You joined {group}.", "group" => group)
+                } else {
+                    tr!("Invitation declined.")
+                };
+                let id = id.clone();
+                page.run(move || invite::answer_request(&id, yes), done);
+            });
+        }
+        row.add_suffix(&decline);
+        row.add_suffix(&accept);
+        row
     }
 
     fn fill(&self, mine: &MyGroups) {
@@ -299,9 +431,7 @@ impl GroupsPage {
             .build();
         {
             let (page, group) = (self.clone(), g.name.clone());
-            invite_btn.connect_clicked(move |_| {
-                page.invites.invite_to(&page.win, &page.toast, Some(group.clone()));
-            });
+            invite_btn.connect_clicked(move |_| page.show_people(&group));
         }
         actions.append(&invite_btn);
         let spacer = gtk4::Box::new(gtk4::Orientation::Horizontal, 0);
@@ -406,6 +536,187 @@ impl GroupsPage {
         );
     }
 
+    /// An invite link opened on a device already signed in to that network:
+    /// no new account, it just brings us into the link's group (after asking).
+    pub fn open_link(&self, inv: invite::Invite) {
+        let page = self.clone();
+        let preview = inv.clone();
+        super::run_in_background(move || invite::redeem_as_member(&preview, true), move |r| {
+            let link = match r {
+                Ok(l) => l,
+                Err(e) => return super::show_toast(&page.toast, &explain(&e), 8),
+            };
+            let (heading, body) = match (&link.group, &link.invited_by) {
+                (Some(g), Some(u)) => (
+                    trf!("Join {group}?", "group" => g),
+                    trf!("{user} invited you. You and the group's members will reach each other's devices.", "user" => u),
+                ),
+                (Some(g), None) => (
+                    trf!("Join {group}?", "group" => g),
+                    tr!("You and the group's members will reach each other's devices."),
+                ),
+                (None, Some(u)) => (
+                    trf!("Connect with {user}?", "user" => u),
+                    trf!("You and {user} will reach each other's devices.", "user" => u),
+                ),
+                (None, None) => return,
+            };
+            let dlg = libadwaita::MessageDialog::new(Some(&page.win), Some(&heading), Some(&body));
+            dlg.add_response("cancel", &tr!("Cancel"));
+            dlg.add_response("ok", &tr!("Join"));
+            dlg.set_response_appearance("ok", libadwaita::ResponseAppearance::Suggested);
+            dlg.set_default_response(Some("ok"));
+            dlg.set_close_response("cancel");
+            let page2 = page.clone();
+            dlg.connect_response(None, move |d, r| {
+                d.close();
+                if r != "ok" {
+                    return;
+                }
+                let inv = inv.clone();
+                let done = match &link.group {
+                    Some(g) => trf!("You joined {group}.", "group" => g),
+                    None => tr!("Done. You can now reach each other's devices."),
+                };
+                page2.run(move || invite::redeem_as_member(&inv, false).map(|_| ()), done);
+            });
+            page.win.present();
+            dlg.present();
+        });
+    }
+
+    /// "Invite to this group": pick people already on the network (they get
+    /// a request to accept), or share a link with someone who isn't yet.
+    fn show_people(&self, group: &str) {
+        let dlg = libadwaita::Window::builder()
+            .transient_for(&self.win)
+            .modal(true)
+            .title(trf!("Invite to {group}", "group" => group))
+            .default_width(460)
+            .default_height(560)
+            .build();
+        let outer = gtk4::Box::new(gtk4::Orientation::Vertical, 0);
+        outer.append(&libadwaita::HeaderBar::new());
+
+        let body = gtk4::Box::new(gtk4::Orientation::Vertical, 12);
+        body.set_margin_top(12);
+        body.set_margin_bottom(18);
+        body.set_margin_start(18);
+        body.set_margin_end(18);
+        body.set_vexpand(true);
+        let intro = gtk4::Label::new(Some(&tr!(
+            "Choose people on your network. Each one gets the invitation in BigLace and decides whether to join."
+        )));
+        intro.set_wrap(true);
+        intro.set_xalign(0.0);
+        intro.add_css_class("dim-label");
+        body.append(&intro);
+        let search = gtk4::SearchEntry::builder()
+            .placeholder_text(tr!("Search people"))
+            .build();
+        body.append(&search);
+
+        let list = gtk4::ListBox::new();
+        list.add_css_class("boxed-list");
+        list.set_selection_mode(gtk4::SelectionMode::None);
+        list.update_property(&[gtk4::accessible::Property::Label(&tr!("People on the network"))]);
+        let status = libadwaita::ActionRow::builder().title(tr!("Loading…")).build();
+        list.set_placeholder(Some(&status));
+        let scroll = gtk4::ScrolledWindow::builder()
+            .hscrollbar_policy(gtk4::PolicyType::Never)
+            .vexpand(true)
+            .child(&list)
+            .build();
+        body.append(&scroll);
+        {
+            let search = search.clone();
+            list.set_filter_func(move |row| {
+                let q = search.text().to_lowercase();
+                q.is_empty() || row.widget_name().to_lowercase().contains(&q)
+            });
+        }
+        {
+            let list = list.clone();
+            search.connect_search_changed(move |_| list.invalidate_filter());
+        }
+
+        let err = gtk4::Label::new(None);
+        err.add_css_class("error");
+        err.set_wrap(true);
+        body.append(&err);
+        let send = gtk4::Button::builder()
+            .label(tr!("Send invitations"))
+            .css_classes(["suggested-action", "pill"])
+            .halign(gtk4::Align::Center)
+            .sensitive(false)
+            .build();
+        body.append(&send);
+        let link = gtk4::Button::builder()
+            .label(tr!("Someone not on the network yet? Share an invite link"))
+            .css_classes(["flat"])
+            .halign(gtk4::Align::Center)
+            .build();
+        body.append(&link);
+        outer.append(&body);
+        dlg.set_content(Some(&outer));
+
+        let chosen: Rc<RefCell<Vec<String>>> = Rc::default();
+        {
+            let (page, dlg, group) = (self.clone(), dlg.clone(), group.to_string());
+            link.connect_clicked(move |_| {
+                dlg.close();
+                page.invites.invite_to(&page.win, &page.toast, Some(group.clone()));
+            });
+        }
+        {
+            let (page, dlg, group, chosen, err) = (self.clone(), dlg.clone(), group.to_string(), chosen.clone(), err.clone());
+            send.connect_clicked(move |b| {
+                let users = chosen.borrow().clone();
+                if users.is_empty() {
+                    return;
+                }
+                b.set_sensitive(false);
+                err.set_text("");
+                let (page, dlg, err, b, g2) = (page.clone(), dlg.clone(), err.clone(), b.clone(), group.clone());
+                super::run_in_background(
+                    move || invite::ask_into_group(&g2, &users),
+                    move |r| match r {
+                        Ok(n) => {
+                            dlg.close();
+                            let msg = if n == 1 {
+                                tr!("Invitation sent. You'll see the person in the group once they accept.")
+                            } else {
+                                trf!("{count} invitations sent. People show up in the group as they accept.", "count" => n.to_string())
+                            };
+                            super::show_toast(&page.toast, &msg, 5);
+                        }
+                        Err(e) => {
+                            b.set_sensitive(true);
+                            err.set_text(&explain(&e));
+                        }
+                    },
+                );
+            });
+        }
+
+        let g = group.to_string();
+        let (list2, status2, send2) = (list.clone(), status.clone(), send.clone());
+        super::run_in_background(
+            move || invite::people(&g),
+            move |r| match r {
+                Ok(people) => {
+                    status2.set_title(&tr!("Nobody else is on the network yet."));
+                    for p in &people {
+                        list2.append(&person_row(p, &chosen, &send2));
+                    }
+                }
+                Err(e) => status2.set_title(glib::markup_escape_text(&explain(&e)).as_str()),
+            },
+        );
+        dlg.present();
+        search.grab_focus();
+    }
+
     fn show_create(&self) {
         let dlg = libadwaita::Window::builder()
             .transient_for(&self.win)
@@ -502,6 +813,49 @@ impl GroupsPage {
         dlg.present();
         entry.grab_focus();
     }
+}
+
+fn notification_id(request: &str) -> String {
+    format!("biglace-group-request-{request}")
+}
+
+/// One person in the "Invite to this group" list: a check box when they can
+/// be asked, or why not.
+fn person_row(p: &Person, chosen: &Rc<RefCell<Vec<String>>>, send: &gtk4::Button) -> libadwaita::ActionRow {
+    let mut details = vec![if p.online { tr!("online") } else { tr!("offline") }];
+    match p.state.as_str() {
+        "member" => details.push(tr!("already in the group")),
+        "pending" => details.push(tr!("invitation sent, waiting")),
+        _ => {}
+    }
+    let row = libadwaita::ActionRow::builder()
+        .title(glib::markup_escape_text(&p.user).as_str())
+        .subtitle(details.join(" · "))
+        .build();
+    row.set_widget_name(&p.user);
+    let avatar = gtk4::Image::from_icon_name("avatar-default-symbolic");
+    if p.online {
+        avatar.add_css_class("success");
+    }
+    row.add_prefix(&avatar);
+    if p.state == "available" {
+        let check = gtk4::CheckButton::builder().valign(gtk4::Align::Center).build();
+        check.update_property(&[gtk4::accessible::Property::Label(&trf!("Invite {user}", "user" => p.user))]);
+        row.add_suffix(&check);
+        row.set_activatable_widget(Some(&check));
+        let (chosen, send, user) = (chosen.clone(), send.clone(), p.user.clone());
+        check.connect_toggled(move |c| {
+            let mut list = chosen.borrow_mut();
+            list.retain(|u| u != &user);
+            if c.is_active() {
+                list.push(user.clone());
+            }
+            send.set_sensitive(!list.is_empty());
+        });
+    } else {
+        row.set_sensitive(false);
+    }
+    row
 }
 
 #[cfg(test)]

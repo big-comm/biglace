@@ -265,6 +265,25 @@ pub fn rejoin(
 mod tests {
     use super::*;
 
+    #[test]
+    fn request_ids_cannot_reshape_the_path() {
+        assert!(request_id("a1b2c3d4e5f6a1b2c3d4e5f6").is_ok());
+        for bad in ["", "../x", "ab/cd", "abc?x=1", &"a".repeat(65)] {
+            assert!(request_id(bad).is_err(), "{bad}");
+        }
+    }
+
+    #[test]
+    fn group_requests_parse_without_outgoing() {
+        let r: GroupRequests = serde_json::from_str(
+            r#"{"incoming":[{"id":"ab","group":"g","from":"a","to":"b","createdAt":"x"}],"outgoing":[]}"#,
+        )
+        .unwrap();
+        assert_eq!(r.incoming[0].from, "a");
+        let empty: GroupRequests = serde_json::from_str("{}").unwrap();
+        assert!(empty.incoming.is_empty());
+    }
+
     const TOKEN: &str = "AbCdEfGhIjKlMnOpQrStUvWxYz0123456789-_abcde";
 
     #[test]
@@ -737,6 +756,98 @@ pub fn room_join(group: &str, muted: bool) -> std::result::Result<Vec<Participan
 
 pub fn room_leave(group: &str) -> std::result::Result<(), MemberError> {
     member_call("POST", &format!("/api/me/rooms/{}/leave", segment(group)?), Some(serde_json::json!({}))).map(|_| ())
+}
+
+// ─── Asking people already on the network into a group ──────────────────────
+//
+// Nothing changes until the person asked accepts, from their own BigLace.
+
+/// Someone on the network we could ask into a group.
+#[derive(Debug, Clone, PartialEq, Eq, Deserialize)]
+pub struct Person {
+    pub user: String,
+    #[serde(default)]
+    pub online: bool,
+    /// `available`, `member` (already in) or `pending` (already asked).
+    pub state: String,
+}
+
+#[derive(Deserialize)]
+struct People {
+    people: Vec<Person>,
+}
+
+/// "Come into my group?" — sent or received, not answered yet.
+#[derive(Debug, Clone, PartialEq, Eq, Deserialize)]
+pub struct GroupRequest {
+    pub id: String,
+    pub group: String,
+    pub from: String,
+    pub to: String,
+}
+
+#[derive(Debug, Clone, Default, Deserialize)]
+pub struct GroupRequests {
+    #[serde(default)]
+    pub incoming: Vec<GroupRequest>,
+}
+
+#[derive(Deserialize)]
+struct Sent {
+    sent: u32,
+}
+
+/// Request ids are hex from the panel; refuse anything that could reshape the path.
+fn request_id(id: &str) -> std::result::Result<&str, MemberError> {
+    if !id.is_empty() && id.len() <= 64 && id.bytes().all(|b| b.is_ascii_hexdigit()) {
+        Ok(id)
+    } else {
+        Err(MemberError::Other("invalid request id".into()))
+    }
+}
+
+/// People on the network we could ask into `group` (one we're in).
+pub fn people(group: &str) -> std::result::Result<Vec<Person>, MemberError> {
+    let r = member_call("GET", &format!("/api/me/groups/{}/people", segment(group)?), None)?;
+    panel::read_json_limited::<People>(r)
+        .map(|p| p.people)
+        .map_err(|e| MemberError::Other(e.to_string()))
+}
+
+/// Ask `users` into `group`. Returns how many requests went out.
+pub fn ask_into_group(group: &str, users: &[String]) -> std::result::Result<u32, MemberError> {
+    let body = serde_json::json!({ "users": users });
+    let r = member_call("POST", &format!("/api/me/groups/{}/requests", segment(group)?), Some(body))?;
+    panel::read_json_limited::<Sent>(r)
+        .map(|s| s.sent)
+        .map_err(|e| MemberError::Other(e.to_string()))
+}
+
+pub fn group_requests() -> std::result::Result<GroupRequests, MemberError> {
+    let r = member_call("GET", "/api/me/requests", None)?;
+    panel::read_json_limited(r).map_err(|e| MemberError::Other(e.to_string()))
+}
+
+/// Accept (we join the group) or decline a request sent to us.
+pub fn answer_request(id: &str, accept: bool) -> std::result::Result<(), MemberError> {
+    let body = serde_json::json!({ "accept": accept });
+    member_call("POST", &format!("/api/me/requests/{}", request_id(id)?), Some(body)).map(|_| ())
+}
+
+/// What an invite link does for someone already on its network.
+#[derive(Debug, Clone, PartialEq, Eq, Deserialize)]
+pub struct GroupLink {
+    pub group: Option<String>,
+    pub invited_by: Option<String>,
+}
+
+/// An invite link opened while already signed in to its network: it brings
+/// us into its group (no new account). With `preview`, only says what it
+/// would do.
+pub fn redeem_as_member(invite: &Invite, preview: bool) -> std::result::Result<GroupLink, MemberError> {
+    let body = serde_json::json!({ "invite": invite.token, "preview": preview });
+    let r = member_call("POST", "/api/me/redeem", Some(body))?;
+    panel::read_json_limited(r).map_err(|e| MemberError::Other(e.to_string()))
 }
 
 #[derive(Deserialize)]
