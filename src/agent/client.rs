@@ -114,6 +114,9 @@ where
                     };
                     let ip = mark.0.clone();
                     let hello = probe(&ip);
+                    if let Some(h) = &hello {
+                        crate::wake::remember(&ip, &h.lan);
+                    }
                     if let Ok(mut c) = cache().lock() {
                         let before = c.entries.get(&ip).and_then(|e| e.hello.clone());
                         if before != hello {

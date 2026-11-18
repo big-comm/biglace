@@ -178,7 +178,11 @@ pub fn load() -> Config {
                         Err(e) => eprintln!("[biglace] secrets: authkey migration failed: {e}"),
                     }
                 }
-            } else {
+            } else if !cfg.enrolled {
+                // Needed to register: read it now. Once registered it's only a
+                // fallback, read in the background (a locked keyring — right
+                // after an automatic sign-in — would otherwise hold up the
+                // whole app until someone types its password).
                 cfg.authkey = crate::secrets::load_authkey(&cfg.server_url).unwrap_or_default();
             }
             cfg

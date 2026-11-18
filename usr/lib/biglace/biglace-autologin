@@ -154,8 +154,31 @@ expire() {
         sleep 2
     done
     sleep 8
+    # GNOME (Wayland) refuses remote access while locked: there BigLace
+    # locks when the returning remote session ends. Leave it to BigLace if
+    # it started; lock now if it didn't.
+    if gnome_wayland "$user"; then
+        for _ in $(seq 1 30); do
+            if pgrep -u "$user" -x biglace >/dev/null; then
+                disarm
+                return 0
+            fi
+            sleep 2
+        done
+    fi
     loginctl lock-sessions 2>/dev/null || true
     disarm
+}
+
+# The user's graphical session is GNOME on Wayland.
+gnome_wayland() {
+    local id
+    for id in $(loginctl list-sessions --no-legend 2>/dev/null | awk -v u="$1" '$3 == u {print $1}'); do
+        if [[ $(loginctl show-session "$id" -p Type --value 2>/dev/null) == wayland ]]; then
+            pgrep -u "$1" -x gnome-shell >/dev/null && return 0
+        fi
+    done
+    return 1
 }
 
 case ${1:-} in

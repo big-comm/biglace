@@ -8,6 +8,7 @@ use std::sync::{Arc, Mutex};
 use crate::config::{self, Config};
 use crate::tailscale::{self, Peer};
 use crate::tr;
+use crate::trf;
 
 /// Per-row dependencies that don't fit cleanly as plain args. The pin button
 /// mutates config and the exit-node button kicks off `tailscale set` in a
@@ -123,6 +124,38 @@ pub fn build(peer: &Peer, ctx: &PeerCtx) -> libadwaita::ExpanderRow {
     prefix.append(&os_icon);
 
     row.add_prefix(&prefix);
+
+    // Off, but we know its network card: "Turn on" (Wake-on-LAN).
+    if !peer.online && !peer.ipv4.is_empty() && crate::wake::can_wake(&peer.ipv4) {
+        let btn_wake = gtk4::Button::builder()
+            .icon_name("system-shutdown-symbolic")
+            .css_classes(["flat", "wake-button"])
+            .valign(gtk4::Align::Center)
+            .tooltip_text(tr!("Turn on over the network (Wake-on-LAN)"))
+            .build();
+        btn_wake.update_property(&[gtk4::accessible::Property::Label(&tr!("Turn on over the network"))]);
+        let (ip, name, toast) = (peer.ipv4.clone(), peer.display_name(), ctx.toast.clone());
+        btn_wake.connect_clicked(move |b| {
+            b.set_sensitive(false);
+            let (ip, name, toast, b) = (ip.clone(), name.clone(), toast.clone(), b.clone());
+            super::run_in_background(
+                move || crate::wake::wake(&ip),
+                move |r| {
+                    b.set_sensitive(true);
+                    let msg = match r {
+                        Ok(via) => trf!(
+                            "Signal sent to {name} (by {via}). If it's set to turn on over the network, it shows up in a minute or two.",
+                            "name" => name,
+                            "via" => via
+                        ),
+                        Err(e) => trf!("Could not turn on {name}: {error}", "name" => name, "error" => e),
+                    };
+                    super::show_toast(&toast, &msg, 8);
+                },
+            );
+        });
+        row.add_suffix(&btn_wake);
+    }
 
     // ── Suffix buttons: pin, copy IP, files, terminal ──
     // Pin button — always visible, regardless of online state, so the user

@@ -46,6 +46,9 @@ pub struct Hello {
     pub os: String,
     #[serde(default)]
     pub capabilities: Vec<String>,
+    /// Wired network cards, so others can wake this computer later.
+    #[serde(default, skip_serializing_if = "Vec::is_empty")]
+    pub lan: Vec<crate::wake::Lan>,
 }
 
 impl Hello {
@@ -61,7 +64,9 @@ impl Hello {
                 .map(|c| c.to_string())
                 .chain(crate::remote::can_host().then(|| crate::remote::CAPABILITY.to_string()))
                 .chain((crate::remote::can_host() && crate::power::available()).then(|| crate::power::CAPABILITY.to_string()))
+                .chain(cfg!(target_os = "linux").then(|| crate::wake::CAPABILITY.to_string()))
                 .collect(),
+            lan: crate::wake::local_lans(),
         }
     }
 

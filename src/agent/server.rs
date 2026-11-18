@@ -156,6 +156,16 @@ fn handle(stream: TcpStream, peer: SocketAddr, auth: &Authenticator) {
         }
         return;
     }
+    // Wake a computer on our local network for someone.
+    if path.starts_with(crate::wake::PATH_PREFIX) {
+        match (&identity, method.as_str()) {
+            (Some(id), "GET") => crate::wake::serve(stream, peer.ip(), &parse_headers(&head), id, &path),
+            _ => {
+                let _ = respond(&stream, 403, "forbidden");
+            }
+        }
+        return;
+    }
     // A file someone was sent in a chat, fetched from here.
     if path.starts_with(crate::chat::files::PATH_PREFIX) {
         match (&identity, method.as_str()) {

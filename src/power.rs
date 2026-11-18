@@ -162,12 +162,104 @@ pub fn after_start() {
     }
     resume.locked_boot = boot;
     let _ = write_private(&resume_path(), &serde_json::to_vec(&resume).unwrap_or_default());
-    let _ = std::thread::Builder::new().name("biglace-power".into()).spawn(|| {
-        lock_screen();
+    // GNOME refuses remote access while locked: there the screen stays as
+    // it was before the restart (open to the person helping) and locks
+    // when their session ends — or if they don't come back soon.
+    let defer = locked_screen_blocks_remote();
+    let _ = std::thread::Builder::new().name("biglace-power".into()).spawn(move || {
+        if defer {
+            defer_lock();
+        } else {
+            lock_screen();
+        }
         if Path::new("/var/lib/biglace/autologin.state").exists() {
             let _ = run(Command::new("pkexec").args([HELPER, "disarm"]));
         }
     });
+}
+
+/// GNOME (Wayland): its lock screen stops remote desktop sessions.
+fn locked_screen_blocks_remote() -> bool {
+    let desktop = std::env::var("XDG_CURRENT_DESKTOP").unwrap_or_default().to_lowercase();
+    desktop.split(':').any(|d| d == "gnome") && std::env::var("XDG_SESSION_TYPE").as_deref() == Ok("wayland")
+}
+
+/// GNOME with its screen locked right now: remote access is refused.
+pub fn screen_locked_blocks_remote() -> bool {
+    locked_screen_blocks_remote()
+        && output(Command::new("gdbus").args([
+            "call",
+            "--session",
+            "--dest",
+            "org.gnome.ScreenSaver",
+            "--object-path",
+            "/org/gnome/ScreenSaver",
+            "--method",
+            "org.gnome.ScreenSaver.GetActive",
+        ]))
+        .is_some_and(|s| s.contains("true"))
+}
+
+/// How long the person who restarted the computer has to come back
+/// before it locks anyway (GNOME).
+const DEFERRED_LOCK: std::time::Duration = std::time::Duration::from_secs(180);
+
+/// A lock waiting for the returning session to end (GNOME).
+struct Deferred {
+    since: std::time::Instant,
+    /// The returning viewer is connected now.
+    active: bool,
+}
+
+fn deferred() -> &'static std::sync::Mutex<Option<Deferred>> {
+    static D: std::sync::OnceLock<std::sync::Mutex<Option<Deferred>>> = std::sync::OnceLock::new();
+    D.get_or_init(Default::default)
+}
+
+fn defer_lock() {
+    if let Ok(mut d) = deferred().lock() {
+        *d = Some(Deferred { since: std::time::Instant::now(), active: false });
+    }
+    loop {
+        std::thread::sleep(std::time::Duration::from_secs(2));
+        let due = match deferred().lock().ok().and_then(|d| d.as_ref().map(|d| (d.active, d.since.elapsed()))) {
+            None => return,
+            Some((active, waited)) => !active && waited >= DEFERRED_LOCK,
+        };
+        if due {
+            if let Ok(mut d) = deferred().lock() {
+                *d = None;
+            }
+            lock_screen();
+            return;
+        }
+    }
+}
+
+/// A remote session started here (the host side tells us).
+pub fn session_started(login: &str, device: &str) {
+    if !resume_allows(login, device) {
+        return;
+    }
+    if let Ok(mut d) = deferred().lock() {
+        if let Some(d) = d.as_mut() {
+            d.active = true;
+        }
+    }
+}
+
+/// A remote session ended: if it was the returning one, lock now.
+pub fn session_ended(login: &str, device: &str) {
+    let lock = deferred().lock().ok().is_some_and(|mut d| {
+        let returning = d.as_ref().is_some_and(|d| d.active) && resume_allows(login, device);
+        if returning {
+            *d = None;
+        }
+        returning
+    });
+    if lock {
+        lock_screen();
+    }
 }
 
 fn has(cmd: &str) -> bool {

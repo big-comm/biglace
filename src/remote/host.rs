@@ -242,11 +242,13 @@ pub fn serve(stream: TcpStream, peer: IpAddr, headers: &HashMap<String, String>,
         stop: stop.clone(),
     }));
     tailscale::dbg(&format!("remote: session started for {}@{}", identity.login, identity.device));
+    crate::power::session_started(&identity.login, &identity.device);
     // What the viewer understands: 2 = timestamps + ping, 3 = also sound.
     let protocol: u32 = headers.get("x-biglace-screen").and_then(|v| v.parse().ok()).unwrap_or(1);
     run_session(stream, &stop, protocol, &identity);
     stop.stop();
     emit(HostEvent::Ended(stop));
+    crate::power::session_ended(&identity.login, &identity.device);
     tailscale::dbg(&format!("remote: session ended for {}@{}", identity.login, identity.device));
 }
 
@@ -394,7 +396,12 @@ fn run_session(mut stream: TcpStream, stop: &StopHandle, protocol: u32, identity
         Ok(s) => s,
         Err(e) => {
             tailscale::dbg(&format!("remote: no screen source: {e}"));
-            let _ = write_frame(&mut stream, Kind::Error, e.to_string().as_bytes());
+            let why = if crate::power::screen_locked_blocks_remote() {
+                crate::tr!("the screen there is locked, and GNOME doesn't allow remote access to a locked screen — ask the person to unlock it")
+            } else {
+                e.to_string()
+            };
+            let _ = write_frame(&mut stream, Kind::Error, why.as_bytes());
             return;
         }
     };
