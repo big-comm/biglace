@@ -65,6 +65,25 @@ const CSS: &str = r#"
 /* The QR code keeps a white quiet zone in dark mode too: phone cameras
    need the contrast. */
 /* Someone controls this screen: impossible to miss, still part of the app. */
+/* "Allow remote access?" */
+.consent-badge {
+    padding: 16px;
+    border-radius: 999px;
+    color: @accent_color;
+    background-color: alpha(@accent_bg_color, 0.18);
+}
+.consent-warning {
+    padding: 10px 12px;
+    border-radius: 10px;
+    color: @warning_color;
+    background-color: alpha(@warning_color, 0.14);
+}
+.consent-warning label {
+    color: @window_fg_color;
+}
+progressbar.consent-countdown > trough > progress {
+    background-color: @warning_color;
+}
 banner.remote-banner > revealer > widget {
     background-color: alpha(@destructive_bg_color, 0.85);
     color: @destructive_fg_color;

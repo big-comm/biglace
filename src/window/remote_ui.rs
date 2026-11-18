@@ -18,6 +18,17 @@ use crate::trf;
 /// window (not a loose window that hides behind others), plus a desktop
 /// notification when one starts.
 pub fn start_host_listener(win: &libadwaita::ApplicationWindow, banner: &libadwaita::Banner) {
+    // Development builds only: BIGLACE_PREVIEW=consent shows the question
+    // with a sample request, to look at it without a second computer.
+    #[cfg(debug_assertions)]
+    if std::env::var("BIGLACE_PREVIEW").as_deref() == Ok("consent") {
+        let (tx, _rx) = std::sync::mpsc::channel();
+        std::mem::forget(_rx);
+        let w = win.clone();
+        glib::timeout_add_seconds_local_once(1, move || {
+            ask_consent(&w, remote::ConsentRequest { who: "bruna".into(), device: "notebook-bruna".into(), reply: tx });
+        });
+    }
     let rx = remote::host_events();
     let (win, banner) = (win.clone(), banner.clone());
     let sessions: Rc<RefCell<Vec<remote::HostSession>>> = Rc::default();
@@ -84,17 +95,11 @@ fn notify_started(win: &libadwaita::ApplicationWindow, session: &remote::HostSes
 fn ask_consent(win: &libadwaita::ApplicationWindow, req: remote::ConsentRequest) {
     // Bring BigLace forward: the question must not wait behind other windows.
     win.present();
-    let dlg = libadwaita::MessageDialog::new(
-        Some(win),
-        Some(&tr!("Allow remote access?")),
-        Some(&trf!(
-            "{user} (device {device}) wants to see and control this screen.\n\nOnly allow it if you know this person and expect it. You can end the access at any time.",
-            "user" => req.who,
-            "device" => req.device
-        )),
-    );
+    let dlg = libadwaita::MessageDialog::new(Some(win), None::<&str>, None::<&str>);
+    dlg.add_css_class("consent-dialog");
+    dlg.set_extra_child(Some(&consent_body(&req.who, &req.device)));
     dlg.add_response("deny", &tr!("Deny"));
-    dlg.add_response("allow", &tr!("Allow"));
+    dlg.add_response("allow", &tr!("Allow access"));
     dlg.set_response_appearance("allow", libadwaita::ResponseAppearance::Suggested);
     // Safe default: Enter / Escape / closing the dialog all deny.
     dlg.set_default_response(Some("deny"));
@@ -110,17 +115,137 @@ fn ask_consent(win: &libadwaita::ApplicationWindow, req: remote::ConsentRequest)
             d.close();
         });
     }
-    // The host gives up after a minute; don't leave a dead question up.
+    // The host gives up after a minute; don't leave a dead question up. The
+    // bar shows how long is left.
     {
         let dlg = dlg.clone();
-        glib::timeout_add_seconds_local_once(60, move || {
-            if !answered.get() {
+        let left = Rc::new(Cell::new(CONSENT_SECONDS));
+        glib::timeout_add_seconds_local(1, move || {
+            if answered.get() {
+                return glib::ControlFlow::Break;
+            }
+            let now = left.get().saturating_sub(1);
+            left.set(now);
+            if now == 0 {
                 let _ = reply.send(false);
                 dlg.close();
+                return glib::ControlFlow::Break;
             }
+            if let Some(extra) = dlg.extra_child() {
+                update_countdown(&extra, now);
+            }
+            glib::ControlFlow::Continue
         });
     }
     dlg.present();
+}
+
+const CONSENT_SECONDS: u32 = 60;
+
+/// The question itself: who, from which device, what they'd be able to do,
+/// and a clear warning — readable at a glance.
+fn consent_body(who: &str, device: &str) -> gtk4::Box {
+    let body = gtk4::Box::new(gtk4::Orientation::Vertical, 14);
+    body.set_width_request(380);
+
+    let badge = gtk4::Image::from_icon_name("preferences-desktop-remote-desktop-symbolic");
+    badge.set_pixel_size(40);
+    badge.add_css_class("consent-badge");
+    badge.set_halign(gtk4::Align::Center);
+    body.append(&badge);
+
+    let title = gtk4::Label::new(Some(&tr!("Allow remote access?")));
+    title.add_css_class("title-2");
+    body.append(&title);
+
+    let lead = gtk4::Label::new(None);
+    lead.set_markup(&trf!(
+        "<b>{user}</b> wants to <b>see and control</b> this screen.",
+        "user" => glib::markup_escape_text(who)
+    ));
+    lead.set_wrap(true);
+    lead.set_justify(gtk4::Justification::Center);
+    body.append(&lead);
+
+    // Who is asking, as a small card.
+    let who_box = gtk4::ListBox::new();
+    who_box.add_css_class("boxed-list");
+    who_box.set_selection_mode(gtk4::SelectionMode::None);
+    for (icon, label, value) in [
+        ("avatar-default-symbolic", tr!("Person"), who),
+        ("computer-symbolic", tr!("Device"), device),
+    ] {
+        let row = libadwaita::ActionRow::builder()
+            .title(label)
+            .build();
+        row.add_prefix(&gtk4::Image::from_icon_name(icon));
+        let v = gtk4::Label::new(Some(value));
+        v.add_css_class("heading");
+        v.set_selectable(true);
+        row.add_suffix(&v);
+        who_box.append(&row);
+    }
+    body.append(&who_box);
+
+    // What allowing means.
+    let can = gtk4::Box::new(gtk4::Orientation::Vertical, 6);
+    for (icon, text) in [
+        ("view-reveal-symbolic", tr!("See everything on your screen")),
+        ("input-mouse-symbolic", tr!("Move the mouse and type on this computer")),
+        ("audio-speakers-symbolic", tr!("Hear this computer's sound")),
+    ] {
+        let line = gtk4::Box::new(gtk4::Orientation::Horizontal, 10);
+        line.append(&gtk4::Image::from_icon_name(icon));
+        let l = gtk4::Label::new(Some(&text));
+        l.set_xalign(0.0);
+        l.set_wrap(true);
+        line.append(&l);
+        can.append(&line);
+    }
+    body.append(&can);
+
+    let warn = gtk4::Box::new(gtk4::Orientation::Horizontal, 10);
+    warn.add_css_class("consent-warning");
+    let warn_icon = gtk4::Image::from_icon_name("dialog-warning-symbolic");
+    warn_icon.set_valign(gtk4::Align::Start);
+    warn.append(&warn_icon);
+    let warn_text = gtk4::Label::new(None);
+    warn_text.set_markup(&tr!(
+        "<b>Only allow it if you know this person and are expecting it.</b> You can end the access at any time from BigLace."
+    ));
+    warn_text.set_wrap(true);
+    warn_text.set_xalign(0.0);
+    warn_text.set_hexpand(true);
+    warn.append(&warn_text);
+    body.append(&warn);
+
+    let bar = gtk4::ProgressBar::new();
+    bar.set_fraction(1.0);
+    bar.set_widget_name("consent-countdown");
+    bar.add_css_class("consent-countdown");
+    let left = gtk4::Label::new(None);
+    left.set_widget_name("consent-left");
+    left.add_css_class("dim-label");
+    left.add_css_class("caption");
+    body.append(&bar);
+    body.append(&left);
+    update_countdown(body.upcast_ref(), CONSENT_SECONDS);
+    body
+}
+
+/// "Denied automatically in N s", and the bar shrinking with it.
+fn update_countdown(body: &gtk4::Widget, left: u32) {
+    let mut child = body.first_child();
+    while let Some(w) = child {
+        if let Some(bar) = w.downcast_ref::<gtk4::ProgressBar>() {
+            bar.set_fraction(f64::from(left) / f64::from(CONSENT_SECONDS));
+        } else if w.widget_name() == "consent-left" {
+            if let Some(l) = w.downcast_ref::<gtk4::Label>() {
+                l.set_text(&trf!("Denied automatically in {seconds} s", "seconds" => left.to_string()));
+            }
+        }
+        child = w.next_sibling();
+    }
 }
 
 // ─── Viewer side ─────────────────────────────────────────────────────────────
