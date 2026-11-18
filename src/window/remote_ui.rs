@@ -143,6 +143,12 @@ pub fn open_viewer(ip: &str, name: &str, toast: &libadwaita::ToastOverlay) {
         .tooltip_text(tr!("Full screen (F11)"))
         .build();
     header.pack_end(&btn_full);
+    // The host's sound plays here; one click to silence it.
+    let btn_mute = gtk4::ToggleButton::builder()
+        .icon_name("audio-volume-high-symbolic")
+        .tooltip_text(tr!("Mute the remote sound"))
+        .build();
+    header.pack_end(&btn_mute);
     toolbar.add_top_bar(&header);
 
     // Pixel for pixel whenever the window is big enough (scaling is what
@@ -232,12 +238,19 @@ pub fn open_viewer(ip: &str, name: &str, toast: &libadwaita::ToastOverlay) {
                             fit_window_to(&win, info.width, info.height);
                         }
                     }
-                    client::Event::Stats(st) => title.set_subtitle(&trf!(
-                        "{latency} ms · {fps} fps · {mbps} Mbit/s",
-                        "latency" => format!("{:.0}", st.latency_ms.max(0.0)),
-                        "fps" => format!("{:.0}", st.fps),
-                        "mbps" => format!("{:.1}", st.mbps)
-                    )),
+                    client::Event::Stats(st) => {
+                        let mut line = trf!(
+                            "{latency} ms · {fps} fps · {mbps} Mbit/s",
+                            "latency" => format!("{:.0}", st.latency_ms.max(0.0)),
+                            "fps" => format!("{:.0}", st.fps),
+                            "mbps" => format!("{:.1}", st.mbps)
+                        );
+                        line.push_str(if st.gpu { " · GPU" } else { " · CPU" });
+                        if st.audio {
+                            line.push_str(" · ♪");
+                        }
+                        title.set_subtitle(&line);
+                    }
                     client::Event::Frame(f) => {
                         video.set((f.width, f.height));
                         let tex = gdk::MemoryTexture::new(
@@ -260,6 +273,25 @@ pub fn open_viewer(ip: &str, name: &str, toast: &libadwaita::ToastOverlay) {
                         break;
                     }
                 }
+            }
+        });
+    }
+    {
+        let session = session.clone();
+        btn_mute.connect_toggled(move |b| {
+            b.set_icon_name(if b.is_active() { "audio-volume-muted-symbolic" } else { "audio-volume-high-symbolic" });
+            if let Some(s) = session.borrow().as_ref() {
+                s.set_muted(b.is_active());
+            }
+        });
+    }
+    {
+        // However the window goes away (even destroyed without a close
+        // request), the session ends with it.
+        let session = session.clone();
+        win.connect_destroy(move |_| {
+            if let Some(s) = session.borrow_mut().take() {
+                s.close();
             }
         });
     }

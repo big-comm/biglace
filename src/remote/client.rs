@@ -42,6 +42,10 @@ pub struct Stats {
     pub latency_ms: f64,
     pub fps: f64,
     pub mbps: f64,
+    /// Decoding on this machine's GPU.
+    pub gpu: bool,
+    /// Sound is coming in.
+    pub audio: bool,
 }
 
 /// What the session thread tells the window.
@@ -52,20 +56,28 @@ pub enum Event {
     Ended(String),
 }
 
-enum Outgoing {
+pub(crate) enum Outgoing {
     Input(Input),
     Ping,
+    /// Ask the host for a keyframe (after switching decoders).
+    KeyFrame,
 }
 
 /// A live session: send input with `input`; drop or `close` to end it.
 pub struct Session {
     input: mpsc::Sender<Outgoing>,
     stream: TcpStream,
+    muted: Arc<std::sync::atomic::AtomicBool>,
 }
 
 impl Session {
     pub fn send(&self, event: Input) {
         let _ = self.input.send(Outgoing::Input(event));
+    }
+
+    /// Mute or unmute the host's sound here.
+    pub fn set_muted(&self, muted: bool) {
+        self.muted.store(muted, Ordering::Relaxed);
     }
 
     pub fn close(&self) {
@@ -140,6 +152,7 @@ pub fn open(ip: &str, events: async_channel::Sender<Event>) -> Result<Session, O
                         Err(_) => continue,
                     },
                     Outgoing::Ping => write_frame(&mut writer, Kind::Ping, &super::now_us().to_be_bytes()),
+                    Outgoing::KeyFrame => write_frame(&mut writer, Kind::KeyFrame, &[]),
                 };
                 if r.is_err() {
                     break;
@@ -158,10 +171,12 @@ pub fn open(ip: &str, events: async_channel::Sender<Event>) -> Result<Session, O
     }
 
     // Video: read frames, decode, hand RGBA frames to the window.
+    let muted = Arc::new(std::sync::atomic::AtomicBool::new(false));
+    let (muted_r, key_tx) = (muted.clone(), tx.clone());
     let _ = std::thread::Builder::new()
         .name("biglace-viewer-video".into())
         .spawn(move || {
-            let why = match decode_loop(reader, &events) {
+            let why = match decode_loop_with(reader, &events, &muted_r, AUDIO_OUT_DESC, Some(&key_tx)) {
                 Ok(()) => String::new(),
                 // The host closed the connection ("End access", or it quit):
                 // a normal end, not an error to show.
@@ -182,7 +197,7 @@ pub fn open(ip: &str, events: async_channel::Sender<Event>) -> Result<Session, O
             let _ = events.send_blocking(Event::Ended(why));
         });
 
-    Ok(Session { input: tx, stream })
+    Ok(Session { input: tx, stream, muted })
 }
 
 /// H.264 decoder for the viewer. Software decoding must not use frame
@@ -234,15 +249,66 @@ impl Clock {
     }
 }
 
-pub(crate) fn decode_loop(mut reader: BufReader<TcpStream>, events: &async_channel::Sender<Event>) -> anyhow::Result<()> {
+/// GPU decoder chain for 4:2:0 streams, when this machine has VA-API: the
+/// GPU decodes and converts to RGBA (vapostproc); only the finished frame
+/// comes back to memory for the window.
+fn gpu_decoder() -> Option<&'static str> {
+    use gstreamer as gst;
+    (gst::ElementFactory::find("vah264dec").is_some() && gst::ElementFactory::find("vapostproc").is_some())
+        .then_some("vah264dec ! vapostproc")
+}
+
+#[cfg(test)]
+pub(crate) fn gpu_decoder_available() -> bool {
+    gpu_decoder().is_some()
+}
+
+/// Viewer pipeline for `decoder` (CPU: `decoder()`, GPU: `gpu_decoder()`).
+fn decode_desc_with(decoder: &str, gpu: bool) -> String {
+    let convert = if gpu { "" } else { "! videoconvert n-threads=0 " };
+    format!(
+        "appsrc name=src is-live=true format=time do-timestamp=false \
+           caps=video/x-h264,stream-format=byte-stream,alignment=au \
+         ! h264parse ! {decoder} {convert}! video/x-raw,format=RGBA \
+         ! appsink name=sink sync=false max-buffers=1 drop=true"
+    )
+}
+
+/// A running decode pipeline.
+struct Decoder {
+    pipeline: gstreamer::Pipeline,
+    src: gstreamer_app::AppSrc,
+    gpu: bool,
+}
+
+impl Drop for Decoder {
+    fn drop(&mut self) {
+        use gstreamer::prelude::*;
+        let _ = self.pipeline.set_state(gstreamer::State::Null);
+    }
+}
+
+/// Shared between the reader loop and the decoder's callback.
+struct Shared {
+    clock: Clock,
+    bytes_in: AtomicU64,
+    audio_bytes: AtomicU64,
+    gpu: std::sync::atomic::AtomicBool,
+}
+
+fn start_decoder(gpu: bool, events: &async_channel::Sender<Event>, shared: &Arc<Shared>) -> anyhow::Result<Decoder> {
     use gstreamer as gst;
     use gstreamer::prelude::*;
     use gstreamer_app as gst_app;
 
-    gst::init()?;
-    let pipeline = gst::parse::launch(&decode_desc(decoder()))?
-    .downcast::<gst::Pipeline>()
-    .map_err(|_| anyhow::anyhow!("not a pipeline"))?;
+    let desc = match gpu.then(gpu_decoder).flatten() {
+        Some(d) => decode_desc_with(d, true),
+        None => decode_desc(decoder()),
+    };
+    let gpu = gpu && gpu_decoder().is_some();
+    let pipeline = gst::parse::launch(&desc)?
+        .downcast::<gst::Pipeline>()
+        .map_err(|_| anyhow::anyhow!("not a pipeline"))?;
     let src = pipeline
         .by_name("src")
         .and_then(|e| e.downcast::<gst_app::AppSrc>().ok())
@@ -251,79 +317,166 @@ pub(crate) fn decode_loop(mut reader: BufReader<TcpStream>, events: &async_chann
         .by_name("sink")
         .and_then(|e| e.downcast::<gst_app::AppSink>().ok())
         .ok_or_else(|| anyhow::anyhow!("no appsink"))?;
-
-    let clock = Arc::new(Clock::default());
-    let bytes_in = Arc::new(AtomicU64::new(0));
+    shared.gpu.store(gpu, Ordering::Relaxed);
 
     // Decoded frames go straight to the window (newest wins: drop=true).
-    {
-        let events = events.clone();
-        let (clock, bytes_in) = (clock.clone(), bytes_in.clone());
-        let mut window = (std::time::Instant::now(), 0u32, 0f64);
-        sink.set_callbacks(
-            gst_app::AppSinkCallbacks::builder()
-                .new_sample(move |sink| {
-                    let sample = sink.pull_sample().map_err(|_| gst::FlowError::Eos)?;
-                    let caps = sample.caps().ok_or(gst::FlowError::Error)?;
-                    let info = gstreamer_video::VideoInfo::from_caps(caps).map_err(|_| gst::FlowError::Error)?;
-                    let buffer = sample.buffer_owned().ok_or(gst::FlowError::Error)?;
-                    let first = clock.first_capture_us.load(Ordering::Relaxed);
-                    if let (Some(pts), true) = (buffer.pts(), first != 0) {
-                        window.1 += 1;
-                        window.2 += clock.latency_ms(first + pts.useconds());
-                    }
-                    if window.0.elapsed() >= Duration::from_secs(1) {
-                        let secs = window.0.elapsed().as_secs_f64();
-                        let stats = Stats {
-                            latency_ms: if window.1 > 0 { window.2 / f64::from(window.1) } else { 0.0 },
-                            fps: f64::from(window.1) / secs,
-                            mbps: bytes_in.swap(0, Ordering::Relaxed) as f64 * 8.0 / 1e6 / secs,
-                        };
-                        let _ = events.try_send(Event::Stats(stats));
-                        window = (std::time::Instant::now(), 0, 0.0);
-                    }
-                    let mapped = buffer.into_mapped_buffer_readable().map_err(|_| gst::FlowError::Error)?;
-                    let frame = Frame {
-                        width: info.width(),
-                        height: info.height(),
-                        stride: info.stride()[0] as usize,
-                        data: gtk4::glib::Bytes::from_owned(mapped),
+    let events = events.clone();
+    let shared_cb = shared.clone();
+    let mut window = (std::time::Instant::now(), 0u32, 0f64);
+    sink.set_callbacks(
+        gst_app::AppSinkCallbacks::builder()
+            .new_sample(move |sink| {
+                let shared = &shared_cb;
+                let sample = sink.pull_sample().map_err(|_| gst::FlowError::Eos)?;
+                let caps = sample.caps().ok_or(gst::FlowError::Error)?;
+                let info = gstreamer_video::VideoInfo::from_caps(caps).map_err(|_| gst::FlowError::Error)?;
+                let buffer = sample.buffer_owned().ok_or(gst::FlowError::Error)?;
+                let first = shared.clock.first_capture_us.load(Ordering::Relaxed);
+                if let (Some(pts), true) = (buffer.pts(), first != 0) {
+                    window.1 += 1;
+                    window.2 += shared.clock.latency_ms(first + pts.useconds());
+                }
+                if window.0.elapsed() >= Duration::from_secs(1) {
+                    let secs = window.0.elapsed().as_secs_f64();
+                    let stats = Stats {
+                        latency_ms: if window.1 > 0 { window.2 / f64::from(window.1) } else { 0.0 },
+                        fps: f64::from(window.1) / secs,
+                        mbps: shared.bytes_in.swap(0, Ordering::Relaxed) as f64 * 8.0 / 1e6 / secs,
+                        gpu: shared.gpu.load(Ordering::Relaxed),
+                        audio: shared.audio_bytes.swap(0, Ordering::Relaxed) > 0,
                     };
-                    // A closed window ends the session.
-                    if events.try_send(Event::Frame(frame)).is_err() && events.is_closed() {
-                        return Err(gst::FlowError::Eos);
-                    }
-                    Ok(gst::FlowSuccess::Ok)
-                })
-                .build(),
-        );
-    }
+                    let _ = events.try_send(Event::Stats(stats));
+                    window = (std::time::Instant::now(), 0, 0.0);
+                }
+                let mapped = buffer.into_mapped_buffer_readable().map_err(|_| gst::FlowError::Error)?;
+                let frame = Frame {
+                    width: info.width(),
+                    height: info.height(),
+                    stride: info.stride()[0] as usize,
+                    data: gtk4::glib::Bytes::from_owned(mapped),
+                };
+                // A closed window ends the session.
+                if events.try_send(Event::Frame(frame)).is_err() && events.is_closed() {
+                    return Err(gst::FlowError::Eos);
+                }
+                Ok(gst::FlowSuccess::Ok)
+            })
+            .build(),
+    );
     pipeline.set_state(gst::State::Playing)?;
+    Ok(Decoder { pipeline, src, gpu })
+}
 
-    let result = (|| -> anyhow::Result<()> {
-        loop {
-            let (kind, payload) = read_frame(&mut reader)?;
-            match kind {
-                Kind::Info => {
-                    if let Ok(info) = serde_json::from_slice::<VideoInfo>(&payload) {
-                        if events.send_blocking(Event::Info(info)).is_err() {
-                            return Ok(());
-                        }
+/// Did the decoder fail (driver refusing the stream, …)?
+fn decoder_failed(dec: &Decoder) -> Option<String> {
+    use gstreamer as gst;
+    use gstreamer::prelude::*;
+    let msg = dec.pipeline.bus()?.pop_filtered(&[gst::MessageType::Error])?;
+    match msg.view() {
+        gst::MessageView::Error(e) => Some(e.error().to_string()),
+        _ => Some("decoder error".into()),
+    }
+}
+
+/// The host's sound, played here.
+struct AudioOut {
+    pipeline: gstreamer::Pipeline,
+    src: gstreamer_app::AppSrc,
+    volume: gstreamer::Element,
+    muted: bool,
+}
+
+impl Drop for AudioOut {
+    fn drop(&mut self) {
+        use gstreamer::prelude::*;
+        let _ = self.pipeline.set_state(gstreamer::State::Null);
+    }
+}
+
+/// Opus in, the default output out. Played as it arrives (a small buffer
+/// absorbs network jitter): sound follows the picture instead of a clock.
+pub(crate) const AUDIO_OUT_DESC: &str = "appsrc name=asrc is-live=true format=time do-timestamp=true \
+       caps=audio/x-opus,channel-mapping-family=0,channels=2,rate=48000 \
+     ! opusdec plc=true ! audioconvert ! audioresample ! volume name=vol \
+     ! autoaudiosink name=out sync=false";
+
+fn start_audio(desc: &str) -> anyhow::Result<AudioOut> {
+    use gstreamer as gst;
+    use gstreamer::prelude::*;
+    use gstreamer_app as gst_app;
+    let pipeline = gst::parse::launch(desc)?
+        .downcast::<gst::Pipeline>()
+        .map_err(|_| anyhow::anyhow!("not a pipeline"))?;
+    let src = pipeline
+        .by_name("asrc")
+        .and_then(|e| e.downcast::<gst_app::AppSrc>().ok())
+        .ok_or_else(|| anyhow::anyhow!("no appsrc"))?;
+    let volume = pipeline.by_name("vol").ok_or_else(|| anyhow::anyhow!("no volume"))?;
+    pipeline.set_state(gst::State::Playing)?;
+    Ok(AudioOut { pipeline, src, volume, muted: false })
+}
+
+#[cfg(test)]
+pub(crate) fn decode_loop(
+    reader: BufReader<TcpStream>,
+    events: &async_channel::Sender<Event>,
+) -> anyhow::Result<()> {
+    decode_loop_with(reader, events, &Arc::new(std::sync::atomic::AtomicBool::new(false)), AUDIO_OUT_DESC, None)
+}
+
+/// Read the session: video to the decoder, sound to the speakers (unless
+/// `muted`), clock pongs to the latency meter. `key_request` asks the host
+/// for a keyframe (after switching decoders).
+pub(crate) fn decode_loop_with(
+    mut reader: BufReader<TcpStream>,
+    events: &async_channel::Sender<Event>,
+    muted: &Arc<std::sync::atomic::AtomicBool>,
+    audio_desc: &str,
+    key_request: Option<&mpsc::Sender<Outgoing>>,
+) -> anyhow::Result<()> {
+    use gstreamer as gst;
+    use gstreamer::prelude::*;
+
+    gst::init()?;
+    let shared = Arc::new(Shared {
+        clock: Clock::default(),
+        bytes_in: AtomicU64::new(0),
+        audio_bytes: AtomicU64::new(0),
+        gpu: std::sync::atomic::AtomicBool::new(false),
+    });
+    let mut decoder: Option<Decoder> = None;
+    let mut audio: Option<AudioOut> = None;
+    // GPU unless the stream is 4:4:4 (or a GPU decode already failed).
+    let mut want_gpu = true;
+
+    loop {
+        let (kind, payload) = read_frame(&mut reader)?;
+        match kind {
+            Kind::Info => {
+                if let Ok(info) = serde_json::from_slice::<VideoInfo>(&payload) {
+                    let gpu = want_gpu && info.chroma.as_deref() != Some("444");
+                    if decoder.as_ref().is_none_or(|d| d.gpu != gpu) {
+                        decoder = Some(start_decoder(gpu, events, &shared)?);
+                    }
+                    if events.send_blocking(Event::Info(info)).is_err() {
+                        return Ok(());
                     }
                 }
-                Kind::Video => {
-                    bytes_in.fetch_add(payload.len() as u64, Ordering::Relaxed);
-                    let buffer = gst::Buffer::from_mut_slice(payload);
-                    if src.push_buffer(buffer).is_err() {
-                        anyhow::bail!("decoder stopped");
-                    }
+            }
+            Kind::Video | Kind::VideoTs => {
+                if payload.len() <= 8 && kind == Kind::VideoTs {
+                    continue;
                 }
-                Kind::VideoTs if payload.len() > 8 => {
-                    bytes_in.fetch_add(payload.len() as u64, Ordering::Relaxed);
+                shared.bytes_in.fetch_add(payload.len() as u64, Ordering::Relaxed);
+                if decoder.is_none() {
+                    // Older host: no Info before video.
+                    decoder = Some(start_decoder(false, events, &shared)?);
+                }
+                let buffer = if kind == Kind::VideoTs {
                     let captured = u64::from_be_bytes(payload[..8].try_into().unwrap_or_default());
-                    let first = match clock.first_capture_us.load(Ordering::Relaxed) {
+                    let first = match shared.clock.first_capture_us.load(Ordering::Relaxed) {
                         0 => {
-                            clock.first_capture_us.store(captured, Ordering::Relaxed);
+                            shared.clock.first_capture_us.store(captured, Ordering::Relaxed);
                             captured
                         }
                         f => f,
@@ -338,18 +491,52 @@ pub(crate) fn decode_loop(mut reader: BufReader<TcpStream>, events: &async_chann
                     if let Some(b) = sub.get_mut() {
                         b.set_pts(gst::ClockTime::from_useconds(captured.saturating_sub(first)));
                     }
-                    if src.push_buffer(sub).is_err() {
-                        anyhow::bail!("decoder stopped");
+                    sub
+                } else {
+                    gst::Buffer::from_slice(payload)
+                };
+                let dec = decoder.as_ref().expect("decoder started above");
+                let pushed = dec.src.push_buffer(buffer).is_ok();
+                let failed = decoder_failed(dec).or_else(|| (!pushed).then(|| "decoder stopped".into()));
+                if let Some(why) = failed {
+                    if !dec.gpu {
+                        anyhow::bail!("{why}");
+                    }
+                    // The GPU won't decode this stream: software from now on,
+                    // starting at a fresh keyframe.
+                    crate::tailscale::dbg(&format!("remote: GPU decoding failed ({why}); using the CPU"));
+                    want_gpu = false;
+                    decoder = Some(start_decoder(false, events, &shared)?);
+                    if let Some(tx) = key_request {
+                        let _ = tx.send(Outgoing::KeyFrame);
                     }
                 }
-                Kind::Pong => clock.pong(&payload),
-                Kind::Input | Kind::Ping | Kind::VideoTs => {}
-                Kind::Error => anyhow::bail!("{}", String::from_utf8_lossy(&payload)),
             }
+            Kind::Audio if payload.len() > 8 => {
+                shared.audio_bytes.fetch_add(payload.len() as u64, Ordering::Relaxed);
+                if audio.is_none() {
+                    match start_audio(audio_desc) {
+                        Ok(a) => audio = Some(a),
+                        Err(e) => crate::tailscale::dbg(&format!("remote: can't play sound: {e}")),
+                    }
+                }
+                if let Some(a) = audio.as_mut() {
+                    let m = muted.load(Ordering::Relaxed);
+                    if m != a.muted {
+                        a.volume.set_property("mute", m);
+                        a.muted = m;
+                    }
+                    let packet = gst::Buffer::from_slice(payload)
+                        .copy_region(gst::BufferCopyFlags::MEMORY, 8..)
+                        .map_err(|_| anyhow::anyhow!("bad packet"))?;
+                    let _ = a.src.push_buffer(packet);
+                }
+            }
+            Kind::Pong => shared.clock.pong(&payload),
+            Kind::Input | Kind::Ping | Kind::KeyFrame | Kind::Audio => {}
+            Kind::Error => anyhow::bail!("{}", String::from_utf8_lossy(&payload)),
         }
-    })();
-    let _ = pipeline.set_state(gst::State::Null);
-    result
+    }
 }
 
 #[cfg(test)]
@@ -468,7 +655,7 @@ mod tests {
         let addr = listener.local_addr().unwrap();
         let host = std::thread::spawn(move || {
             let (mut s, _) = listener.accept().unwrap();
-            let info = serde_json::to_vec(&VideoInfo { width: 320, height: 240 }).unwrap();
+            let info = serde_json::to_vec(&VideoInfo { width: 320, height: 240, chroma: None }).unwrap();
             write_frame(&mut s, Kind::Info, &info).unwrap();
             // Protocol 2: each unit carries its capture time; paced like a
             // live 30 fps source so the viewer reports stats.

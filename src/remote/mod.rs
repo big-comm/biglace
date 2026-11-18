@@ -62,10 +62,16 @@ pub enum Kind {
     /// Host → viewer: the ping's viewer clock, then the host clock (µs,
     /// u64 BE each): lets the viewer measure latency across both clocks.
     Pong = 7,
+    /// Host → viewer: one Opus packet of the host's sound output (protocol
+    /// 3 viewers only).
+    Audio = 8,
+    /// Viewer → host: send a keyframe now (empty payload).
+    KeyFrame = 9,
 }
 
 /// Screen protocol revision the viewer asks for.
-pub const SCREEN_PROTOCOL: &str = "2";
+/// 2: timestamped video, ping/pong. 3: plus sound.
+pub const SCREEN_PROTOCOL: &str = "3";
 
 /// Wall clock in µs since the epoch (both ends use it for latency).
 pub fn now_us() -> u64 {
@@ -84,6 +90,8 @@ impl Kind {
             5 => Some(Self::VideoTs),
             6 => Some(Self::Ping),
             7 => Some(Self::Pong),
+            8 => Some(Self::Audio),
+            9 => Some(Self::KeyFrame),
             _ => None,
         }
     }
@@ -116,10 +124,15 @@ pub fn read_frame(r: &mut impl Read) -> io::Result<(Kind, Vec<u8>)> {
 }
 
 /// Size of the shared screen, sent before the first video frame.
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 pub struct VideoInfo {
     pub width: u32,
     pub height: u32,
+    /// Chroma of the H.264 stream: "420" or "444" (full color, software
+    /// encoders). GPU decoders usually take only 4:2:0. Absent from older
+    /// hosts (then: 4:2:0).
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub chroma: Option<String>,
 }
 
 /// One input event from the viewer. Pointer positions are normalized to
@@ -241,7 +254,7 @@ mod tests {
         assert_eq!(read_frame(&mut r).unwrap(), (Kind::Video, b"abc".to_vec()));
         assert_eq!(read_frame(&mut r).unwrap(), (Kind::Input, vec![]));
         assert!(read_frame(&mut r).is_err());
-        let mut bad = &[9u8, 0, 0, 0, 0][..];
+        let mut bad = &[200u8, 0, 0, 0, 0][..];
         assert!(read_frame(&mut bad).is_err());
         let huge = [2u8, 0xff, 0xff, 0xff, 0xff];
         assert!(read_frame(&mut &huge[..]).is_err());
@@ -306,7 +319,7 @@ mod end_to_end {
                 enc,
             );
             let pipelines = [broken, host::pipeline_desc(head, enc)];
-            let _ = host::stream_screen(&writer, &pipelines, None, &stop, true);
+            let _ = host::stream_screen(&writer, &pipelines, None, &stop, true, &std::sync::atomic::AtomicBool::new(false));
         });
         let stream = TcpStream::connect(addr).unwrap();
         let (tx, rx) = async_channel::bounded(256);
@@ -335,5 +348,179 @@ mod end_to_end {
         assert!(fps > 15.0, "only {fps:.1} fps");
         let (first, last) = (tail[0].latency_ms, tail[tail.len() - 1].latency_ms);
         assert!(last < first + 100.0, "latency drifting: {first:.0} → {last:.0} ms");
+    }
+}
+
+/// Viewer decoding (GPU / CPU / fallback) and sound, end to end over TCP.
+#[cfg(test)]
+mod decode_and_sound {
+    use super::*;
+    use gstreamer as gst;
+    use gstreamer::prelude::*;
+    use std::net::{TcpListener, TcpStream};
+    use std::sync::atomic::AtomicBool;
+    use std::sync::{Arc, Mutex};
+    use std::time::Duration;
+
+    fn encode(format: &str, frames: u32) -> Vec<Vec<u8>> {
+        let p = gst::parse::launch(&format!(
+            "videotestsrc num-buffers={frames} pattern=ball ! video/x-raw,width=640,height=360,framerate=30/1 \
+             ! videoconvert ! video/x-raw,format={format} \
+             ! x264enc tune=zerolatency speed-preset=ultrafast key-int-max=10 bframes=0 \
+             ! h264parse config-interval=-1 ! video/x-h264,stream-format=byte-stream,alignment=au \
+             ! appsink name=sink sync=false"
+        ))
+        .unwrap()
+        .downcast::<gst::Pipeline>()
+        .unwrap();
+        let sink = p.by_name("sink").unwrap().downcast::<gstreamer_app::AppSink>().unwrap();
+        p.set_state(gst::State::Playing).unwrap();
+        let mut out = Vec::new();
+        while let Some(s) = sink.try_pull_sample(gst::ClockTime::from_seconds(5)) {
+            out.push(s.buffer().unwrap().map_readable().unwrap().as_slice().to_vec());
+        }
+        p.set_state(gst::State::Null).unwrap();
+        out
+    }
+
+    /// Host side of a test session: optional Info, then timestamped units
+    /// at 30 fps; answers KeyFrame requests by restarting from a keyframe
+    /// (units are encoded with one every 10 frames).
+    fn serve(units: Vec<Vec<u8>>, chroma: Option<&'static str>, audio: bool) -> (std::thread::JoinHandle<bool>, std::net::SocketAddr) {
+        let listener = TcpListener::bind("127.0.0.1:0").unwrap();
+        let addr = listener.local_addr().unwrap();
+        let h = std::thread::spawn(move || {
+            let (s, _) = listener.accept().unwrap();
+            let mut reader = s.try_clone().unwrap();
+            let asked = Arc::new(AtomicBool::new(false));
+            {
+                let asked = asked.clone();
+                std::thread::spawn(move || {
+                    while let Ok((kind, _)) = read_frame(&mut reader) {
+                        if kind == Kind::KeyFrame {
+                            asked.store(true, std::sync::atomic::Ordering::Release);
+                        }
+                    }
+                });
+            }
+            let writer = Arc::new(Mutex::new(s));
+            if let Some(c) = chroma {
+                let info = VideoInfo { width: 640, height: 360, chroma: Some(c.into()) };
+                write_frame(&mut *writer.lock().unwrap(), Kind::Info, &serde_json::to_vec(&info).unwrap()).unwrap();
+            }
+            let stop = host::StopHandle::new(&writer.lock().unwrap().try_clone().unwrap());
+            if audio {
+                let (w, st) = (writer.clone(), stop.clone());
+                std::thread::spawn(move || {
+                    let desc = "audiotestsrc is-live=true wave=sine ! audioconvert ! audioresample \
+                                ! audio/x-raw,rate=48000,channels=2 ! opusenc bitrate=128000 frame-size=10 \
+                                ! appsink name=asink sync=false";
+                    let _ = host::stream_audio_from(&w, &st, desc);
+                });
+            }
+            for u in units.iter().cycle().take(120) {
+                let mut payload = now_us().to_be_bytes().to_vec();
+                payload.extend_from_slice(u);
+                if write_frame(&mut *writer.lock().unwrap(), Kind::VideoTs, &payload).is_err() {
+                    break;
+                }
+                std::thread::sleep(Duration::from_millis(33));
+            }
+            stop.stop();
+            asked.load(std::sync::atomic::Ordering::Acquire)
+        });
+        (h, addr)
+    }
+
+    /// Run a viewer against `addr`; returns (frames decoded, last stats).
+    fn view(addr: std::net::SocketAddr) -> (u32, Vec<client::Stats>) {
+        let stream = TcpStream::connect(addr).unwrap();
+        let mut writer = stream.try_clone().unwrap();
+        let (key_tx, key_rx) = std::sync::mpsc::channel();
+        std::thread::spawn(move || {
+            for out in key_rx {
+                if matches!(out, client::Outgoing::KeyFrame) {
+                    let _ = write_frame(&mut writer, Kind::KeyFrame, &[]);
+                }
+            }
+        });
+        let (tx, rx) = async_channel::bounded(512);
+        let muted = Arc::new(AtomicBool::new(false));
+        let sink = "appsrc name=asrc is-live=true format=time do-timestamp=true \
+                    caps=audio/x-opus,channel-mapping-family=0,channels=2,rate=48000 \
+                    ! opusdec ! audioconvert ! volume name=vol ! fakesink sync=false";
+        let t = std::thread::spawn(move || {
+            let _ = client::decode_loop_with(std::io::BufReader::new(stream), &tx, &muted, sink, Some(&key_tx));
+        });
+        let (mut frames, mut stats) = (0u32, Vec::new());
+        while let Ok(ev) = rx.recv_blocking() {
+            match ev {
+                client::Event::Frame(_) => frames += 1,
+                client::Event::Stats(s) => stats.push(s),
+                client::Event::Ended(_) => break,
+                _ => {}
+            }
+        }
+        let _ = t.join();
+        (frames, stats)
+    }
+
+    fn ready() -> bool {
+        gst::init().is_ok() && gst::ElementFactory::find("x264enc").is_some() && gst::ElementFactory::find("avdec_h264").is_some()
+    }
+
+    #[test]
+    fn gpu_decodes_420_streams_where_available() {
+        let _turn = heavy_test();
+        if !ready() {
+            return;
+        }
+        let (h, addr) = serve(encode("I420", 40), Some("420"), false);
+        let (frames, stats) = view(addr);
+        let _ = h.join();
+        assert!(frames > 60, "only {frames} frames");
+        let gpu_here = client::gpu_decoder_available();
+        assert!(stats.iter().all(|s| s.gpu == gpu_here), "decoder choice: {stats:?}");
+    }
+
+    #[test]
+    fn full_color_streams_decode_on_the_cpu() {
+        let _turn = heavy_test();
+        if !ready() {
+            return;
+        }
+        let (h, addr) = serve(encode("Y444", 40), Some("444"), false);
+        let (frames, stats) = view(addr);
+        let _ = h.join();
+        assert!(frames > 60, "only {frames} frames");
+        assert!(stats.iter().all(|s| !s.gpu), "{stats:?}");
+    }
+
+    /// An older host doesn't say its stream is 4:4:4: the GPU tries, fails,
+    /// and the viewer switches to the CPU and asks for a keyframe.
+    #[test]
+    fn gpu_failure_falls_back_to_cpu() {
+        let _turn = heavy_test();
+        if !ready() || !client::gpu_decoder_available() {
+            return;
+        }
+        let (h, addr) = serve(encode("Y444", 40), Some("420"), false);
+        let (frames, stats) = view(addr);
+        let asked_key = h.join().unwrap();
+        assert!(asked_key, "viewer didn't ask for a keyframe");
+        assert!(frames > 40, "only {frames} frames after the fallback");
+        assert!(stats.last().is_some_and(|s| !s.gpu), "{stats:?}");
+    }
+
+    #[test]
+    fn host_sound_reaches_the_viewer() {
+        let _turn = heavy_test();
+        if !ready() || gst::ElementFactory::find("opusenc").is_none() {
+            return;
+        }
+        let (h, addr) = serve(encode("I420", 40), Some("420"), true);
+        let (_, stats) = view(addr);
+        let _ = h.join();
+        assert!(stats.iter().filter(|s| s.audio).count() >= 2, "no sound: {stats:?}");
     }
 }

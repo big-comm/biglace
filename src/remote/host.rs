@@ -218,8 +218,9 @@ pub fn serve(stream: TcpStream, peer: IpAddr, headers: &HashMap<String, String>,
         stop: stop.clone(),
     }));
     tailscale::dbg(&format!("remote: session started for {}@{}", identity.login, identity.device));
-    let timestamps = headers.get("x-biglace-screen").is_some_and(|v| v.as_str() >= super::SCREEN_PROTOCOL);
-    run_session(stream, &stop, timestamps);
+    // What the viewer understands: 2 = timestamps + ping, 3 = also sound.
+    let protocol: u32 = headers.get("x-biglace-screen").and_then(|v| v.parse().ok()).unwrap_or(1);
+    run_session(stream, &stop, protocol);
     stop.stop();
     emit(HostEvent::Ended(stop));
     tailscale::dbg(&format!("remote: session ended for {}@{}", identity.login, identity.device));
@@ -351,7 +352,8 @@ const SEND_BUFFER: usize = 512 * 1024;
 #[cfg(target_os = "linux")]
 const NOTSENT_LOWAT: u32 = 64 * 1024;
 
-fn run_session(mut stream: TcpStream, stop: &StopHandle, timestamps: bool) {
+fn run_session(mut stream: TcpStream, stop: &StopHandle, protocol: u32) {
+    let timestamps = protocol >= 2;
     {
         let sock = socket2::SockRef::from(&stream);
         let _ = sock.set_send_buffer_size(SEND_BUFFER);
@@ -381,10 +383,14 @@ fn run_session(mut stream: TcpStream, stop: &StopHandle, timestamps: bool) {
         Err(_) => return,
     };
 
+    // Raised when the viewer asks for a keyframe (it switched decoders).
+    let want_key = Arc::new(AtomicBool::new(false));
+
     // Input: replayed as it arrives, on its own thread.
     if let Ok(mut reader) = stream.try_clone() {
         let stop = stop.clone();
         let writer = writer.clone();
+        let want_key = want_key.clone();
         let _ = std::thread::Builder::new()
             .name("biglace-remote-input".into())
             .spawn(move || {
@@ -395,6 +401,7 @@ fn run_session(mut stream: TcpStream, stop: &StopHandle, timestamps: bool) {
                                 sink.apply(event);
                             }
                         }
+                        Ok((Kind::KeyFrame, _)) => want_key.store(true, Ordering::Release),
                         Ok((Kind::Ping, payload)) if payload.len() == 8 => {
                             let mut pong = payload;
                             pong.extend_from_slice(&super::now_us().to_be_bytes());
@@ -413,7 +420,17 @@ fn run_session(mut stream: TcpStream, stop: &StopHandle, timestamps: bool) {
     }
 
     drop(stream);
-    if let Err(e) = stream_screen(&writer, &pipelines, dirty, stop, timestamps) {
+    if protocol >= 3 {
+        let (writer, stop) = (writer.clone(), stop.clone());
+        let _ = std::thread::Builder::new()
+            .name("biglace-remote-audio".into())
+            .spawn(move || {
+                if let Err(e) = stream_audio(&writer, &stop) {
+                    tailscale::dbg(&format!("remote: no sound: {e}"));
+                }
+            });
+    }
+    if let Err(e) = stream_screen(&writer, &pipelines, dirty, stop, timestamps, &want_key) {
         tailscale::dbg(&format!("remote: capture ended: {e}"));
     }
 }
@@ -454,6 +471,56 @@ pub fn encoder() -> Option<(&'static str, &'static str)> {
         }
     }
     None
+}
+
+/// What plays on this computer (the default output's monitor), as Opus:
+/// 10 ms packets, 128 kbit/s stereo — music-grade, and short frames keep
+/// the delay low.
+pub(crate) const AUDIO_DESC: &str = "pulsesrc name=asrc device=@DEFAULT_MONITOR@ buffer-time=40000 latency-time=10000 \
+     ! audioconvert ! audioresample ! audio/x-raw,rate=48000,channels=2 \
+     ! opusenc bitrate=128000 frame-size=10 audio-type=generic \
+     ! appsink name=asink sync=false max-buffers=50";
+
+/// Send the host's sound until the session stops. Each frame: capture time
+/// (µs, host clock) + one Opus packet.
+fn stream_audio(writer: &Mutex<TcpStream>, stop: &StopHandle) -> anyhow::Result<()> {
+    stream_audio_from(writer, stop, AUDIO_DESC)
+}
+
+pub(crate) fn stream_audio_from(writer: &Mutex<TcpStream>, stop: &StopHandle, desc: &str) -> anyhow::Result<()> {
+    use gstreamer as gst;
+    use gstreamer::prelude::*;
+    use gstreamer_app as gst_app;
+
+    gst::init()?;
+    let pipeline = gst::parse::launch(desc)?
+        .downcast::<gst::Pipeline>()
+        .map_err(|_| anyhow::anyhow!("not a pipeline"))?;
+    let sink = pipeline
+        .by_name("asink")
+        .and_then(|e| e.downcast::<gst_app::AppSink>().ok())
+        .ok_or_else(|| anyhow::anyhow!("no appsink"))?;
+    pipeline.set_state(gst::State::Playing)?;
+    let result = (|| -> anyhow::Result<()> {
+        while !stop.stopped() {
+            let Some(sample) = sink.try_pull_sample(gst::ClockTime::from_mseconds(200)) else {
+                if sink.is_eos() {
+                    anyhow::bail!("sound capture stopped");
+                }
+                continue;
+            };
+            let Some(buffer) = sample.buffer() else { continue };
+            let map = buffer.map_readable()?;
+            let mut payload = Vec::with_capacity(8 + map.len());
+            payload.extend_from_slice(&super::now_us().to_be_bytes());
+            payload.extend_from_slice(map.as_slice());
+            let mut w = writer.lock().map_err(|_| anyhow::anyhow!("lock"))?;
+            write_frame(&mut *w, Kind::Audio, &payload)?;
+        }
+        Ok(())
+    })();
+    let _ = pipeline.set_state(gst::State::Null);
+    result
 }
 
 /// Build and start `desc`; Ok once it produced its first encoded frame
@@ -540,6 +607,7 @@ pub(crate) fn stream_screen(
     dirty: Option<Arc<AtomicBool>>,
     stop: &StopHandle,
     timestamps: bool,
+    want_key: &AtomicBool,
 ) -> anyhow::Result<()> {
     use gstreamer as gst;
     use gstreamer::prelude::*;
@@ -571,6 +639,10 @@ pub(crate) fn stream_screen(
         let mut last_info: Option<VideoInfo> = None;
         let (mut frames, mut bytes, mut since) = (0u32, 0usize, std::time::Instant::now());
         while !stop.stopped() {
+            if want_key.swap(false, Ordering::AcqRel) {
+                let event = gstreamer_video::UpstreamForceKeyUnitEvent::builder().all_headers(true).build();
+                sink.send_event(event);
+            }
             let Some(sample) = pending.take().or_else(|| sink.try_pull_sample(gst::ClockTime::from_mseconds(500))) else {
                 if sink.is_eos() {
                     anyhow::bail!("capture stopped");
@@ -579,10 +651,15 @@ pub(crate) fn stream_screen(
             };
             if let Some(s) = sample.caps().and_then(|c| c.structure(0)) {
                 if let (Ok(w), Ok(h)) = (s.get::<i32>("width"), s.get::<i32>("height")) {
-                    let info = VideoInfo { width: w as u32, height: h as u32 };
-                    if last_info != Some(info) {
+                    let chroma = match s.get::<&str>("chroma-format") {
+                        Ok("4:4:4") => "444",
+                        _ => "420",
+                    };
+                    let info = VideoInfo { width: w as u32, height: h as u32, chroma: Some(chroma.into()) };
+                    if last_info.as_ref() != Some(&info) {
                         let mut w = writer.lock().map_err(|_| anyhow::anyhow!("lock"))?;
                         write_frame(&mut *w, Kind::Info, &serde_json::to_vec(&info)?)?;
+                        drop(w);
                         last_info = Some(info);
                     }
                 }
