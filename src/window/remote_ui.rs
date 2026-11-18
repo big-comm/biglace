@@ -251,17 +251,51 @@ fn update_countdown(body: &gtk4::Widget, left: u32) {
 // ─── Viewer side ─────────────────────────────────────────────────────────────
 
 /// Open `name`'s screen (peer at `ip`) in a new window.
-pub fn open_viewer(ip: &str, name: &str, toast: &libadwaita::ToastOverlay) {
-    open_viewer_as(ip, name, toast, None);
+pub fn open_viewer(ip: &str, name: &str, toast: &libadwaita::ToastOverlay, power: bool) {
+    open_viewer_as(ip, name, toast, None, power);
+}
+
+/// How long a restarted computer has to come back.
+const RESTART_WAIT: std::time::Duration = std::time::Duration::from_secs(10 * 60);
+
+/// "Restart and reconnect" / "Shut down": ask first.
+fn confirm_power(win: &libadwaita::Window, action: &'static str, name: &str, session: Rc<RefCell<Option<client::Session>>>) {
+    let (heading, body, label) = if action == "restart" {
+        (
+            trf!("Restart {name}'s computer?", "name" => name),
+            tr!("It restarts, signs in by itself and locks the screen right away; this window connects again when it's back. Unsaved work there is lost."),
+            tr!("Restart"),
+        )
+    } else {
+        (
+            trf!("Shut down {name}'s computer?", "name" => name),
+            tr!("You won't be able to reach it again until someone turns it on. Unsaved work there is lost."),
+            tr!("Shut Down"),
+        )
+    };
+    let dlg = libadwaita::MessageDialog::builder().transient_for(win).modal(true).heading(heading).body(body).build();
+    dlg.add_response("cancel", &tr!("Cancel"));
+    dlg.add_response("go", &label);
+    dlg.set_response_appearance("go", libadwaita::ResponseAppearance::Destructive);
+    dlg.set_default_response(Some("cancel"));
+    dlg.set_close_response("cancel");
+    dlg.connect_response(None, move |_, r| {
+        if r == "go" {
+            if let Some(s) = session.borrow().as_ref() {
+                s.power(action);
+            }
+        }
+    });
+    dlg.present();
 }
 
 /// Watch the screen `name` shows to the voice room of `group` (view only,
 /// with "Request control").
 pub fn open_stage_viewer(ip: &str, name: &str, group: &str, toast: &libadwaita::ToastOverlay) {
-    open_viewer_as(ip, name, toast, Some(group.to_string()));
+    open_viewer_as(ip, name, toast, Some(group.to_string()), false);
 }
 
-fn open_viewer_as(ip: &str, name: &str, toast: &libadwaita::ToastOverlay, stage: Option<String>) {
+fn open_viewer_as(ip: &str, name: &str, toast: &libadwaita::ToastOverlay, stage: Option<String>, power: bool) {
     let watching = stage.is_some();
     let win = libadwaita::Window::builder()
         .title(trf!("Screen of {name}", "name" => name))
@@ -363,17 +397,33 @@ fn open_viewer_as(ip: &str, name: &str, toast: &libadwaita::ToastOverlay, stage:
     let video = Rc::new(Cell::new((0u32, 0u32)));
     wire_input(&win, &picture, &session, &video);
 
-    let (tx, rx) = async_channel::bounded::<client::Event>(4);
-    let (open_tx, open_rx) = async_channel::bounded::<Result<client::Session, client::OpenError>>(1);
-    let ip_w = ip.to_string();
-    let stage_w = stage.clone();
-    std::thread::spawn(move || {
-        let opened = match &stage_w {
-            Some(group) => client::open_stage(&ip_w, group, tx),
-            None => client::open(&ip_w, tx),
-        };
-        let _ = open_tx.send_blocking(opened);
-    });
+    // Opens a connection on a thread: (its outcome, its events). Called
+    // again to come back after a restart.
+    let connect = {
+        let (ip, stage) = (ip.to_string(), stage.clone());
+        move || {
+            let (tx, rx) = async_channel::bounded::<client::Event>(4);
+            let (open_tx, open_rx) = async_channel::bounded::<Result<client::Session, client::OpenError>>(1);
+            let (ip, stage) = (ip.clone(), stage.clone());
+            std::thread::spawn(move || {
+                let opened = match &stage {
+                    Some(group) => client::open_stage(&ip, group, tx),
+                    None => client::open(&ip, tx),
+                };
+                let _ = open_tx.send_blocking(opened);
+            });
+            (open_rx, rx)
+        }
+    };
+    // The window went away: stop trying to come back.
+    let closed = Rc::new(Cell::new(false));
+    {
+        let closed = closed.clone();
+        win.connect_destroy(move |_| closed.set(true));
+    }
+    // Set when the host said it's restarting / shutting down.
+    let restarting = Rc::new(Cell::new(false));
+    let shutting_down = Rc::new(Cell::new(false));
 
     let name_s = name.to_string();
     let toast = toast.clone();
@@ -399,101 +449,195 @@ fn open_viewer_as(ip: &str, name: &str, toast: &libadwaita::ToastOverlay, stage:
             }
         });
     }
+    // Power: restart (and come back) or shut down the computer being helped.
+    if power && !watching {
+        let pop_box = gtk4::Box::new(gtk4::Orientation::Vertical, 2);
+        pop_box.set_margin_top(6);
+        pop_box.set_margin_bottom(6);
+        pop_box.set_margin_start(6);
+        pop_box.set_margin_end(6);
+        let popover = gtk4::Popover::builder().child(&pop_box).build();
+        let btn_power = gtk4::MenuButton::builder()
+            .icon_name("system-shutdown-symbolic")
+            .tooltip_text(trf!("Restart or shut down {name}'s computer", "name" => name))
+            .popover(&popover)
+            .build();
+        header.pack_end(&btn_power);
+        for (action, icon, label) in [
+            ("restart", "system-reboot-symbolic", tr!("Restart and reconnect")),
+            ("shutdown", "system-shutdown-symbolic", tr!("Shut down")),
+        ] {
+            let item = gtk4::Button::builder()
+                .child(&libadwaita::ButtonContent::builder().icon_name(icon).label(label).build())
+                .css_classes(["flat"])
+                .build();
+            let (session, win, popover, name_s) = (session.clone(), win.clone(), popover.clone(), name.to_string());
+            item.connect_clicked(move |_| {
+                popover.popdown();
+                confirm_power(&win, action, &name_s, session.clone());
+            });
+            pop_box.append(&item);
+        }
+    }
     {
         let (win, session, stack, picture, video, title) =
             (win.clone(), session.clone(), stack.clone(), picture.clone(), video.clone(), title.clone());
+        let (waiting, connect, closed, restarting, shutting_down) =
+            (waiting.clone(), connect.clone(), closed.clone(), restarting.clone(), shutting_down.clone());
         let (btn_control, control_state, live) = (btn_control.clone(), control_state.clone(), live.clone());
         let sized = Cell::new(false);
         glib::spawn_future_local(async move {
-            match open_rx.recv().await {
-                Ok(Ok(s)) => *session.borrow_mut() = Some(s),
-                Ok(Err(e)) => {
-                    let msg = match e {
-                        client::OpenError::Denied => trf!("{name} didn't allow the access.", "name" => name_s),
-                        client::OpenError::Unverified => tr!(
-                            "That computer couldn't confirm this device. Make sure both run an up-to-date BigLace."
-                        ),
-                        client::OpenError::Unavailable => trf!(
-                            "{name}'s computer can't share its screen (screen sharing isn't available there).",
-                            "name" => name_s
-                        ),
-                        client::OpenError::Other(d) => trf!("Could not connect: {error}", "error" => d),
-                    };
-                    super::show_toast(&toast, &msg, 8);
-                    win.close();
+            // Set while waiting for a restarted computer to come back.
+            let mut back_since: Option<std::time::Instant> = None;
+            loop {
+                if closed.get() {
                     return;
                 }
-                Err(_) => return,
-            }
-            stack.set_visible_child_name("screen");
-            picture.grab_focus();
-            while let Ok(event) = rx.recv().await {
-                match event {
-                    client::Event::Info(info) => {
-                        video.set((info.width, info.height));
-                        if !sized.replace(true) {
-                            fit_window_to(&win, info.width, info.height);
+                let (open_rx, rx) = connect();
+                match open_rx.recv().await {
+                    Ok(Ok(s)) => {
+                        *session.borrow_mut() = Some(s);
+                        if back_since.take().is_some() {
+                            super::show_toast(&toast, &trf!("{name} is back.", "name" => name_s), 5);
                         }
                     }
-                    client::Event::Stats(st) => {
-                        let mut line = trf!(
-                            "{latency} ms · {fps} fps · {mbps} Mbit/s",
-                            "latency" => format!("{:.0}", st.latency_ms.max(0.0)),
-                            "fps" => format!("{:.0}", st.fps),
-                            "mbps" => format!("{:.1}", st.mbps)
-                        );
-                        line.push_str(if st.gpu { " · GPU" } else { " · CPU" });
-                        if st.audio {
-                            line.push_str(" · ♪");
-                        }
-                        title.set_subtitle(&line);
-                    }
-                    client::Event::Frame(f) => {
-                        video.set((f.width, f.height));
-                        let tex = gdk::MemoryTexture::new(
-                            f.width as i32,
-                            f.height as i32,
-                            gdk::MemoryFormat::R8g8b8a8,
-                            &f.data,
-                            f.stride,
-                        );
-                        picture.set_paintable(Some(&tex));
-                    }
-                    client::Event::Control(granted) => {
-                        if !watching {
+                    Ok(Err(e)) => {
+                        // Still restarting: try again in a moment.
+                        if back_since.is_some_and(|t| t.elapsed() < RESTART_WAIT) {
+                            glib::timeout_future_seconds(5).await;
                             continue;
                         }
-                        if let Some(s) = session.borrow().as_ref() {
-                            s.set_input(granted);
-                        }
-                        let before = control_state.replace(if granted { 2 } else { 0 });
-                        set_control_look(&btn_control, control_state.get(), &name_s);
-                        if granted {
-                            live.add_css_class("controlling");
-                            picture.grab_focus();
-                            super::show_toast(&toast, &trf!("You're controlling {name}'s screen now.", "name" => name_s), 4);
+                        let msg = if back_since.is_some() {
+                            trf!("{name}'s computer didn't come back after the restart.", "name" => name_s)
                         } else {
-                            live.remove_css_class("controlling");
-                            let msg = match before {
-                                1 => trf!("{name} didn't give you control.", "name" => name_s),
-                                2 => trf!("{name} took control back.", "name" => name_s),
-                                _ => String::new(),
-                            };
-                            if !msg.is_empty() {
-                                super::show_toast(&toast, &msg, 4);
+                            match e {
+                                client::OpenError::Denied => trf!("{name} didn't allow the access.", "name" => name_s),
+                                client::OpenError::Unverified => tr!(
+                                    "That computer couldn't confirm this device. Make sure both run an up-to-date BigLace."
+                                ),
+                                client::OpenError::Unavailable => trf!(
+                                    "{name}'s computer can't share its screen (screen sharing isn't available there).",
+                                    "name" => name_s
+                                ),
+                                client::OpenError::Other(d) => trf!("Could not connect: {error}", "error" => d),
+                            }
+                        };
+                        super::show_toast(&toast, &msg, 8);
+                        win.close();
+                        return;
+                    }
+                    Err(_) => return,
+                }
+                stack.set_visible_child_name("screen");
+                picture.grab_focus();
+                while let Ok(event) = rx.recv().await {
+                    match event {
+                        client::Event::Power { action, ok, error } => {
+                            if !ok {
+                                // It didn't happen after all: back to the screen.
+                                restarting.set(false);
+                                shutting_down.set(false);
+                                stack.set_visible_child_name("screen");
+                                super::show_toast(&toast, &trf!("{name}'s computer said: {error}", "name" => name_s, "error" => error), 8);
+                            } else if action == "restart" {
+                                restarting.set(true);
+                                // Don't wait for the old connection to time
+                                // out: the tunnel goes down with the machine.
+                                let s = session.clone();
+                                glib::timeout_add_seconds_local_once(3, move || {
+                                    if let Some(s) = s.borrow().as_ref() {
+                                        s.close();
+                                    }
+                                });
+                                waiting.set_icon_name(Some("system-reboot-symbolic"));
+                                waiting.set_title(&trf!("Restarting {name}…", "name" => name_s));
+                                waiting.set_description(Some(&tr!(
+                                    "This window connects again by itself when the computer is back. It takes a few minutes."
+                                )));
+                                stack.set_visible_child_name("waiting");
+                            } else if action == "shutdown" {
+                                shutting_down.set(true);
                             }
                         }
+                        client::Event::Info(info) => {
+                            video.set((info.width, info.height));
+                            if !sized.replace(true) {
+                                fit_window_to(&win, info.width, info.height);
+                            }
+                        }
+                        client::Event::Stats(st) => {
+                            let mut line = trf!(
+                                "{latency} ms · {fps} fps · {mbps} Mbit/s",
+                                "latency" => format!("{:.0}", st.latency_ms.max(0.0)),
+                                "fps" => format!("{:.0}", st.fps),
+                                "mbps" => format!("{:.1}", st.mbps)
+                            );
+                            line.push_str(if st.gpu { " · GPU" } else { " · CPU" });
+                            if st.audio {
+                                line.push_str(" · ♪");
+                            }
+                            title.set_subtitle(&line);
+                        }
+                        client::Event::Frame(f) => {
+                            video.set((f.width, f.height));
+                            let tex = gdk::MemoryTexture::new(
+                                f.width as i32,
+                                f.height as i32,
+                                gdk::MemoryFormat::R8g8b8a8,
+                                &f.data,
+                                f.stride,
+                            );
+                            picture.set_paintable(Some(&tex));
+                        }
+                        client::Event::Control(granted) => {
+                            if !watching {
+                                continue;
+                            }
+                            if let Some(s) = session.borrow().as_ref() {
+                                s.set_input(granted);
+                            }
+                            let before = control_state.replace(if granted { 2 } else { 0 });
+                            set_control_look(&btn_control, control_state.get(), &name_s);
+                            if granted {
+                                live.add_css_class("controlling");
+                                picture.grab_focus();
+                                super::show_toast(&toast, &trf!("You're controlling {name}'s screen now.", "name" => name_s), 4);
+                            } else {
+                                live.remove_css_class("controlling");
+                                let msg = match before {
+                                    1 => trf!("{name} didn't give you control.", "name" => name_s),
+                                    2 => trf!("{name} took control back.", "name" => name_s),
+                                    _ => String::new(),
+                                };
+                                if !msg.is_empty() {
+                                    super::show_toast(&toast, &msg, 4);
+                                }
+                            }
+                        }
+                        client::Event::Ended(why) => {
+                            session.borrow_mut().take();
+                            if restarting.replace(false) {
+                                // Give it time to go down, then knock until it's back.
+                                stack.set_visible_child_name("waiting");
+                                back_since = Some(std::time::Instant::now());
+                                glib::timeout_future_seconds(20).await;
+                                break;
+                            }
+                            let msg = if shutting_down.get() {
+                                trf!("{name}'s computer is shutting down.", "name" => name_s)
+                            } else if why.is_empty() {
+                                trf!("The access to {name}'s screen ended.", "name" => name_s)
+                            } else {
+                                trf!("The access to {name}'s screen ended: {error}", "name" => name_s, "error" => why)
+                            };
+                            super::show_toast(&toast, &msg, 6);
+                            win.close();
+                            return;
+                        }
                     }
-                    client::Event::Ended(why) => {
-                        let msg = if why.is_empty() {
-                            trf!("The access to {name}'s screen ended.", "name" => name_s)
-                        } else {
-                            trf!("The access to {name}'s screen ended: {error}", "name" => name_s, "error" => why)
-                        };
-                        super::show_toast(&toast, &msg, 6);
-                        win.close();
-                        break;
-                    }
+                }
+                if back_since.is_none() {
+                    return;
                 }
             }
         });

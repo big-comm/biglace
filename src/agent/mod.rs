@@ -60,6 +60,7 @@ impl Hello {
                 .iter()
                 .map(|c| c.to_string())
                 .chain(crate::remote::can_host().then(|| crate::remote::CAPABILITY.to_string()))
+                .chain((crate::remote::can_host() && crate::power::available()).then(|| crate::power::CAPABILITY.to_string()))
                 .collect(),
         }
     }

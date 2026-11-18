@@ -1,5 +1,6 @@
 mod agent;
 mod autostart;
+mod power;
 mod avatars;
 mod config;
 mod device_key;
@@ -49,7 +50,7 @@ pub static MALLOC_CONF: &[u8] = b"background_thread:true,dirty_decay_ms:1000,muz
 /// creates (feat → minor, fix/perf/docs/… → patch, breaking → major) by
 /// rewriting this assignment. Reading it from `CARGO_PKG_VERSION` hid it from
 /// gitrepo, which is how the version sat at 1.0.0 through dozens of releases.
-pub const APP_VERSION: &str = "1.36.0";
+pub const APP_VERSION: &str = "1.37.0";
 pub const APP_ID: &str = "org.communitybig.biglace";
 
 /// Date-based build stamp (`YY.MM.DD-HHMM`) — the scheme the GitHub release
@@ -89,6 +90,9 @@ fn main() {
     // in-place upgrade actually starts in the tray at the next login instead of
     // re-opening the window from an old entry that lacks the flag.
     autostart::migrate_if_enabled();
+
+    // Back from "Restart and reconnect": lock the screen before anything else.
+    power::after_start();
 
     // An invite link (`biglace://join?…`) clicked in a browser or chat app
     // arrives as an argument. It's the only argument handed to GApplication:

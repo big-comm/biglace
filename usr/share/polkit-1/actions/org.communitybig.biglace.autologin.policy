@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE policyconfig PUBLIC "-//freedesktop//DTD PolicyKit Policy Configuration 1.0//EN"
+ "http://www.freedesktop.org/standards/PolicyKit/1/policyconfig.dtd">
+<policyconfig>
+  <vendor>BigCommunity</vendor>
+  <vendor_url>https://github.com/big-comm/biglace</vendor_url>
+  <!-- Arms (or undoes) a single automatic sign-in of the calling user, for
+       "Restart and reconnect". The person at the computer is already signed
+       in; the next boot locks the session and undoes it. -->
+  <action id="org.communitybig.biglace.autologin">
+    <description>Sign in automatically once after a remote restart</description>
+    <description xml:lang="pt_BR">Entrar automaticamente uma vez depois de reiniciar à distância</description>
+    <message>BigLace needs to sign you in automatically after the restart</message>
+    <message xml:lang="pt_BR">O BigLace precisa entrar automaticamente depois de reiniciar</message>
+    <defaults>
+      <allow_any>auth_admin</allow_any>
+      <allow_inactive>auth_admin</allow_inactive>
+      <allow_active>yes</allow_active>
+    </defaults>
+    <annotate key="org.freedesktop.policykit.exec.path">/usr/lib/biglace/biglace-autologin</annotate>
+  </action>
+</policyconfig>

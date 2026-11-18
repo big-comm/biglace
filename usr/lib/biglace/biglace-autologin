@@ -1,0 +1,166 @@
+#!/bin/bash
+# biglace-autologin — sign in automatically ONCE, so "Restart and reconnect"
+# can bring a remote computer back to its desktop (BigLace then locks the
+# screen right away and the remote session resumes).
+#
+#   pkexec biglace-autologin arm [session-hint]   (only for the calling user)
+#   biglace-autologin disarm                      (undo; also via pkexec)
+#   biglace-autologin expire                      (boot: lock + undo)
+#
+# Never permanent: the next boot's biglace-autologin-expire.service locks the
+# sessions and undoes it, whether or not BigLace starts.
+
+set -euo pipefail
+umask 077
+
+STATE_DIR=/var/lib/biglace
+STATE=$STATE_DIR/autologin.state
+SDDM_CONF=/etc/sddm.conf.d/zz-biglace-autologin.conf
+LIGHTDM_CONF=/etc/lightdm/lightdm.conf.d/zz-biglace-autologin.conf
+GDM_CONF=/etc/gdm/custom.conf
+GDM_BACKUP=$STATE_DIR/gdm-custom.conf.orig
+
+die() {
+    echo "biglace-autologin: $*" >&2
+    exit 1
+}
+
+[[ $EUID -eq 0 ]] || die "must run as root"
+
+display_manager() {
+    basename "$(readlink -f /etc/systemd/system/display-manager.service 2>/dev/null)" .service
+}
+
+session_ok() {
+    [[ $1 =~ ^[A-Za-z0-9._+-]{1,64}$ ]] &&
+        { [[ -f /usr/share/xsessions/$1.desktop ]] || [[ -f /usr/share/wayland-sessions/$1.desktop ]]; }
+}
+
+# The session the user last chose at the login screen, else the hint.
+pick_session() {
+    local user=$1 hint=$2 s=""
+    case $(display_manager) in
+        sddm)
+            s=$(sed -n 's#^Session=.*/\([^/]*\)\.desktop$#\1#p' /var/lib/sddm/state.conf 2>/dev/null | tail -n1)
+            ;;
+        lightdm*)
+            s=$(sed -n 's/^XSession=//p' "/var/lib/AccountsService/users/$user" 2>/dev/null | head -n1)
+            if [[ -z $s ]]; then
+                local home
+                home=$(getent passwd "$user" | cut -d: -f6)
+                s=$(sed -n 's/^Session=//p' "$home/.dmrc" 2>/dev/null | head -n1)
+            fi
+            ;;
+    esac
+    session_ok "$s" || s=$hint
+    session_ok "$s" || s=""
+    printf '%s' "$s"
+}
+
+state_get() {
+    sed -n "s/^$1=//p" "$STATE" 2>/dev/null | head -n1
+}
+
+disarm() {
+    [[ -f $STATE ]] || return 0
+    local user added gdm_absent
+    user=$(state_get user)
+    added=$(state_get added_group)
+    gdm_absent=$(state_get gdm_absent)
+    rm -f "$SDDM_CONF" "$LIGHTDM_CONF"
+    if [[ -f $GDM_BACKUP ]]; then
+        cp -p "$GDM_BACKUP" "$GDM_CONF"
+        rm -f "$GDM_BACKUP"
+    elif [[ $gdm_absent == yes ]]; then
+        rm -f "$GDM_CONF"
+    fi
+    if [[ $added == yes && -n $user ]]; then
+        gpasswd -d "$user" autologin >/dev/null 2>&1 || true
+    fi
+    rm -f "$STATE"
+}
+
+arm() {
+    local uid=${PKEXEC_UID:-}
+    if ! [[ $uid =~ ^[0-9]+$ ]] || ((uid < 1000)); then
+        die "unknown caller"
+    fi
+    local user
+    user=$(getent passwd "$uid" | cut -d: -f1)
+    [[ -n $user ]] || die "unknown user"
+    disarm
+    local dm session
+    dm=$(display_manager)
+    session=$(pick_session "$user" "${1:-}")
+    mkdir -p "$STATE_DIR"
+    chmod 0700 "$STATE_DIR"
+    # State first: whatever happens next, "disarm" knows what to undo.
+    printf 'dm=%s\nuser=%s\narmed=%s\n' "$dm" "$user" "$(date +%s)" >"$STATE"
+    case $dm in
+        sddm)
+            [[ -n $session ]] || die "no desktop session found"
+            mkdir -p /etc/sddm.conf.d
+            printf '[Autologin]\nUser=%s\nSession=%s.desktop\nRelogin=false\n' "$user" "$session" >"$SDDM_CONF"
+            chmod 0644 "$SDDM_CONF"
+            ;;
+        gdm | gdm3)
+            if [[ -f $GDM_CONF ]]; then
+                cp -p "$GDM_CONF" "$GDM_BACKUP"
+            else
+                echo "gdm_absent=yes" >>"$STATE"
+                mkdir -p /etc/gdm
+                printf '[daemon]\n' >"$GDM_CONF"
+            fi
+            local tmp
+            tmp=$(mktemp)
+            awk -v user="$user" '
+                /^[[:space:]]*AutomaticLogin(Enable)?[[:space:]]*=/ { next }
+                { print }
+                /^\[daemon\][[:space:]]*$/ && !done { print "AutomaticLoginEnable=True"; print "AutomaticLogin=" user; done = 1 }
+                END { if (!done) { print "[daemon]"; print "AutomaticLoginEnable=True"; print "AutomaticLogin=" user } }
+            ' "$GDM_CONF" >"$tmp"
+            install -m 0644 "$tmp" "$GDM_CONF"
+            rm -f "$tmp"
+            ;;
+        lightdm*)
+            [[ -n $session ]] || die "no desktop session found"
+            mkdir -p /etc/lightdm/lightdm.conf.d
+            printf '[Seat:*]\nautologin-user=%s\nautologin-session=%s\n' "$user" "$session" >"$LIGHTDM_CONF"
+            chmod 0644 "$LIGHTDM_CONF"
+            # LightDM signs in without a password only for this group.
+            getent group autologin >/dev/null || groupadd -r autologin
+            if ! id -nG "$user" | tr ' ' '\n' | grep -qx autologin; then
+                gpasswd -a "$user" autologin >/dev/null
+                echo "added_group=yes" >>"$STATE"
+            fi
+            ;;
+        *)
+            disarm
+            die "unsupported login screen: ${dm:-none}"
+            ;;
+    esac
+}
+
+# Boot: once the automatic sign-in happened (or didn't), lock what was
+# opened and undo the setting.
+expire() {
+    [[ -f $STATE ]] || return 0
+    local user _
+    user=$(state_get user)
+    for _ in $(seq 1 60); do
+        if loginctl list-sessions --no-legend 2>/dev/null | awk '{print $3}' | grep -qx "$user"; then
+            break
+        fi
+        sleep 2
+    done
+    sleep 8
+    loginctl lock-sessions 2>/dev/null || true
+    disarm
+}
+
+case ${1:-} in
+    arm) arm "${2:-}" ;;
+    disarm) disarm ;;
+    expire) expire ;;
+    *) die "usage: biglace-autologin arm [session] | disarm | expire" ;;
+esac

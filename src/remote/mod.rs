@@ -77,6 +77,10 @@ pub enum Kind {
     /// `{"ask": true}` / `{"release": true}`; presenter → viewer
     /// `{"granted": bool}`.
     Control = 13,
+    /// Remote session, both ways (JSON): viewer → host
+    /// `{"action": "restart" | "shutdown"}`; host → viewer
+    /// `{"action": …, "ok": bool, "error": "…"}`.
+    Power = 14,
 }
 
 /// Screen protocol revision the viewer asks for.
@@ -106,6 +110,7 @@ impl Kind {
             11 => Some(Self::Chat),
             12 => Some(Self::ChatAck),
             13 => Some(Self::Control),
+            14 => Some(Self::Power),
             _ => None,
         }
     }

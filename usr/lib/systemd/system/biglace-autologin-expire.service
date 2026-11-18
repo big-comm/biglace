@@ -1,0 +1,12 @@
+[Unit]
+Description=BigLace: lock and undo the one-time automatic sign-in
+Documentation=https://github.com/big-comm/biglace
+ConditionPathExists=/var/lib/biglace/autologin.state
+After=display-manager.service
+
+[Service]
+Type=simple
+ExecStart=/usr/lib/biglace/biglace-autologin expire
+
+[Install]
+WantedBy=multi-user.target

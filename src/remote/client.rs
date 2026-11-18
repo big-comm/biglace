@@ -11,6 +11,8 @@ use super::{read_frame, write_frame, Input, Kind, VideoInfo};
 use crate::device_key;
 
 const CONNECT_TIMEOUT: Duration = Duration::from_secs(6);
+/// No word from the host for this long ends the session.
+const SILENCE: Duration = Duration::from_secs(15);
 /// The host waits up to a minute for the person there to answer.
 const ANSWER_TIMEOUT: Duration = Duration::from_secs(75);
 
@@ -55,12 +57,16 @@ pub enum Event {
     Stats(Stats),
     /// Room share: whether we may control the screen now.
     Control(bool),
+    /// The host's answer to a power action.
+    Power { action: String, ok: bool, error: String },
     Ended(String),
 }
 
 pub(crate) enum Outgoing {
     /// Room share: JSON for a `Control` frame.
     Control(String),
+    /// JSON for a `Power` frame.
+    Power(String),
     Input(Input),
     Ping,
     /// Ask the host for a keyframe (after switching decoders).
@@ -82,6 +88,11 @@ impl Session {
         if self.input_on.load(Ordering::Relaxed) {
             let _ = self.input.send(Outgoing::Input(event));
         }
+    }
+
+    /// Ask the host to `restart` (and come back) or `shutdown`.
+    pub fn power(&self, action: &str) {
+        let _ = self.input.send(Outgoing::Power(serde_json::json!({ "action": action }).to_string()));
     }
 
     /// Room share: ask the presenter for control.
@@ -195,6 +206,10 @@ fn start_session(
     events: async_channel::Sender<Event>,
     input: bool,
 ) -> Result<Session, OpenError> {
+    // The host sends something every second (frames, pongs): this long in
+    // silence means it's gone (a restart takes the tunnel down without a
+    // goodbye).
+    let _ = stream.set_read_timeout(Some(SILENCE));
     // Input (and clock pings): written by their own thread so the UI never
     // blocks on the network.
     let (tx, rx) = mpsc::channel::<Outgoing>();
@@ -210,6 +225,7 @@ fn start_session(
                     },
                     Outgoing::Ping => write_frame(&mut writer, Kind::Ping, &super::now_us().to_be_bytes()),
                     Outgoing::Control(json) => write_frame(&mut writer, Kind::Control, json.as_bytes()),
+                    Outgoing::Power(json) => write_frame(&mut writer, Kind::Power, json.as_bytes()),
                     Outgoing::KeyFrame => write_frame(&mut writer, Kind::KeyFrame, &[]),
                 };
                 if r.is_err() {
@@ -249,6 +265,13 @@ fn start_session(
                     }) =>
                 {
                     String::new()
+                }
+                Err(e)
+                    if e.downcast_ref::<std::io::Error>().is_some_and(|io| {
+                        matches!(io.kind(), std::io::ErrorKind::WouldBlock | std::io::ErrorKind::TimedOut)
+                    }) =>
+                {
+                    crate::tr!("the connection was lost")
                 }
                 Err(e) => e.to_string(),
             };
@@ -598,6 +621,15 @@ pub(crate) fn decode_loop_with(
                     .unwrap_or(false);
                 let _ = events.send_blocking(Event::Control(granted));
             }
+            Kind::Power => {
+                let v: serde_json::Value = serde_json::from_slice(&payload).unwrap_or_default();
+                let text = |k: &str| v.get(k).and_then(|x| x.as_str()).unwrap_or_default().to_string();
+                let _ = events.send_blocking(Event::Power {
+                    action: text("action"),
+                    ok: v.get("ok").and_then(serde_json::Value::as_bool).unwrap_or(false),
+                    error: text("error"),
+                });
+            }
             Kind::Input | Kind::Ping | Kind::KeyFrame | Kind::Audio | Kind::RoomState | Kind::Chat | Kind::ChatAck => {}
             Kind::Error => anyhow::bail!("{}", String::from_utf8_lossy(&payload)),
         }
@@ -748,7 +780,7 @@ mod tests {
                     frames += 1;
                 }
                 Event::Stats(st) => stats = Some(st),
-                Event::Control(_) => {}
+                Event::Control(_) | Event::Power { .. } => {}
                 Event::Ended(_) => break,
             }
             if frames >= 5 && stats.is_some() {

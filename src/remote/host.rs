@@ -225,7 +225,9 @@ pub fn serve(stream: TcpStream, peer: IpAddr, headers: &HashMap<String, String>,
         respond(&stream, 401, "Unauthorized", why);
         return;
     }
-    if !ask(&identity) {
+    // The viewer that restarted this computer comes back without asking.
+    let returning = crate::power::resume_allows(&identity.login, &identity.device);
+    if !returning && !ask(&identity) {
         respond(&stream, 403, "Forbidden", "denied");
         return;
     }
@@ -242,7 +244,7 @@ pub fn serve(stream: TcpStream, peer: IpAddr, headers: &HashMap<String, String>,
     tailscale::dbg(&format!("remote: session started for {}@{}", identity.login, identity.device));
     // What the viewer understands: 2 = timestamps + ping, 3 = also sound.
     let protocol: u32 = headers.get("x-biglace-screen").and_then(|v| v.parse().ok()).unwrap_or(1);
-    run_session(stream, &stop, protocol);
+    run_session(stream, &stop, protocol, &identity);
     stop.stop();
     emit(HostEvent::Ended(stop));
     tailscale::dbg(&format!("remote: session ended for {}@{}", identity.login, identity.device));
@@ -374,7 +376,7 @@ const SEND_BUFFER: usize = 512 * 1024;
 #[cfg(target_os = "linux")]
 const NOTSENT_LOWAT: u32 = 64 * 1024;
 
-fn run_session(mut stream: TcpStream, stop: &StopHandle, protocol: u32) {
+fn run_session(mut stream: TcpStream, stop: &StopHandle, protocol: u32, identity: &Identity) {
     let timestamps = protocol >= 2;
     {
         let sock = socket2::SockRef::from(&stream);
@@ -411,6 +413,7 @@ fn run_session(mut stream: TcpStream, stop: &StopHandle, protocol: u32) {
     // Input: replayed as it arrives, on its own thread.
     if let Ok(mut reader) = stream.try_clone() {
         let stop = stop.clone();
+        let viewer = identity.clone();
         let writer = writer.clone();
         let want_key = want_key.clone();
         let _ = std::thread::Builder::new()
@@ -424,6 +427,13 @@ fn run_session(mut stream: TcpStream, stop: &StopHandle, protocol: u32) {
                             }
                         }
                         Ok((Kind::KeyFrame, _)) => want_key.store(true, Ordering::Release),
+                        Ok((Kind::Power, payload)) => {
+                            let action = serde_json::from_slice::<serde_json::Value>(&payload)
+                                .ok()
+                                .and_then(|v| v.get("action").and_then(|a| a.as_str()).map(str::to_string))
+                                .unwrap_or_default();
+                            power_action(&action, &viewer, &writer);
+                        }
                         Ok((Kind::Ping, payload)) if payload.len() == 8 => {
                             let mut pong = payload;
                             pong.extend_from_slice(&super::now_us().to_be_bytes());
@@ -459,6 +469,40 @@ fn run_session(mut stream: TcpStream, stop: &StopHandle, protocol: u32) {
     };
     if let Err(e) = stream_screen(&send, &pipelines, dirty, stop, timestamps, &want_key) {
         tailscale::dbg(&format!("remote: capture ended: {e}"));
+    }
+}
+
+/// The viewer asks to restart (and come back) or shut down this computer.
+/// Answered before it happens: the connection drops right after.
+fn power_action(action: &str, viewer: &Identity, writer: &Arc<Mutex<TcpStream>>) {
+    let reply = |ok: bool, error: &str| {
+        let json = serde_json::json!({ "action": action, "ok": ok, "error": error }).to_string();
+        if let Ok(mut w) = writer.lock() {
+            let _ = write_frame(&mut *w, Kind::Power, json.as_bytes());
+        }
+    };
+    tailscale::dbg(&format!("remote: {}@{} asks to {action}", viewer.login, viewer.device));
+    let result = match action {
+        "restart" => {
+            // Tell the viewer first; a moment later the machine goes down.
+            if !crate::power::available() {
+                Err(crate::tr!("this computer can't restart remotely (BigLace's helper isn't installed)"))
+            } else {
+                reply(true, "");
+                std::thread::sleep(Duration::from_millis(400));
+                crate::power::restart_and_return(&viewer.login, &viewer.device).map(|()| false)
+            }
+        }
+        "shutdown" => {
+            reply(true, "");
+            std::thread::sleep(Duration::from_millis(400));
+            crate::power::shutdown().map(|()| false)
+        }
+        _ => Err("unknown action".to_string()),
+    };
+    if let Err(e) = result {
+        tailscale::dbg(&format!("remote: {action} failed: {e}"));
+        reply(false, &e);
     }
 }
 
