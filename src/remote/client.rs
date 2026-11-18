@@ -3,7 +3,8 @@
 
 use std::io::{BufRead, BufReader, Write};
 use std::net::{IpAddr, SocketAddr, TcpStream};
-use std::sync::mpsc;
+use std::sync::atomic::{AtomicI64, AtomicU64, Ordering};
+use std::sync::{mpsc, Arc};
 use std::time::Duration;
 
 use super::{read_frame, write_frame, Input, Kind, VideoInfo};
@@ -34,22 +35,37 @@ pub struct Frame {
     pub data: gtk4::glib::Bytes,
 }
 
+/// Live numbers about the session, once a second.
+#[derive(Debug, Clone, Copy)]
+pub struct Stats {
+    /// Capture on the host → decoded here (both clocks reconciled).
+    pub latency_ms: f64,
+    pub fps: f64,
+    pub mbps: f64,
+}
+
 /// What the session thread tells the window.
 pub enum Event {
     Info(VideoInfo),
     Frame(Frame),
+    Stats(Stats),
     Ended(String),
+}
+
+enum Outgoing {
+    Input(Input),
+    Ping,
 }
 
 /// A live session: send input with `input`; drop or `close` to end it.
 pub struct Session {
-    input: mpsc::Sender<Input>,
+    input: mpsc::Sender<Outgoing>,
     stream: TcpStream,
 }
 
 impl Session {
     pub fn send(&self, event: Input) {
-        let _ = self.input.send(event);
+        let _ = self.input.send(Outgoing::Input(event));
     }
 
     pub fn close(&self) {
@@ -76,7 +92,11 @@ pub fn open(ip: &str, events: async_channel::Sender<Event>) -> Result<Session, O
     };
     let url = format!("http://{host}{}", super::SCREEN_PATH);
     let signed = device_key::sign_headers("GET", &url, "").ok_or(OpenError::Unverified)?;
-    let mut req = format!("GET {} HTTP/1.1\r\nHost: {host}\r\n", super::SCREEN_PATH);
+    let mut req = format!(
+        "GET {} HTTP/1.1\r\nHost: {host}\r\nX-BigLace-Screen: {}\r\n",
+        super::SCREEN_PATH,
+        super::SCREEN_PROTOCOL
+    );
     for (name, value) in signed {
         req.push_str(&format!("{name}: {value}\r\n"));
     }
@@ -106,19 +126,36 @@ pub fn open(ip: &str, events: async_channel::Sender<Event>) -> Result<Session, O
     let _ = stream.set_read_timeout(None);
     let _ = stream.set_nodelay(true);
 
-    // Input: written by its own thread so the UI never blocks on the network.
-    let (tx, rx) = mpsc::channel::<Input>();
+    // Input (and clock pings): written by their own thread so the UI never
+    // blocks on the network.
+    let (tx, rx) = mpsc::channel::<Outgoing>();
     let mut writer = stream.try_clone().map_err(|e| OpenError::Other(e.to_string()))?;
     let _ = std::thread::Builder::new()
         .name("biglace-viewer-input".into())
         .spawn(move || {
-            for event in rx {
-                let Ok(json) = serde_json::to_vec(&event) else { continue };
-                if write_frame(&mut writer, Kind::Input, &json).is_err() {
+            for out in rx {
+                let r = match out {
+                    Outgoing::Input(event) => match serde_json::to_vec(&event) {
+                        Ok(json) => write_frame(&mut writer, Kind::Input, &json),
+                        Err(_) => continue,
+                    },
+                    Outgoing::Ping => write_frame(&mut writer, Kind::Ping, &super::now_us().to_be_bytes()),
+                };
+                if r.is_err() {
                     break;
                 }
             }
         });
+    {
+        let tx = tx.clone();
+        let _ = std::thread::Builder::new()
+            .name("biglace-viewer-ping".into())
+            .spawn(move || {
+                while tx.send(Outgoing::Ping).is_ok() {
+                    std::thread::sleep(Duration::from_secs(1));
+                }
+            });
+    }
 
     // Video: read frames, decode, hand RGBA frames to the window.
     let _ = std::thread::Builder::new()
@@ -159,11 +196,42 @@ pub(crate) fn decoder() -> &'static str {
 /// for later (stale frames are dropped, not shown late).
 pub(crate) fn decode_desc(decoder: &str) -> String {
     format!(
-        "appsrc name=src is-live=true format=time do-timestamp=true \
+        "appsrc name=src is-live=true format=time do-timestamp=false \
            caps=video/x-h264,stream-format=byte-stream,alignment=au \
          ! h264parse ! {decoder} ! videoconvert n-threads=0 ! video/x-raw,format=RGBA \
          ! appsink name=sink sync=false max-buffers=1 drop=true"
     )
+}
+
+/// Host clock − viewer clock, from the ping with the shortest round trip
+/// (the least skewed by queuing), and the first frame's capture time.
+#[derive(Default)]
+struct Clock {
+    offset_us: AtomicI64,
+    best_rtt_us: AtomicU64,
+    first_capture_us: AtomicU64,
+}
+
+impl Clock {
+    fn pong(&self, payload: &[u8]) {
+        let (Ok(a), Ok(b)) = (<[u8; 8]>::try_from(&payload[..8.min(payload.len())]), <[u8; 8]>::try_from(payload.get(8..16).unwrap_or(&[]))) else {
+            return;
+        };
+        let (t0, th, t1) = (u64::from_be_bytes(a), u64::from_be_bytes(b), super::now_us());
+        let rtt = t1.saturating_sub(t0);
+        let best = self.best_rtt_us.load(Ordering::Relaxed);
+        if best == 0 || rtt <= best + 2_000 {
+            self.best_rtt_us.store(if best == 0 { rtt } else { best.min(rtt) }, Ordering::Relaxed);
+            let mid = (t0 + t1) / 2;
+            self.offset_us.store(th as i64 - mid as i64, Ordering::Relaxed);
+        }
+    }
+
+    /// ms from capture on the host to now, here.
+    fn latency_ms(&self, capture_us: u64) -> f64 {
+        let now_on_host = super::now_us() as i64 + self.offset_us.load(Ordering::Relaxed);
+        (now_on_host - capture_us as i64) as f64 / 1000.0
+    }
 }
 
 fn decode_loop(mut reader: BufReader<TcpStream>, events: &async_channel::Sender<Event>) -> anyhow::Result<()> {
@@ -184,9 +252,14 @@ fn decode_loop(mut reader: BufReader<TcpStream>, events: &async_channel::Sender<
         .and_then(|e| e.downcast::<gst_app::AppSink>().ok())
         .ok_or_else(|| anyhow::anyhow!("no appsink"))?;
 
+    let clock = Arc::new(Clock::default());
+    let bytes_in = Arc::new(AtomicU64::new(0));
+
     // Decoded frames go straight to the window (newest wins: drop=true).
     {
         let events = events.clone();
+        let (clock, bytes_in) = (clock.clone(), bytes_in.clone());
+        let mut window = (std::time::Instant::now(), 0u32, 0f64);
         sink.set_callbacks(
             gst_app::AppSinkCallbacks::builder()
                 .new_sample(move |sink| {
@@ -194,6 +267,21 @@ fn decode_loop(mut reader: BufReader<TcpStream>, events: &async_channel::Sender<
                     let caps = sample.caps().ok_or(gst::FlowError::Error)?;
                     let info = gstreamer_video::VideoInfo::from_caps(caps).map_err(|_| gst::FlowError::Error)?;
                     let buffer = sample.buffer_owned().ok_or(gst::FlowError::Error)?;
+                    let first = clock.first_capture_us.load(Ordering::Relaxed);
+                    if let (Some(pts), true) = (buffer.pts(), first != 0) {
+                        window.1 += 1;
+                        window.2 += clock.latency_ms(first + pts.useconds());
+                    }
+                    if window.0.elapsed() >= Duration::from_secs(1) {
+                        let secs = window.0.elapsed().as_secs_f64();
+                        let stats = Stats {
+                            latency_ms: if window.1 > 0 { window.2 / f64::from(window.1) } else { 0.0 },
+                            fps: f64::from(window.1) / secs,
+                            mbps: bytes_in.swap(0, Ordering::Relaxed) as f64 * 8.0 / 1e6 / secs,
+                        };
+                        let _ = events.try_send(Event::Stats(stats));
+                        window = (std::time::Instant::now(), 0, 0.0);
+                    }
                     let mapped = buffer.into_mapped_buffer_readable().map_err(|_| gst::FlowError::Error)?;
                     let frame = Frame {
                         width: info.width(),
@@ -224,12 +312,37 @@ fn decode_loop(mut reader: BufReader<TcpStream>, events: &async_channel::Sender<
                     }
                 }
                 Kind::Video => {
+                    bytes_in.fetch_add(payload.len() as u64, Ordering::Relaxed);
                     let buffer = gst::Buffer::from_mut_slice(payload);
                     if src.push_buffer(buffer).is_err() {
                         anyhow::bail!("decoder stopped");
                     }
                 }
-                Kind::Input => {}
+                Kind::VideoTs if payload.len() > 8 => {
+                    bytes_in.fetch_add(payload.len() as u64, Ordering::Relaxed);
+                    let captured = u64::from_be_bytes(payload[..8].try_into().unwrap_or_default());
+                    let first = match clock.first_capture_us.load(Ordering::Relaxed) {
+                        0 => {
+                            clock.first_capture_us.store(captured, Ordering::Relaxed);
+                            captured
+                        }
+                        f => f,
+                    };
+                    // PTS = capture time (relative): it survives decoding,
+                    // so each decoded frame knows when it was captured.
+                    let mut buffer = gst::Buffer::from_slice(payload);
+                    if let Some(b) = buffer.get_mut() {
+                        b.set_pts(gst::ClockTime::from_useconds(captured.saturating_sub(first)));
+                    }
+                    let sub = buffer
+                        .copy_region(gst::BufferCopyFlags::MEMORY | gst::BufferCopyFlags::TIMESTAMPS, 8..)
+                        .map_err(|_| anyhow::anyhow!("bad frame"))?;
+                    if src.push_buffer(sub).is_err() {
+                        anyhow::bail!("decoder stopped");
+                    }
+                }
+                Kind::Pong => clock.pong(&payload),
+                Kind::Input | Kind::Ping | Kind::VideoTs => {}
                 Kind::Error => anyhow::bail!("{}", String::from_utf8_lossy(&payload)),
             }
         }
@@ -322,7 +435,7 @@ mod tests {
             return;
         }
         let pipeline = gst::parse::launch(
-            "videotestsrc num-buffers=30 ! video/x-raw,width=320,height=240,framerate=30/1 ! videoconvert \
+            "videotestsrc num-buffers=75 ! video/x-raw,width=320,height=240,framerate=30/1 ! videoconvert \
              ! video/x-raw,format=I420 ! x264enc tune=zerolatency speed-preset=ultrafast key-int-max=10 \
              ! h264parse config-interval=-1 ! video/x-h264,stream-format=byte-stream,alignment=au \
              ! appsink name=sink sync=false",
@@ -345,8 +458,13 @@ mod tests {
             let (mut s, _) = listener.accept().unwrap();
             let info = serde_json::to_vec(&VideoInfo { width: 320, height: 240 }).unwrap();
             write_frame(&mut s, Kind::Info, &info).unwrap();
+            // Protocol 2: each unit carries its capture time; paced like a
+            // live 30 fps source so the viewer reports stats.
             for u in units {
-                write_frame(&mut s, Kind::Video, &u).unwrap();
+                let mut payload = crate::remote::now_us().to_be_bytes().to_vec();
+                payload.extend_from_slice(&u);
+                write_frame(&mut s, Kind::VideoTs, &payload).unwrap();
+                std::thread::sleep(Duration::from_millis(33));
             }
             // Give the decoder time to drain before the connection closes.
             std::thread::sleep(Duration::from_millis(800));
@@ -356,6 +474,7 @@ mod tests {
         let viewer = std::thread::spawn(move || decode_loop(BufReader::new(stream), &tx));
         let mut got_info = false;
         let mut frames = 0;
+        let mut stats: Option<Stats> = None;
         while let Ok(ev) = rx.recv_blocking() {
             match ev {
                 Event::Info(i) => got_info = i.width == 320 && i.height == 240,
@@ -364,9 +483,10 @@ mod tests {
                     assert!(f.stride >= 320 * 4 && f.data.len() >= f.stride * 240);
                     frames += 1;
                 }
+                Event::Stats(st) => stats = Some(st),
                 Event::Ended(_) => break,
             }
-            if frames >= 5 {
+            if frames >= 5 && stats.is_some() {
                 break;
             }
         }
@@ -375,5 +495,8 @@ mod tests {
         let _ = viewer.join();
         assert!(got_info, "no video info");
         assert!(frames >= 5, "only {frames} decoded frames");
+        let st = stats.expect("no stats from the viewer");
+        eprintln!("viewer stats: {st:?}");
+        assert!(st.fps > 5.0 && (0.0..300.0).contains(&st.latency_ms), "{st:?}");
     }
 }

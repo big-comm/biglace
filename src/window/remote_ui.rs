@@ -14,32 +14,71 @@ use crate::trf;
 // ─── Host side ───────────────────────────────────────────────────────────────
 
 /// Listen for host events for the life of the app: consent questions and
-/// session start/end.
-pub fn start_host_listener(win: &libadwaita::ApplicationWindow) {
+/// session start/end. Running sessions show in `banner`, inside the main
+/// window (not a loose window that hides behind others), plus a desktop
+/// notification when one starts.
+pub fn start_host_listener(win: &libadwaita::ApplicationWindow, banner: &libadwaita::Banner) {
     let rx = remote::host_events();
-    let win = win.clone();
+    let (win, banner) = (win.clone(), banner.clone());
+    let sessions: Rc<RefCell<Vec<remote::HostSession>>> = Rc::default();
+    banner.set_button_label(Some(&tr!("End access")));
+    banner.add_css_class("remote-banner");
+    {
+        let sessions = sessions.clone();
+        banner.connect_button_clicked(move |_| {
+            for s in sessions.borrow().iter() {
+                s.stop.stop();
+            }
+        });
+    }
+    let refresh = {
+        let (banner, sessions) = (banner.clone(), sessions.clone());
+        move || {
+            let list = sessions.borrow();
+            let names: Vec<String> = list.iter().map(|s| format!("{} ({})", s.who, s.device)).collect();
+            if names.is_empty() {
+                banner.set_revealed(false);
+            } else {
+                banner.set_title(&trf!(
+                    "{who} is seeing and controlling this screen",
+                    "who" => names.join(", ")
+                ));
+                banner.set_revealed(true);
+            }
+        }
+    };
     glib::spawn_future_local(async move {
-        let notices: Rc<RefCell<Vec<(remote::host::StopHandle, libadwaita::Window)>>> = Rc::default();
         while let Ok(event) = rx.recv().await {
             match event {
                 HostEvent::Consent(req) => ask_consent(&win, req),
                 HostEvent::Started(session) => {
-                    let notice = show_notice(&session);
-                    notices.borrow_mut().push((session.stop.clone(), notice));
+                    notify_started(&win, &session);
+                    sessions.borrow_mut().push(session);
+                    refresh();
                 }
                 HostEvent::Ended(stop) => {
-                    notices.borrow_mut().retain(|(s, w)| {
-                        if s.same(&stop) {
-                            w.destroy();
-                            false
-                        } else {
-                            true
-                        }
-                    });
+                    sessions.borrow_mut().retain(|s| !s.stop.same(&stop));
+                    refresh();
+                    if let Some(app) = win.application() {
+                        app.withdraw_notification("biglace-remote-access");
+                    }
                 }
             }
         }
     });
+}
+
+/// Desktop notification: visible even with BigLace minimized or in the tray.
+fn notify_started(win: &libadwaita::ApplicationWindow, session: &remote::HostSession) {
+    let Some(app) = win.application() else { return };
+    let n = gtk4::gio::Notification::new(&tr!("Remote access started"));
+    n.set_body(Some(&trf!(
+        "{user} ({device}) is seeing and controlling this screen. Open BigLace to end the access.",
+        "user" => session.who,
+        "device" => session.device
+    )));
+    n.set_priority(gtk4::gio::NotificationPriority::High);
+    app.send_notification(Some("biglace-remote-access"), &n);
 }
 
 fn ask_consent(win: &libadwaita::ApplicationWindow, req: remote::ConsentRequest) {
@@ -84,46 +123,6 @@ fn ask_consent(win: &libadwaita::ApplicationWindow, req: remote::ConsentRequest)
     dlg.present();
 }
 
-/// Small window that stays while someone controls this screen.
-fn show_notice(session: &remote::HostSession) -> libadwaita::Window {
-    let w = libadwaita::Window::builder()
-        .title(tr!("Remote access"))
-        .default_width(360)
-        .resizable(false)
-        .deletable(false)
-        .build();
-    let bx = gtk4::Box::new(gtk4::Orientation::Vertical, 12);
-    bx.set_margin_top(18);
-    bx.set_margin_bottom(18);
-    bx.set_margin_start(18);
-    bx.set_margin_end(18);
-    let icon = gtk4::Image::from_icon_name("video-display-symbolic");
-    icon.set_pixel_size(32);
-    let label = gtk4::Label::new(Some(&trf!(
-        "{user} ({device}) is seeing and controlling this screen.",
-        "user" => session.who,
-        "device" => session.device
-    )));
-    label.add_css_class("title-4");
-    label.set_wrap(true);
-    label.set_justify(gtk4::Justification::Center);
-    let btn = gtk4::Button::builder()
-        .label(tr!("End access"))
-        .css_classes(["destructive-action", "pill"])
-        .halign(gtk4::Align::Center)
-        .build();
-    {
-        let stop = session.stop.clone();
-        btn.connect_clicked(move |_| stop.stop());
-    }
-    bx.append(&icon);
-    bx.append(&label);
-    bx.append(&btn);
-    w.set_content(Some(&bx));
-    w.present();
-    w
-}
-
 // ─── Viewer side ─────────────────────────────────────────────────────────────
 
 /// Open `name`'s screen (peer at `ip`) in a new window.
@@ -135,6 +134,10 @@ pub fn open_viewer(ip: &str, name: &str, toast: &libadwaita::ToastOverlay) {
         .build();
     let toolbar = libadwaita::ToolbarView::new();
     let header = libadwaita::HeaderBar::new();
+    // Title + live numbers (latency, fps, bitrate), like a game streamer's
+    // overlay: what this session really does, not a guess.
+    let title = libadwaita::WindowTitle::new(&trf!("Screen of {name}", "name" => name), "");
+    header.set_title_widget(Some(&title));
     let btn_full = gtk4::Button::builder()
         .icon_name("view-fullscreen-symbolic")
         .tooltip_text(tr!("Full screen (F11)"))
@@ -142,8 +145,10 @@ pub fn open_viewer(ip: &str, name: &str, toast: &libadwaita::ToastOverlay) {
     header.pack_end(&btn_full);
     toolbar.add_top_bar(&header);
 
+    // Pixel for pixel whenever the window is big enough (scaling is what
+    // makes text blurry); only a screen larger than the window is reduced.
     let picture = gtk4::Picture::builder()
-        .content_fit(gtk4::ContentFit::Contain)
+        .content_fit(gtk4::ContentFit::ScaleDown)
         .can_shrink(true)
         .focusable(true)
         .hexpand(true)
@@ -193,8 +198,9 @@ pub fn open_viewer(ip: &str, name: &str, toast: &libadwaita::ToastOverlay) {
     let name_s = name.to_string();
     let toast = toast.clone();
     {
-        let (win, session, stack, picture, video) =
-            (win.clone(), session.clone(), stack.clone(), picture.clone(), video.clone());
+        let (win, session, stack, picture, video, title) =
+            (win.clone(), session.clone(), stack.clone(), picture.clone(), video.clone(), title.clone());
+        let sized = Cell::new(false);
         glib::spawn_future_local(async move {
             match open_rx.recv().await {
                 Ok(Ok(s)) => *session.borrow_mut() = Some(s),
@@ -220,7 +226,18 @@ pub fn open_viewer(ip: &str, name: &str, toast: &libadwaita::ToastOverlay) {
             picture.grab_focus();
             while let Ok(event) = rx.recv().await {
                 match event {
-                    client::Event::Info(info) => video.set((info.width, info.height)),
+                    client::Event::Info(info) => {
+                        video.set((info.width, info.height));
+                        if !sized.replace(true) {
+                            fit_window_to(&win, info.width, info.height);
+                        }
+                    }
+                    client::Event::Stats(st) => title.set_subtitle(&trf!(
+                        "{latency} ms · {fps} fps · {mbps} Mbit/s",
+                        "latency" => format!("{:.0}", st.latency_ms.max(0.0)),
+                        "fps" => format!("{:.0}", st.fps),
+                        "mbps" => format!("{:.1}", st.mbps)
+                    )),
                     client::Event::Frame(f) => {
                         video.set((f.width, f.height));
                         let tex = gdk::MemoryTexture::new(
@@ -258,15 +275,34 @@ pub fn open_viewer(ip: &str, name: &str, toast: &libadwaita::ToastOverlay) {
     win.present();
 }
 
+/// Open the viewer at the remote screen's size (1:1 pixels) when it fits on
+/// this monitor; otherwise maximized, reduced as little as possible.
+fn fit_window_to(win: &libadwaita::Window, width: u32, height: u32) {
+    let monitor = win
+        .surface()
+        .and_then(|surface| gtk4::prelude::WidgetExt::display(win).monitor_at_surface(&surface))
+        .map(|m| m.geometry());
+    // Header bar and borders.
+    let (w, h) = (width as i32, height as i32 + 48);
+    match monitor {
+        Some(g) if w <= g.width() && h <= g.height() - 32 => {
+            win.unmaximize();
+            win.set_default_size(w, h);
+        }
+        _ => win.maximize(),
+    }
+}
+
 /// Pointer position over the picture → 0..1 of the remote screen, taking
-/// the letterboxing of "contain" into account. None outside the image.
+/// "scale down" (1:1 when it fits, reduced otherwise, centered) into account.
+/// None outside the image.
 fn normalize(picture: &gtk4::Picture, video: (u32, u32), x: f64, y: f64) -> Option<(f64, f64)> {
     let (vw, vh) = (f64::from(video.0), f64::from(video.1));
     let (ww, wh) = (f64::from(picture.width()), f64::from(picture.height()));
     if vw <= 0.0 || vh <= 0.0 || ww <= 0.0 || wh <= 0.0 {
         return None;
     }
-    let scale = (ww / vw).min(wh / vh);
+    let scale = (ww / vw).min(wh / vh).min(1.0);
     let (dw, dh) = (vw * scale, vh * scale);
     let (ox, oy) = ((ww - dw) / 2.0, (wh - dh) / 2.0);
     let (nx, ny) = ((x - ox) / dw, (y - oy) / dh);

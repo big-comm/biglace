@@ -45,6 +45,25 @@ pub enum Kind {
     Input = 3,
     /// Host → viewer: why the session can't go on (UTF-8 text).
     Error = 4,
+    /// Host → viewer: capture time (host clock, µs since the epoch, u64 BE)
+    /// followed by one H.264 access unit. Sent to viewers that ask for
+    /// protocol 2 (header `X-BigLace-Screen: 2`); older ones get `Video`.
+    VideoTs = 5,
+    /// Viewer → host: viewer clock (µs, u64 BE). The host answers `Pong`.
+    Ping = 6,
+    /// Host → viewer: the ping's viewer clock, then the host clock (µs,
+    /// u64 BE each): lets the viewer measure latency across both clocks.
+    Pong = 7,
+}
+
+/// Screen protocol revision the viewer asks for.
+pub const SCREEN_PROTOCOL: &str = "2";
+
+/// Wall clock in µs since the epoch (both ends use it for latency).
+pub fn now_us() -> u64 {
+    std::time::SystemTime::now()
+        .duration_since(std::time::UNIX_EPOCH)
+        .map_or(0, |d| d.as_micros() as u64)
 }
 
 impl Kind {
@@ -54,6 +73,9 @@ impl Kind {
             2 => Some(Self::Video),
             3 => Some(Self::Input),
             4 => Some(Self::Error),
+            5 => Some(Self::VideoTs),
+            6 => Some(Self::Ping),
+            7 => Some(Self::Pong),
             _ => None,
         }
     }

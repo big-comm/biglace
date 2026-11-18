@@ -64,6 +64,13 @@ const CSS: &str = r#"
 }
 /* The QR code keeps a white quiet zone in dark mode too: phone cameras
    need the contrast. */
+/* Someone controls this screen: impossible to miss, still part of the app. */
+banner.remote-banner > revealer > widget {
+    background-color: alpha(@destructive_bg_color, 0.85);
+    color: @destructive_fg_color;
+    font-weight: bold;
+}
+
 .qr-code {
     border-radius: 12px;
     background-color: #ffffff;

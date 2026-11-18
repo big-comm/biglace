@@ -57,6 +57,8 @@ struct Ui {
     groups: groups::GroupsPage,
     /// Holds "Open admin panel" while we're a network admin.
     admin_menu: gtk4::gio::Menu,
+    /// "Someone is controlling this screen — End access".
+    remote_banner: libadwaita::Banner,
 }
 
 /// Cross-thread handle to the tray indicator. Wrapped in `Rc<RefCell<Option<…>>>`
@@ -270,7 +272,14 @@ pub fn build(app: &libadwaita::Application, start_hidden: bool) {
     // The manual key setup lives on the sign-in page now.
     content_widgets.signin_extra.append(&sidebar_widgets.manual_group);
 
-    toast.set_child(Some(&split));
+    // While someone sees and controls this screen: a banner across the top
+    // of the window, with "End access" (see remote_ui).
+    let remote_banner = libadwaita::Banner::builder().revealed(false).build();
+    let shell = gtk4::Box::new(gtk4::Orientation::Vertical, 0);
+    shell.append(&remote_banner);
+    split.set_vexpand(true);
+    shell.append(&split);
+    toast.set_child(Some(&shell));
     win.set_content(Some(&toast));
 
     let cfg = Rc::new(RefCell::new(config::load()));
@@ -283,6 +292,7 @@ pub fn build(app: &libadwaita::Application, start_hidden: bool) {
         invites: invites_page,
         groups: groups_page,
         admin_menu,
+        remote_banner,
     };
 
     let (refresh_tx, refresh_rx) = async_channel::unbounded::<()>();
@@ -386,7 +396,7 @@ pub fn build(app: &libadwaita::Application, start_hidden: bool) {
     // Answer other BigLace peers on this device's tailnet address.
     agent::server::start();
     // Remote desktop: answer access requests and show "End access".
-    remote_ui::start_host_listener(&ctx.ui.win);
+    remote_ui::start_host_listener(&ctx.ui.win, &ctx.ui.remote_banner);
     spawn_health_worker(&ctx);
     spawn_reconnect_worker(&ctx);
     spawn_update_check(&ctx);

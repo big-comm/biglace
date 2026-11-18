@@ -218,7 +218,8 @@ pub fn serve(stream: TcpStream, peer: IpAddr, headers: &HashMap<String, String>,
         stop: stop.clone(),
     }));
     tailscale::dbg(&format!("remote: session started for {}@{}", identity.login, identity.device));
-    run_session(stream, &stop);
+    let timestamps = headers.get("x-biglace-screen").is_some_and(|v| v.as_str() >= super::SCREEN_PROTOCOL);
+    run_session(stream, &stop, timestamps);
     stop.stop();
     emit(HostEvent::Ended(stop));
     tailscale::dbg(&format!("remote: session ended for {}@{}", identity.login, identity.device));
@@ -263,7 +264,7 @@ struct Source {
 // PipeWire only sends a frame when the screen changes: nothing to encode or
 // send while it's still, which keeps the host's CPU free.
 const WAYLAND_TAIL: &str = "videoconvert n-threads=2";
-const X11_TAIL: &str = "video/x-raw,framerate=30/1 ! videoconvert n-threads=2";
+const X11_TAIL: &str = "video/x-raw,framerate=60/1 ! videoconvert n-threads=2";
 
 /// Full pipeline: `head` (source + conversion) → H.264 → appsink.
 pub(crate) fn pipeline_desc(head: &str, (enc, format): (&str, &str)) -> String {
@@ -319,7 +320,7 @@ const SEND_BUFFER: usize = 512 * 1024;
 #[cfg(target_os = "linux")]
 const NOTSENT_LOWAT: u32 = 64 * 1024;
 
-fn run_session(mut stream: TcpStream, stop: &StopHandle) {
+fn run_session(mut stream: TcpStream, stop: &StopHandle, timestamps: bool) {
     {
         let sock = socket2::SockRef::from(&stream);
         let _ = sock.set_send_buffer_size(SEND_BUFFER);
@@ -343,10 +344,16 @@ fn run_session(mut stream: TcpStream, stop: &StopHandle) {
     let Source { head, mut sink, dirty, .. } = source;
     #[cfg(target_os = "linux")]
     let _keep_fd = source._fd;
+    // Video and pong replies write from two threads.
+    let writer = match stream.try_clone() {
+        Ok(w) => Arc::new(Mutex::new(w)),
+        Err(_) => return,
+    };
 
     // Input: replayed as it arrives, on its own thread.
     if let Ok(mut reader) = stream.try_clone() {
         let stop = stop.clone();
+        let writer = writer.clone();
         let _ = std::thread::Builder::new()
             .name("biglace-remote-input".into())
             .spawn(move || {
@@ -355,6 +362,13 @@ fn run_session(mut stream: TcpStream, stop: &StopHandle) {
                         Ok((Kind::Input, payload)) => {
                             if let Ok(event) = serde_json::from_slice::<Input>(&payload) {
                                 sink.apply(event);
+                            }
+                        }
+                        Ok((Kind::Ping, payload)) if payload.len() == 8 => {
+                            let mut pong = payload;
+                            pong.extend_from_slice(&super::now_us().to_be_bytes());
+                            if let Ok(mut w) = writer.lock() {
+                                let _ = write_frame(&mut *w, Kind::Pong, &pong);
                             }
                         }
                         Ok(_) => {}
@@ -367,7 +381,8 @@ fn run_session(mut stream: TcpStream, stop: &StopHandle) {
             });
     }
 
-    if let Err(e) = stream_screen(stream, &head, dirty, stop) {
+    drop(stream);
+    if let Err(e) = stream_screen(&writer, &head, dirty, stop, timestamps) {
         tailscale::dbg(&format!("remote: capture ended: {e}"));
     }
 }
@@ -382,21 +397,25 @@ pub fn encoder() -> Option<(&'static str, &'static str)> {
     static X264: OnceLock<String> = OnceLock::new();
     let x264: &'static str = X264.get_or_init(|| {
         let threads = std::thread::available_parallelism().map_or(2, |n| (n.get() / 2).clamp(1, 4));
+        // Constant quality (CRF 20: crisp text) capped at 30 Mbit/s with a
+        // short VBV, full chroma (4:4:4 — colored text edges stay sharp,
+        // what RDP's AVC444 is for).
         format!(
             "x264enc tune=zerolatency speed-preset=ultrafast sliced-threads=true threads={threads} \
-             bitrate=8000 vbv-buf-capacity=50 key-int-max=60 bframes=0 b-adapt=false"
+             pass=qual quantizer=20 bitrate=30000 vbv-buf-capacity=100 key-int-max=120 bframes=0 b-adapt=false"
         )
     });
     for (name, desc, format) in [
         // Low-latency settings (GStreamer docs): no B-frames, one reference,
         // fastest preset, a CPB of ~2 frames, slices so the viewer's decoder
         // can work on one frame in parallel.
+        // Hardware: constant quality too (4:2:0 only on VA-API).
         (
             "vah264enc",
-            "vah264enc rate-control=cbr bitrate=8000 cpb-size=300 key-int-max=60 b-frames=0 ref-frames=1 target-usage=7 num-slices=4",
+            "vah264enc rate-control=cqp qpi=20 qpp=22 key-int-max=120 b-frames=0 ref-frames=1 target-usage=4 num-slices=4",
             "NV12",
         ),
-        ("x264enc", x264, "I420"),
+        ("x264enc", x264, "Y444"),
         ("openh264enc", "openh264enc bitrate=6000000 gop-size=60 complexity=low", "I420"),
     ] {
         if gst::ElementFactory::find(name).is_some() {
@@ -410,7 +429,13 @@ pub fn encoder() -> Option<(&'static str, &'static str)> {
 /// alive; everything else waits for a change.
 const IDLE_FRAME_EVERY: Duration = Duration::from_secs(1);
 
-fn stream_screen(mut stream: TcpStream, head: &str, dirty: Option<Arc<AtomicBool>>, stop: &StopHandle) -> anyhow::Result<()> {
+fn stream_screen(
+    writer: &Mutex<TcpStream>,
+    head: &str,
+    dirty: Option<Arc<AtomicBool>>,
+    stop: &StopHandle,
+    timestamps: bool,
+) -> anyhow::Result<()> {
     use gstreamer as gst;
     use gstreamer::prelude::*;
     use gstreamer_app as gst_app;
@@ -455,14 +480,31 @@ fn stream_screen(mut stream: TcpStream, head: &str, dirty: Option<Arc<AtomicBool
                 if let (Ok(w), Ok(h)) = (s.get::<i32>("width"), s.get::<i32>("height")) {
                     let info = VideoInfo { width: w as u32, height: h as u32 };
                     if last_info != Some(info) {
-                        write_frame(&mut stream, Kind::Info, &serde_json::to_vec(&info)?)?;
+                        let mut w = writer.lock().map_err(|_| anyhow::anyhow!("lock"))?;
+                        write_frame(&mut *w, Kind::Info, &serde_json::to_vec(&info)?)?;
                         last_info = Some(info);
                     }
                 }
             }
             let Some(buffer) = sample.buffer() else { continue };
             let map = buffer.map_readable()?;
-            write_frame(&mut stream, Kind::Video, map.as_slice())?;
+            if timestamps {
+                // When the frame was captured, on this host's wall clock:
+                // now, minus how long it spent in the pipeline.
+                let in_pipeline = match (pipeline.current_running_time(), buffer.pts()) {
+                    (Some(now), Some(pts)) if now > pts => (now - pts).useconds(),
+                    _ => 0,
+                };
+                let captured = super::now_us().saturating_sub(in_pipeline);
+                let mut payload = Vec::with_capacity(8 + map.len());
+                payload.extend_from_slice(&captured.to_be_bytes());
+                payload.extend_from_slice(map.as_slice());
+                let mut w = writer.lock().map_err(|_| anyhow::anyhow!("lock"))?;
+                write_frame(&mut *w, Kind::VideoTs, &payload)?;
+            } else {
+                let mut w = writer.lock().map_err(|_| anyhow::anyhow!("lock"))?;
+                write_frame(&mut *w, Kind::Video, map.as_slice())?;
+            }
             frames += 1;
             bytes += map.len();
             if since.elapsed() >= Duration::from_secs(5) {
@@ -498,8 +540,8 @@ mod tests {
         }
         // Every encoder present on this machine, not just the preferred one.
         let encoders = [
-            ("vah264enc", ("vah264enc rate-control=cbr bitrate=8000 cpb-size=300 key-int-max=60 b-frames=0 ref-frames=1 target-usage=7 num-slices=4", "NV12")),
-            ("x264enc", ("x264enc tune=zerolatency speed-preset=ultrafast sliced-threads=true threads=4 bitrate=8000 vbv-buf-capacity=50 key-int-max=60 bframes=0 b-adapt=false", "I420")),
+            ("vah264enc", ("vah264enc rate-control=cqp qpi=20 qpp=22 key-int-max=120 b-frames=0 ref-frames=1 target-usage=4 num-slices=4", "NV12")),
+            ("x264enc", ("x264enc tune=zerolatency speed-preset=ultrafast sliced-threads=true threads=2 pass=qual quantizer=20 bitrate=30000 vbv-buf-capacity=100 key-int-max=120 bframes=0 b-adapt=false", "Y444")),
             ("openh264enc", ("openh264enc bitrate=6000000 gop-size=60 complexity=low", "I420")),
         ];
         for (tail, (name, enc)) in [WAYLAND_TAIL, X11_TAIL]
