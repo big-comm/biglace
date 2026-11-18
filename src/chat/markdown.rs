@@ -7,6 +7,45 @@ use pulldown_cmark::{Event, HeadingLevel, Options, Parser, Tag, TagEnd};
 
 /// Pango markup for a Markdown message.
 pub fn to_pango(text: &str) -> String {
+    // Underline (`<u>…</u>`, what the message box writes) unless the way it
+    // was typed would make the markup invalid; then it's shown as typed.
+    let with_underline = render(text, true);
+    if markup_ok(&with_underline) {
+        with_underline
+    } else {
+        render(text, false)
+    }
+}
+
+/// Links (`<a href>`) are understood by GTK labels, not by Pango itself:
+/// set them aside to check the rest.
+fn without_links(markup: &str) -> String {
+    let mut out = String::with_capacity(markup.len());
+    let mut rest = markup;
+    while let Some(i) = rest.find("<a href=\"") {
+        out.push_str(&rest[..i]);
+        match rest[i..].find('>') {
+            Some(j) => rest = &rest[i + j + 1..],
+            None => return out,
+        }
+    }
+    out.push_str(rest);
+    out.replace("</a>", "")
+}
+
+/// Is `markup` valid label markup?
+pub fn markup_ok(markup: &str) -> bool {
+    gtk4::pango::parse_markup(&without_links(markup), '\0').is_ok()
+}
+
+/// A message as plain text (formatting dropped), for previews.
+pub fn plain_text(text: &str) -> String {
+    gtk4::pango::parse_markup(&without_links(&to_pango(text)), '\0')
+        .map(|(_, t, _)| t.to_string())
+        .unwrap_or_else(|_| text.to_string())
+}
+
+fn render(text: &str, underline: bool) -> String {
     let mut opts = Options::empty();
     opts.insert(Options::ENABLE_STRIKETHROUGH);
     let mut out = String::new();
@@ -139,7 +178,9 @@ pub fn to_pango(text: &str) -> String {
                 out.push_str(CODE_CLOSE);
             }
             Event::SoftBreak | Event::HardBreak => out.push('\n'),
-            // Raw HTML in a message is shown as typed, never interpreted.
+            // Underline is the one tag understood; any other HTML is shown
+            // as typed, never interpreted.
+            Event::InlineHtml(t) if underline && (&*t == "<u>" || &*t == "</u>") => out.push_str(&t),
             Event::Html(t) | Event::InlineHtml(t) => out.push_str(&escape(&t)),
             Event::Rule => {
                 paragraph_break(&mut out);
@@ -228,10 +269,25 @@ mod tests {
         assert_eq!(to_pango("[x](file:///etc/passwd)"), "<u>x</u>");
         // Quotes in a URL can't break out of the attribute.
         assert!(to_pango("[x](https://a.b/\"onclick)").contains("&quot;"));
-        for text in ["*a **b* c**", "[a](https://x", "> q\n>> qq", "~~~\n<x>", "# t\n- a\n  - b\n\n1. c"] {
+        for text in [
+            "*a **b* c**",
+            "[a](https://x",
+            "> q\n>> qq",
+            "~~~\n<x>",
+            "# t\n- a\n  - b\n\n1. c",
+            "[**a**](https://x.y) <u>b</u>",
+        ] {
             let m = to_pango(text);
-            assert!(gtk4::pango::parse_markup(&m, '\0').is_ok(), "{text:?} → {m:?}");
+            assert!(markup_ok(&m), "{text:?} → {m:?}");
         }
+    }
+
+    #[test]
+    fn underline_only_when_well_formed() {
+        assert_eq!(to_pango("<u>x</u>"), "<u>x</u>");
+        assert_eq!(to_pango("<u>x"), "&lt;u&gt;x");
+        assert_eq!(to_pango("**a<u>b** c</u>"), "<b>a&lt;u&gt;b</b> c&lt;/u&gt;");
+        assert_eq!(to_pango("<U>x</U>"), "&lt;U&gt;x&lt;/U&gt;");
     }
 
     #[test]

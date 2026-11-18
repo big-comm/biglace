@@ -1,5 +1,7 @@
 mod chat;
+mod composer;
 mod content;
+mod emoji_picker;
 mod dialogs;
 mod groups;
 mod invites;

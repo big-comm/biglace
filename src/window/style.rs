@@ -133,6 +133,16 @@ const CSS: &str = r#"
 textview.chat-input, textview.chat-input > text { background: transparent; }
 .chat-send { min-width: 40px; min-height: 40px; }
 
+/* Emoji picker (Telegram-like). */
+popover.emoji-picker > contents { padding: 0; border-radius: 16px; }
+.emoji-grid flowboxchild { padding: 0; border-radius: 10px; }
+.emoji-grid flowboxchild:hover { background-color: alpha(@card_fg_color, 0.10); }
+.emoji-cell { font-family: "Noto Color Emoji", emoji; font-size: 26px; padding: 3px; }
+.emoji-section { font-weight: 700; font-size: 0.85em; opacity: 0.6; }
+.emoji-tabs { border-top: 1px solid alpha(@card_fg_color, 0.08); padding: 4px; }
+.emoji-tabs button { min-height: 30px; }
+.chat-emoji { min-width: 40px; min-height: 40px; }
+
 /* ── Voice rooms ── */
 /* Ring around the avatar: lights up and pulses while the person talks. */
 .speaking-ring {

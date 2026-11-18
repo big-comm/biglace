@@ -29,7 +29,7 @@ pub struct ChatPage {
     conv_subtitle: gtk4::Label,
     scroll: gtk4::ScrolledWindow,
     messages: gtk4::Box,
-    input: gtk4::TextView,
+    composer: super::composer::Composer,
     state: Rc<State>,
 }
 
@@ -114,53 +114,22 @@ impl ChatPage {
         scroll.add_css_class("chat-backdrop");
 
         // Composer: emoji · text · send.
-        let input = gtk4::TextView::builder()
-            .wrap_mode(gtk4::WrapMode::WordChar)
-            .accepts_tab(false)
-            .top_margin(8)
-            .bottom_margin(8)
-            .left_margin(10)
-            .right_margin(10)
-            .build();
-        input.add_css_class("chat-input");
-        input.update_property(&[gtk4::accessible::Property::Label(&tr!("Message"))]);
-        let placeholder = gtk4::Label::new(Some(&tr!("Message — **bold**, *italic*, `code`…")));
-        placeholder.add_css_class("dim-label");
-        placeholder.set_halign(gtk4::Align::Start);
-        placeholder.set_valign(gtk4::Align::Center);
-        placeholder.set_margin_start(12);
-        placeholder.set_can_target(false);
-        let input_scroll = gtk4::ScrolledWindow::builder()
-            .hscrollbar_policy(gtk4::PolicyType::Never)
-            .propagate_natural_height(true)
-            .max_content_height(160)
-            .hexpand(true)
-            .child(&input)
-            .build();
-        let input_overlay = gtk4::Overlay::new();
-        input_overlay.set_child(Some(&input_scroll));
-        input_overlay.add_overlay(&placeholder);
-        input_overlay.add_css_class("chat-input-frame");
-        input_overlay.set_hexpand(true);
-        {
-            let placeholder = placeholder.clone();
-            input.buffer().connect_changed(move |b| placeholder.set_visible(b.char_count() == 0));
-        }
-
-        let emoji = gtk4::EmojiChooser::new();
+        let composer = super::composer::Composer::new(win);
+        let picker = {
+            let composer = composer.clone();
+            super::emoji_picker::build(move |e| composer.insert(e))
+        };
         let btn_emoji = gtk4::MenuButton::builder()
             .icon_name("emoji-people-symbolic")
-            .popover(&emoji)
+            .popover(&picker)
             .valign(gtk4::Align::End)
-            .css_classes(["flat", "circular"])
+            .css_classes(["flat", "circular", "chat-emoji"])
             .tooltip_text(tr!("Emoji"))
             .build();
+        // Ctrl+; and "Insert emoji" open this picker, not GTK's own.
         {
-            let input = input.clone();
-            emoji.connect_emoji_picked(move |_, e| {
-                input.buffer().insert_at_cursor(e);
-                input.grab_focus();
-            });
+            let btn = btn_emoji.clone();
+            composer.on_emoji(move || btn.popup());
         }
         let btn_send = gtk4::Button::builder()
             .icon_name("mail-send-symbolic")
@@ -168,17 +137,17 @@ impl ChatPage {
             .css_classes(["suggested-action", "circular", "chat-send"])
             .tooltip_text(tr!("Send (Enter) — Shift+Enter for a new line"))
             .build();
-        let composer = gtk4::Box::new(gtk4::Orientation::Horizontal, 8);
-        composer.add_css_class("chat-composer");
-        composer.append(&btn_emoji);
-        composer.append(&input_overlay);
-        composer.append(&btn_send);
+        let bar = gtk4::Box::new(gtk4::Orientation::Horizontal, 8);
+        bar.add_css_class("chat-composer");
+        bar.append(&btn_emoji);
+        bar.append(&composer.widget);
+        bar.append(&btn_send);
 
         let conv_box = gtk4::Box::new(gtk4::Orientation::Vertical, 0);
         conv_box.append(&conv_header);
         conv_box.append(&gtk4::Separator::new(gtk4::Orientation::Horizontal));
         conv_box.append(&scroll);
-        conv_box.append(&composer);
+        conv_box.append(&bar);
 
         let none = libadwaita::StatusPage::builder()
             .icon_name("chat-message-new-symbolic")
@@ -212,7 +181,7 @@ impl ChatPage {
             conv_subtitle,
             scroll,
             messages,
-            input,
+            composer,
             state: Rc::default(),
         };
 
@@ -228,7 +197,7 @@ impl ChatPage {
                 }
                 glib::Propagation::Proceed
             });
-            page.input.add_controller(keys);
+            page.composer.view.add_controller(keys);
         }
         {
             let page = page.clone();
@@ -350,7 +319,7 @@ impl ChatPage {
         self.scroll_to_end();
         self.mark_current_read();
         self.refresh_list();
-        self.input.grab_focus();
+        self.composer.view.grab_focus();
     }
 
     fn mark_current_read(&self) {
@@ -368,8 +337,7 @@ impl ChatPage {
 
     fn send_typed(&self) {
         let Some(id) = self.state.current.borrow().clone() else { return };
-        let buf = self.input.buffer();
-        let text = buf.text(&buf.start_iter(), &buf.end_iter(), false).to_string();
+        let text = self.composer.markdown();
         if text.trim().is_empty() {
             return;
         }
@@ -377,7 +345,7 @@ impl ChatPage {
             super::show_toast(&self.toast, &tr!("That message is too long."), 5);
             return;
         }
-        buf.set_text("");
+        self.composer.clear();
         let toast = self.toast.clone();
         super::run_in_background(
             move || chat::send(&id, &text),
@@ -446,11 +414,15 @@ impl ChatPage {
     }
 
     fn scroll_to_end(&self) {
-        let scroll = self.scroll.clone();
-        glib::idle_add_local_once(move || {
-            let adj = scroll.vadjustment();
-            adj.set_value(adj.upper());
-        });
+        // Now, and again once a new bubble finished sliding in (it grows
+        // the list while it animates).
+        for delay in [0, 260] {
+            let scroll = self.scroll.clone();
+            glib::timeout_add_local_once(std::time::Duration::from_millis(delay), move || {
+                let adj = scroll.vadjustment();
+                adj.set_value(adj.upper());
+            });
+        }
     }
 
     /// Add one message at the end, with a day separator and sender name
@@ -780,10 +752,7 @@ fn short_time(at_ms: u64) -> String {
 
 /// Plain one-line preview of a message (Markdown marks dropped).
 fn preview_text(text: &str, max_chars: usize) -> String {
-    let markup = markdown::to_pango(text);
-    let plain = gtk4::pango::parse_markup(&markup, '\0')
-        .map(|(_, t, _)| t.to_string())
-        .unwrap_or_else(|_| text.to_string());
+    let plain = markdown::plain_text(text);
     let one_line: String = plain.split_whitespace().collect::<Vec<_>>().join(" ");
     if one_line.chars().count() > max_chars {
         format!("{}…", one_line.chars().take(max_chars).collect::<String>())
