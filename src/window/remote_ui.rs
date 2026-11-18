@@ -274,6 +274,17 @@ pub fn open_viewer(ip: &str, name: &str, toast: &libadwaita::ToastOverlay) {
         .tooltip_text(tr!("Mute the remote sound"))
         .build();
     header.pack_end(&btn_mute);
+    // "● LIVE": you're looking at (and controlling) someone's real screen.
+    let live = gtk4::Box::new(gtk4::Orientation::Horizontal, 6);
+    live.add_css_class("live-pill");
+    live.set_valign(gtk4::Align::Center);
+    let dot = gtk4::Box::new(gtk4::Orientation::Horizontal, 0);
+    dot.add_css_class("live-dot");
+    dot.set_valign(gtk4::Align::Center);
+    live.append(&dot);
+    live.append(&gtk4::Label::new(Some(&tr!("LIVE"))));
+    live.set_tooltip_text(Some(&tr!("You are seeing and controlling this screen right now")));
+    header.pack_start(&live);
     toolbar.add_top_bar(&header);
 
     // Pixel for pixel whenever the window is big enough (scaling is what

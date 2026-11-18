@@ -65,6 +65,29 @@ const CSS: &str = r#"
 /* The QR code keeps a white quiet zone in dark mode too: phone cameras
    need the contrast. */
 /* Someone controls this screen: impossible to miss, still part of the app. */
+/* ── Voice rooms ── */
+/* Ring around the avatar: lights up and pulses while the person talks. */
+.speaking-ring {
+    padding: 3px;
+    border-radius: 999px;
+    box-shadow: 0 0 0 2px transparent;
+    transition: box-shadow 180ms ease-out, background-color 180ms ease-out;
+}
+.speaking-ring.speaking {
+    background-color: alpha(@success_color, 0.18);
+    box-shadow: 0 0 0 2px @success_color, 0 0 12px 2px alpha(@success_color, 0.45);
+    animation: speaking-pulse 1.1s ease-in-out infinite;
+}
+@keyframes speaking-pulse {
+    0%   { box-shadow: 0 0 0 2px @success_color, 0 0 6px 1px alpha(@success_color, 0.35); }
+    50%  { box-shadow: 0 0 0 2px @success_color, 0 0 16px 4px alpha(@success_color, 0.55); }
+    100% { box-shadow: 0 0 0 2px @success_color, 0 0 6px 1px alpha(@success_color, 0.35); }
+}
+/* The wave meter takes its colour from here (drawn with the CSS color). */
+.voice-wave { color: @card_fg_color; }
+.voice-wave.speaking { color: @success_color; }
+.room-muted { color: @error_color; }
+
 /* "Allow remote access?" */
 .consent-badge {
     padding: 16px;
@@ -88,6 +111,34 @@ banner.remote-banner > revealer > widget {
     background-color: alpha(@destructive_bg_color, 0.85);
     color: @destructive_fg_color;
     font-weight: bold;
+    animation: remote-pulse 2s ease-in-out infinite;
+}
+@keyframes remote-pulse {
+    0%   { background-color: alpha(@destructive_bg_color, 0.95); }
+    50%  { background-color: alpha(@destructive_bg_color, 0.65); }
+    100% { background-color: alpha(@destructive_bg_color, 0.95); }
+}
+/* Viewer window: "● LIVE". */
+.live-pill {
+    padding: 2px 10px;
+    border-radius: 999px;
+    background-color: alpha(@destructive_bg_color, 0.18);
+    color: @destructive_color;
+    font-weight: 800;
+    font-size: 0.8em;
+    letter-spacing: 1px;
+}
+.live-dot {
+    min-width: 8px;
+    min-height: 8px;
+    border-radius: 999px;
+    background-color: @destructive_color;
+    animation: live-blink 1.2s ease-in-out infinite;
+}
+@keyframes live-blink {
+    0%   { opacity: 1; }
+    50%  { opacity: 0.25; }
+    100% { opacity: 1; }
 }
 
 .qr-code {

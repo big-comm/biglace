@@ -27,6 +27,19 @@ pub struct RoomsPage {
     /// Reflects the room state while updating the mute toggle ourselves.
     syncing: Rc<std::cell::Cell<bool>>,
     rooms: Rc<RefCell<Vec<RoomInfo>>>,
+    /// The people rows, kept (and updated in place) so their animations
+    /// run smoothly across updates. Keyed by address.
+    member_rows: Rc<RefCell<Vec<(String, MemberRow)>>>,
+}
+
+/// One person in the room: avatar with a ring that lights up while they
+/// talk, name, and live sound waves (or the muted icon).
+#[derive(Clone)]
+struct MemberRow {
+    row: libadwaita::ActionRow,
+    muted_icon: gtk4::Image,
+    wave: gtk4::DrawingArea,
+    muted: Rc<std::cell::Cell<bool>>,
 }
 
 impl RoomsPage {
@@ -150,6 +163,7 @@ impl RoomsPage {
             toast: toast.clone(),
             syncing: Rc::new(std::cell::Cell::new(false)),
             rooms: Rc::default(),
+            member_rows: Rc::default(),
         };
         {
             let page = page.clone();
@@ -251,6 +265,31 @@ impl RoomsPage {
         }
     }
 
+    /// Development builds only (BIGLACE_PREVIEW=room): a sample room.
+    #[cfg(debug_assertions)]
+    pub fn show_preview(&self) {
+        let m = |user: &str, device: &str, ip: &str, me: bool, muted: bool| MemberView {
+            user: user.into(),
+            device: device.into(),
+            ip: ip.into(),
+            me,
+            muted,
+            connected: true,
+            talking: false,
+        };
+        self.on_event(RoomEvent::State {
+            group: Some("familia".into()),
+            muted: false,
+            members: vec![
+                m("tales", "notebook", "100.64.0.100", true, false),
+                m("bruna", "notebook-bruna", "100.64.0.101", false, false),
+                m("bruno", "desktop", "100.64.0.102", false, false),
+                m("maria", "celular", "100.64.0.103", false, false),
+                m("joao", "pc-sala", "100.64.0.104", false, true),
+            ],
+        });
+    }
+
     fn on_event(&self, ev: RoomEvent) {
         match ev {
             RoomEvent::State { group: Some(group), muted, members } => {
@@ -282,10 +321,26 @@ impl RoomsPage {
     }
 
     fn fill_members(&self, members: &[MemberView]) {
-        while let Some(child) = self.members.first_child() {
-            self.members.remove(&child);
-        }
+        let mut rows = self.member_rows.borrow_mut();
+        // Gone: drop their rows.
+        rows.retain(|(ip, r)| {
+            let keep = members.iter().any(|m| &m.ip == ip);
+            if !keep {
+                self.members.remove(&r.row);
+            }
+            keep
+        });
         for m in members {
+            let existing = rows.iter().find(|(ip, _)| ip == &m.ip).map(|(_, r)| r.clone());
+            let r = match existing {
+                Some(r) => r,
+                None => {
+                    let r = member_row(m);
+                    self.members.append(&r.row);
+                    rows.push((m.ip.clone(), r.clone()));
+                    r
+                }
+            };
             let mut subtitle = vec![m.device.clone()];
             if m.me {
                 subtitle.push(tr!("you"));
@@ -293,29 +348,110 @@ impl RoomsPage {
             if !m.connected {
                 subtitle.push(tr!("connecting…"));
             }
-            let row = libadwaita::ActionRow::builder()
-                .title(glib::markup_escape_text(&m.user).as_str())
-                .subtitle(glib::markup_escape_text(&subtitle.join(" · ")).as_str())
-                .build();
-            row.add_prefix(&gtk4::Image::from_icon_name("avatar-default-symbolic"));
-            let (icon, label) = if m.muted {
-                ("microphone-disabled-symbolic", tr!("muted"))
+            r.row.set_title(glib::markup_escape_text(&m.user).as_str());
+            r.row.set_subtitle(glib::markup_escape_text(&subtitle.join(" · ")).as_str());
+            r.muted.set(m.muted);
+            r.muted_icon.set_visible(m.muted);
+            r.wave.set_visible(!m.muted);
+            let label = if m.muted {
+                tr!("muted")
             } else if m.talking {
-                ("audio-volume-high-symbolic", tr!("talking"))
+                tr!("talking")
             } else {
-                ("microphone-sensitivity-low-symbolic", tr!("quiet"))
+                tr!("quiet")
             };
-            let state = gtk4::Image::from_icon_name(icon);
-            state.set_tooltip_text(Some(&label));
-            state.update_property(&[gtk4::accessible::Property::Label(&label)]);
-            if m.talking {
-                state.add_css_class("success");
-                row.add_css_class("room-talking");
-            }
-            row.add_suffix(&state);
-            self.members.append(&row);
+            r.row.update_property(&[gtk4::accessible::Property::Description(&label)]);
         }
     }
+}
+
+/// Build one person's row: avatar + speaking ring, and the wave meter that
+/// animates from their live sound level (`room::level`).
+fn member_row(m: &MemberView) -> MemberRow {
+    let row = libadwaita::ActionRow::new();
+    row.add_css_class("room-member");
+
+    let avatar = libadwaita::Avatar::new(40, Some(&m.user), true);
+    let ring = gtk4::Box::new(gtk4::Orientation::Horizontal, 0);
+    ring.add_css_class("speaking-ring");
+    ring.set_valign(gtk4::Align::Center);
+    ring.append(&avatar);
+    row.add_prefix(&ring);
+
+    let muted_icon = gtk4::Image::from_icon_name("microphone-disabled-symbolic");
+    muted_icon.add_css_class("room-muted");
+    muted_icon.set_tooltip_text(Some(&tr!("muted")));
+    muted_icon.set_visible(false);
+    row.add_suffix(&muted_icon);
+
+    let wave = gtk4::DrawingArea::builder()
+        .content_width(44)
+        .content_height(28)
+        .valign(gtk4::Align::Center)
+        .build();
+    wave.add_css_class("voice-wave");
+    wave.set_tooltip_text(Some(&tr!("Sound level")));
+    row.add_suffix(&wave);
+
+    let muted = Rc::new(std::cell::Cell::new(m.muted));
+    // Smoothed level: rises fast with the voice, falls gently.
+    let shown = Rc::new(std::cell::Cell::new(0.0_f64));
+    {
+        let shown = shown.clone();
+        wave.set_draw_func(move |w, cr, width, height| {
+            let level = shown.get();
+            let t = w.frame_clock().map_or(0, |c| c.frame_time()) as f64 / 1_000_000.0;
+            let (bars, gap) = (5, 4.0);
+            let bar_w = (f64::from(width) - gap * f64::from(bars - 1)) / f64::from(bars);
+            let h = f64::from(height);
+            let accent = w.color();
+            let speaking = level > 0.06;
+            for i in 0..bars {
+                // Each bar has its own phase, so the waves ripple.
+                let phase = t * 9.0 + f64::from(i) * 1.3;
+                let wiggle = 0.55 + 0.45 * phase.sin().abs();
+                let shape = [0.55, 0.8, 1.0, 0.8, 0.55][i as usize];
+                let frac = if speaking { (0.2 + 0.8 * level * shape * wiggle).min(1.0) } else { 0.14 };
+                let bh = (h * frac).max(4.0);
+                let x = f64::from(i) * (bar_w + gap);
+                let y = (h - bh) / 2.0;
+                let r = (bar_w / 2.0).min(bh / 2.0);
+                cr.new_sub_path();
+                cr.arc(x + r, y + r, r, std::f64::consts::PI, 1.5 * std::f64::consts::PI);
+                cr.arc(x + bar_w - r, y + r, r, 1.5 * std::f64::consts::PI, 0.0);
+                cr.arc(x + bar_w - r, y + bh - r, r, 0.0, 0.5 * std::f64::consts::PI);
+                cr.arc(x + r, y + bh - r, r, 0.5 * std::f64::consts::PI, std::f64::consts::PI);
+                cr.close_path();
+                let alpha = if speaking { 0.95 } else { 0.28 };
+                cr.set_source_rgba(
+                    f64::from(accent.red()),
+                    f64::from(accent.green()),
+                    f64::from(accent.blue()),
+                    alpha,
+                );
+                let _ = cr.fill();
+            }
+        });
+    }
+    {
+        let (ip, shown, muted, ring) = (m.ip.clone(), shown.clone(), muted.clone(), ring.clone());
+        wave.add_tick_callback(move |w, _| {
+            let target = if muted.get() { 0.0 } else { f64::from(room::level(&ip)) };
+            let prev = shown.get();
+            let next = if target > prev { prev + (target - prev) * 0.55 } else { prev + (target - prev) * 0.12 };
+            shown.set(next);
+            if next > 0.06 {
+                ring.add_css_class("speaking");
+                w.add_css_class("speaking");
+            } else {
+                ring.remove_css_class("speaking");
+                w.remove_css_class("speaking");
+            }
+            w.queue_draw();
+            glib::ControlFlow::Continue
+        });
+    }
+    MemberRow { row, muted_icon, wave, muted }
 }
 
 fn set_mute_look(b: &gtk4::ToggleButton) {

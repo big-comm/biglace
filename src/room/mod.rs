@@ -38,18 +38,24 @@ const WRITE_TIMEOUT: Duration = Duration::from_secs(2);
 /// Microphone → voice Opus (mono 48 kHz, 20 ms frames, DTX, in-band FEC).
 pub const MIC_DESC: &str = "pulsesrc name=mic buffer-time=40000 latency-time=10000 \
      ! audioconvert ! audioresample ! audio/x-raw,rate=48000,channels=1 \
+     ! level name=level interval=50000000 post-messages=true \
      ! opusenc bitrate=32000 frame-size=20 audio-type=voice dtx=true inband-fec=true packet-loss-percentage=5 \
      ! appsink name=asink sync=false max-buffers=50 drop=true";
 /// One peer's voice → the speakers (played as it arrives).
 pub const PEER_OUT_DESC: &str = "appsrc name=asrc is-live=true format=time do-timestamp=true \
        caps=audio/x-opus,channel-mapping-family=0,channels=1,rate=48000 \
-     ! opusdec plc=true ! audioconvert ! audioresample ! autoaudiosink sync=false";
+     ! opusdec plc=true ! level name=level interval=50000000 post-messages=true \
+     ! audioconvert ! audioresample ! autoaudiosink sync=false";
+/// A sound level older than this is silence (DTX: nothing arrives then).
+const LEVEL_STALE_US: u64 = 250_000;
 
 /// One participant, as the window shows it.
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct MemberView {
     pub user: String,
     pub device: String,
+    /// Their tailnet address — what [`level`] takes.
+    pub ip: String,
     pub me: bool,
     pub muted: bool,
     /// Sound path to them is up (always true for yourself).
@@ -109,6 +115,8 @@ struct Room {
     peers: Mutex<HashMap<String, Peer>>,
     dialing: Mutex<HashSet<String>>,
     my_last_voice_us: AtomicU64,
+    /// Loudness (0–1) and when it was measured, per address (ours too).
+    levels: Mutex<HashMap<String, (f32, u64)>>,
 }
 
 fn current() -> &'static Mutex<Option<Arc<Room>>> {
@@ -156,6 +164,7 @@ impl Room {
                     },
                     user: p.user,
                     device: p.device,
+                    ip: p.ip,
                 }
             })
             .collect();
@@ -217,8 +226,10 @@ impl Room {
         let ip = ip.to_string();
         let _ = std::thread::Builder::new().name("biglace-room-peer".into()).spawn(move || {
             let out = start_playback();
-            if let Err(e) = &out {
-                tailscale::dbg(&format!("room: can't play {ip}'s sound: {e}"));
+            let playing = Arc::new(AtomicBool::new(true));
+            match &out {
+                Ok((p, _)) => watch_levels(p, Arc::downgrade(&room), ip.clone(), playing.clone()),
+                Err(e) => tailscale::dbg(&format!("room: can't play {ip}'s sound: {e}")),
             }
             loop {
                 if room.stop.load(Ordering::Acquire) {
@@ -244,6 +255,7 @@ impl Room {
                     Err(_) => break,
                 }
             }
+            playing.store(false, Ordering::Release);
             if let Ok((p, _)) = out {
                 use gstreamer::prelude::*;
                 let _ = p.set_state(gstreamer::State::Null);
@@ -293,6 +305,90 @@ impl Room {
             }
         }
     }
+}
+
+/// "level" element message → loudness 0–1 (the loudest channel's RMS,
+/// −50 dB and below is silence, −10 dB and above is full).
+fn loudness(s: &gstreamer::StructureRef) -> Option<f32> {
+    let rms = s.get::<gstreamer::glib::ValueArray>("rms").ok()?;
+    let db = rms.iter().filter_map(|v| v.get::<f64>().ok()).fold(f64::NEG_INFINITY, f64::max);
+    if !db.is_finite() {
+        return Some(0.0);
+    }
+    Some((((db + 50.0) / 40.0).clamp(0.0, 1.0)) as f32)
+}
+
+/// Keep `room.levels[key]` current from `p`'s "level" element, while
+/// `alive` and the room last.
+fn watch_levels(p: &gstreamer::Pipeline, room: std::sync::Weak<Room>, key: String, alive: Arc<AtomicBool>) {
+    use gstreamer::prelude::*;
+    let Some(bus) = p.bus() else { return };
+    let _ = std::thread::Builder::new().name("biglace-room-level".into()).spawn(move || {
+        while alive.load(Ordering::Acquire) {
+            let Some(msg) = bus.timed_pop_filtered(
+                gstreamer::ClockTime::from_mseconds(200),
+                &[gstreamer::MessageType::Element],
+            ) else {
+                if room.upgrade().is_none_or(|r| r.stop.load(Ordering::Acquire)) {
+                    break;
+                }
+                continue;
+            };
+            let Some(level) = msg.structure().filter(|s| s.name() == "level").and_then(loudness) else { continue };
+            let Some(room) = room.upgrade() else { break };
+            if room.stop.load(Ordering::Acquire) {
+                break;
+            }
+            if let Ok(mut l) = room.levels.lock() {
+                l.insert(key.clone(), (level, now_us()));
+            };
+        }
+    });
+}
+
+/// How loud `ip` (a participant, us included) sounds right now, 0–1. Cheap:
+/// the window asks every frame while it animates. 0 when muted or silent.
+pub fn level(ip: &str) -> f32 {
+    #[cfg(debug_assertions)]
+    if preview() {
+        return preview_level(ip);
+    }
+    let Some(room) = room() else { return 0.0 };
+    if ip == room.my_ip && room.muted.load(Ordering::Relaxed) {
+        return 0.0;
+    }
+    let now = now_us();
+    room.levels
+        .lock()
+        .ok()
+        .and_then(|l| l.get(ip).copied())
+        .filter(|(_, at)| now.saturating_sub(*at) < LEVEL_STALE_US)
+        .map_or(0.0, |(v, _)| v)
+}
+
+/// Development builds only: BIGLACE_PREVIEW=room shows a sample room whose
+/// people "talk" in turns, to look at the animation without a real call.
+#[cfg(debug_assertions)]
+pub fn preview() -> bool {
+    std::env::var("BIGLACE_PREVIEW").as_deref() == Ok("room")
+}
+
+#[cfg(debug_assertions)]
+fn preview_level(ip: &str) -> f32 {
+    let t = now_us() as f64 / 1_000_000.0;
+    let (period, offset) = match ip {
+        "100.64.0.101" => (4.0, 0.0),
+        "100.64.0.102" => (4.0, 2.0),
+        "100.64.0.103" => (6.0, 1.0),
+        _ => return 0.0,
+    };
+    let on = ((t + offset) % period) < period / 2.2;
+    if !on {
+        return 0.0;
+    }
+    // Syllable-like bursts.
+    let s = (t * 7.3 + offset).sin().abs() * 0.6 + (t * 13.1).sin().abs() * 0.4;
+    (s * 0.9) as f32
 }
 
 /// The lower address dials (string order of the dotted IPv4 is fine: both
@@ -367,10 +463,12 @@ pub fn join_with(group: &str, mic_desc: &str) -> Result<(), String> {
         peers: Mutex::new(HashMap::new()),
         dialing: Mutex::new(HashSet::new()),
         my_last_voice_us: AtomicU64::new(0),
+        levels: Mutex::new(HashMap::new()),
     });
     let mic = start_mic(&room, mic_desc);
-    if let Err(e) = &mic {
-        emit(RoomEvent::Problem(format!("microphone: {e}")));
+    match &mic {
+        Ok(p) => watch_levels(p, Arc::downgrade(&room), room.my_ip.clone(), Arc::new(AtomicBool::new(true))),
+        Err(e) => emit(RoomEvent::Problem(format!("microphone: {e}"))),
     }
     if let Ok(mut cur) = current().lock() {
         *cur = Some(room.clone());
@@ -481,6 +579,48 @@ mod tests {
     fn exactly_one_side_dials() {
         assert!(dials("100.64.0.3", "100.64.0.17") ^ dials("100.64.0.17", "100.64.0.3"));
         assert!(!dials("100.64.0.3", "100.64.0.3"));
+    }
+
+    /// The microphone chain reports how loud it is: a tone reads loud,
+    /// silence reads zero (what the talking animation follows).
+    #[test]
+    fn microphone_level_follows_the_sound() {
+        use gstreamer as gst;
+        use gstreamer::prelude::*;
+        let _turn = crate::remote::heavy_test();
+        if gst::init().is_err() || gst::ElementFactory::find("level").is_none() {
+            return;
+        }
+        let measure = |wave: &str| -> f32 {
+            let desc = MIC_DESC.replace(
+                "pulsesrc name=mic buffer-time=40000 latency-time=10000",
+                &format!("audiotestsrc num-buffers=25 samplesperbuffer=960 volume=0.3 wave={wave}"),
+            );
+            let p = gst::parse::launch(&desc).unwrap().downcast::<gst::Pipeline>().unwrap();
+            p.set_state(gst::State::Playing).unwrap();
+            let bus = p.bus().unwrap();
+            let mut loudest: f32 = 0.0;
+            let mut seen = 0;
+            while let Some(msg) = bus.timed_pop_filtered(
+                gst::ClockTime::from_seconds(3),
+                &[gst::MessageType::Element, gst::MessageType::Eos],
+            ) {
+                if msg.type_() == gst::MessageType::Eos {
+                    break;
+                }
+                if let Some(v) = msg.structure().filter(|s| s.name() == "level").and_then(loudness) {
+                    loudest = loudest.max(v);
+                    seen += 1;
+                }
+            }
+            p.set_state(gst::State::Null).unwrap();
+            assert!(seen > 5, "only {seen} level messages");
+            loudest
+        };
+        let tone = measure("sine");
+        let quiet = measure("silence");
+        assert!(tone > 0.6, "tone reads {tone}");
+        assert!(quiet < 0.05, "silence reads {quiet}");
     }
 
     /// The room's sound chain works: microphone pipeline (a test tone here)

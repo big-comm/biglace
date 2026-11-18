@@ -269,6 +269,23 @@ pub fn build(app: &libadwaita::Application, start_hidden: bool) {
         });
     }
 
+    #[cfg(debug_assertions)]
+    if crate::room::preview() {
+        let (nav, rooms_page) = (sidebar_widgets.nav.clone(), rooms_page.clone());
+        glib::timeout_add_seconds_local_once(2, move || {
+            let mut child = nav.first_child();
+            while let Some(w) = child {
+                if w.widget_name() == "rooms" {
+                    if let Some(row) = w.downcast_ref::<gtk4::ListBoxRow>() {
+                        nav.emit_by_name::<()>("row-activated", &[row]);
+                    }
+                }
+                child = w.next_sibling();
+            }
+            glib::timeout_add_seconds_local_once(2, move || rooms_page.show_preview());
+        });
+    }
+
     let breakpoint = libadwaita::Breakpoint::new(
         libadwaita::BreakpointCondition::parse("max-width: 640sp").expect("valid breakpoint"),
     );
