@@ -122,6 +122,35 @@ pub fn sign_headers(method: &str, url: &str, body: &str) -> Option<Vec<(&'static
     ])
 }
 
+fn verifying_key(public: &str) -> Option<ed25519_dalek::VerifyingKey> {
+    let bytes: [u8; 32] = B64.decode(public).ok()?.try_into().ok()?;
+    ed25519_dalek::VerifyingKey::from_bytes(&bytes).ok()
+}
+
+/// Whether `sig` (base64url) is `public`'s signature over `message`.
+pub fn verify(public: &str, message: &str, sig: &str) -> bool {
+    use ed25519_dalek::Verifier;
+    let Some(key) = verifying_key(public) else {
+        return false;
+    };
+    let Some(sig) = B64
+        .decode(sig)
+        .ok()
+        .and_then(|b| <[u8; 64]>::try_from(b).ok())
+        .map(|b| ed25519_dalek::Signature::from_bytes(&b))
+    else {
+        return false;
+    };
+    key.verify(message.as_bytes(), &sig).is_ok()
+}
+
+/// A fresh random challenge (base64url, 43 chars) for [`prove`].
+pub fn new_challenge() -> Option<String> {
+    let mut raw = [0u8; 32];
+    getrandom::getrandom(&mut raw).ok()?;
+    Some(B64.encode(raw))
+}
+
 /// Answer to the panel's challenge: `{ key, sig }` as JSON, or None when the
 /// challenge is malformed or there's no key.
 pub fn prove(challenge: &str) -> Option<String> {
@@ -191,6 +220,20 @@ mod tests {
             B64.encode(k.sign(m.as_bytes()).to_bytes()),
             "618YLuhBTTq72sZOVI2DpEyvu3-GhFwLl32MUVAB0FR-uagL3qfbokX703awIp6NP9kcOzMsKLBYzVnWafdKCA"
         );
+    }
+
+    #[test]
+    fn verify_accepts_only_the_right_key_and_message() {
+        let k = SigningKey::from_bytes(&[7u8; 32]);
+        let public = B64.encode(k.verifying_key().to_bytes());
+        let sig = B64.encode(k.sign(b"hello").to_bytes());
+        assert!(verify(&public, "hello", &sig));
+        assert!(!verify(&public, "hellO", &sig));
+        let other = B64.encode(SigningKey::from_bytes(&[8u8; 32]).verifying_key().to_bytes());
+        assert!(!verify(&other, "hello", &sig));
+        assert!(!verify("junk", "hello", &sig));
+        assert!(!verify(&public, "hello", "junk"));
+        assert_eq!(new_challenge().map(|c| c.len()), Some(43));
     }
 
     #[test]

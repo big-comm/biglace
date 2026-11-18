@@ -56,12 +56,15 @@ impl Hello {
             protocol: PROTOCOL,
             version: crate::APP_VERSION.to_string(),
             os: std::env::consts::OS.to_string(),
-            capabilities: CAPABILITIES.iter().map(|c| c.to_string()).collect(),
+            capabilities: CAPABILITIES
+                .iter()
+                .map(|c| c.to_string())
+                .chain(crate::remote::can_host().then(|| crate::remote::CAPABILITY.to_string()))
+                .collect(),
         }
     }
 
     /// True when the peer announced `capability`.
-    #[allow(dead_code)] // first used by the remote-screen phase
     pub fn supports(&self, capability: &str) -> bool {
         self.capabilities.iter().any(|c| c == capability)
     }
@@ -77,7 +80,6 @@ mod tests {
         let json = serde_json::to_string(&local).unwrap();
         assert_eq!(serde_json::from_str::<Hello>(&json).unwrap(), local);
         assert!(local.supports("hello"));
-        assert!(!local.supports("screen"));
 
         // A newer peer may add fields; an older one may omit capabilities.
         let newer: Hello = serde_json::from_str(

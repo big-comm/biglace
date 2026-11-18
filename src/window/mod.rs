@@ -4,6 +4,7 @@ mod groups;
 mod invites;
 mod join_dialog;
 mod peer_row;
+mod remote_ui;
 mod sidebar;
 mod style;
 
@@ -381,6 +382,8 @@ pub fn build(app: &libadwaita::Application, start_hidden: bool) {
     spawn_latency_worker(&ctx);
     // Answer other BigLace peers on this device's tailnet address.
     agent::server::start();
+    // Remote desktop: answer access requests and show "End access".
+    remote_ui::start_host_listener(&ctx.ui.win);
     spawn_health_worker(&ctx);
     spawn_reconnect_worker(&ctx);
     spawn_update_check(&ctx);

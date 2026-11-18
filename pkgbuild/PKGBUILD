@@ -10,6 +10,12 @@ depends=(
     'gettext'
     'openssl'
     'hicolor-icon-theme'
+    # Remote desktop: capture/encode (host) and decode (viewer).
+    'gstreamer'
+    'gst-plugins-base'
+    'gst-plugins-good'
+    'gst-plugins-ugly'
+    'gst-libav'
 )
 makedepends=(
     'git'

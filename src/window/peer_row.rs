@@ -284,6 +284,20 @@ pub fn build(peer: &Peer, ctx: &PeerCtx) -> libadwaita::ExpanderRow {
         row.add_suffix(&btn_term);
     }
 
+    // Remote desktop, when the peer's BigLace can share its screen.
+    if peer.online && peer.agent.as_ref().is_some_and(|a| a.supports(crate::remote::CAPABILITY)) {
+        let btn_screen = gtk4::Button::builder()
+            .icon_name("video-display-symbolic")
+            .css_classes(["flat"])
+            .valign(gtk4::Align::Center)
+            .tooltip_text(tr!("See and control the screen"))
+            .build();
+        btn_screen.update_property(&[gtk4::accessible::Property::Label(&tr!("See and control the screen"))]);
+        let (ip, name, toast) = (peer.ipv4.clone(), peer.display_name(), ctx.toast.clone());
+        btn_screen.connect_clicked(move |_| super::remote_ui::open_viewer(&ip, &name, &toast));
+        row.add_suffix(&btn_screen);
+    }
+
     // ── Detail rows (visible when expanded) ──
     if !peer.dns_name.is_empty() {
         row.add_row(&detail_row_with_copy(

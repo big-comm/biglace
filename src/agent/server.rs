@@ -131,11 +131,24 @@ fn handle(stream: TcpStream, peer: SocketAddr, auth: &Authenticator) {
     if prepare(&stream).is_err() {
         return;
     }
-    let Some((method, path)) = read_request_head(&stream) else {
+    let Some((head, method, path)) = read_request_head(&stream) else {
         let _ = respond(&stream, 400, "bad request");
         return;
     };
     let identity = auth(peer.ip());
+    // A remote-screen session keeps the connection: hand it over.
+    if path == crate::remote::SCREEN_PATH {
+        match (&identity, method.as_str()) {
+            (Some(id), "GET") => crate::remote::host::serve(stream, peer.ip(), &parse_headers(&head), id.clone()),
+            (None, _) => {
+                let _ = respond(&stream, 403, "forbidden");
+            }
+            _ => {
+                let _ = respond(&stream, 405, "method not allowed");
+            }
+        }
+        return;
+    }
     let (status, body) = route(&method, &path, identity.as_ref());
     if let Some(id) = &identity {
         tailscale::dbg(&format!(
@@ -146,9 +159,9 @@ fn handle(stream: TcpStream, peer: SocketAddr, auth: &Authenticator) {
     let _ = respond(&stream, status, &body);
 }
 
-/// Read the request head and return `(method, path-without-query)`. Bodies
-/// are not read: no route takes one yet.
-fn read_request_head(mut stream: &TcpStream) -> Option<(String, String)> {
+/// Read the request head and return `(head, method, path-without-query)`.
+/// Bodies are not read: no route takes one.
+fn read_request_head(mut stream: &TcpStream) -> Option<(Vec<u8>, String, String)> {
     let mut head = Vec::with_capacity(512);
     let mut buf = [0u8; 1024];
     while !head.windows(4).any(|w| w == b"\r\n\r\n") {
@@ -161,7 +174,27 @@ fn read_request_head(mut stream: &TcpStream) -> Option<(String, String)> {
         }
         head.extend_from_slice(&buf[..n]);
     }
-    parse_request_line(&head)
+    let (method, path) = parse_request_line(&head)?;
+    Some((head, method, path))
+}
+
+/// Header fields of a request head, names lowercased. Repeated or malformed
+/// lines are ignored (the first value wins).
+fn parse_headers(head: &[u8]) -> HashMap<String, String> {
+    let mut out = HashMap::new();
+    let Ok(text) = std::str::from_utf8(head) else {
+        return out;
+    };
+    for line in text.split("\r\n").skip(1) {
+        if line.is_empty() {
+            break;
+        }
+        if let Some((name, value)) = line.split_once(':') {
+            out.entry(name.trim().to_ascii_lowercase())
+                .or_insert_with(|| value.trim().to_string());
+        }
+    }
+    out
 }
 
 fn parse_request_line(head: &[u8]) -> Option<(String, String)> {
@@ -205,20 +238,16 @@ fn respond(mut stream: &TcpStream, status: u16, body: &str) -> io::Result<()> {
 /// Pure routing: method + path + who's asking → status + body. Every route
 /// requires a tailnet identity; unauthenticated callers learn nothing, not
 /// even which paths exist.
-/// Tailnet account the BigScale panel runs as (scripts/entrypoint.sh there).
-const PANEL_LOGIN: &str = "_panel";
-
 fn route(method: &str, path: &str, identity: Option<&Identity>) -> (u16, String) {
     if identity.is_none() {
         return (403, "forbidden".into());
     }
-    // The panel checking this device's key (see device_key). Only the panel
-    // may ask: proofs are useless to anyone else, but there's no reason to
-    // hand them out.
+    // The panel, or a peer this device asked for its screen, checking that
+    // the request was signed by this device's key (see device_key). Any
+    // tailnet caller may ask: a proof only says "the BigLace at this
+    // address holds key K", which is public, and can't be replayed as a
+    // signed request (different message prefix).
     if let Some(challenge) = path.strip_prefix("/v1/proof/") {
-        if identity.map(|id| id.login.as_str()) != Some(PANEL_LOGIN) {
-            return (403, "forbidden".into());
-        }
         if method != "GET" {
             return (405, "method not allowed".into());
         }
@@ -346,18 +375,21 @@ mod tests {
     }
 
     #[test]
-    fn only_the_panel_gets_key_proofs() {
+    fn key_proofs_need_a_tailnet_identity_and_a_valid_challenge() {
         let challenge = "A".repeat(43);
         let path = format!("/v1/proof/{challenge}");
         assert_eq!(route("GET", &path, None).0, 403);
-        assert_eq!(route("GET", &path, Some(&someone())).0, 403);
-        let panel = Identity {
-            login: PANEL_LOGIN.into(),
-            display_name: "panel".into(),
-            device: "panel".into(),
-        };
-        assert_eq!(route("POST", &path, Some(&panel)).0, 405);
-        assert_eq!(route("GET", "/v1/proof/short", Some(&panel)).0, 400);
+        assert_eq!(route("POST", &path, Some(&someone())).0, 405);
+        assert_eq!(route("GET", "/v1/proof/short", Some(&someone())).0, 400);
+        assert_eq!(route("GET", &path, Some(&someone())).0, 200);
+    }
+
+    #[test]
+    fn headers_are_parsed_case_insensitively() {
+        let h = parse_headers(b"GET /v1/screen HTTP/1.1\r\nHost: 100.64.0.3:41980\r\nX-BigLace-Key: abc\r\nbad line\r\n\r\n");
+        assert_eq!(h.get("host").map(String::as_str), Some("100.64.0.3:41980"));
+        assert_eq!(h.get("x-biglace-key").map(String::as_str), Some("abc"));
+        assert_eq!(h.len(), 2);
     }
 
     #[test]
