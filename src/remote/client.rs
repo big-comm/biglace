@@ -25,12 +25,13 @@ pub enum OpenError {
     Other(String),
 }
 
-/// One decoded frame, RGBA, tightly packed rows of `stride` bytes.
+/// One decoded frame, RGBA, rows of `stride` bytes. `data` wraps the
+/// decoder's own buffer (no copy on the way to the screen).
 pub struct Frame {
     pub width: u32,
     pub height: u32,
     pub stride: usize,
-    pub data: Vec<u8>,
+    pub data: gtk4::glib::Bytes,
 }
 
 /// What the session thread tells the window.
@@ -147,18 +148,31 @@ pub fn open(ip: &str, events: async_channel::Sender<Event>) -> Result<Session, O
     Ok(Session { input: tx, stream })
 }
 
+/// H.264 decoder for the viewer. Software decoding must not use frame
+/// threading: each extra thread holds a frame back (14 cores = ~14 frames,
+/// half a second). Slice threads decode one frame in parallel instead.
+pub(crate) fn decoder() -> &'static str {
+    "avdec_h264 thread-type=slice"
+}
+
+/// Viewer pipeline: H.264 access units in, RGBA frames out, nothing queued
+/// for later (stale frames are dropped, not shown late).
+pub(crate) fn decode_desc(decoder: &str) -> String {
+    format!(
+        "appsrc name=src is-live=true format=time do-timestamp=true \
+           caps=video/x-h264,stream-format=byte-stream,alignment=au \
+         ! h264parse ! {decoder} ! videoconvert n-threads=0 ! video/x-raw,format=RGBA \
+         ! appsink name=sink sync=false max-buffers=1 drop=true"
+    )
+}
+
 fn decode_loop(mut reader: BufReader<TcpStream>, events: &async_channel::Sender<Event>) -> anyhow::Result<()> {
     use gstreamer as gst;
     use gstreamer::prelude::*;
     use gstreamer_app as gst_app;
 
     gst::init()?;
-    let pipeline = gst::parse::launch(
-        "appsrc name=src is-live=true format=time do-timestamp=true \
-           caps=video/x-h264,stream-format=byte-stream,alignment=au \
-         ! h264parse ! avdec_h264 ! videoconvert ! video/x-raw,format=RGBA \
-         ! appsink name=sink sync=false max-buffers=2 drop=true",
-    )?
+    let pipeline = gst::parse::launch(&decode_desc(decoder()))?
     .downcast::<gst::Pipeline>()
     .map_err(|_| anyhow::anyhow!("not a pipeline"))?;
     let src = pipeline
@@ -179,13 +193,13 @@ fn decode_loop(mut reader: BufReader<TcpStream>, events: &async_channel::Sender<
                     let sample = sink.pull_sample().map_err(|_| gst::FlowError::Eos)?;
                     let caps = sample.caps().ok_or(gst::FlowError::Error)?;
                     let info = gstreamer_video::VideoInfo::from_caps(caps).map_err(|_| gst::FlowError::Error)?;
-                    let buffer = sample.buffer().ok_or(gst::FlowError::Error)?;
-                    let map = buffer.map_readable().map_err(|_| gst::FlowError::Error)?;
+                    let buffer = sample.buffer_owned().ok_or(gst::FlowError::Error)?;
+                    let mapped = buffer.into_mapped_buffer_readable().map_err(|_| gst::FlowError::Error)?;
                     let frame = Frame {
                         width: info.width(),
                         height: info.height(),
                         stride: info.stride()[0] as usize,
-                        data: map.as_slice().to_vec(),
+                        data: gtk4::glib::Bytes::from_owned(mapped),
                     };
                     // A closed window ends the session.
                     if events.try_send(Event::Frame(frame)).is_err() && events.is_closed() {
@@ -230,6 +244,72 @@ mod tests {
     use gstreamer as gst;
     use gstreamer::prelude::*;
     use std::net::TcpListener;
+
+    /// Latency budget: frames encoded with the host's pipeline settings and
+    /// decoded with the viewer's, pushed in real time (30 fps). Measures
+    /// capture-to-decoded time per frame. Prints the numbers; fails above a
+    /// generous bound so a regression (e.g. frame threading) is caught.
+    #[test]
+    fn encode_decode_latency_is_low() {
+        use std::time::Instant;
+        gst::init().unwrap();
+        let Some(enc) = crate::remote::host::encoder() else { return };
+        if gst::ElementFactory::find("avdec_h264").is_none() {
+            return;
+        }
+        let measure = |dec: &str| -> f64 {
+            let host = gst::parse::launch(&crate::remote::host::pipeline_desc(
+                "videotestsrc is-live=true num-buffers=120 pattern=ball ! video/x-raw,width=1920,height=1080,framerate=30/1 ! videoconvert",
+                enc,
+            ))
+            .unwrap()
+            .downcast::<gst::Pipeline>()
+            .unwrap();
+            let hsink = host.by_name("sink").unwrap().downcast::<gstreamer_app::AppSink>().unwrap();
+            let viewer = gst::parse::launch(&decode_desc(dec)).unwrap().downcast::<gst::Pipeline>().unwrap();
+            let src = viewer.by_name("src").unwrap().downcast::<gstreamer_app::AppSrc>().unwrap();
+            // Our own timestamps (frame index) so each decoded frame can be
+            // matched with the moment it was captured.
+            src.set_property("do-timestamp", false);
+            let vsink = viewer.by_name("sink").unwrap().downcast::<gstreamer_app::AppSink>().unwrap();
+            viewer.set_state(gst::State::Playing).unwrap();
+            let start = Instant::now();
+            let captured_at = |n: u64| start + Duration::from_micros(n * 1_000_000 / 30);
+            let collector = std::thread::spawn(move || {
+                let mut lat = Vec::new();
+                while let Some(s) = vsink.try_pull_sample(gst::ClockTime::from_seconds(2)) {
+                    let now = Instant::now();
+                    let n = s.buffer().and_then(|b| b.pts()).map(|p| p.nseconds() / 33_333_333).unwrap_or(0);
+                    if n > 10 {
+                        lat.push((n, now));
+                    }
+                }
+                lat
+            });
+            host.set_state(gst::State::Playing).unwrap();
+            let mut frame = 0u64;
+            while let Some(s) = hsink.try_pull_sample(gst::ClockTime::from_seconds(3)) {
+                let mut buf = gst::Buffer::from_mut_slice(s.buffer().unwrap().map_readable().unwrap().as_slice().to_vec());
+                buf.get_mut().unwrap().set_pts(gst::ClockTime::from_nseconds(frame * 33_333_333 + 1_000_000));
+                src.push_buffer(buf).unwrap();
+                frame += 1;
+            }
+            let _ = src.end_of_stream();
+            let lat = collector.join().unwrap();
+            host.set_state(gst::State::Null).unwrap();
+            viewer.set_state(gst::State::Null).unwrap();
+            let ms: Vec<f64> = lat
+                .iter()
+                .map(|(n, at)| at.saturating_duration_since(captured_at(*n)).as_secs_f64() * 1000.0)
+                .collect();
+            ms.iter().sum::<f64>() / ms.len().max(1) as f64
+        };
+        let ours = measure(decoder());
+        eprintln!("latency with {}: {ours:.1} ms (encoder: {})", decoder(), enc.0);
+        let auto = measure("avdec_h264");
+        eprintln!("latency with avdec_h264 defaults: {auto:.1} ms");
+        assert!(ours < 120.0, "encode+decode latency {ours:.1} ms");
+    }
 
     /// Encode a test pattern like a host does, send it over a real TCP
     /// connection in session frames, and decode it like the viewer does:

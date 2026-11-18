@@ -1,6 +1,6 @@
 [package]
 name = "biglace"
-version = "1.21.3"
+version = "1.22.0"
 edition = "2021"
 authors = ["BigCommunity"]
 description = "Mesh VPN client with a graphical interface for Headscale/Tailscale"
@@ -37,6 +37,8 @@ ed25519-dalek = "2"
 sha2 = "0.10"
 base64 = "0.22"
 getrandom = "0.2"
+# Socket options for the remote-desktop stream (send buffer size).
+socket2 = { version = "0.6", features = ["all"] }
 
 # jemalloc: long-running desktop processes on glibc accumulate fragmentation
 # and glibc's malloc doesn't return free pages to the kernel. jemalloc has a

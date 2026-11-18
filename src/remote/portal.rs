@@ -67,7 +67,7 @@ pub fn start() -> anyhow::Result<Portal> {
                     sc.select_sources(
                         &session,
                         SelectSourcesOptions::default()
-                            .set_cursor_mode(CursorMode::EMBEDDED)
+                            .set_cursor_mode(CursorMode::HIDDEN)
                             .set_sources(SourceType::MONITOR)
                             .set_multiple(false),
                     )
@@ -94,7 +94,13 @@ pub fn start() -> anyhow::Result<Portal> {
                 let _ = ready_tx.send(Ok(Portal { fd, node, input: input_tx }));
 
                 let (w, h) = size.map(|(w, h)| (f64::from(w), f64::from(h))).unwrap_or((1920.0, 1080.0));
-                while let Ok(event) = input_rx.recv().await {
+                while let Ok(first) = input_rx.recv().await {
+                  // Everything that piled up meanwhile, with stale moves dropped.
+                  let mut batch = vec![first];
+                  while let Ok(more) = input_rx.try_recv() {
+                      batch.push(more);
+                  }
+                  for event in super::coalesce(batch) {
                     let r = match event {
                         Input::Move { x, y } => {
                             rd.notify_pointer_motion_absolute(
@@ -139,6 +145,7 @@ pub fn start() -> anyhow::Result<Portal> {
                     if let Err(e) = r {
                         crate::tailscale::dbg(&format!("remote: portal input failed: {e}"));
                     }
+                  }
                 }
                 let _ = session.close().await;
             });

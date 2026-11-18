@@ -258,18 +258,19 @@ struct Source {
 
 // What follows each source, up to raw video the encoder chain takes. Every
 // head must end in an element (not caps): `pipeline_desc` appends caps.
-// PipeWire only sends frames when the screen changes, so videorate keeps a
-// steady 30 fps for the encoder.
-const WAYLAND_TAIL: &str = "videoconvert ! videorate ! video/x-raw,framerate=30/1 ! videoconvert";
-const X11_TAIL: &str = "video/x-raw,framerate=30/1 ! videoconvert";
+// PipeWire only sends a frame when the screen changes: nothing to encode or
+// send while it's still, which keeps the host's CPU free.
+const WAYLAND_TAIL: &str = "videoconvert n-threads=2";
+const X11_TAIL: &str = "video/x-raw,framerate=30/1 ! videoconvert n-threads=2";
 
 /// Full pipeline: `head` (source + conversion) → H.264 → appsink.
-fn pipeline_desc(head: &str, (enc, format): (&str, &str)) -> String {
+pub(crate) fn pipeline_desc(head: &str, (enc, format): (&str, &str)) -> String {
     format!(
         "{head} ! video/x-raw,format={format} \
+         ! queue max-size-buffers=1 max-size-bytes=0 max-size-time=0 leaky=downstream \
          ! {enc} ! h264parse config-interval=-1 \
          ! video/x-h264,stream-format=byte-stream,alignment=au \
-         ! appsink name=sink sync=false max-buffers=8"
+         ! appsink name=sink sync=false max-buffers=2"
     )
 }
 
@@ -292,7 +293,8 @@ fn open_source() -> anyhow::Result<Source> {
         })
     } else {
         Ok(Source {
-            head: format!("ximagesrc use-damage=false show-pointer=true ! {X11_TAIL}"),
+            // The viewer draws the pointer itself (no video delay on it).
+            head: format!("ximagesrc use-damage=false show-pointer=false ! {X11_TAIL}"),
             sink: InputSink::X11(super::input_x11::Injector::connect().map(Box::new)),
             _fd: None,
         })
@@ -304,7 +306,22 @@ fn open_source() -> anyhow::Result<Source> {
     anyhow::bail!("screen sharing is not available on this system")
 }
 
+/// Kernel send buffer for the session: big enough for a keyframe in flight,
+/// small enough that a slow link backs up into the (leaky) queue before the
+/// encoder — frames are dropped there instead of piling up seconds of video.
+const SEND_BUFFER: usize = 512 * 1024;
+#[cfg(target_os = "linux")]
+const NOTSENT_LOWAT: u32 = 64 * 1024;
+
 fn run_session(mut stream: TcpStream, stop: &StopHandle) {
+    {
+        let sock = socket2::SockRef::from(&stream);
+        let _ = sock.set_send_buffer_size(SEND_BUFFER);
+        // Only a little unsent data may sit in the kernel: the next frame
+        // waits (and older ones get dropped before the encoder) instead.
+        #[cfg(target_os = "linux")]
+        let _ = sock.set_tcp_notsent_lowat(NOTSENT_LOWAT);
+    }
     let _ = stream.set_write_timeout(Some(WRITE_TIMEOUT));
     let _ = stream.set_read_timeout(None);
     let _ = stream.set_nodelay(true);
@@ -354,13 +371,26 @@ fn run_session(mut stream: TcpStream, stop: &StopHandle) {
 /// device exists, so finding the factory is enough.
 pub fn encoder() -> Option<(&'static str, &'static str)> {
     use gstreamer as gst;
+    // Software encoding takes at most half the cores: the person at this
+    // computer keeps using it while it's being shared.
+    static X264: OnceLock<String> = OnceLock::new();
+    let x264: &'static str = X264.get_or_init(|| {
+        let threads = std::thread::available_parallelism().map_or(2, |n| (n.get() / 2).clamp(1, 4));
+        format!(
+            "x264enc tune=zerolatency speed-preset=ultrafast sliced-threads=true threads={threads} \
+             bitrate=8000 vbv-buf-capacity=50 key-int-max=60 bframes=0 b-adapt=false"
+        )
+    });
     for (name, desc, format) in [
-        ("vah264enc", "vah264enc rate-control=cbr bitrate=6000 key-int-max=60", "NV12"),
+        // Low-latency settings (GStreamer docs): no B-frames, one reference,
+        // fastest preset, a CPB of ~2 frames, slices so the viewer's decoder
+        // can work on one frame in parallel.
         (
-            "x264enc",
-            "x264enc tune=zerolatency speed-preset=ultrafast bitrate=6000 key-int-max=60 threads=2",
-            "I420",
+            "vah264enc",
+            "vah264enc rate-control=cbr bitrate=8000 cpb-size=300 key-int-max=60 b-frames=0 ref-frames=1 target-usage=7 num-slices=4",
+            "NV12",
         ),
+        ("x264enc", x264, "I420"),
         ("openh264enc", "openh264enc bitrate=6000000 gop-size=60 complexity=low", "I420"),
     ] {
         if gst::ElementFactory::find(name).is_some() {
@@ -389,6 +419,7 @@ fn stream_screen(mut stream: TcpStream, head: &str, stop: &StopHandle) -> anyhow
 
     let result = (|| -> anyhow::Result<()> {
         let mut last_info: Option<VideoInfo> = None;
+        let (mut frames, mut bytes, mut since) = (0u32, 0usize, std::time::Instant::now());
         while !stop.stopped() {
             let Some(sample) = sink.try_pull_sample(gst::ClockTime::from_mseconds(500)) else {
                 if sink.is_eos() {
@@ -408,6 +439,17 @@ fn stream_screen(mut stream: TcpStream, head: &str, stop: &StopHandle) -> anyhow
             let Some(buffer) = sample.buffer() else { continue };
             let map = buffer.map_readable()?;
             write_frame(&mut stream, Kind::Video, map.as_slice())?;
+            frames += 1;
+            bytes += map.len();
+            if since.elapsed() >= Duration::from_secs(5) {
+                let secs = since.elapsed().as_secs_f64();
+                tailscale::dbg(&format!(
+                    "remote: sent {:.1} fps, {:.0} kbit/s",
+                    f64::from(frames) / secs,
+                    bytes as f64 * 8.0 / 1000.0 / secs
+                ));
+                (frames, bytes, since) = (0, 0, std::time::Instant::now());
+            }
         }
         Ok(())
     })();
@@ -432,8 +474,8 @@ mod tests {
         }
         // Every encoder present on this machine, not just the preferred one.
         let encoders = [
-            ("vah264enc", ("vah264enc rate-control=cbr bitrate=6000 key-int-max=60", "NV12")),
-            ("x264enc", ("x264enc tune=zerolatency speed-preset=ultrafast bitrate=6000 key-int-max=60 threads=2", "I420")),
+            ("vah264enc", ("vah264enc rate-control=cbr bitrate=8000 cpb-size=300 key-int-max=60 b-frames=0 ref-frames=1 target-usage=7 num-slices=4", "NV12")),
+            ("x264enc", ("x264enc tune=zerolatency speed-preset=ultrafast sliced-threads=true threads=4 bitrate=8000 vbv-buf-capacity=50 key-int-max=60 bframes=0 b-adapt=false", "I420")),
             ("openh264enc", ("openh264enc bitrate=6000000 gop-size=60 complexity=low", "I420")),
         ];
         for (tail, (name, enc)) in [WAYLAND_TAIL, X11_TAIL]

@@ -108,6 +108,21 @@ pub enum Input {
     Key { keysym: u32, pressed: bool },
 }
 
+/// Drop pointer moves that a later move in the same batch supersedes, keeping
+/// every other event (clicks, keys, scroll) in order. A host that replays
+/// input slower than it arrives (each portal call is a D-Bus round trip)
+/// would otherwise fall further and further behind the viewer's hand.
+pub fn coalesce(batch: Vec<Input>) -> Vec<Input> {
+    let mut out: Vec<Input> = Vec::with_capacity(batch.len());
+    for event in batch {
+        if matches!(event, Input::Move { .. }) && matches!(out.last(), Some(Input::Move { .. })) {
+            out.pop();
+        }
+        out.push(event);
+    }
+    out
+}
+
 /// Someone asks to see and control this screen. The UI answers on `reply`.
 pub struct ConsentRequest {
     /// Account name (e.g. `tales`).
@@ -194,6 +209,15 @@ mod tests {
         assert!(read_frame(&mut bad).is_err());
         let huge = [2u8, 0xff, 0xff, 0xff, 0xff];
         assert!(read_frame(&mut &huge[..]).is_err());
+    }
+
+    #[test]
+    fn moves_coalesce_but_clicks_and_keys_stay_in_order() {
+        let mv = |x: f64| Input::Move { x, y: 0.5 };
+        let click = Input::Button { button: 1, pressed: true };
+        let out = coalesce(vec![mv(0.1), mv(0.2), mv(0.3), click.clone(), mv(0.4), mv(0.5)]);
+        assert_eq!(out, vec![mv(0.3), click, mv(0.5)]);
+        assert!(coalesce(vec![]).is_empty());
     }
 
     #[test]

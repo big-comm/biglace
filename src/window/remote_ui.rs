@@ -150,9 +150,8 @@ pub fn open_viewer(ip: &str, name: &str, toast: &libadwaita::ToastOverlay) {
         .vexpand(true)
         .build();
     picture.update_property(&[gtk4::accessible::Property::Label(&trf!("Screen of {name}", "name" => name))]);
-    // The remote screen already draws its own pointer; ours on top of it
-    // would be a second, slightly lagging arrow.
-    picture.set_cursor_from_name(Some("none"));
+    // The host doesn't draw its pointer into the video: ours moves with the
+    // hand, without the video's delay (as RDP clients do).
     let waiting = libadwaita::StatusPage::builder()
         .icon_name("video-display-symbolic")
         .title(trf!("Waiting for {name}…", "name" => name))
@@ -224,12 +223,11 @@ pub fn open_viewer(ip: &str, name: &str, toast: &libadwaita::ToastOverlay) {
                     client::Event::Info(info) => video.set((info.width, info.height)),
                     client::Event::Frame(f) => {
                         video.set((f.width, f.height));
-                        let bytes = glib::Bytes::from_owned(f.data);
                         let tex = gdk::MemoryTexture::new(
                             f.width as i32,
                             f.height as i32,
                             gdk::MemoryFormat::R8g8b8a8,
-                            &bytes,
+                            &f.data,
                             f.stride,
                         );
                         picture.set_paintable(Some(&tex));

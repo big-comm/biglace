@@ -27,6 +27,7 @@ pub struct Content {
     pub self_row: libadwaita::ActionRow,
     pub btn_copy_self_ip: gtk4::Button,
     pub peers_list: gtk4::ListBox,
+    pub search: gtk4::SearchEntry,
     pub bottom_label: gtk4::Label,
 }
 
@@ -57,6 +58,15 @@ pub fn build() -> Content {
         .tooltip_text(tr!("Main menu"))
         .build();
     header.pack_end(&btn_menu);
+
+    // Filter the device list as you type (name, address, system, owner).
+    let search = gtk4::SearchEntry::builder()
+        .placeholder_text(tr!("Search devices"))
+        .width_chars(22)
+        .visible(false)
+        .build();
+    search.update_property(&[gtk4::accessible::Property::Label(&tr!("Search devices"))]);
+    header.pack_start(&search);
 
     // Refresh used to be the first item inside the hamburger menu; bringing it
     // out as a one-click icon next to the menu cuts the most common debug
@@ -139,6 +149,26 @@ pub fn build() -> Content {
     stack.add_named(&build_connecting_page(), Some("connecting"));
 
     let (page_connected, self_row, btn_copy_self_ip, peers_list) = build_connected_page();
+    {
+        let query = search.clone();
+        peers_list.set_filter_func(move |row| {
+            let q = query.text().trim().to_lowercase();
+            if q.is_empty() {
+                return true;
+            }
+            let Some(r) = row.downcast_ref::<libadwaita::PreferencesRow>() else {
+                return true;
+            };
+            let mut hay = r.title().to_lowercase();
+            if let Some(e) = row.downcast_ref::<libadwaita::ExpanderRow>() {
+                hay.push(' ');
+                hay.push_str(&e.subtitle().to_lowercase());
+            }
+            q.split_whitespace().all(|w| hay.contains(w))
+        });
+        let list = peers_list.clone();
+        search.connect_search_changed(move |_| list.invalidate_filter());
+    }
     stack.add_named(&page_connected, Some("connected"));
 
     toolbar.set_content(Some(&stack));
@@ -174,7 +204,8 @@ pub fn build() -> Content {
         btn_start_service,
         self_row,
         btn_copy_self_ip,
-        peers_list,
+        peers_list: peers_list.clone(),
+        search: search.clone(),
         bottom_label,
     }
 }

@@ -264,6 +264,9 @@ pub fn build(app: &libadwaita::Application, start_hidden: bool) {
     breakpoint.add_setter(&split, "collapsed", Some(&true.to_value()));
     win.add_breakpoint(breakpoint);
 
+    // Typing on the device list goes straight into the search.
+    content_widgets.search.set_key_capture_widget(Some(&content_widgets.peers_list));
+
     // The manual key setup lives on the sign-in page now.
     content_widgets.signin_extra.append(&sidebar_widgets.manual_group);
 
@@ -1898,6 +1901,7 @@ fn apply_state(ctx: &Ctx, state: AppState, status: &Status, peers: &[Peer]) {
     ui.content.stack.set_visible_child_name(page);
     // Inviting needs the panel, reached over the tunnel.
     ui.content.btn_invite.set_visible(state == AppState::Connected);
+    ui.content.search.set_visible(state == AppState::Connected);
 
     // ── Identity card ──
     let configured = has_connect_config(&cfg_snap);
