@@ -234,7 +234,7 @@ impl Clock {
     }
 }
 
-fn decode_loop(mut reader: BufReader<TcpStream>, events: &async_channel::Sender<Event>) -> anyhow::Result<()> {
+pub(crate) fn decode_loop(mut reader: BufReader<TcpStream>, events: &async_channel::Sender<Event>) -> anyhow::Result<()> {
     use gstreamer as gst;
     use gstreamer::prelude::*;
     use gstreamer_app as gst_app;
@@ -329,14 +329,15 @@ fn decode_loop(mut reader: BufReader<TcpStream>, events: &async_channel::Sender<
                         f => f,
                     };
                     // PTS = capture time (relative): it survives decoding,
-                    // so each decoded frame knows when it was captured.
-                    let mut buffer = gst::Buffer::from_slice(payload);
-                    if let Some(b) = buffer.get_mut() {
+                    // so each decoded frame knows when it was captured. Set
+                    // on the sliced buffer itself: copy_region only copies
+                    // timestamps for regions starting at offset 0.
+                    let mut sub = gst::Buffer::from_slice(payload)
+                        .copy_region(gst::BufferCopyFlags::MEMORY, 8..)
+                        .map_err(|_| anyhow::anyhow!("bad frame"))?;
+                    if let Some(b) = sub.get_mut() {
                         b.set_pts(gst::ClockTime::from_useconds(captured.saturating_sub(first)));
                     }
-                    let sub = buffer
-                        .copy_region(gst::BufferCopyFlags::MEMORY | gst::BufferCopyFlags::TIMESTAMPS, 8..)
-                        .map_err(|_| anyhow::anyhow!("bad frame"))?;
                     if src.push_buffer(sub).is_err() {
                         anyhow::bail!("decoder stopped");
                     }

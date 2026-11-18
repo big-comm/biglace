@@ -253,3 +253,65 @@ mod tests {
         assert!(serde_json::from_str::<Input>(r#"{"t":"nope"}"#).is_err());
     }
 }
+
+/// The real host code feeding the real viewer code over a real TCP
+/// connection, with a capture source slower than the rate it was asked for
+/// (as ximagesrc in a VM: 60 fps asked, 25 delivered). Latency must stay
+/// flat and low — it used to grow by the second.
+#[cfg(test)]
+mod end_to_end {
+    use super::*;
+    use std::net::{TcpListener, TcpStream};
+    use std::sync::{Arc, Mutex};
+    use std::time::{Duration, Instant};
+
+    #[test]
+    fn slow_capture_keeps_latency_flat() {
+        if gstreamer::init().is_err() || host::encoder().is_none() {
+            return;
+        }
+        let listener = TcpListener::bind("127.0.0.1:0").unwrap();
+        let addr = listener.local_addr().unwrap();
+        let host = std::thread::spawn(move || {
+            let (s, _) = listener.accept().unwrap();
+            let stop = host::StopHandle::new(&s);
+            let writer = Mutex::new(s);
+            let stopper = stop.clone();
+            std::thread::spawn(move || {
+                std::thread::sleep(Duration::from_secs(5));
+                stopper.stop();
+            });
+            // 60 fps asked; the source takes 40 ms per frame (25 fps).
+            let head = "videotestsrc is-live=true pattern=ball ! video/x-raw,width=640,height=360,framerate=60/1 \
+                        ! identity name=capture sleep-time=40000 ! videoconvert";
+            let _ = host::stream_screen(&writer, head, None, &stop, true);
+        });
+        let stream = TcpStream::connect(addr).unwrap();
+        let (tx, rx) = async_channel::bounded(256);
+        let viewer = std::thread::spawn(move || client::decode_loop(std::io::BufReader::new(stream), &tx));
+        let start = Instant::now();
+        let mut stats = Vec::new();
+        while let Ok(ev) = rx.recv_blocking() {
+            match ev {
+                client::Event::Stats(s) => stats.push(s),
+                client::Event::Ended(_) => break,
+                _ => {}
+            }
+            if start.elapsed() > Duration::from_secs(8) {
+                break;
+            }
+        }
+        drop(rx);
+        let _ = host.join();
+        let _ = viewer.join();
+        eprintln!("stats: {stats:#?}");
+        assert!(stats.len() >= 3, "too few stats: {stats:?}");
+        let tail = &stats[1..];
+        let worst = tail.iter().map(|s| s.latency_ms).fold(0.0, f64::max);
+        let fps = tail.iter().map(|s| s.fps).sum::<f64>() / tail.len() as f64;
+        assert!(worst < 200.0, "latency grew to {worst:.0} ms");
+        assert!(fps > 15.0, "only {fps:.1} fps");
+        let (first, last) = (tail[0].latency_ms, tail[tail.len() - 1].latency_ms);
+        assert!(last < first + 100.0, "latency drifting: {first:.0} → {last:.0} ms");
+    }
+}

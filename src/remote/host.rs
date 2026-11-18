@@ -30,7 +30,7 @@ pub struct StopHandle {
 }
 
 impl StopHandle {
-    fn new(stream: &TcpStream) -> Self {
+    pub(crate) fn new(stream: &TcpStream) -> Self {
         static NEXT: AtomicU64 = AtomicU64::new(1);
         Self {
             id: NEXT.fetch_add(1, Ordering::Relaxed),
@@ -429,7 +429,7 @@ pub fn encoder() -> Option<(&'static str, &'static str)> {
 /// alive; everything else waits for a change.
 const IDLE_FRAME_EVERY: Duration = Duration::from_secs(1);
 
-fn stream_screen(
+pub(crate) fn stream_screen(
     writer: &Mutex<TcpStream>,
     head: &str,
     dirty: Option<Arc<AtomicBool>>,
