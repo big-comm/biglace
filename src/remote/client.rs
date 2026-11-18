@@ -209,3 +209,77 @@ fn decode_loop(mut reader: BufReader<TcpStream>, events: &async_channel::Sender<
     let _ = pipeline.set_state(gst::State::Null);
     result
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use gstreamer as gst;
+    use gstreamer::prelude::*;
+    use std::net::TcpListener;
+
+    /// Encode a test pattern like a host does, send it over a real TCP
+    /// connection in session frames, and decode it like the viewer does:
+    /// RGBA frames of the right size must come out.
+    #[test]
+    fn host_frames_decode_on_the_viewer() {
+        gst::init().unwrap();
+        if gst::ElementFactory::find("x264enc").is_none() || gst::ElementFactory::find("avdec_h264").is_none() {
+            eprintln!("x264enc/avdec_h264 missing; skipping");
+            return;
+        }
+        let pipeline = gst::parse::launch(
+            "videotestsrc num-buffers=30 ! video/x-raw,width=320,height=240,framerate=30/1 ! videoconvert \
+             ! video/x-raw,format=I420 ! x264enc tune=zerolatency speed-preset=ultrafast key-int-max=10 \
+             ! h264parse config-interval=-1 ! video/x-h264,stream-format=byte-stream,alignment=au \
+             ! appsink name=sink sync=false",
+        )
+        .unwrap()
+        .downcast::<gst::Pipeline>()
+        .unwrap();
+        let sink = pipeline.by_name("sink").unwrap().downcast::<gstreamer_app::AppSink>().unwrap();
+        pipeline.set_state(gst::State::Playing).unwrap();
+        let mut units = Vec::new();
+        while let Some(s) = sink.try_pull_sample(gst::ClockTime::from_seconds(5)) {
+            units.push(s.buffer().unwrap().map_readable().unwrap().as_slice().to_vec());
+        }
+        pipeline.set_state(gst::State::Null).unwrap();
+        assert!(units.len() >= 10, "encoder produced {} units", units.len());
+
+        let listener = TcpListener::bind("127.0.0.1:0").unwrap();
+        let addr = listener.local_addr().unwrap();
+        let host = std::thread::spawn(move || {
+            let (mut s, _) = listener.accept().unwrap();
+            let info = serde_json::to_vec(&VideoInfo { width: 320, height: 240 }).unwrap();
+            write_frame(&mut s, Kind::Info, &info).unwrap();
+            for u in units {
+                write_frame(&mut s, Kind::Video, &u).unwrap();
+            }
+            // Give the decoder time to drain before the connection closes.
+            std::thread::sleep(Duration::from_millis(800));
+        });
+        let stream = TcpStream::connect(addr).unwrap();
+        let (tx, rx) = async_channel::bounded(64);
+        let viewer = std::thread::spawn(move || decode_loop(BufReader::new(stream), &tx));
+        let mut got_info = false;
+        let mut frames = 0;
+        while let Ok(ev) = rx.recv_blocking() {
+            match ev {
+                Event::Info(i) => got_info = i.width == 320 && i.height == 240,
+                Event::Frame(f) => {
+                    assert_eq!((f.width, f.height), (320, 240));
+                    assert!(f.stride >= 320 * 4 && f.data.len() >= f.stride * 240);
+                    frames += 1;
+                }
+                Event::Ended(_) => break,
+            }
+            if frames >= 5 {
+                break;
+            }
+        }
+        drop(rx);
+        host.join().unwrap();
+        let _ = viewer.join();
+        assert!(got_info, "no video info");
+        assert!(frames >= 5, "only {frames} decoded frames");
+    }
+}

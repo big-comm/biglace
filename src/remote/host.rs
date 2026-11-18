@@ -256,6 +256,23 @@ struct Source {
     _fd: Option<std::os::fd::OwnedFd>,
 }
 
+// What follows each source, up to raw video the encoder chain takes. Every
+// head must end in an element (not caps): `pipeline_desc` appends caps.
+// PipeWire only sends frames when the screen changes, so videorate keeps a
+// steady 30 fps for the encoder.
+const WAYLAND_TAIL: &str = "videoconvert ! videorate ! video/x-raw,framerate=30/1 ! videoconvert";
+const X11_TAIL: &str = "video/x-raw,framerate=30/1 ! videoconvert";
+
+/// Full pipeline: `head` (source + conversion) → H.264 → appsink.
+fn pipeline_desc(head: &str, (enc, format): (&str, &str)) -> String {
+    format!(
+        "{head} ! video/x-raw,format={format} \
+         ! {enc} ! h264parse config-interval=-1 \
+         ! video/x-h264,stream-format=byte-stream,alignment=au \
+         ! appsink name=sink sync=false max-buffers=8"
+    )
+}
+
 #[cfg(target_os = "linux")]
 fn open_source() -> anyhow::Result<Source> {
     use std::os::fd::AsRawFd;
@@ -263,9 +280,10 @@ fn open_source() -> anyhow::Result<Source> {
         let portal = super::portal::start()?;
         let head = format!(
             "pipewiresrc fd={} path={} do-timestamp=true keepalive-time=1000 always-copy=true \
-             ! videoconvert ! videorate ! video/x-raw,framerate=30/1",
+             ! {}",
             portal.fd.as_raw_fd(),
-            portal.node
+            portal.node,
+            WAYLAND_TAIL
         );
         Ok(Source {
             head,
@@ -274,7 +292,7 @@ fn open_source() -> anyhow::Result<Source> {
         })
     } else {
         Ok(Source {
-            head: "ximagesrc use-damage=false show-pointer=true ! video/x-raw,framerate=30/1 ! videoconvert".into(),
+            head: format!("ximagesrc use-damage=false show-pointer=true ! {X11_TAIL}"),
             sink: InputSink::X11(super::input_x11::Injector::connect().map(Box::new)),
             _fd: None,
         })
@@ -331,16 +349,22 @@ fn run_session(mut stream: TcpStream, stop: &StopHandle) {
     }
 }
 
-/// H.264 encoder to use: hardware (VA-API) first, then software.
-pub fn encoder() -> Option<&'static str> {
+/// H.264 encoder to use — hardware (VA-API) first, then software — and the
+/// raw format it takes. VA-API elements are only registered when a usable
+/// device exists, so finding the factory is enough.
+pub fn encoder() -> Option<(&'static str, &'static str)> {
     use gstreamer as gst;
-    for (name, desc) in [
-        ("vah264enc", "vah264enc rate-control=cbr bitrate=6000 key-int-max=60"),
-        ("x264enc", "x264enc tune=zerolatency speed-preset=ultrafast bitrate=6000 key-int-max=60 threads=2"),
-        ("openh264enc", "openh264enc bitrate=6000000 gop-size=60 complexity=low"),
+    for (name, desc, format) in [
+        ("vah264enc", "vah264enc rate-control=cbr bitrate=6000 key-int-max=60", "NV12"),
+        (
+            "x264enc",
+            "x264enc tune=zerolatency speed-preset=ultrafast bitrate=6000 key-int-max=60 threads=2",
+            "I420",
+        ),
+        ("openh264enc", "openh264enc bitrate=6000000 gop-size=60 complexity=low", "I420"),
     ] {
         if gst::ElementFactory::find(name).is_some() {
-            return Some(desc);
+            return Some((desc, format));
         }
     }
     None
@@ -353,12 +377,7 @@ fn stream_screen(mut stream: TcpStream, head: &str, stop: &StopHandle) -> anyhow
 
     gst::init()?;
     let enc = encoder().ok_or_else(|| anyhow::anyhow!("no H.264 encoder"))?;
-    let desc = format!(
-        "{head} ! video/x-raw,format=I420 \
-         ! {enc} ! h264parse config-interval=-1 \
-         ! video/x-h264,stream-format=byte-stream,alignment=au \
-         ! appsink name=sink sync=false max-buffers=8"
-    );
+    let desc = pipeline_desc(head, enc);
     let pipeline = gst::parse::launch(&desc)?
         .downcast::<gst::Pipeline>()
         .map_err(|_| anyhow::anyhow!("not a pipeline"))?;
@@ -394,4 +413,53 @@ fn stream_screen(mut stream: TcpStream, head: &str, stop: &StopHandle) -> anyhow
     })();
     let _ = pipeline.set_state(gst::State::Null);
     result
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use gstreamer as gst;
+    use gstreamer::prelude::*;
+
+    /// Both host pipelines, with a test source in place of the screen, must
+    /// parse and actually produce H.264 access units at the appsink.
+    #[test]
+    fn host_pipelines_parse_and_encode() {
+        gst::init().unwrap();
+        if encoder().is_none() {
+            eprintln!("no H.264 encoder here; skipping");
+            return;
+        }
+        // Every encoder present on this machine, not just the preferred one.
+        let encoders = [
+            ("vah264enc", ("vah264enc rate-control=cbr bitrate=6000 key-int-max=60", "NV12")),
+            ("x264enc", ("x264enc tune=zerolatency speed-preset=ultrafast bitrate=6000 key-int-max=60 threads=2", "I420")),
+            ("openh264enc", ("openh264enc bitrate=6000000 gop-size=60 complexity=low", "I420")),
+        ];
+        for (tail, (name, enc)) in [WAYLAND_TAIL, X11_TAIL]
+            .iter()
+            .flat_map(|t| encoders.iter().map(move |e| (*t, *e)))
+            .filter(|(_, (name, _))| gst::ElementFactory::find(name).is_some())
+        {
+            let _ = name;
+            let head = format!("videotestsrc num-buffers=20 ! video/x-raw,width=320,height=240 ! videoconvert ! {tail}");
+            let desc = pipeline_desc(&head, enc);
+            let pipeline = gst::parse::launch(&desc)
+                .unwrap_or_else(|e| panic!("{desc}: {e}"))
+                .downcast::<gst::Pipeline>()
+                .unwrap();
+            let sink = pipeline
+                .by_name("sink")
+                .unwrap()
+                .downcast::<gstreamer_app::AppSink>()
+                .unwrap();
+            pipeline.set_state(gst::State::Playing).unwrap();
+            let sample = sink.try_pull_sample(gst::ClockTime::from_seconds(10));
+            pipeline.set_state(gst::State::Null).unwrap();
+            let sample = sample.unwrap_or_else(|| panic!("no frame from: {desc}"));
+            let caps = sample.caps().unwrap().structure(0).unwrap().to_owned();
+            assert_eq!(caps.name(), "video/x-h264");
+            assert_eq!(caps.get::<i32>("width").unwrap(), 320);
+        }
+    }
 }
