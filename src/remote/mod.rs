@@ -15,6 +15,8 @@
 pub mod client;
 pub mod host;
 #[cfg(target_os = "linux")]
+mod damage_x11;
+#[cfg(target_os = "linux")]
 mod input_x11;
 #[cfg(target_os = "linux")]
 mod portal;

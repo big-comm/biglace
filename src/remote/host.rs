@@ -251,6 +251,8 @@ impl InputSink {
 /// what keeps it alive (the portal's PipeWire fd) and where input goes.
 struct Source {
     head: String,
+    /// X11: raised by XDamage when the screen changed (None = always send).
+    dirty: Option<Arc<AtomicBool>>,
     sink: InputSink,
     #[cfg(target_os = "linux")]
     _fd: Option<std::os::fd::OwnedFd>,
@@ -275,7 +277,7 @@ pub(crate) fn pipeline_desc(head: &str, (enc, format): (&str, &str)) -> String {
 }
 
 #[cfg(target_os = "linux")]
-fn open_source() -> anyhow::Result<Source> {
+fn open_source(stop: &StopHandle) -> anyhow::Result<Source> {
     use std::os::fd::AsRawFd;
     if super::wayland_session() {
         let portal = super::portal::start()?;
@@ -288,13 +290,17 @@ fn open_source() -> anyhow::Result<Source> {
         );
         Ok(Source {
             head,
+            dirty: None,
             sink: InputSink::Portal(portal.input),
             _fd: Some(portal.fd),
         })
     } else {
+        let dirty = Arc::new(AtomicBool::new(true));
+        let watching = super::damage_x11::watch(dirty.clone(), stop.flag.clone());
         Ok(Source {
+            dirty: watching.then_some(dirty),
             // The viewer draws the pointer itself (no video delay on it).
-            head: format!("ximagesrc use-damage=false show-pointer=false ! {X11_TAIL}"),
+            head: format!("ximagesrc name=capture use-damage=false show-pointer=false ! {X11_TAIL}"),
             sink: InputSink::X11(super::input_x11::Injector::connect().map(Box::new)),
             _fd: None,
         })
@@ -302,7 +308,7 @@ fn open_source() -> anyhow::Result<Source> {
 }
 
 #[cfg(not(target_os = "linux"))]
-fn open_source() -> anyhow::Result<Source> {
+fn open_source(_stop: &StopHandle) -> anyhow::Result<Source> {
     anyhow::bail!("screen sharing is not available on this system")
 }
 
@@ -326,7 +332,7 @@ fn run_session(mut stream: TcpStream, stop: &StopHandle) {
     let _ = stream.set_read_timeout(None);
     let _ = stream.set_nodelay(true);
 
-    let source = match open_source() {
+    let source = match open_source(stop) {
         Ok(s) => s,
         Err(e) => {
             tailscale::dbg(&format!("remote: no screen source: {e}"));
@@ -334,7 +340,7 @@ fn run_session(mut stream: TcpStream, stop: &StopHandle) {
             return;
         }
     };
-    let Source { head, mut sink, .. } = source;
+    let Source { head, mut sink, dirty, .. } = source;
     #[cfg(target_os = "linux")]
     let _keep_fd = source._fd;
 
@@ -361,7 +367,7 @@ fn run_session(mut stream: TcpStream, stop: &StopHandle) {
             });
     }
 
-    if let Err(e) = stream_screen(stream, &head, stop) {
+    if let Err(e) = stream_screen(stream, &head, dirty, stop) {
         tailscale::dbg(&format!("remote: capture ended: {e}"));
     }
 }
@@ -400,7 +406,11 @@ pub fn encoder() -> Option<(&'static str, &'static str)> {
     None
 }
 
-fn stream_screen(mut stream: TcpStream, head: &str, stop: &StopHandle) -> anyhow::Result<()> {
+/// Still screen: one frame a second keeps the session (and a late keyframe)
+/// alive; everything else waits for a change.
+const IDLE_FRAME_EVERY: Duration = Duration::from_secs(1);
+
+fn stream_screen(mut stream: TcpStream, head: &str, dirty: Option<Arc<AtomicBool>>, stop: &StopHandle) -> anyhow::Result<()> {
     use gstreamer as gst;
     use gstreamer::prelude::*;
     use gstreamer_app as gst_app;
@@ -415,6 +425,20 @@ fn stream_screen(mut stream: TcpStream, head: &str, stop: &StopHandle) -> anyhow
         .by_name("sink")
         .and_then(|e| e.downcast::<gst_app::AppSink>().ok())
         .ok_or_else(|| anyhow::anyhow!("no appsink"))?;
+    // X11: drop captured frames of an unchanged screen before they cost a
+    // conversion and an encode.
+    if let (Some(dirty), Some(pad)) = (dirty, pipeline.by_name("capture").and_then(|c| c.static_pad("src"))) {
+        let last = Mutex::new(Instant::now() - IDLE_FRAME_EVERY);
+        pad.add_probe(gst::PadProbeType::BUFFER, move |_, _| {
+            let mut last = last.lock().unwrap_or_else(|e| e.into_inner());
+            if dirty.swap(false, Ordering::AcqRel) || last.elapsed() >= IDLE_FRAME_EVERY {
+                *last = Instant::now();
+                gst::PadProbeReturn::Ok
+            } else {
+                gst::PadProbeReturn::Drop
+            }
+        });
+    }
     pipeline.set_state(gst::State::Playing)?;
 
     let result = (|| -> anyhow::Result<()> {
