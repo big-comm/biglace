@@ -30,6 +30,14 @@ pub const SCREEN_PATH: &str = "/v1/screen";
 /// Capability announced in the agent's hello when this device can be a host.
 pub const CAPABILITY: &str = "screen";
 
+/// Video tests (real encoders and decoders, timing-sensitive) take turns:
+/// run in parallel they fight for the CPU and their latency numbers lie.
+#[cfg(test)]
+pub(crate) fn heavy_test() -> std::sync::MutexGuard<'static, ()> {
+    static LOCK: std::sync::Mutex<()> = std::sync::Mutex::new(());
+    LOCK.lock().unwrap_or_else(|e| e.into_inner())
+}
+
 /// Largest frame accepted (a keyframe of a 4K screen fits comfortably).
 const MAX_FRAME: usize = 16 * 1024 * 1024;
 
@@ -271,6 +279,7 @@ mod end_to_end {
 
     #[test]
     fn slow_capture_keeps_latency_flat() {
+        let _turn = heavy_test();
         if gstreamer::init().is_err() || host::encoder().is_none() {
             return;
         }

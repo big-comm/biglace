@@ -365,6 +365,7 @@ mod tests {
     /// generous bound so a regression (e.g. frame threading) is caught.
     #[test]
     fn encode_decode_latency_is_low() {
+        let _turn = crate::remote::heavy_test();
         use std::time::Instant;
         gst::init().unwrap();
         let Some(enc) = crate::remote::host::encoder() else { return };
@@ -439,6 +440,7 @@ mod tests {
     /// RGBA frames of the right size must come out.
     #[test]
     fn host_frames_decode_on_the_viewer() {
+        let _turn = crate::remote::heavy_test();
         gst::init().unwrap();
         if gst::ElementFactory::find("x264enc").is_none() || gst::ElementFactory::find("avdec_h264").is_none() {
             eprintln!("x264enc/avdec_h264 missing; skipping");

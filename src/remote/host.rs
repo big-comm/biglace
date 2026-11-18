@@ -632,6 +632,7 @@ mod tests {
     /// produce H.264 wherever a VA encoder exists.
     #[test]
     fn va_zero_copy_chain_encodes() {
+        let _turn = crate::remote::heavy_test();
         use gstreamer as gst;
         use gstreamer::prelude::*;
         gst::init().unwrap();
@@ -662,6 +663,7 @@ mod tests {
     /// parse and actually produce H.264 access units at the appsink.
     #[test]
     fn host_pipelines_parse_and_encode() {
+        let _turn = crate::remote::heavy_test();
         gst::init().unwrap();
         if encoder().is_none() {
             eprintln!("no H.264 encoder here; skipping");
