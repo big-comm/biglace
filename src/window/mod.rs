@@ -1,4 +1,5 @@
 mod chat;
+mod chat_media;
 mod composer;
 mod content;
 mod emoji_picker;
@@ -183,8 +184,8 @@ pub fn build(app: &libadwaita::Application, start_hidden: bool) {
     let win = libadwaita::ApplicationWindow::builder()
         .application(app)
         .title("BigLace")
-        .default_width(960)
-        .default_height(640)
+        .default_width(1100)
+        .default_height(700)
         .build();
 
     let toast = libadwaita::ToastOverlay::new();
@@ -1022,7 +1023,7 @@ fn change_photo(ui: &Ui) {
             move || -> Result<(String, Vec<u8>), String> {
                 let jpeg = crate::avatars::prepare(&path)?;
                 let me = crate::chat::my_groups_refresh().ok_or_else(|| tr!("not signed in to a BigScale network"))?;
-                crate::invite::set_avatar(&jpeg).map_err(|e| format!("{e:?}"))?;
+                crate::invite::set_avatar(&jpeg).map_err(photo_error)?;
                 Ok((me, jpeg))
             },
             move |r| match r {
@@ -1034,6 +1035,19 @@ fn change_photo(ui: &Ui) {
             },
         );
     });
+}
+
+/// Why a photo couldn't be changed, in words.
+fn photo_error(e: crate::invite::MemberError) -> String {
+    use crate::invite::MemberError;
+    match e {
+        MemberError::Unsupported => tr!(
+            "this network's server doesn't keep profile photos yet — its administrator needs to update the BigScale panel"
+        ),
+        MemberError::NotAMember => tr!("this device isn't signed in as a person on the network"),
+        MemberError::Other(s) => s,
+        other => format!("{other:?}"),
+    }
 }
 
 fn has_connect_config(c: &config::Config) -> bool {
@@ -1412,7 +1426,7 @@ fn setup_menu(ctx: &Ctx) {
                         }
                         show_toast(&ui2.toast, &tr!("Photo removed."), 3);
                     }
-                    Err(e) => show_toast(&ui2.toast, &trf!("Could not remove the photo: {error}", "error" => format!("{e:?}")), 6),
+                    Err(e) => show_toast(&ui2.toast, &trf!("Could not remove the photo: {error}", "error" => photo_error(e)), 8),
                 },
             );
         });

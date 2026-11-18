@@ -12,7 +12,11 @@
 //!   that group.
 //! - History lives on each computer (one JSON file per conversation, 0600).
 
+pub mod files;
 pub mod markdown;
+pub mod voice;
+
+pub use files::{Attachment, FileKind, FileState, Offer};
 
 use std::collections::{HashMap, HashSet};
 use std::io::{BufReader, Write};
@@ -85,6 +89,9 @@ pub struct Message {
     /// Recipients (accounts) whose device stored it.
     #[serde(default)]
     pub delivered: Vec<String>,
+    /// A file, picture, video or voice message (direct conversations).
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub file: Option<Attachment>,
 }
 
 #[derive(Debug, Clone, Default, Serialize, Deserialize)]
@@ -103,6 +110,9 @@ struct Wire {
     conv: ConvId,
     text: String,
     at: u64,
+    /// A file offered for download from the sender's computer.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    file: Option<Offer>,
 }
 
 /// A message waiting to reach one device.
@@ -129,7 +139,11 @@ pub enum ChatEvent {
     /// Messages of this conversation changed (new, delivered…).
     Changed(ConvId),
     /// Someone else's message arrived (for notifications).
-    Incoming { conv: ConvId, message: Message },
+    Incoming { conv: ConvId, message: Box<Message> },
+    /// A download moved on: `done` of `total` bytes.
+    Progress { conv: ConvId, id: String, done: u64, total: u64 },
+    /// A download stopped short (the sender's computer is off…).
+    TransferFailed { conv: ConvId, id: String, reason: String },
 }
 
 /// The history and the outbox, on disk under `dir`.
@@ -204,6 +218,11 @@ impl Store {
             .collect();
         out.sort_by(|a, b| b.last.as_ref().map(|m| m.at).cmp(&a.last.as_ref().map(|m| m.at)).then(a.id.cmp(&b.id)));
         out
+    }
+
+    /// The message `id` of `conv`, to change it (saved by the caller).
+    fn message_mut(&mut self, conv: &ConvId, id: &str) -> Option<&mut Message> {
+        self.convs.get_mut(conv)?.messages.iter_mut().find(|m| m.id == id)
     }
 
     /// `user`'s device stored message `id` of `conv` (key of the sender's view).
@@ -322,6 +341,7 @@ pub fn seed_preview() -> Option<ConvId> {
         at,
         mine,
         delivered: delivered.iter().map(|s| s.to_string()).collect(),
+        file: None,
     };
     let dm = ConvId::direct("bruna");
     let grp = ConvId::group("familia");
@@ -336,6 +356,80 @@ pub fn seed_preview() -> Option<ConvId> {
         m("p7", "tales", true, "Vou te ligar na **sala** daqui a pouco", now - 30_000, &[]),
     ] {
         s.add(&dm, msg, false);
+    }
+    // Files: a picture and a voice message here, a document and a video
+    // still on Bruna's computer.
+    {
+        use gtk4::gdk_pixbuf::{Colorspace, Pixbuf};
+        let dir = chat_dir().join("media");
+        let _ = std::fs::create_dir_all(&dir);
+        let pic = dir.join("praia.png");
+        if let Some(pb) = Pixbuf::new(Colorspace::Rgb, false, 8, 640, 420) {
+            for y in 0..420 {
+                for x in 0..640 {
+                    let sky = y < 260;
+                    let (r, g, b) = if sky { (40 + y / 3, 120 + y / 4, 220) } else { (230 - (y - 260) / 3, 200 - (y - 260) / 4, 140) };
+                    pb.put_pixel(x as u32, y as u32, r as u8, g as u8, b as u8, 255);
+                }
+            }
+            let _ = pb.savev(&pic, "png", &[]);
+        }
+        let voice_path = dir.join("voice-preview.ogg");
+        if !voice_path.exists() {
+            use gstreamer::prelude::*;
+            let _ = gstreamer::init();
+            if let Ok(p) = gstreamer::parse::launch(&format!(
+                "audiotestsrc num-buffers=300 freq=330 ! audioconvert ! opusenc ! oggmux ! filesink location={}",
+                voice_path.display()
+            )) {
+                let _ = p.set_state(gstreamer::State::Playing);
+                if let Some(bus) = p.bus() {
+                    let _ = bus.timed_pop_filtered(gstreamer::ClockTime::from_seconds(5), &[gstreamer::MessageType::Eos]);
+                }
+                let _ = p.set_state(gstreamer::State::Null);
+            }
+        }
+        let thumb = files::image_thumb(&pic);
+        let offer = |name: &str, size: u64, kind: FileKind| Offer {
+            name: name.into(),
+            size,
+            kind,
+            thumb: None,
+            width: 0,
+            height: 0,
+            duration_ms: 0,
+            wave: vec![],
+        };
+        let mut photo = offer("praia.png", std::fs::metadata(&pic).map(|m| m.len()).unwrap_or(0), FileKind::Image);
+        if let Some((jpeg, w, h)) = &thumb {
+            use base64::Engine;
+            photo.thumb = Some(base64::engine::general_purpose::STANDARD.encode(jpeg));
+            photo.width = *w;
+            photo.height = *h;
+        }
+        let mut video = photo.clone();
+        video.name = "aniversario.mp4".into();
+        video.kind = FileKind::Video;
+        video.size = 48_300_000;
+        let mut voice_offer = offer("voice.ogg", std::fs::metadata(&voice_path).map(|m| m.len()).unwrap_or(0), FileKind::Voice);
+        voice_offer.duration_ms = 6_000;
+        voice_offer.wave = (0..48).map(|i: u32| ((i * 37 + 11) % 29 + 2) as u8).collect();
+        let with = |mut msg: Message, o: Offer, path: Option<&Path>| {
+            msg.file = Some(Attachment {
+                offer: o,
+                path: path.map(|p| p.to_string_lossy().into_owned()),
+                state: if path.is_some() { FileState::Done } else { FileState::Offered },
+            });
+            msg
+        };
+        for msg in [
+            with(m("f1", "bruna", false, "", now - 25_000, &[]), photo, Some(&pic)),
+            with(m("f2", "tales", true, "", now - 20_000, &["bruna"]), voice_offer, Some(&voice_path)),
+            with(m("f3", "bruna", false, "", now - 15_000, &[]), offer("relatorio-2026.pdf", 2_412_000, FileKind::File), None),
+            with(m("f4", "bruna", false, "", now - 10_000, &[]), video, None),
+        ] {
+            s.add(&dm, msg, false);
+        }
     }
     for msg in [
         m("g1", "bruno", false, "Bom dia, família! ☀️", now - 7_200_000, &[]),
@@ -416,11 +510,20 @@ pub fn send(conv: &ConvId, text: &str) -> Result<(), String> {
     if text.trim().is_empty() {
         return Ok(());
     }
+    post(conv, text, None).map(|_| ())
+}
+
+/// Put a message (with or without a file) in `conv` and queue it for every
+/// recipient device. Returns its id.
+fn post(conv: &ConvId, text: &str, file: Option<(Offer, PathBuf)>) -> Result<String, String> {
     if !conv.valid() {
         return Err("invalid conversation".into());
     }
     if text.len() > MAX_TEXT {
         return Err(crate::tr!("message too long"));
+    }
+    if file.is_some() && conv.is_group() {
+        return Err(crate::tr!("files can only be sent in direct conversations"));
     }
     let me = me(Duration::from_secs(300)).ok_or_else(|| crate::tr!("not signed in to a BigScale network"))?;
     let recipients: Vec<String> = if conv.is_group() {
@@ -434,7 +537,13 @@ pub fn send(conv: &ConvId, text: &str) -> Result<(), String> {
     } else {
         vec![conv.name.clone()]
     };
-    let wire = Wire { id: new_id(), conv: conv.clone(), text: text.to_string(), at: now_ms() };
+    let wire = Wire {
+        id: new_id(),
+        conv: conv.clone(),
+        text: text.to_string(),
+        at: now_ms(),
+        file: file.as_ref().map(|(o, _)| o.clone()),
+    };
     let device = tailscale::get_status().hostname.unwrap_or_default();
     let message = Message {
         id: wire.id.clone(),
@@ -444,7 +553,16 @@ pub fn send(conv: &ConvId, text: &str) -> Result<(), String> {
         at: wire.at,
         mine: true,
         delivered: vec![],
+        file: file.as_ref().map(|(o, path)| Attachment {
+            offer: o.clone(),
+            path: Some(path.to_string_lossy().into_owned()),
+            state: FileState::Done,
+        }),
     };
+    if let Some((o, path)) = &file {
+        // Served to the recipient (and our own devices) when they ask.
+        files::share(&wire.id, path, o.size, &recipients);
+    }
     // Every device of every recipient, and our own other devices.
     let peers = tailscale::get_peers();
     let mut pending = Vec::new();
@@ -463,7 +581,7 @@ pub fn send(conv: &ConvId, text: &str) -> Result<(), String> {
     }
     emit(ChatEvent::Changed(conv.clone()));
     kick();
-    Ok(())
+    Ok(wire.id)
 }
 
 // ─── Delivery ───────────────────────────────────────────────────────────────
@@ -595,6 +713,15 @@ fn place(wire: &Wire, sender: &str, me: &Me) -> Option<(ConvId, bool)> {
     if !wire.conv.valid() || wire.text.len() > MAX_TEXT || wire.id.is_empty() || wire.id.len() > 64 {
         return None;
     }
+    if !wire.id.bytes().all(|c| c.is_ascii_alphanumeric()) {
+        return None;
+    }
+    if let Some(f) = &wire.file {
+        // Files only between two people, and only well-formed offers.
+        if wire.conv.is_group() || !f.valid() {
+            return None;
+        }
+    }
     let mine = sender == me.user;
     if wire.conv.is_group() {
         let members = me.groups.get(&wire.conv.name)?;
@@ -656,12 +783,17 @@ pub fn accept(stream: TcpStream, peer: IpAddr, headers: &HashMap<String, String>
                 at: wire.at,
                 mine,
                 delivered: vec![],
+                file: wire.file.clone().map(|offer| Attachment { offer, path: None, state: FileState::Offered }),
             };
             let added = store().lock().map(|mut s| s.add(&conv, message.clone(), !mine)).unwrap_or(false);
             if added {
                 emit(ChatEvent::Changed(conv.clone()));
+                // Pictures and voice messages come down by themselves.
+                if message.file.as_ref().is_some_and(|f| f.offer.fetch_by_itself()) {
+                    files::download(&conv, &message.id);
+                }
                 if !mine {
-                    emit(ChatEvent::Incoming { conv, message });
+                    emit(ChatEvent::Incoming { conv, message: Box::new(message) });
                 }
             }
         }
@@ -687,7 +819,7 @@ mod tests {
     }
 
     fn wire(conv: ConvId) -> Wire {
-        Wire { id: "a1".into(), conv, text: "oi".into(), at: 1 }
+        Wire { id: "a1".into(), conv, text: "oi".into(), at: 1, file: None }
     }
 
     #[test]
@@ -723,6 +855,7 @@ mod tests {
             at,
             mine: false,
             delivered: vec![],
+            file: None,
         };
         {
             let mut s = Store::open(&dir);

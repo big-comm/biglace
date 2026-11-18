@@ -309,7 +309,7 @@ impl Room {
 
 /// "level" element message → loudness 0–1 (the loudest channel's RMS,
 /// −50 dB and below is silence, −10 dB and above is full).
-fn loudness(s: &gstreamer::StructureRef) -> Option<f32> {
+pub(crate) fn loudness(s: &gstreamer::StructureRef) -> Option<f32> {
     let rms = s.get::<gstreamer::glib::ValueArray>("rms").ok()?;
     let db = rms.iter().filter_map(|v| v.get::<f64>().ok()).fold(f64::NEG_INFINITY, f64::max);
     if !db.is_finite() {

@@ -151,15 +151,76 @@ const CSS: &str = r#"
     font-size: 0.8em;
     font-weight: 600;
 }
-.chat-composer { padding: 8px 12px 12px 12px; }
-.chat-input-frame {
-    border-radius: 20px;
-    background-color: @card_bg_color;
-    box-shadow: inset 0 0 0 1px alpha(@card_fg_color, 0.10);
+/* Composer, flat like Telegram's: attach · text · emoji · mic/send. */
+.chat-composer {
+    padding: 4px 8px;
+    min-height: 52px;
+    background-color: @view_bg_color;
+    border-top: 1px solid alpha(@view_fg_color, 0.08);
 }
-.chat-input-frame:focus-within { box-shadow: inset 0 0 0 2px alpha(@accent_color, 0.6); }
+.chat-input-frame { background: none; box-shadow: none; }
 textview.chat-input, textview.chat-input > text { background: transparent; }
-.chat-send { min-width: 40px; min-height: 40px; }
+.chat-tool { min-width: 42px; min-height: 42px; margin-bottom: 1px; color: alpha(@view_fg_color, 0.6); }
+.chat-tool:hover { color: @accent_color; }
+.chat-send { color: @accent_color; }
+/* Recording a voice message. */
+.chat-composer.recording { padding: 4px 10px 4px 8px; }
+.rec-dot {
+    min-width: 10px;
+    min-height: 10px;
+    border-radius: 999px;
+    background-color: @error_color;
+    animation: rec-pulse 1.1s ease-in-out infinite;
+}
+@keyframes rec-pulse { 0% { opacity: 1; } 50% { opacity: 0.25; } 100% { opacity: 1; } }
+.rec-time { font-weight: 700; min-width: 3.2em; }
+.rec-bars { color: @accent_color; }
+.chat-send-voice { min-width: 40px; min-height: 40px; }
+/* Files dragged over a conversation. */
+.drop-zone {
+    margin: 12px;
+    border: 2px dashed alpha(@accent_color, 0.8);
+    border-radius: 18px;
+    background-color: alpha(@view_bg_color, 0.92);
+    color: @accent_color;
+}
+/* Pictures and videos in bubbles. */
+.bubble.media { padding: 4px 4px 4px 4px; }
+.bubble.media .bubble-meta { margin: 2px 6px 0 6px; }
+.bubble.media > label { margin: 4px 8px 0 8px; }
+.bubble-media { border-radius: 14px; }
+.bubble-media.no-preview { background-color: alpha(black, 0.35); }
+.media-round {
+    min-width: 50px;
+    min-height: 50px;
+    background-color: alpha(black, 0.5);
+    color: white;
+    -gtk-icon-size: 22px;
+}
+.media-round:hover { background-color: alpha(black, 0.65); }
+.media-pill {
+    margin: 8px;
+    padding: 2px 9px;
+    border-radius: 10px;
+    background-color: alpha(black, 0.55);
+    color: white;
+    font-size: 0.8em;
+    font-weight: 600;
+}
+/* Documents and voice messages. */
+.file-card, .voice-player { padding: 4px 2px 2px 0; }
+.file-icon, .voice-play {
+    min-width: 46px;
+    min-height: 46px;
+    -gtk-icon-size: 20px;
+}
+.bubble.theirs .file-icon, .bubble.theirs .voice-play { background-color: @accent_bg_color; color: @accent_fg_color; }
+.bubble.mine .file-icon, .bubble.mine .voice-play { background-color: alpha(@accent_fg_color, 0.92); color: @accent_bg_color; }
+.file-name { font-weight: 700; }
+.file-status { font-size: 0.82em; opacity: 0.75; }
+.bubble.theirs .voice-wave-bars { color: @accent_color; }
+progressbar.file-progress > trough { min-height: 3px; border-radius: 3px; }
+progressbar.file-progress > trough > progress { min-height: 3px; border-radius: 3px; }
 
 /* Emoji picker (Telegram-like). */
 popover.emoji-picker > contents { padding: 0; border-radius: 16px; }
@@ -169,7 +230,6 @@ popover.emoji-picker > contents { padding: 0; border-radius: 16px; }
 .emoji-section { font-weight: 700; font-size: 0.85em; opacity: 0.6; }
 .emoji-tabs { border-top: 1px solid alpha(@card_fg_color, 0.08); padding: 4px; }
 .emoji-tabs button { min-height: 30px; }
-.chat-emoji { min-width: 40px; min-height: 40px; }
 
 /* ── Voice rooms ── */
 /* Ring around the avatar: lights up and pulses while the person talks. */

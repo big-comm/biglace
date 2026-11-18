@@ -8,7 +8,8 @@ use std::cell::{Cell, RefCell};
 use std::collections::HashMap;
 use std::rc::Rc;
 
-use crate::chat::{self, markdown, ChatEvent, ConvId, Message};
+use super::chat_media::{self, FileView};
+use crate::chat::{self, files, markdown, voice, ChatEvent, ConvId, Message};
 use crate::tr;
 use crate::trf;
 
@@ -30,18 +31,40 @@ pub struct ChatPage {
     scroll: gtk4::ScrolledWindow,
     messages: gtk4::Box,
     composer: super::composer::Composer,
+    /// Attach (direct conversations only).
+    btn_attach: gtk4::Button,
+    /// Microphone when there's nothing typed (direct conversations), send
+    /// otherwise.
+    action_stack: gtk4::Stack,
+    /// Typing, or recording a voice message.
+    compose_stack: gtk4::Stack,
+    rec_time: gtk4::Label,
+    rec_area: gtk4::DrawingArea,
+    drop_hint: gtk4::Label,
+    drop_reveal: gtk4::Revealer,
     state: Rc<State>,
+}
+
+/// A message on screen: what may change later.
+struct Rendered {
+    /// Our messages: ✓ / ✓✓.
+    tick: Option<gtk4::Label>,
+    /// Its file part.
+    file: Option<Rc<FileView>>,
 }
 
 #[derive(Default)]
 struct State {
     current: RefCell<Option<ConvId>>,
-    /// Rendered messages of the current conversation: id → its tick label.
-    rendered: RefCell<HashMap<String, Option<gtk4::Label>>>,
+    /// Rendered messages of the current conversation.
+    rendered: RefCell<HashMap<String, Rendered>>,
     /// Last rendered message (to group blocks and day separators).
     last: RefCell<Option<Message>>,
     /// The section is on screen.
     visible: Cell<bool>,
+    /// A voice message being recorded, and its loudness so far.
+    recorder: RefCell<Option<voice::Recorder>>,
+    rec_levels: RefCell<Vec<f32>>,
 }
 
 impl ChatPage {
@@ -113,7 +136,7 @@ impl ChatPage {
             .build();
         scroll.add_css_class("chat-backdrop");
 
-        // Composer: emoji · text · send.
+        // Composer, like Telegram's: attach · text · emoji · mic/send.
         let composer = super::composer::Composer::new(win);
         let picker = {
             let composer = composer.clone();
@@ -123,7 +146,7 @@ impl ChatPage {
             .icon_name("emoji-people-symbolic")
             .popover(&picker)
             .valign(gtk4::Align::End)
-            .css_classes(["flat", "circular", "chat-emoji"])
+            .css_classes(["flat", "circular", "chat-tool"])
             .tooltip_text(tr!("Emoji"))
             .build();
         // Ctrl+; and "Insert emoji" open this picker, not GTK's own.
@@ -131,23 +154,104 @@ impl ChatPage {
             let btn = btn_emoji.clone();
             composer.on_emoji(move || btn.popup());
         }
+        let btn_attach = gtk4::Button::builder()
+            .icon_name("mail-attachment-symbolic")
+            .valign(gtk4::Align::End)
+            .css_classes(["flat", "circular", "chat-tool"])
+            .tooltip_text(tr!("Send files, pictures or videos"))
+            .build();
         let btn_send = gtk4::Button::builder()
             .icon_name("mail-send-symbolic")
-            .valign(gtk4::Align::End)
-            .css_classes(["suggested-action", "circular", "chat-send"])
+            .css_classes(["flat", "circular", "chat-tool", "chat-send"])
             .tooltip_text(tr!("Send (Enter) — Shift+Enter for a new line"))
             .build();
-        let bar = gtk4::Box::new(gtk4::Orientation::Horizontal, 8);
+        let btn_mic = gtk4::Button::builder()
+            .icon_name("audio-input-microphone-symbolic")
+            .css_classes(["flat", "circular", "chat-tool"])
+            .tooltip_text(tr!("Record a voice message"))
+            .build();
+        let action_stack = gtk4::Stack::builder()
+            .transition_type(gtk4::StackTransitionType::Crossfade)
+            .transition_duration(150)
+            .valign(gtk4::Align::End)
+            .build();
+        action_stack.add_named(&btn_mic, Some("mic"));
+        action_stack.add_named(&btn_send, Some("send"));
+        let bar = gtk4::Box::new(gtk4::Orientation::Horizontal, 2);
         bar.add_css_class("chat-composer");
-        bar.append(&btn_emoji);
+        bar.append(&btn_attach);
         bar.append(&composer.widget);
-        bar.append(&btn_send);
+        bar.append(&btn_emoji);
+        bar.append(&action_stack);
+
+        // Recording a voice message: cancel · ● 0:07 · live bars · send.
+        let btn_rec_cancel = gtk4::Button::builder()
+            .icon_name("user-trash-symbolic")
+            .css_classes(["flat", "circular", "chat-tool"])
+            .tooltip_text(tr!("Discard"))
+            .valign(gtk4::Align::Center)
+            .build();
+        let rec_dot = gtk4::Box::builder().css_classes(["rec-dot"]).valign(gtk4::Align::Center).build();
+        let rec_time = gtk4::Label::new(Some("0:00"));
+        rec_time.add_css_class("rec-time");
+        rec_time.add_css_class("numeric");
+        let rec_area = gtk4::DrawingArea::builder().hexpand(true).content_height(28).css_classes(["rec-bars"]).build();
+        let btn_rec_send = gtk4::Button::builder()
+            .icon_name("mail-send-symbolic")
+            .css_classes(["suggested-action", "circular", "chat-send-voice"])
+            .tooltip_text(tr!("Send voice message"))
+            .valign(gtk4::Align::Center)
+            .build();
+        let rec_bar = gtk4::Box::new(gtk4::Orientation::Horizontal, 10);
+        rec_bar.add_css_class("chat-composer");
+        rec_bar.add_css_class("recording");
+        rec_bar.append(&btn_rec_cancel);
+        rec_bar.append(&rec_dot);
+        rec_bar.append(&rec_time);
+        rec_bar.append(&rec_area);
+        rec_bar.append(&btn_rec_send);
+
+        let compose_stack = gtk4::Stack::builder()
+            .transition_type(gtk4::StackTransitionType::SlideUpDown)
+            .transition_duration(200)
+            .vhomogeneous(false)
+            .interpolate_size(true)
+            .build();
+        compose_stack.add_named(&bar, Some("compose"));
+        compose_stack.add_named(&rec_bar, Some("record"));
 
         let conv_box = gtk4::Box::new(gtk4::Orientation::Vertical, 0);
         conv_box.append(&conv_header);
         conv_box.append(&gtk4::Separator::new(gtk4::Orientation::Horizontal));
         conv_box.append(&scroll);
-        conv_box.append(&bar);
+        conv_box.append(&compose_stack);
+
+        // Dragging files over the conversation.
+        let drop_icon = gtk4::Image::from_icon_name("document-send-symbolic");
+        drop_icon.set_pixel_size(48);
+        let drop_hint = gtk4::Label::new(None);
+        drop_hint.add_css_class("title-3");
+        drop_hint.set_wrap(true);
+        drop_hint.set_justify(gtk4::Justification::Center);
+        let drop_box = gtk4::Box::new(gtk4::Orientation::Vertical, 12);
+        drop_box.add_css_class("drop-zone");
+        drop_box.set_valign(gtk4::Align::Fill);
+        drop_box.set_halign(gtk4::Align::Fill);
+        let drop_inner = gtk4::Box::new(gtk4::Orientation::Vertical, 12);
+        drop_inner.set_valign(gtk4::Align::Center);
+        drop_inner.set_vexpand(true);
+        drop_inner.append(&drop_icon);
+        drop_inner.append(&drop_hint);
+        drop_box.append(&drop_inner);
+        let drop_reveal = gtk4::Revealer::builder()
+            .transition_type(gtk4::RevealerTransitionType::Crossfade)
+            .transition_duration(150)
+            .child(&drop_box)
+            .can_target(false)
+            .build();
+        let conv_overlay = gtk4::Overlay::new();
+        conv_overlay.set_child(Some(&conv_box));
+        conv_overlay.add_overlay(&drop_reveal);
 
         let none = libadwaita::StatusPage::builder()
             .icon_name("chat-message-new-symbolic")
@@ -159,7 +263,7 @@ impl ChatPage {
         let stack = gtk4::Stack::new();
         stack.set_transition_type(gtk4::StackTransitionType::Crossfade);
         stack.add_named(&none, Some("none"));
-        stack.add_named(&conv_box, Some("conv"));
+        stack.add_named(&conv_overlay, Some("conv"));
         stack.set_hexpand(true);
 
         let body = gtk4::Box::new(gtk4::Orientation::Horizontal, 0);
@@ -182,8 +286,60 @@ impl ChatPage {
             scroll,
             messages,
             composer,
+            btn_attach: btn_attach.clone(),
+            action_stack,
+            compose_stack,
+            rec_time,
+            rec_area: rec_area.clone(),
+            drop_hint,
+            drop_reveal,
             state: Rc::default(),
         };
+        // Mic or send, as the box fills.
+        {
+            let p = page.clone();
+            page.composer.view.buffer().connect_changed(move |_| p.update_actions());
+        }
+        {
+            let page = page.clone();
+            btn_attach.connect_clicked(move |_| page.pick_files());
+        }
+        {
+            let page = page.clone();
+            btn_mic.connect_clicked(move |_| page.start_recording());
+        }
+        {
+            let page = page.clone();
+            btn_rec_cancel.connect_clicked(move |_| page.stop_recording(false));
+        }
+        {
+            let page = page.clone();
+            btn_rec_send.connect_clicked(move |_| page.stop_recording(true));
+        }
+        {
+            let state = page.state.clone();
+            rec_area.set_draw_func(move |a, cr, w, h| {
+                let levels = state.rec_levels.borrow();
+                let color = a.color();
+                cr.set_source_rgba(
+                    f64::from(color.red()),
+                    f64::from(color.green()),
+                    f64::from(color.blue()),
+                    f64::from(color.alpha()) * 0.8,
+                );
+                // The newest at the right, scrolling left.
+                let step = 4.0;
+                let n = (f64::from(w) / step) as usize;
+                let start = levels.len().saturating_sub(n);
+                let offset = f64::from(w) - (levels.len() - start) as f64 * step;
+                for (i, v) in levels[start..].iter().enumerate() {
+                    let bh = (f64::from(*v) * f64::from(h)).max(3.0);
+                    cr.rectangle(offset + i as f64 * step, (f64::from(h) - bh) / 2.0, 2.5, bh);
+                }
+                let _ = cr.fill();
+            });
+        }
+        page.setup_drop(&conv_overlay);
 
         // Enter sends; Shift+Enter is a new line.
         {
@@ -315,8 +471,16 @@ impl ChatPage {
             self.conv_subtitle.set_text(&tr!("Direct conversation"));
         }
         for m in chat::messages(id) {
+            // Pictures and voice messages that didn't come down yet.
+            if m.file.as_ref().is_some_and(|f| f.offer.fetch_by_itself() && f.local().is_none()) {
+                files::download(id, &m.id);
+            }
             self.render(&m, false);
         }
+        if self.state.recorder.borrow().is_some() {
+            self.stop_recording(false);
+        }
+        self.update_actions();
         self.stack.set_visible_child_name("conv");
         self.scroll_to_end();
         self.mark_current_read();
@@ -372,6 +536,27 @@ impl ChatPage {
                     self.update_badge();
                 }
             }
+            ChatEvent::Progress { conv, id, done, total } => {
+                if self.state.current.borrow().as_ref() != Some(&conv) {
+                    return;
+                }
+                let msg = chat::messages(&conv).into_iter().find(|m| m.id == id);
+                let view = self.state.rendered.borrow().get(&id).and_then(|r| r.file.clone());
+                if let (Some(view), Some(m)) = (view, msg) {
+                    chat_media::refresh(&view, &m, &conv);
+                    chat_media::progress(&view, done, total);
+                }
+            }
+            ChatEvent::TransferFailed { conv, id, reason } => {
+                if self.state.current.borrow().as_ref() == Some(&conv) {
+                    let msg = chat::messages(&conv).into_iter().find(|m| m.id == id);
+                    let view = self.state.rendered.borrow().get(&id).and_then(|r| r.file.clone());
+                    if let (Some(view), Some(m)) = (view, msg) {
+                        chat_media::refresh(&view, &m, &conv);
+                    }
+                    super::show_toast(&self.toast, &trf!("Could not download: {error}", "error" => reason), 6);
+                }
+            }
             ChatEvent::Incoming { conv, message } => {
                 let looking = self.state.visible.get()
                     && self.win.is_active()
@@ -393,11 +578,19 @@ impl ChatPage {
         };
         let mut added = false;
         for m in chat::messages(&id) {
-            let known = self.state.rendered.borrow().get(&m.id).cloned();
+            let known = self
+                .state
+                .rendered
+                .borrow()
+                .get(&m.id)
+                .map(|r| (r.tick.clone(), r.file.clone()));
             match known {
-                Some(tick) => {
+                Some((tick, file)) => {
                     if let Some(t) = tick {
                         set_tick(&t, &m, id.is_group());
+                    }
+                    if let Some(f) = file {
+                        chat_media::refresh(&f, &m, &id);
                     }
                 }
                 None => {
@@ -438,7 +631,8 @@ impl ChatPage {
         let continues = prev
             .as_ref()
             .is_some_and(|p| p.from == m.from && p.mine == m.mine && m.at.saturating_sub(p.at) < BLOCK_GAP_MS && day_of(p.at) == day_of(m.at));
-        let (widget, tick) = bubble(m, group && !m.mine && !continues, continues, group && !m.mine);
+        let conv = self.state.current.borrow().clone().unwrap_or_else(|| ConvId::direct(&m.from));
+        let (widget, tick, file) = bubble(m, &conv, group && !m.mine && !continues, continues, group && !m.mine);
         if animate {
             let rev = gtk4::Revealer::builder()
                 .transition_type(gtk4::RevealerTransitionType::SlideUp)
@@ -450,7 +644,7 @@ impl ChatPage {
         } else {
             self.messages.append(&widget);
         }
-        self.state.rendered.borrow_mut().insert(m.id.clone(), tick);
+        self.state.rendered.borrow_mut().insert(m.id.clone(), Rendered { tick, file });
         *self.state.last.borrow_mut() = Some(m.clone());
     }
 
@@ -462,8 +656,166 @@ impl ChatPage {
             m.from.clone()
         };
         let n = gtk4::gio::Notification::new(&title);
-        n.set_body(Some(&preview_text(&m.text, 140)));
+        n.set_body(Some(&message_line(m, 140)));
         app.send_notification(Some(&notification_id(conv)), &n);
+    }
+
+    fn current_is_direct(&self) -> bool {
+        self.state.current.borrow().as_ref().is_some_and(|c| !c.is_group())
+    }
+
+    /// Attach and the microphone only in direct conversations; send when
+    /// something is typed.
+    fn update_actions(&self) {
+        let direct = self.current_is_direct();
+        self.btn_attach.set_visible(direct);
+        let typed = self.composer.view.buffer().char_count() > 0;
+        self.action_stack.set_visible_child_name(if typed || !direct { "send" } else { "mic" });
+    }
+
+    fn send_files(&self, paths: Vec<std::path::PathBuf>) {
+        let Some(id) = self.state.current.borrow().clone() else { return };
+        if id.is_group() {
+            super::show_toast(&self.toast, &tr!("Files can only be sent in direct conversations."), 5);
+            return;
+        }
+        for path in paths {
+            let (id, toast) = (id.clone(), self.toast.clone());
+            super::run_in_background(
+                move || files::send_file(&id, &path),
+                move |r| {
+                    if let Err(e) = r {
+                        super::show_toast(&toast, &trf!("Could not send: {error}", "error" => e), 6);
+                    }
+                },
+            );
+        }
+    }
+
+    fn pick_files(&self) {
+        let dialog = gtk4::FileDialog::builder().title(tr!("Send files")).modal(true).build();
+        let page = self.clone();
+        dialog.open_multiple(Some(&self.win), gtk4::gio::Cancellable::NONE, move |r| {
+            let Ok(list) = r else { return };
+            let paths: Vec<_> = (0..list.n_items())
+                .filter_map(|i| list.item(i).and_downcast::<gtk4::gio::File>())
+                .filter_map(|f| f.path())
+                .collect();
+            page.send_files(paths);
+        });
+    }
+
+    /// Files dropped on the conversation are sent.
+    fn setup_drop(&self, target_widget: &gtk4::Overlay) {
+        let target = gtk4::DropTarget::new(gtk4::gdk::FileList::static_type(), gtk4::gdk::DragAction::COPY);
+        {
+            let page = self.clone();
+            target.connect_enter(move |_, _, _| {
+                let direct = page.current_is_direct();
+                page.drop_hint.set_text(&if direct {
+                    tr!("Drop to send")
+                } else {
+                    tr!("Files can only be sent in direct conversations")
+                });
+                page.drop_reveal.set_reveal_child(true);
+                if direct {
+                    gtk4::gdk::DragAction::COPY
+                } else {
+                    gtk4::gdk::DragAction::empty()
+                }
+            });
+        }
+        {
+            let page = self.clone();
+            target.connect_leave(move |_| page.drop_reveal.set_reveal_child(false));
+        }
+        {
+            let page = self.clone();
+            target.connect_drop(move |_, value, _, _| {
+                page.drop_reveal.set_reveal_child(false);
+                let Ok(list) = value.get::<gtk4::gdk::FileList>() else { return false };
+                let paths: Vec<_> = list.files().iter().filter_map(|f| f.path()).collect();
+                if paths.is_empty() || !page.current_is_direct() {
+                    return false;
+                }
+                page.send_files(paths);
+                true
+            });
+        }
+        target_widget.add_controller(target);
+    }
+
+    fn start_recording(&self) {
+        if self.state.recorder.borrow().is_some() || !self.current_is_direct() {
+            return;
+        }
+        let rec = match voice::Recorder::start() {
+            Ok(r) => r,
+            Err(e) => {
+                super::show_toast(&self.toast, &trf!("Could not record: {error}", "error" => e), 6);
+                return;
+            }
+        };
+        *self.state.recorder.borrow_mut() = Some(rec);
+        self.state.rec_levels.borrow_mut().clear();
+        self.rec_time.set_text("0:00");
+        self.compose_stack.set_visible_child_name("record");
+        let page = self.clone();
+        glib::timeout_add_local(std::time::Duration::from_millis(50), move || {
+            let (polled, elapsed) = {
+                let mut r = page.state.recorder.borrow_mut();
+                let Some(rec) = r.as_mut() else { return glib::ControlFlow::Break };
+                (rec.poll(), rec.elapsed_ms())
+            };
+            match polled {
+                Ok(Some(level)) => page.state.rec_levels.borrow_mut().push(level),
+                Ok(None) => {}
+                Err(e) => {
+                    page.stop_recording(false);
+                    super::show_toast(&page.toast, &trf!("Could not record: {error}", "error" => e), 6);
+                    return glib::ControlFlow::Break;
+                }
+            }
+            page.rec_time.set_text(&voice::clock(elapsed));
+            page.rec_area.queue_draw();
+            if elapsed >= voice::MAX_MS {
+                page.stop_recording(true);
+                return glib::ControlFlow::Break;
+            }
+            glib::ControlFlow::Continue
+        });
+    }
+
+    /// End the recording: send it, or throw it away.
+    fn stop_recording(&self, send: bool) {
+        let Some(rec) = self.state.recorder.borrow_mut().take() else { return };
+        self.compose_stack.set_visible_child_name("compose");
+        self.composer.view.grab_focus();
+        if !send {
+            rec.cancel();
+            return;
+        }
+        if rec.elapsed_ms() < 700 {
+            rec.cancel();
+            super::show_toast(&self.toast, &tr!("Too short — record for at least a second."), 4);
+            return;
+        }
+        let Some(id) = self.state.current.borrow().clone() else {
+            rec.cancel();
+            return;
+        };
+        let toast = self.toast.clone();
+        super::run_in_background(
+            move || {
+                let (path, duration, wave) = rec.finish()?;
+                files::send_voice(&id, &path, duration, wave)
+            },
+            move |r| {
+                if let Err(e) = r {
+                    super::show_toast(&toast, &trf!("Could not send: {error}", "error" => e), 6);
+                }
+            },
+        );
     }
 
     /// "New chat": pick a person (or one of our groups).
@@ -611,9 +963,9 @@ fn conv_row(c: &chat::Summary) -> gtk4::ListBoxRow {
     texts.append(&top);
     let bottom = gtk4::Box::new(gtk4::Orientation::Horizontal, 6);
     let last = gtk4::Label::new(Some(&match &c.last {
-        Some(m) if c.id.is_group() && !m.mine => format!("{}: {}", m.from, preview_text(&m.text, 60)),
-        Some(m) if m.mine => trf!("You: {text}", "text" => preview_text(&m.text, 60)),
-        Some(m) => preview_text(&m.text, 60),
+        Some(m) if c.id.is_group() && !m.mine => format!("{}: {}", m.from, message_line(m, 60)),
+        Some(m) if m.mine => trf!("You: {text}", "text" => message_line(m, 60)),
+        Some(m) => message_line(m, 60),
         None => if c.id.is_group() { tr!("Group conversation") } else { String::new() },
     }));
     last.add_css_class("dim-label");
@@ -636,7 +988,13 @@ fn conv_row(c: &chat::Summary) -> gtk4::ListBoxRow {
 
 /// A message bubble (or a big emoji); returns the widget and, for our own
 /// messages, the tick label to update when it's delivered.
-fn bubble(m: &Message, show_name: bool, continues: bool, avatar_slot: bool) -> (gtk4::Widget, Option<gtk4::Label>) {
+fn bubble(
+    m: &Message,
+    conv: &ConvId,
+    show_name: bool,
+    continues: bool,
+    avatar_slot: bool,
+) -> (gtk4::Widget, Option<gtk4::Label>, Option<Rc<FileView>>) {
     let outer = gtk4::Box::new(gtk4::Orientation::Horizontal, 8);
     outer.set_halign(if m.mine { gtk4::Align::End } else { gtk4::Align::Start });
     outer.set_margin_top(if continues { 1 } else { 8 });
@@ -654,7 +1012,7 @@ fn bubble(m: &Message, show_name: bool, continues: bool, avatar_slot: bool) -> (
         outer.append(&a);
     }
 
-    let jumbo = markdown::is_jumbo_emoji(&m.text);
+    let jumbo = m.file.is_none() && markdown::is_jumbo_emoji(&m.text);
     let b = gtk4::Box::new(gtk4::Orientation::Vertical, 2);
     if jumbo {
         b.add_css_class("bubble-jumbo");
@@ -664,6 +1022,9 @@ fn bubble(m: &Message, show_name: bool, continues: bool, avatar_slot: bool) -> (
         if continues {
             b.add_css_class("continues");
         }
+        if m.file.as_ref().is_some_and(|f| matches!(f.offer.kind, chat::FileKind::Image | chat::FileKind::Video)) {
+            b.add_css_class("media");
+        }
     }
     if show_name {
         let name = gtk4::Label::new(Some(&m.from));
@@ -672,7 +1033,13 @@ fn bubble(m: &Message, show_name: bool, continues: bool, avatar_slot: bool) -> (
         name.set_xalign(0.0);
         b.append(&name);
     }
+    let file = m.file.as_ref().map(|_| {
+        let view = chat_media::build(m, conv);
+        b.append(&view.slot);
+        view
+    });
     let text = gtk4::Label::new(None);
+    text.set_visible(!m.text.trim().is_empty());
     if jumbo {
         text.set_text(m.text.trim());
         text.add_css_class("jumbo-emoji");
@@ -703,7 +1070,7 @@ fn bubble(m: &Message, show_name: bool, continues: bool, avatar_slot: bool) -> (
     }
     b.append(&meta);
     outer.append(&b);
-    (outer.upcast(), tick)
+    (outer.upcast(), tick, file)
 }
 
 /// ✓ written, ✓✓ delivered.
@@ -764,6 +1131,15 @@ fn short_time(at_ms: u64) -> String {
         clock(at_ms)
     } else {
         local(at_ms).and_then(|d| d.format("%d/%m").ok()).map(|s| s.to_string()).unwrap_or_default()
+    }
+}
+
+/// One line about a message: its file, or its text.
+fn message_line(m: &Message, max_chars: usize) -> String {
+    match chat_media::summary(m) {
+        Some(file) if m.text.trim().is_empty() => file,
+        Some(file) => format!("{file} · {}", preview_text(&m.text, max_chars)),
+        None => preview_text(&m.text, max_chars),
     }
 }
 
