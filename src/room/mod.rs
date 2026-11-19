@@ -312,7 +312,6 @@ impl Room {
                             muted.store(v.get("muted").and_then(|m| m.as_bool()).unwrap_or(false), Ordering::Relaxed);
                             sharing.store(v.get("sharing").and_then(|m| m.as_bool()).unwrap_or(false), Ordering::Relaxed);
                             let on = v.get("camera").and_then(|m| m.as_bool()).unwrap_or(false);
-                            tailscale::dbg(&format!("room: {ip} says camera={on}"));
                             if !cam.swap(on, Ordering::Relaxed) == on && !on {
                                 decoder = None;
                                 camera::forget(&ip);
