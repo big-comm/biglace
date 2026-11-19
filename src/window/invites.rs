@@ -48,6 +48,92 @@ pub fn qr_texture(text: &str) -> Option<gdk::MemoryTexture> {
     ))
 }
 
+/// "Connect a phone": a QR code the phone's BigLace scans to join as one
+/// more device of this account (no invite, no key to type). The code works
+/// once, for a few minutes; "New code" when it runs out.
+pub fn pair_phone(parent: &libadwaita::ApplicationWindow) {
+    let dlg = libadwaita::Window::builder()
+        .transient_for(parent)
+        .modal(true)
+        .title(tr!("Connect a phone"))
+        .default_width(420)
+        .build();
+    let body = gtk4::Box::new(gtk4::Orientation::Vertical, 14);
+    body.set_margin_top(18);
+    body.set_margin_bottom(24);
+    body.set_margin_start(24);
+    body.set_margin_end(24);
+    let steps = gtk4::Label::new(Some(&tr!(
+        "On the phone, open BigLace and tap “Scan QR code”, then point it at this code. The phone joins as one of your devices."
+    )));
+    steps.set_wrap(true);
+    steps.set_justify(gtk4::Justification::Center);
+    let picture = gtk4::Picture::builder().width_request(260).height_request(260).can_shrink(false).build();
+    picture.set_halign(gtk4::Align::Center);
+    let status = gtk4::Label::new(Some(&tr!("Asking the panel for a code…")));
+    status.add_css_class("dim-label");
+    status.set_wrap(true);
+    status.set_justify(gtk4::Justification::Center);
+    let again = gtk4::Button::builder().label(tr!("New code")).css_classes(["pill"]).halign(gtk4::Align::Center).visible(false).build();
+    body.append(&steps);
+    body.append(&picture);
+    body.append(&status);
+    body.append(&again);
+    let outer = gtk4::Box::new(gtk4::Orientation::Vertical, 0);
+    outer.append(&libadwaita::HeaderBar::new());
+    outer.append(&body);
+    dlg.set_content(Some(&outer));
+
+    let generation = std::rc::Rc::new(std::cell::Cell::new(0u32));
+    let fetch: std::rc::Rc<dyn Fn()> = {
+        let (picture, status, again, generation, dlg) = (picture.clone(), status.clone(), again.clone(), generation.clone(), dlg.clone());
+        std::rc::Rc::new(move || {
+            let gen = generation.get() + 1;
+            generation.set(gen);
+            again.set_visible(false);
+            picture.set_paintable(gdk::Paintable::NONE);
+            status.set_text(&tr!("Asking the panel for a code…"));
+            let (picture, status, again, generation, dlg) = (picture.clone(), status.clone(), again.clone(), generation.clone(), dlg.clone());
+            super::run_in_background(invite::pair, move |r| match r {
+                Ok(p) => {
+                    picture.set_paintable(qr_texture(&p.link).as_ref());
+                    // Count down to the end, then offer a new one.
+                    let tick = move || {
+                        if generation.get() != gen || !dlg.is_visible() {
+                            return glib::ControlFlow::Break;
+                        }
+                        let now = std::time::SystemTime::now().duration_since(std::time::UNIX_EPOCH).map(|d| d.as_millis() as u64).unwrap_or(0);
+                        let left = p.expires.saturating_sub(now) / 1000;
+                        if left == 0 {
+                            picture.set_paintable(gdk::Paintable::NONE);
+                            status.set_text(&tr!("This code is no longer valid."));
+                            again.set_visible(true);
+                            return glib::ControlFlow::Break;
+                        }
+                        status.set_text(&trf!("Valid for {time} · works once", "time" => format!("{}:{:02}", left / 60, left % 60)));
+                        glib::ControlFlow::Continue
+                    };
+                    tick();
+                    glib::timeout_add_seconds_local(1, tick);
+                }
+                Err(MemberError::Unsupported) => status.set_text(&tr!(
+                    "This network's server doesn't pair phones yet. Ask your administrator to update the panel, or invite the phone instead."
+                )),
+                Err(e) => {
+                    status.set_text(&explain(&e));
+                    again.set_visible(true);
+                }
+            });
+        })
+    };
+    {
+        let fetch = fetch.clone();
+        again.connect_clicked(move |_| fetch());
+    }
+    fetch();
+    dlg.present();
+}
+
 /// Sentence for a member-API failure.
 fn explain(err: &MemberError) -> String {
     match err {

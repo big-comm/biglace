@@ -673,6 +673,21 @@ pub fn create(group: Option<&str>, note: &str, isolated: bool) -> std::result::R
     panel::read_json_limited(r).map_err(|e| MemberError::Other(e.to_string()))
 }
 
+/// A code that adds one more device (a phone) to our own account.
+#[derive(Debug, Clone, Deserialize)]
+pub struct Pairing {
+    /// `https://<panel>/pair#<token>`: shown as a QR code.
+    pub link: String,
+    /// When it stops working (ms since the epoch).
+    pub expires: u64,
+}
+
+/// Ask the panel for a pairing code (single use, a few minutes). Blocking.
+pub fn pair() -> std::result::Result<Pairing, MemberError> {
+    let r = member_call("POST", "/api/me/pair", None)?;
+    panel::read_json_limited(r).map_err(|e| MemberError::Other(e.to_string()))
+}
+
 /// Cancel one of our invites. Blocking.
 pub fn cancel(id: &str) -> std::result::Result<(), MemberError> {
     // Ids are hex from the panel; refuse anything that could reshape the path.

@@ -1409,6 +1409,7 @@ fn setup_menu(ctx: &Ctx) {
     // Sections: what you do with the network, then joining it, then the
     // app itself.
     let people = gtk4::gio::Menu::new();
+    people.append(Some(&tr!("Connect a phone")), Some("win.pair-phone"));
     people.append(Some(&tr!("Invite someone")), Some("win.invite-person"));
     people.append(Some(&tr!("Invites you sent")), Some("win.show-invites"));
     menu.append_section(None, &people);
@@ -1597,6 +1598,13 @@ fn setup_menu(ctx: &Ctx) {
         let action = gtk4::gio::SimpleAction::new("rejoin", None);
         let ctx2 = ctx.clone();
         action.connect_activate(move |_, _| rejoin(&ctx2));
+        ctx.ui.win.add_action(&action);
+    }
+
+    {
+        let action = gtk4::gio::SimpleAction::new("pair-phone", None);
+        let win = ctx.ui.win.clone();
+        action.connect_activate(move |_, _| invites::pair_phone(&win));
         ctx.ui.win.add_action(&action);
     }
 
@@ -2380,7 +2388,7 @@ fn apply_state(ctx: &Ctx, state: AppState, status: &Status, peers: &[Peer]) {
         act.set_enabled(configured);
     }
     // Inviting talks to the panel over the tunnel: only while connected.
-    for name in ["invite-person", "show-invites"] {
+    for name in ["invite-person", "show-invites", "pair-phone"] {
         if let Some(act) = ui
             .win
             .lookup_action(name)

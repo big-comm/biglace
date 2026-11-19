@@ -52,7 +52,7 @@ msgstr ""
 msgid "Failed to run pkexec tailscale"
 msgstr ""
 
-#: src/tailscale.rs:1106 src/window/mod.rs:1868
+#: src/tailscale.rs:1106 src/window/mod.rs:1876
 msgid "Enter the server URL before connecting."
 msgstr ""
 
@@ -62,7 +62,7 @@ msgid ""
 "BigScale panel and try again."
 msgstr ""
 
-#: src/tailscale.rs:1159 src/window/mod.rs:1859
+#: src/tailscale.rs:1159 src/window/mod.rs:1867
 msgid "Sign in or paste a pre-auth key first."
 msgstr ""
 
@@ -83,7 +83,7 @@ msgstr ""
 msgid "Failed to set tailscale operator."
 msgstr ""
 
-#: src/window/mod.rs:218 src/window/mod.rs:1412 src/window/invites.rs:325
+#: src/window/mod.rs:218 src/window/mod.rs:1413 src/window/invites.rs:411
 msgid "Invite someone"
 msgstr ""
 
@@ -99,7 +99,7 @@ msgstr ""
 msgid "Chat"
 msgstr ""
 
-#: src/window/mod.rs:353 src/window/invites.rs:108 src/window/sidebar.rs:149
+#: src/window/mod.rs:353 src/window/invites.rs:194 src/window/sidebar.rs:149
 msgid "Invites"
 msgstr ""
 
@@ -152,7 +152,7 @@ msgstr ""
 msgid "Device name on the network"
 msgstr ""
 
-#: src/window/mod.rs:1218 src/window/invites.rs:301 src/window/chat.rs:350
+#: src/window/mod.rs:1218 src/window/invites.rs:387 src/window/chat.rs:350
 #: src/window/chat.rs:380 src/window/chat.rs:1958 src/window/groups.rs:471
 #: src/window/groups.rs:572 src/window/dialogs.rs:105 src/window/dialogs.rs:118
 #: src/window/dialogs.rs:292 src/window/dialogs.rs:449
@@ -161,7 +161,7 @@ msgstr ""
 msgid "Cancel"
 msgstr ""
 
-#: src/window/mod.rs:1220 src/window/mod.rs:2410 src/window/mod.rs:2415
+#: src/window/mod.rs:1220 src/window/mod.rs:2418 src/window/mod.rs:2423
 #: src/window/sidebar.rs:408 src/tray/linux.rs:101 src/tray/windows.rs:84
 #: src/tray/windows.rs:142
 msgid "Connect"
@@ -178,8 +178,8 @@ msgstr ""
 msgid "Welcome back, {name}! Connecting…"
 msgstr ""
 
-#: src/window/mod.rs:1295 src/window/mod.rs:1730 src/window/mod.rs:1749
-#: src/window/mod.rs:1845 src/window/mod.rs:2040 src/window/mod.rs:2092
+#: src/window/mod.rs:1295 src/window/mod.rs:1738 src/window/mod.rs:1757
+#: src/window/mod.rs:1853 src/window/mod.rs:2048 src/window/mod.rs:2100
 #: src/window/dialogs.rs:263 src/window/dialogs.rs:614
 #: src/window/dialogs.rs:625 src/window/join_dialog.rs:337
 #, rust-format
@@ -192,7 +192,7 @@ msgid ""
 "The account {user} no longer exists on this network. Join with a new invite."
 msgstr ""
 
-#: src/window/mod.rs:1349 src/window/mod.rs:1426
+#: src/window/mod.rs:1349 src/window/mod.rs:1427
 msgid "Preferences"
 msgstr ""
 
@@ -231,90 +231,94 @@ msgstr ""
 msgid "Sign out"
 msgstr ""
 
-#: src/window/mod.rs:1413 src/window/invites.rs:149
+#: src/window/mod.rs:1412 src/window/invites.rs:58
+msgid "Connect a phone"
+msgstr ""
+
+#: src/window/mod.rs:1414 src/window/invites.rs:235
 msgid "Invites you sent"
 msgstr ""
 
-#: src/window/mod.rs:1416
+#: src/window/mod.rs:1417
 msgid "Change profile photo…"
 msgstr ""
 
-#: src/window/mod.rs:1417 src/window/join_dialog.rs:112
+#: src/window/mod.rs:1418 src/window/join_dialog.rs:112
 msgid "Join with an invite"
 msgstr ""
 
-#: src/window/mod.rs:1419
+#: src/window/mod.rs:1420
 msgid "Sign in with panel account"
 msgstr ""
 
-#: src/window/mod.rs:1422
+#: src/window/mod.rs:1423
 msgid "Leave the network…"
 msgstr ""
 
-#: src/window/mod.rs:1427
+#: src/window/mod.rs:1428
 msgid "View tailscaled logs"
 msgstr ""
 
-#: src/window/mod.rs:1428
+#: src/window/mod.rs:1429
 msgid "About BigLace"
 msgstr ""
 
-#: src/window/mod.rs:1501
+#: src/window/mod.rs:1502
 msgid "Connect to the network first, then open the invite link again."
 msgstr ""
 
-#: src/window/mod.rs:1507
+#: src/window/mod.rs:1508
 #, rust-format
 msgid "This invite is for another network ({host}). Sign out first to join it."
 msgstr ""
 
-#: src/window/mod.rs:1514
+#: src/window/mod.rs:1515
 msgid ""
 "This device is already signed in. Sign out first to join with an invite."
 msgstr ""
 
-#: src/window/mod.rs:1543
+#: src/window/mod.rs:1544
 msgid "Photo removed."
 msgstr ""
 
-#: src/window/mod.rs:1545
+#: src/window/mod.rs:1546
 #, rust-format
 msgid "Could not remove the photo: {error}"
 msgstr ""
 
-#: src/window/mod.rs:1582
+#: src/window/mod.rs:1583
 #, rust-format
 msgid "Could not open the browser: {error}"
 msgstr ""
 
-#: src/window/mod.rs:1588
+#: src/window/mod.rs:1589
 msgid ""
 "You can't open the admin panel: you're not an administrator of this network, "
 "or the panel can't be reached."
 msgstr ""
 
-#: src/window/mod.rs:1686
+#: src/window/mod.rs:1694
 msgid "Enter the server URL before saving."
 msgstr ""
 
-#: src/window/mod.rs:1695
+#: src/window/mod.rs:1703
 msgid "Enter the pre-auth key before saving."
 msgstr ""
 
-#: src/window/mod.rs:1728
+#: src/window/mod.rs:1736
 msgid "Setup saved"
 msgstr ""
 
-#: src/window/mod.rs:1923
+#: src/window/mod.rs:1931
 msgid "Could not start the Tailscale service."
 msgstr ""
 
-#: src/window/mod.rs:1949 src/window/peer_row.rs:237 src/window/peer_row.rs:354
+#: src/window/mod.rs:1957 src/window/peer_row.rs:237 src/window/peer_row.rs:354
 #: src/window/peer_row.rs:363
 msgid "IP address copied"
 msgstr ""
 
-#: src/window/mod.rs:2000
+#: src/window/mod.rs:2008
 #, rust-format
 msgid ""
 "Saved, but the pre-auth key could not be stored in the system keyring "
@@ -322,281 +326,310 @@ msgid ""
 "register it anew."
 msgstr ""
 
-#: src/window/mod.rs:2078 src/window/mod.rs:2239 src/window/mod.rs:2334
+#: src/window/mod.rs:2086 src/window/mod.rs:2247 src/window/mod.rs:2342
 #: src/tray/linux.rs:60 src/tray/windows.rs:185
 msgid "Connected"
 msgstr ""
 
-#: src/window/mod.rs:2235
+#: src/window/mod.rs:2243
 msgid "Service stopped"
 msgstr ""
 
-#: src/window/mod.rs:2236 src/window/mod.rs:2338
+#: src/window/mod.rs:2244 src/window/mod.rs:2346
 msgid "Not signed in"
 msgstr ""
 
-#: src/window/mod.rs:2237 src/tray/linux.rs:65 src/tray/windows.rs:193
+#: src/window/mod.rs:2245 src/tray/linux.rs:65 src/tray/windows.rs:193
 #: src/window/content.rs:51
 msgid "Disconnected"
 msgstr ""
 
-#: src/window/mod.rs:2238 src/window/mod.rs:2405 src/window/dialogs.rs:461
+#: src/window/mod.rs:2246 src/window/mod.rs:2413 src/window/dialogs.rs:461
 #: src/window/content.rs:312
 msgid "Connecting…"
 msgstr ""
 
-#: src/window/mod.rs:2257
+#: src/window/mod.rs:2265
 msgid "Server unreachable"
 msgstr ""
 
-#: src/window/mod.rs:2275
+#: src/window/mod.rs:2283
 msgid "Tailscale can't set DNS"
 msgstr ""
 
-#: src/window/mod.rs:2283
+#: src/window/mod.rs:2291
 #, rust-format
 msgid "Update available: v{version}"
 msgstr ""
 
-#: src/window/mod.rs:2311
+#: src/window/mod.rs:2319
 #, rust-format
 msgid "Sign in again as {user}"
 msgstr ""
 
-#: src/window/mod.rs:2327 src/window/mod.rs:2347
+#: src/window/mod.rs:2335 src/window/mod.rs:2355
 msgid "(no device name)"
 msgstr ""
 
-#: src/window/mod.rs:2341
+#: src/window/mod.rs:2349
 msgid "Sign in or paste a pre-auth key"
 msgstr ""
 
-#: src/window/mod.rs:2352
+#: src/window/mod.rs:2360
 msgid "Server not set"
 msgstr ""
 
-#: src/window/mod.rs:2400 src/tray/linux.rs:94 src/tray/windows.rs:140
+#: src/window/mod.rs:2408 src/tray/linux.rs:94 src/tray/windows.rs:140
 msgid "Disconnect"
 msgstr ""
 
-#: src/window/mod.rs:2529
+#: src/window/mod.rs:2537
 msgid "no other devices"
 msgstr ""
 
-#: src/window/mod.rs:2531
+#: src/window/mod.rs:2539
 #, rust-format
 msgid "{online} online"
 msgstr ""
 
-#: src/window/mod.rs:2533
+#: src/window/mod.rs:2541
 #, rust-format
 msgid "{online} online · {offline} offline"
 msgstr ""
 
-#: src/window/mod.rs:2706 src/window/mod.rs:2772
+#: src/window/mod.rs:2714 src/window/mod.rs:2780
 msgid "is online"
 msgstr ""
 
-#: src/window/mod.rs:2707 src/window/mod.rs:2774
+#: src/window/mod.rs:2715 src/window/mod.rs:2782
 msgid "went offline"
 msgstr ""
 
-#: src/window/mod.rs:2708
+#: src/window/mod.rs:2716
 #, rust-format
 msgid "{count} devices are online"
 msgstr ""
 
-#: src/window/mod.rs:2709
+#: src/window/mod.rs:2717
 #, rust-format
 msgid "{count} devices went offline"
 msgstr ""
 
-#: src/window/mod.rs:2711
+#: src/window/mod.rs:2719
 #, rust-format
 msgid "{on_count} online · {off_count} offline"
 msgstr ""
 
-#: src/window/invites.rs:55
+#: src/window/invites.rs:67
+msgid ""
+"On the phone, open BigLace and tap “Scan QR code”, then point it at this "
+"code. The phone joins as one of your devices."
+msgstr ""
+
+#: src/window/invites.rs:73 src/window/invites.rs:95
+msgid "Asking the panel for a code…"
+msgstr ""
+
+#: src/window/invites.rs:77
+msgid "New code"
+msgstr ""
+
+#: src/window/invites.rs:109
+msgid "This code is no longer valid."
+msgstr ""
+
+#: src/window/invites.rs:113
+#, rust-format
+msgid "Valid for {time} · works once"
+msgstr ""
+
+#: src/window/invites.rs:120
+msgid ""
+"This network's server doesn't pair phones yet. Ask your administrator to "
+"update the panel, or invite the phone instead."
+msgstr ""
+
+#: src/window/invites.rs:141
 msgid ""
 "Invites from BigLace need a BigScale server that supports them. Ask your "
 "administrator to update the server, or to create the invite in the panel."
 msgstr ""
 
-#: src/window/invites.rs:59
+#: src/window/invites.rs:145
 msgid "This device can't send invites (it isn't linked to a person's account)."
 msgstr ""
 
-#: src/window/invites.rs:62 src/window/groups.rs:29
+#: src/window/invites.rs:148 src/window/groups.rs:29
 msgid ""
 "The panel knows this device by a different key (BigLace was reinstalled?). "
 "Leave the network and join again to fix it."
 msgstr ""
 
-#: src/window/invites.rs:65 src/window/groups.rs:32
+#: src/window/invites.rs:151 src/window/groups.rs:32
 msgid ""
 "The panel couldn't confirm this device. Make sure BigLace is up to date and "
 "stays open while connected, then try again."
 msgstr ""
 
-#: src/window/invites.rs:67 src/window/groups.rs:38
+#: src/window/invites.rs:153 src/window/groups.rs:38
 msgid "You are no longer in that group."
 msgstr ""
 
-#: src/window/invites.rs:69
+#: src/window/invites.rs:155
 msgid ""
 "On this network everyone can reach everyone, so only the administrator can "
 "invite people."
 msgstr ""
 
-#: src/window/invites.rs:71
+#: src/window/invites.rs:157
 msgid "You have too many pending invites. Cancel some or try again tomorrow."
 msgstr ""
 
-#: src/window/invites.rs:73
+#: src/window/invites.rs:159
 msgid ""
 "On this network only administrators invite new people. You can still invite "
 "people already on the network into your groups."
 msgstr ""
 
-#: src/window/invites.rs:75 src/window/groups.rs:58 src/window/rooms.rs:368
+#: src/window/invites.rs:161 src/window/groups.rs:58 src/window/rooms.rs:368
 #: src/window/join_dialog.rs:43
 #, rust-format
 msgid "Could not reach the panel: {error}"
 msgstr ""
 
-#: src/window/invites.rs:81
+#: src/window/invites.rs:167
 msgid "Waiting to be used"
 msgstr ""
 
-#: src/window/invites.rs:82
+#: src/window/invites.rs:168
 msgid "Used"
 msgstr ""
 
-#: src/window/invites.rs:83
+#: src/window/invites.rs:169
 msgid "Expired"
 msgstr ""
 
-#: src/window/invites.rs:84
+#: src/window/invites.rs:170
 msgid "Cancelled"
 msgstr ""
 
-#: src/window/invites.rs:85
+#: src/window/invites.rs:171
 msgid "Waiting for an administrator's approval"
 msgstr ""
 
-#: src/window/invites.rs:111 src/window/groups.rs:130 src/window/rooms.rs:82
+#: src/window/invites.rs:197 src/window/groups.rs:130 src/window/rooms.rs:82
 #: src/window/content.rs:79
 msgid "Refresh"
 msgstr ""
 
-#: src/window/invites.rs:116 src/window/chat.rs:126 src/window/groups.rs:135
+#: src/window/invites.rs:202 src/window/chat.rs:126 src/window/groups.rs:135
 #: src/window/rooms.rs:86 src/window/content.rs:58
 msgid "Main menu"
 msgstr ""
 
-#: src/window/invites.rs:132
+#: src/window/invites.rs:218
 msgid "Bring someone to your network"
 msgstr ""
 
-#: src/window/invites.rs:136
+#: src/window/invites.rs:222
 msgid ""
 "Create a link or QR code and send it to the person. When they join, you two "
 "can reach each other's devices — no administrator needed. The link works "
 "once and stays valid until it's used or you cancel it."
 msgstr ""
 
-#: src/window/invites.rs:158
+#: src/window/invites.rs:244
 msgid "No invites yet"
 msgstr ""
 
-#: src/window/invites.rs:179
+#: src/window/invites.rs:265
 msgid "Invites unavailable"
 msgstr ""
 
-#: src/window/invites.rs:278
+#: src/window/invites.rs:364
 #, rust-format
 msgid "{user} joined"
 msgstr ""
 
-#: src/window/invites.rs:280 src/window/content.rs:87
+#: src/window/invites.rs:366 src/window/content.rs:87
 msgid "Invite"
 msgstr ""
 
-#: src/window/invites.rs:284
+#: src/window/invites.rs:370
 #, rust-format
 msgid "group {group}"
 msgstr ""
 
-#: src/window/invites.rs:304
+#: src/window/invites.rs:390
 msgid "Cancel this invite: the link stops working"
 msgstr ""
 
-#: src/window/invites.rs:341
+#: src/window/invites.rs:427
 msgid "The person you invite will reach your devices, and you theirs."
 msgstr ""
 
-#: src/window/invites.rs:345
+#: src/window/invites.rs:431
 msgid "Who is it for? (optional)"
 msgstr ""
 
-#: src/window/invites.rs:352
+#: src/window/invites.rs:438
 msgid "Access"
 msgstr ""
 
-#: src/window/invites.rs:373
+#: src/window/invites.rs:459
 msgid "Just the two of us"
 msgstr ""
 
-#: src/window/invites.rs:374
+#: src/window/invites.rs:460
 msgid "You see each other's devices, nobody else"
 msgstr ""
 
-#: src/window/invites.rs:378
+#: src/window/invites.rs:464
 #, rust-format
 msgid "Also the group {group}"
 msgstr ""
 
-#: src/window/invites.rs:379
+#: src/window/invites.rs:465
 msgid "They join the group and see everyone in it"
 msgstr ""
 
-#: src/window/invites.rs:385
+#: src/window/invites.rs:471
 msgid "A network of their own"
 msgstr ""
 
-#: src/window/invites.rs:386
+#: src/window/invites.rs:472
 msgid ""
 "No link to you: they see only their own devices and whoever they invite "
 "(you're the administrator)"
 msgstr ""
 
-#: src/window/invites.rs:403
+#: src/window/invites.rs:489
 msgid "Create invite"
 msgstr ""
 
-#: src/window/invites.rs:428
+#: src/window/invites.rs:514
 msgid "QR code of the invite link"
 msgstr ""
 
-#: src/window/invites.rs:430
+#: src/window/invites.rs:516
 msgid ""
 "Send the link or let the person scan the code with their phone. It works "
 "once and stays valid until used or cancelled."
 msgstr ""
 
-#: src/window/invites.rs:443
+#: src/window/invites.rs:529
 msgid "Copy link"
 msgstr ""
 
-#: src/window/invites.rs:448
+#: src/window/invites.rs:534
 msgid "Done"
 msgstr ""
 
-#: src/window/invites.rs:470
+#: src/window/invites.rs:556
 msgid "Copied!"
 msgstr ""
 
-#: src/window/invites.rs:505
+#: src/window/invites.rs:591
 msgid ""
 "This network asks an administrator to approve each invite: the link starts "
 "working once they do. Its status shows in Invites."
@@ -2823,6 +2856,14 @@ msgstr ""
 msgid "Voice message"
 msgstr ""
 
+#: src/window/media_viewer.rs:43
+msgid "Open with another app"
+msgstr ""
+
+#: src/window/media_viewer.rs:45
+msgid "Close"
+msgstr ""
+
 #: src/window/emoji_picker.rs:28
 msgid "Smileys & people"
 msgstr ""
@@ -2981,7 +3022,7 @@ msgstr ""
 msgid "the connection was lost"
 msgstr ""
 
-#: src/remote/host.rs:554
+#: src/remote/host.rs:562
 msgid ""
 "the screen there is locked, and GNOME doesn't allow remote access to a "
 "locked screen — ask the person to unlock it"
@@ -3005,12 +3046,4 @@ msgstr ""
 
 #: src/wake.rs:193
 msgid "no computer on its network is on to send the signal"
-msgstr ""
-
-#: src/window/media_viewer.rs:43
-msgid "Open with another app"
-msgstr ""
-
-#: src/window/media_viewer.rs:45
-msgid "Close"
 msgstr ""
