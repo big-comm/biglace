@@ -237,6 +237,8 @@ pub fn shutdown() -> Result<(), String> {
 /// At startup: back from "Restart and reconnect"? Lock the screen first
 /// thing, and undo the one-time setup.
 pub fn after_start() {
+    // A sound share that didn't end cleanly (BigLace was killed).
+    let _ = std::thread::Builder::new().name("biglace-sound-cleanup".into()).spawn(crate::room::share_audio::clean_leftovers);
     let _ = std::fs::remove_file(autostart_once_path());
     let Some(mut resume) = read_resume() else { return };
     let (boot, session) = (boot_time(), session_id());

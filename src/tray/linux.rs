@@ -18,6 +18,8 @@ use crate::{tr, trf};
 pub struct BigLaceTray {
     pub connected: bool,
     pub peer_count: usize,
+    /// In a voice room: its group and whether we're muted.
+    pub room: Option<(String, bool)>,
     sender: async_channel::Sender<Command>,
 }
 
@@ -44,7 +46,12 @@ impl Tray for BigLaceTray {
         // monochrome indicator on light and dark panels alike. Not named
         // "<app id>-symbolic": docks like XFCE's docklike prefer that name
         // over the app icon and would show the bare glyph in the dock.
-        "org.communitybig.biglace-tray-symbolic".into()
+        match &self.room {
+            // In a room: a microphone, so it's obvious at a glance.
+            Some((_, false)) => "audio-input-microphone-symbolic".into(),
+            Some((_, true)) => "microphone-disabled-symbolic".into(),
+            None => "org.communitybig.biglace-tray-symbolic".into(),
+        }
     }
 
     fn tool_tip(&self) -> ToolTip {
@@ -56,6 +63,17 @@ impl Tray for BigLaceTray {
             }
         } else {
             tr!("Disconnected")
+        };
+        let description = match &self.room {
+            Some((group, muted)) => {
+                let line = if *muted {
+                    trf!("In the room {group} · muted", "group" => group)
+                } else {
+                    trf!("In the room {group}", "group" => group)
+                };
+                format!("{line}\n{description}")
+            }
+            None => description,
         };
         ToolTip {
             icon_name: self.icon_name(),
@@ -87,13 +105,42 @@ impl Tray for BigLaceTray {
             .into()
         };
 
-        vec![
-            StandardItem {
-                label: tr!("Show BigLace"),
-                activate: Box::new(|t: &mut BigLaceTray| t.send(Command::Show)),
-                ..Default::default()
-            }
-            .into(),
+        let mut items: Vec<MenuItem<Self>> = vec![StandardItem {
+            label: tr!("Show BigLace"),
+            activate: Box::new(|t: &mut BigLaceTray| t.send(Command::Show)),
+            ..Default::default()
+        }
+        .into()];
+        if let Some((group, muted)) = &self.room {
+            items.push(MenuItem::Separator);
+            items.push(
+                StandardItem {
+                    label: trf!("Room {group}", "group" => group),
+                    enabled: false,
+                    ..Default::default()
+                }
+                .into(),
+            );
+            items.push(
+                StandardItem {
+                    label: if *muted { tr!("Unmute (Ctrl+Alt+M)") } else { tr!("Mute (Ctrl+Alt+M)") },
+                    icon_name: if *muted { "microphone-sensitivity-high-symbolic" } else { "microphone-disabled-symbolic" }.into(),
+                    activate: Box::new(|t: &mut BigLaceTray| t.send(Command::ToggleMute)),
+                    ..Default::default()
+                }
+                .into(),
+            );
+            items.push(
+                StandardItem {
+                    label: tr!("Leave the room"),
+                    icon_name: "call-stop-symbolic".into(),
+                    activate: Box::new(|t: &mut BigLaceTray| t.send(Command::LeaveRoom)),
+                    ..Default::default()
+                }
+                .into(),
+            );
+        }
+        items.extend([
             MenuItem::Separator,
             connect_or_disconnect,
             MenuItem::Separator,
@@ -103,7 +150,8 @@ impl Tray for BigLaceTray {
                 ..Default::default()
             }
             .into(),
-        ]
+        ]);
+        items
     }
 }
 
@@ -117,6 +165,10 @@ impl HandleImpl {
             t.connected = connected;
             t.peer_count = peer_count;
         });
+    }
+
+    pub fn update_room(&self, room: Option<(String, bool)>) {
+        self.0.update(|t| t.room = room);
     }
 }
 
@@ -138,6 +190,7 @@ pub fn spawn() -> Option<(async_channel::Receiver<Command>, HandleImpl)> {
     let tray = BigLaceTray {
         connected: false,
         peer_count: 0,
+        room: None,
         sender: tx,
     };
     match tray.assume_sni_available(true).spawn() {

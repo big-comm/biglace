@@ -51,7 +51,7 @@ pub static MALLOC_CONF: &[u8] = b"background_thread:true,dirty_decay_ms:1000,muz
 /// creates (feat → minor, fix/perf/docs/… → patch, breaking → major) by
 /// rewriting this assignment. Reading it from `CARGO_PKG_VERSION` hid it from
 /// gitrepo, which is how the version sat at 1.0.0 through dozens of releases.
-pub const APP_VERSION: &str = "1.41.0";
+pub const APP_VERSION: &str = "1.42.0";
 pub const APP_ID: &str = "org.communitybig.biglace";
 
 /// Date-based build stamp (`YY.MM.DD-HHMM`) — the scheme the GitHub release
@@ -59,6 +59,26 @@ pub const APP_ID: &str = "org.communitybig.biglace";
 /// compares it with the latest release tag. `None` for a plain `cargo build`,
 /// which the update check treats as a development build.
 pub const BUILD_VERSION: Option<&str> = option_env!("BIGLACE_VERSION");
+
+/// In a virtual machine GTK's Vulkan renderer ends up on Mesa's software
+/// Vulkan (lavapipe), which crashed opening the screen viewer there: use
+/// GTK's GL renderer instead, unless the person chose one (GSK_RENDERER).
+fn avoid_software_vulkan() {
+    #[cfg(target_os = "linux")]
+    {
+        if std::env::var_os("GSK_RENDERER").is_some() {
+            return;
+        }
+        let vm = std::process::Command::new("systemd-detect-virt")
+            .args(["--vm", "--quiet"])
+            .status()
+            .is_ok_and(|s| s.success());
+        if vm {
+            // Before GTK starts (no other threads yet).
+            std::env::set_var("GSK_RENDERER", "ngl");
+        }
+    }
+}
 
 /// Serializes tests that mutate process-wide environment variables (XDG
 /// dirs, D-Bus address): cargo runs tests on parallel threads, and one test
@@ -72,6 +92,7 @@ pub(crate) fn test_env_lock() -> std::sync::MutexGuard<'static, ()> {
 
 fn main() {
     i18n::init();
+    avoid_software_vulkan();
 
     // Autostart launch mode. The desktop-session autostart entry (Linux
     // .desktop, Windows "Run" key, macOS LaunchAgent) appends `--hidden`, so a

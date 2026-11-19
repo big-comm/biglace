@@ -26,6 +26,8 @@ pub struct RoomsPage {
     btn_share: gtk4::Button,
     /// "You're showing your screen · 2 watching".
     share_banner: gtk4::Label,
+    /// Share the computer's sound along with the screen.
+    share_sound: gtk4::CheckButton,
     error_page: libadwaita::StatusPage,
     toast: libadwaita::ToastOverlay,
     /// Reflects the room state while updating the mute toggle ourselves.
@@ -39,7 +41,11 @@ pub struct RoomsPage {
     group: Rc<RefCell<Option<String>>>,
     sharing: Rc<RefCell<std::collections::HashSet<String>>>,
     presenting: Rc<std::cell::Cell<bool>>,
+    /// Told whenever the room (or our mute) changes.
+    room_hook: RoomHook,
 }
+
+type RoomHook = Rc<RefCell<Option<Box<dyn Fn(Option<(String, bool)>)>>>>;
 
 /// One person in the room: avatar with a ring that lights up while they
 /// talk, name, and live sound waves (or the muted icon).
@@ -151,6 +157,12 @@ impl RoomsPage {
         share_banner.set_visible(false);
         in_box.insert_child_after(&share_banner, Some(&in_title));
         in_box.append(&controls);
+        let share_sound = gtk4::CheckButton::builder()
+            .label(tr!("Include the computer's sound when sharing the screen"))
+            .halign(gtk4::Align::Center)
+            .tooltip_text(tr!("Videos and music playing here go to the room too; the room's voices don't (no echo)"))
+            .build();
+        in_box.append(&share_sound);
         let in_room = libadwaita::Clamp::builder().maximum_size(720).child(&in_box).build();
         let in_room = gtk4::ScrolledWindow::builder()
             .hscrollbar_policy(gtk4::PolicyType::Never)
@@ -186,6 +198,7 @@ impl RoomsPage {
             btn_mute,
             btn_share,
             share_banner,
+            share_sound,
             error_page,
             toast: toast.clone(),
             syncing: Rc::new(std::cell::Cell::new(false)),
@@ -194,6 +207,7 @@ impl RoomsPage {
             group: Rc::default(),
             sharing: Rc::default(),
             presenting: Rc::default(),
+            room_hook: Rc::default(),
         };
         {
             let page = page.clone();
@@ -204,7 +218,8 @@ impl RoomsPage {
                 }
                 b.set_sensitive(false);
                 let (page, b) = (page.clone(), b.clone());
-                super::run_in_background(room::stage::start, move |r| {
+                let with_sound = page.share_sound.is_active();
+                super::run_in_background(move || room::stage::start(with_sound), move |r| {
                     b.set_sensitive(true);
                     if let Err(e) = r {
                         super::show_toast(&page.toast, &trf!("Could not share the screen: {error}", "error" => e), 6);
@@ -358,12 +373,23 @@ impl RoomsPage {
         });
     }
 
+    /// `hook` hears about the room we're in (group, muted) as it changes.
+    pub fn on_room_change(&self, hook: impl Fn(Option<(String, bool)>) + 'static) {
+        *self.room_hook.borrow_mut() = Some(Box::new(hook));
+    }
+
     fn on_event(&self, ev: RoomEvent) {
+        if let RoomEvent::State { group, muted, .. } = &ev {
+            if let Some(hook) = self.room_hook.borrow().as_ref() {
+                hook(group.clone().map(|g| (g, *muted)));
+            }
+        }
         match ev {
             RoomEvent::State { group: Some(group), muted, presenting, members } => {
                 *self.group.borrow_mut() = Some(group.clone());
                 self.presenting.set(presenting);
                 set_share_look(&self.btn_share, presenting);
+                self.share_sound.set_sensitive(!presenting);
                 let watchers = members.iter().filter(|m| m.watching.is_some()).count();
                 self.share_banner.set_visible(presenting);
                 self.share_banner.set_text(&if watchers == 0 {

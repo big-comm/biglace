@@ -41,6 +41,10 @@ pub enum Command {
     Disconnect,
     /// User asked to quit the application from the tray menu.
     Quit,
+    /// Mute / unmute the microphone in the voice room.
+    ToggleMute,
+    /// Leave the voice room.
+    LeaveRoom,
 }
 
 /// Cross-platform handle that lets the GTK main loop push status updates
@@ -55,6 +59,11 @@ impl Handle {
     /// anything actually changed.
     pub fn update(&self, connected: bool, peer_count: usize) {
         self.inner.update(connected, peer_count);
+    }
+
+    /// In a voice room (its group, muted), or not.
+    pub fn update_room(&self, room: Option<(String, bool)>) {
+        self.inner.update_room(room);
     }
 }
 

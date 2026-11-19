@@ -12,7 +12,7 @@ use std::sync::mpsc::{self, SyncSender, TrySendError};
 use std::sync::{Arc, Mutex, OnceLock};
 use std::time::Duration;
 
-use super::{emit, room, RoomEvent, STAGE_PREFIX};
+use super::{emit, room, share_audio, RoomEvent, STAGE_PREFIX};
 use crate::remote::host::{self, InputSink, StopHandle};
 use crate::remote::{read_frame, write_frame, Input, Kind};
 use crate::tailscale::{self, Identity};
@@ -73,7 +73,7 @@ pub(super) fn audience() -> HashMap<String, (u64, bool)> {
 
 /// Start showing our screen to the room we're in. The capture starts in the
 /// background (on Wayland the desktop asks which screen first).
-pub fn start() -> Result<(), String> {
+pub fn start(with_sound: bool) -> Result<(), String> {
     let current = room().ok_or_else(|| crate::tr!("you are not in a room"))?;
     if !crate::remote::can_host() {
         return Err(crate::tr!("screen sharing isn't available on this computer"));
@@ -111,6 +111,24 @@ pub fn start() -> Result<(), String> {
         if let Ok(mut s) = stage.sink.lock() {
             *s = Some(sink);
         }
+        // The computer's sound too (not the room's voices), if asked.
+        if with_sound {
+            match share_audio::start() {
+                Ok(source) => {
+                    let st = stage.clone();
+                    let _ = std::thread::Builder::new().name("biglace-stage-sound".into()).spawn(move || {
+                        let send = |payload: &[u8]| -> anyhow::Result<()> {
+                            st.fanout(Kind::Audio, payload);
+                            Ok(())
+                        };
+                        if let Err(e) = host::stream_audio_to(&send, &st.stop, &share_audio::capture_desc(&source)) {
+                            tailscale::dbg(&format!("stage: no sound: {e}"));
+                        }
+                    });
+                }
+                Err(e) => emit(RoomEvent::Problem(crate::trf!("The computer's sound can't be shared: {error}", "error" => e))),
+            }
+        }
         // Tell the room once the screen is really being captured.
         if let Some(r) = room() {
             r.send_state();
@@ -145,6 +163,7 @@ pub fn stop() {
 /// The share is over: forget it, drop the viewers, tell the room.
 fn finish(stage: &Arc<Stage>) {
     stage.stop.stop();
+    share_audio::stop();
     if let Ok(mut s) = slot().lock() {
         if s.as_ref().is_some_and(|cur| Arc::ptr_eq(cur, stage)) {
             *s = None;

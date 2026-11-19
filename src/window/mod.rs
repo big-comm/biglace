@@ -182,12 +182,16 @@ struct Ctx {
 pub fn build(app: &libadwaita::Application, start_hidden: bool) {
     style::install();
 
+    // The size it had last time (or a comfortable first one).
+    let geometry = window_geometry::load();
     let win = libadwaita::ApplicationWindow::builder()
         .application(app)
         .title("BigLace")
-        .default_width(1100)
-        .default_height(700)
+        .default_width(geometry.width)
+        .default_height(geometry.height)
+        .maximized(geometry.maximized)
         .build();
+    window_geometry::track(&win);
 
     let toast = libadwaita::ToastOverlay::new();
     chat_theme::apply_scheme(&chat_theme::load());
@@ -455,6 +459,26 @@ pub fn build(app: &libadwaita::Application, start_hidden: bool) {
     setup_menu(&ctx);
     wire_signals(&ctx);
     let tray_active = setup_tray(&ctx);
+    // The voice room on the tray (icon, mute, leave) and a global shortcut
+    // to mute it.
+    {
+        let tray = ctx.tray.clone();
+        // What the tray shows now (None: not set yet).
+        type Shown = Option<Option<(String, bool)>>;
+        let last: Rc<RefCell<Shown>> = Rc::default();
+        ctx.ui.rooms.on_room_change(move |room| {
+            if last.borrow().as_ref() == Some(&room) {
+                return;
+            }
+            *last.borrow_mut() = Some(room.clone());
+            if let Some(h) = tray.borrow().as_ref() {
+                h.update_room(room.clone());
+            }
+            if room.is_some() {
+                crate::room::shortcut::ensure();
+            }
+        });
+    }
     setup_close_to_tray(&ctx, tray_active);
 
     // Two main-loop tasks drive the refresh cycle:
@@ -550,6 +574,71 @@ pub fn build(app: &libadwaita::Application, start_hidden: bool) {
     }
 }
 
+/// The window's size and whether it was maximized, kept between runs
+/// (`window.json` next to the settings).
+mod window_geometry {
+    use gtk4::prelude::*;
+    use serde::{Deserialize, Serialize};
+
+    #[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
+    pub struct Geometry {
+        pub width: i32,
+        pub height: i32,
+        pub maximized: bool,
+    }
+
+    impl Default for Geometry {
+        fn default() -> Self {
+            Self { width: 1100, height: 700, maximized: false }
+        }
+    }
+
+    fn path() -> std::path::PathBuf {
+        gtk4::glib::user_config_dir().join("biglace").join("window.json")
+    }
+
+    pub fn load() -> Geometry {
+        let g: Geometry = std::fs::read(path()).ok().and_then(|b| serde_json::from_slice(&b).ok()).unwrap_or_default();
+        // Something sane even if the file was edited (or the screen shrank).
+        Geometry { width: g.width.clamp(480, 7680), height: g.height.clamp(360, 4320), ..g }
+    }
+
+    fn save(win: &libadwaita::ApplicationWindow) {
+        let (width, height) = win.default_size();
+        if width <= 0 || height <= 0 {
+            return;
+        }
+        let g = Geometry { width, height, maximized: win.is_maximized() };
+        if load() == g {
+            return;
+        }
+        if let Ok(json) = serde_json::to_vec(&g) {
+            let p = path();
+            if let Some(dir) = p.parent() {
+                let _ = std::fs::create_dir_all(dir);
+            }
+            let _ = std::fs::write(p, json);
+        }
+    }
+
+    /// Save it whenever the window closes (or hides into the tray), and
+    /// when the app quits.
+    pub fn track(win: &libadwaita::ApplicationWindow) {
+        win.connect_close_request(|w| {
+            save(w);
+            gtk4::glib::Propagation::Proceed
+        });
+        if let Some(app) = win.application() {
+            let w = win.downgrade();
+            app.connect_shutdown(move |_| {
+                if let Some(w) = w.upgrade() {
+                    save(&w);
+                }
+            });
+        }
+    }
+}
+
 // ─── Tray (StatusNotifierItem on Linux, Shell_NotifyIcon on Windows) ─────────
 
 /// Spawn the system-tray indicator and wire its actions to the existing UI
@@ -595,6 +684,13 @@ fn setup_tray(ctx: &Ctx) -> bool {
                     {
                         ctx2.ui.sidebar.btn_connect.emit_clicked();
                     }
+                }
+                tray::Command::ToggleMute => {
+                    std::thread::spawn(crate::room::toggle_mute);
+                }
+                tray::Command::LeaveRoom => {
+                    let rooms = ctx2.ui.rooms.clone();
+                    run_in_background(crate::room::leave, move |()| rooms.refresh());
                 }
                 tray::Command::Quit => {
                     if let Some(app) = ctx2.ui.win.application() {
@@ -1423,6 +1519,18 @@ fn setup_menu(ctx: &Ctx) {
         ctx.ui.win.add_action(&action);
     }
 
+    {
+        // Mute in the voice room, from the window too (where the desktop
+        // offers no global shortcut).
+        let action = gtk4::gio::SimpleAction::new("room-toggle-mute", None);
+        action.connect_activate(|_, _| {
+            std::thread::spawn(crate::room::toggle_mute);
+        });
+        ctx.ui.win.add_action(&action);
+        if let Some(app) = ctx.ui.win.application() {
+            app.set_accels_for_action("win.room-toggle-mute", &["<Control><Alt>m"]);
+        }
+    }
     {
         let action = gtk4::gio::SimpleAction::new("use-key", None);
         let ctx2 = ctx.clone();

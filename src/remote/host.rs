@@ -684,6 +684,17 @@ fn stream_audio(writer: &Mutex<TcpStream>, stop: &StopHandle) -> anyhow::Result<
 }
 
 pub(crate) fn stream_audio_from(writer: &Mutex<TcpStream>, stop: &StopHandle, desc: &str) -> anyhow::Result<()> {
+    let send = |payload: &[u8]| -> anyhow::Result<()> {
+        let mut w = writer.lock().map_err(|_| anyhow::anyhow!("lock"))?;
+        write_frame(&mut *w, Kind::Audio, payload)?;
+        Ok(())
+    };
+    stream_audio_to(&send, stop, desc)
+}
+
+/// Capture `desc` (Opus at its appsink) and `send` each packet with its
+/// capture time, until `stop`.
+pub(crate) fn stream_audio_to(send: &dyn Fn(&[u8]) -> anyhow::Result<()>, stop: &StopHandle, desc: &str) -> anyhow::Result<()> {
     use gstreamer as gst;
     use gstreamer::prelude::*;
     use gstreamer_app as gst_app;
@@ -710,8 +721,7 @@ pub(crate) fn stream_audio_from(writer: &Mutex<TcpStream>, stop: &StopHandle, de
             let mut payload = Vec::with_capacity(8 + map.len());
             payload.extend_from_slice(&super::now_us().to_be_bytes());
             payload.extend_from_slice(map.as_slice());
-            let mut w = writer.lock().map_err(|_| anyhow::anyhow!("lock"))?;
-            write_frame(&mut *w, Kind::Audio, &payload)?;
+            send(&payload)?;
         }
         Ok(())
     })();

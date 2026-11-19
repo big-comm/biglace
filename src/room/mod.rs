@@ -24,6 +24,8 @@ use crate::invite::{self, Participant};
 use crate::remote::{now_us, read_frame, write_frame, Kind};
 use crate::tailscale::{self, Identity};
 
+pub mod share_audio;
+pub mod shortcut;
 pub mod stage;
 
 /// Agent path to watch a screen shared with a room: `/v1/stage/<group>`.
@@ -444,7 +446,13 @@ fn start_playback() -> anyhow::Result<(gstreamer::Pipeline, gstreamer_app::AppSr
     use gstreamer as gst;
     use gstreamer::prelude::*;
     gst::init()?;
-    let p = gst::parse::launch(PEER_OUT_DESC)?
+    // While the computer's sound is shared, the room's voices go straight
+    // to the speakers (not into what's shared).
+    let desc = match share_audio::real_sink() {
+        Some(sink) => PEER_OUT_DESC.replace("autoaudiosink sync=false", &format!("pulsesink device={sink} sync=false")),
+        None => PEER_OUT_DESC.to_string(),
+    };
+    let p = gst::parse::launch(&desc)?
         .downcast::<gst::Pipeline>()
         .map_err(|_| anyhow::anyhow!("not a pipeline"))?;
     let src = p
@@ -564,6 +572,13 @@ pub fn leave() {
     }
     let _ = invite::room_leave(&room.group);
     emit(RoomEvent::State { group: None, muted: false, presenting: false, members: vec![] });
+}
+
+/// Mute if speaking, unmute if muted (tray, global shortcut).
+pub fn toggle_mute() {
+    if let Some(r) = room() {
+        set_muted(!r.muted.load(Ordering::Relaxed));
+    }
 }
 
 /// Mute or unmute our microphone for everyone.
