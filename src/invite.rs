@@ -665,9 +665,10 @@ pub fn my_invites() -> std::result::Result<MyInvites, MemberError> {
     panel::read_json_limited(r).map_err(|e| MemberError::Other(e.to_string()))
 }
 
-/// Create an invite (optionally also into `group`). Blocking.
-pub fn create(group: Option<&str>, note: &str) -> std::result::Result<CreatedInvite, MemberError> {
-    let body = serde_json::json!({ "group": group, "note": note });
+/// Create an invite (optionally also into `group`; `isolated`: a network
+/// of their own, administrators only). Blocking.
+pub fn create(group: Option<&str>, note: &str, isolated: bool) -> std::result::Result<CreatedInvite, MemberError> {
+    let body = serde_json::json!({ "group": group, "note": note, "isolated": isolated });
     let r = member_call("POST", "/api/me/invites", Some(body))?;
     panel::read_json_limited(r).map_err(|e| MemberError::Other(e.to_string()))
 }

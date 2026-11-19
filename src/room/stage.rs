@@ -28,6 +28,8 @@ type Out = (Kind, Arc<Vec<u8>>);
 struct Viewer {
     id: u64,
     ip: String,
+    /// Account watching.
+    who: String,
     tx: SyncSender<Out>,
     stream: TcpStream,
     /// Missed frames (or just joined): wait for a keyframe.
@@ -187,6 +189,9 @@ fn finish(stage: &Arc<Stage>) {
 /// Let viewer `id` control the screen (taking it from whoever had it).
 pub fn grant(id: u64) {
     let Some(s) = stage() else { return };
+    if let Some(who) = s.viewers.lock().ok().and_then(|v| v.iter().find(|v| v.id == id).map(|v| v.who.clone())) {
+        crate::access::log(&who, "", "control", "allowed");
+    }
     let previous = s.controller.lock().ok().and_then(|mut c| c.replace(id));
     if let Some(p) = previous.filter(|p| *p != id) {
         s.tell(p, false);
@@ -352,6 +357,7 @@ pub fn accept(stream: TcpStream, peer: IpAddr, headers: &HashMap<String, String>
         v.push(Viewer {
             id,
             ip: ip.clone(),
+            who: identity.login.clone(),
             tx: tx.clone(),
             stream: handle,
             skip_until_key: AtomicBool::new(true),
@@ -359,6 +365,7 @@ pub fn accept(stream: TcpStream, peer: IpAddr, headers: &HashMap<String, String>
     }
     stage.want_key.store(true, Ordering::Release);
     tailscale::dbg(&format!("stage: {}@{} watching", identity.login, identity.device));
+    crate::access::log(&identity.login, &identity.device, "watch", "allowed");
     if let Some(r) = room() {
         emit(r.view());
     }
@@ -434,6 +441,7 @@ mod tests {
         stage.viewers.lock().unwrap().push(Viewer {
             id,
             ip: format!("100.64.0.{id}"),
+            who: String::new(),
             tx,
             stream,
             skip_until_key: AtomicBool::new(true),

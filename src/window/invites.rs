@@ -96,6 +96,9 @@ pub struct InvitesPage {
     error_page: libadwaita::StatusPage,
     /// Last answer from the panel; the invite dialog offers its groups.
     state: Rc<RefCell<Option<MyInvites>>>,
+    /// We administer the network: we can also invite into a network of
+    /// the person's own.
+    admin: Rc<std::cell::Cell<bool>>,
 }
 
 impl InvitesPage {
@@ -189,6 +192,7 @@ impl InvitesPage {
             list,
             error_page,
             state: Rc::new(RefCell::new(None)),
+            admin: Rc::default(),
         };
         {
             let page = page.clone();
@@ -198,6 +202,10 @@ impl InvitesPage {
     }
 
     /// Groups we can invite into, from the last refresh.
+    pub fn set_admin(&self, admin: bool) {
+        self.admin.set(admin);
+    }
+
     pub fn groups(&self) -> Vec<String> {
         self.state.borrow().as_ref().map(|s| s.groups.clone()).unwrap_or_default()
     }
@@ -371,7 +379,14 @@ pub fn show_dialog(parent: &libadwaita::ApplicationWindow, page: &InvitesPage, p
             &tr!("They join the group and see everyone in it"),
         );
     }
-    if !groups.is_empty() {
+    let admin = page.admin.get();
+    if admin {
+        add_choice(
+            &tr!("A network of their own"),
+            &tr!("No link to you: they see only their own devices and whoever they invite (you're the administrator)"),
+        );
+    }
+    if !groups.is_empty() || admin {
         form.add(&grp_access);
     }
     if let Some(i) = preselect.and_then(|p| groups.iter().position(|g| g == p)) {
@@ -462,7 +477,8 @@ pub fn show_dialog(parent: &libadwaita::ApplicationWindow, page: &InvitesPage, p
         btn_create.connect_clicked(move |btn| {
             lbl_err.set_text("");
             let idx = radios.iter().position(|r| r.is_active()).unwrap_or(0);
-            let group = (idx > 0).then(|| groups.get(idx - 1).cloned()).flatten();
+            let isolated = admin && idx == groups.len() + 1;
+            let group = (idx > 0 && !isolated).then(|| groups.get(idx - 1).cloned()).flatten();
             let note = row_note.text().trim().to_string();
             btn.set_sensitive(false);
             let (page, steps, picture, link_label, lbl_err, btn, hint) = (
@@ -475,7 +491,7 @@ pub fn show_dialog(parent: &libadwaita::ApplicationWindow, page: &InvitesPage, p
                 hint.clone(),
             );
             super::run_in_background(
-                move || invite::create(group.as_deref(), &note),
+                move || invite::create(group.as_deref(), &note, isolated),
                 move |result| {
                     btn.set_sensitive(true);
                     match result {

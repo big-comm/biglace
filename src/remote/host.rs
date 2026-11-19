@@ -194,7 +194,8 @@ pub(crate) fn verify_caller(
 }
 
 /// Ask the person at this screen. False on deny, timeout or no UI.
-fn ask(identity: &Identity) -> bool {
+/// (allowed, remember the answer).
+fn ask(identity: &Identity) -> (bool, bool) {
     let (tx, rx) = std::sync::mpsc::channel();
     let request = ConsentRequest {
         who: identity.login.clone(),
@@ -202,9 +203,9 @@ fn ask(identity: &Identity) -> bool {
         reply: tx,
     };
     if !emit(HostEvent::Consent(request)) {
-        return false;
+        return (false, false);
     }
-    rx.recv_timeout(CONSENT_TIMEOUT).unwrap_or(false)
+    rx.recv_timeout(CONSENT_TIMEOUT).unwrap_or((false, false))
 }
 
 /// Handle a `GET /v1/screen` connection (called from the agent's thread).
@@ -225,9 +226,28 @@ pub fn serve(stream: TcpStream, peer: IpAddr, headers: &HashMap<String, String>,
         respond(&stream, 401, "Unauthorized", why);
         return;
     }
-    // The viewer that restarted this computer comes back without asking.
-    let returning = crate::power::resume_allows(&identity.login, &identity.device);
-    if !returning && !ask(&identity) {
+    // The viewer that restarted this computer comes back without asking;
+    // otherwise this person's rule decides (ask, always, never).
+    let (who, device) = (identity.login.as_str(), identity.device.as_str());
+    let returning = crate::power::resume_allows(who, device);
+    let outcome = if returning {
+        "returning"
+    } else {
+        match crate::access::rule(who) {
+            crate::access::Rule::Never => "blocked",
+            crate::access::Rule::Always => "remembered",
+            crate::access::Rule::Ask => match ask(&identity) {
+                (true, true) => {
+                    crate::access::set_rule(who, crate::access::Rule::Always);
+                    "allowed"
+                }
+                (true, false) => "allowed",
+                (false, _) => "denied",
+            },
+        }
+    };
+    crate::access::log(who, device, "screen", outcome);
+    if matches!(outcome, "blocked" | "denied") {
         respond(&stream, 403, "Forbidden", "denied");
         return;
     }
@@ -248,6 +268,7 @@ pub fn serve(stream: TcpStream, peer: IpAddr, headers: &HashMap<String, String>,
     run_session(stream, &stop, protocol, &identity);
     stop.stop();
     emit(HostEvent::Ended(stop));
+    crate::access::log(&identity.login, &identity.device, "screen", "ended");
     crate::power::session_ended(&identity.login, &identity.device);
     tailscale::dbg(&format!("remote: session ended for {}@{}", identity.login, identity.device));
 }
@@ -597,6 +618,9 @@ fn power_action(action: &str, viewer: &Identity, writer: &Arc<Mutex<TcpStream>>)
         }
     };
     tailscale::dbg(&format!("remote: {}@{} asks to {action}", viewer.login, viewer.device));
+    if matches!(action, "restart" | "relogin" | "shutdown") {
+        crate::access::log(&viewer.login, &viewer.device, action, "allowed");
+    }
     let result = match action {
         "restart" => {
             // Ready first (automatic sign-in armed), then tell the viewer;

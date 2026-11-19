@@ -1,3 +1,4 @@
+mod access_page;
 mod chat;
 mod chat_media;
 mod chat_theme;
@@ -224,7 +225,9 @@ pub fn build(app: &libadwaita::Application, start_hidden: bool) {
     let admin_menu = gtk4::gio::Menu::new();
     let groups_page = {
         let admin_menu = admin_menu.clone();
+        let invites_for_admin = invites_page.clone();
         groups::GroupsPage::build(&win, &toast, &invites_page, move |is_admin| {
+            invites_for_admin.set_admin(is_admin);
             let shown = admin_menu.n_items() > 0;
             if is_admin && !shown {
                 admin_menu.append(Some(&tr!("Open admin panel")), Some("win.open-admin"));
@@ -1369,6 +1372,11 @@ fn build_preferences(ui: &Ui) -> (libadwaita::PreferencesWindow, gtk4::Button) {
     page.add(&account);
 
     win.add(&page);
+    // Who may use this computer, and the history of accesses (read again
+    // each time the window opens).
+    let access = access_page::AccessPage::build();
+    win.add(&access.page);
+    win.connect_show(move |_| access.refresh());
     (win, sign_out)
 }
 

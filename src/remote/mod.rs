@@ -208,7 +208,8 @@ pub struct ConsentRequest {
     pub who: String,
     /// Their device (e.g. `tales-notebook`).
     pub device: String,
-    pub reply: std::sync::mpsc::Sender<bool>,
+    /// (allowed, remember: always allow this person).
+    pub reply: std::sync::mpsc::Sender<(bool, bool)>,
 }
 
 /// A running session on this host, for the "end access" indicator.

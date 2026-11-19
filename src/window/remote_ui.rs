@@ -97,7 +97,13 @@ fn ask_consent(win: &libadwaita::ApplicationWindow, req: remote::ConsentRequest)
     win.present();
     let dlg = libadwaita::MessageDialog::new(Some(win), None::<&str>, None::<&str>);
     dlg.add_css_class("consent-dialog");
-    dlg.set_extra_child(Some(&consent_body(&req.who, &req.device)));
+    let body = consent_body(&req.who, &req.device);
+    let remember = gtk4::CheckButton::builder()
+        .label(trf!("Always allow {user} (no more asking)", "user" => req.who))
+        .halign(gtk4::Align::Center)
+        .build();
+    body.append(&remember);
+    dlg.set_extra_child(Some(&body));
     dlg.add_response("deny", &tr!("Deny"));
     dlg.add_response("allow", &tr!("Allow access"));
     dlg.set_response_appearance("allow", libadwaita::ResponseAppearance::Suggested);
@@ -111,7 +117,8 @@ fn ask_consent(win: &libadwaita::ApplicationWindow, req: remote::ConsentRequest)
         let reply = reply.clone();
         dlg.connect_response(None, move |d, r| {
             answered.set(true);
-            let _ = reply.send(r == "allow");
+            let allow = r == "allow";
+            let _ = reply.send((allow, allow && remember.is_active()));
             d.close();
         });
     }
@@ -127,7 +134,7 @@ fn ask_consent(win: &libadwaita::ApplicationWindow, req: remote::ConsentRequest)
             let now = left.get().saturating_sub(1);
             left.set(now);
             if now == 0 {
-                let _ = reply.send(false);
+                let _ = reply.send((false, false));
                 dlg.close();
                 return glib::ControlFlow::Break;
             }
