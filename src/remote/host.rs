@@ -265,6 +265,7 @@ pub fn serve(stream: TcpStream, peer: IpAddr, headers: &HashMap<String, String>,
     crate::power::session_started(&identity.login, &identity.device);
     // What the viewer understands: 2 = timestamps + ping, 3 = also sound.
     let protocol: u32 = headers.get("x-biglace-screen").and_then(|v| v.parse().ok()).unwrap_or(1);
+    ONLY_420.with(|c| c.set(headers.get("x-biglace-chroma").is_some_and(|v| v == "420")));
     run_session(stream, &stop, protocol, &identity);
     stop.stop();
     emit(HostEvent::Ended(stop));
@@ -450,7 +451,14 @@ fn encode_tail(enc: &str) -> String {
 
 /// Full pipeline: `head` (source + conversion) → H.264 → appsink.
 pub(crate) fn pipeline_desc(head: &str, (enc, format): (&str, &str)) -> String {
+    // A viewer that decodes 4:2:0 only (phones' hardware decoders).
+    let format = if format == "Y444" && ONLY_420.with(std::cell::Cell::get) { "I420" } else { format };
     format!("{head} ! video/x-raw,format={format} ! {}", encode_tail(enc))
+}
+
+thread_local! {
+    /// This session's viewer asked for 4:2:0 (`X-BigLace-Chroma: 420`).
+    static ONLY_420: std::cell::Cell<bool> = const { std::cell::Cell::new(false) };
 }
 
 /// Zero-copy Wayland pipeline: the compositor's frames stay in GPU memory

@@ -19,8 +19,11 @@ pub struct Injector {
     root: xproto::Window,
     width: u16,
     height: u16,
-    /// keysym → keycode, from the server's current keyboard mapping.
-    keymap: std::collections::HashMap<u32, u8>,
+    /// keysym → (keycode, typed with Shift), from the server's current
+    /// keyboard mapping.
+    keymap: std::collections::HashMap<u32, (u8, bool)>,
+    /// The viewer holds a Shift of its own.
+    shift_held: bool,
 }
 
 impl Injector {
@@ -35,6 +38,7 @@ impl Injector {
             width: screen.width_in_pixels,
             height: screen.height_in_pixels,
             keymap: Default::default(),
+            shift_held: false,
             conn,
         };
         injector.load_keymap();
@@ -53,13 +57,13 @@ impl Injector {
             return;
         };
         let per = reply.keysyms_per_keycode.max(1) as usize;
-        for (i, syms) in reply.keysyms.chunks(per).enumerate() {
-            let code = min as usize + i;
-            // First two columns: unshifted and shifted. The first keycode
-            // found for a keysym wins.
-            for &sym in syms.iter().take(2) {
-                if sym != 0 {
-                    self.keymap.entry(sym).or_insert(code as u8);
+        // First two columns: unshifted, then shifted — a keysym found
+        // unshifted anywhere is typed that way.
+        for column in 0..2.min(per) {
+            for (i, syms) in reply.keysyms.chunks(per).enumerate() {
+                let code = min as usize + i;
+                if let Some(&sym) = syms.get(column).filter(|s| **s != 0) {
+                    self.keymap.entry(sym).or_insert((code as u8, column == 1));
                 }
             }
         }
@@ -95,8 +99,21 @@ impl Injector {
                 }
             }
             Input::Key { keysym, pressed } => {
-                if let Some(&code) = self.keymap.get(&keysym) {
+                if keysym == 0xffe1 || keysym == 0xffe2 {
+                    self.shift_held = pressed;
+                }
+                if let Some(&(code, shifted)) = self.keymap.get(&keysym) {
+                    let shifted = shifted && !self.shift_held;
+                    // A symbol typed with Shift ("!" on most layouts) as a
+                    // phone sends it: Shift around it here.
+                    let shift = self.keymap.get(&0xffe1).filter(|_| shifted).map(|(c, _)| *c);
+                    if let (Some(s), true) = (shift, pressed) {
+                        self.fake(KEY_PRESS, s, 0, 0);
+                    }
                     self.fake(if pressed { KEY_PRESS } else { KEY_RELEASE }, code, 0, 0);
+                    if let (Some(s), false) = (shift, pressed) {
+                        self.fake(KEY_RELEASE, s, 0, 0);
+                    }
                 }
             }
         }
