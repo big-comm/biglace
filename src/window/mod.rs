@@ -456,7 +456,9 @@ pub fn build(app: &libadwaita::Application, start_hidden: bool) {
     // background (see config::load).
     {
         let c = cfg.borrow();
-        if c.enrolled && c.authkey.is_empty() && !c.server_url.trim().is_empty() {
+        // Not right after a remote restart: the automatic sign-in left the
+        // keyring locked, and asking it would pop up its password prompt.
+        if c.enrolled && c.authkey.is_empty() && !c.server_url.trim().is_empty() && !crate::power::just_restarted() {
             let server = c.server_url.clone();
             let (cfg, entry) = (cfg.clone(), ui.sidebar.entry_key.clone());
             run_in_background(

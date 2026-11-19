@@ -151,6 +151,13 @@ pub fn shutdown() -> Result<(), String> {
     run(Command::new("systemctl").arg("poweroff")).map_err(|e| crate::trf!("could not shut down: {error}", "error" => e))
 }
 
+/// This boot came from "Restart and reconnect" (signed in automatically:
+/// the keyring is still locked, so nothing should ask it for secrets).
+pub fn just_restarted() -> bool {
+    let boot = boot_time();
+    read_resume().is_some_and(|r| boot != 0 && r.asked != 0 && r.asked < boot)
+}
+
 /// At startup: back from "Restart and reconnect"? Lock the screen first
 /// thing, and undo the one-time setup.
 pub fn after_start() {
