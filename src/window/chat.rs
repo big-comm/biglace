@@ -16,8 +16,17 @@ use crate::trf;
 /// Messages closer than this from the same person form one block.
 const BLOCK_GAP_MS: u64 = 5 * 60 * 1000;
 
+thread_local! {
+    /// The conversation a room's chat shows right now (no notification for it).
+    static ON_SCREEN: RefCell<Option<ConvId>> = const { RefCell::new(None) };
+}
+
 #[derive(Clone)]
 pub struct ChatPage {
+    /// The conversation list and its separator (hidden when embedded).
+    side: (gtk4::Widget, gtk4::Widget),
+    /// Showing one conversation inside something else (a room).
+    embedded: Rc<Cell<bool>>,
     pub toolbar: libadwaita::ToolbarView,
     pub menu_btn: gtk4::MenuButton,
     win: libadwaita::ApplicationWindow,
@@ -441,12 +450,15 @@ impl ChatPage {
         stack.set_hexpand(true);
 
         let body = gtk4::Box::new(gtk4::Orientation::Horizontal, 0);
+        let side_sep = gtk4::Separator::new(gtk4::Orientation::Vertical);
         body.append(&list_scroll);
-        body.append(&gtk4::Separator::new(gtk4::Orientation::Vertical));
+        body.append(&side_sep);
         body.append(&stack);
         toolbar.set_content(Some(&body));
 
         let page = Self {
+            side: (list_scroll.clone().upcast(), side_sep.upcast()),
+            embedded: Rc::default(),
             toolbar,
             menu_btn,
             win: win.clone(),
@@ -749,6 +761,31 @@ impl ChatPage {
     }
 
     /// The section became visible (or not).
+    /// Show only one conversation (no list, no header): a room's chat.
+    pub fn embed(&self) {
+        self.embedded.set(true);
+        self.side.0.set_visible(false);
+        self.side.1.set_visible(false);
+        self.toolbar.set_reveal_top_bars(false);
+    }
+
+    /// Embedded: open `id` and keep it on screen (or let it go).
+    pub fn show_only(&self, id: Option<&ConvId>) {
+        match id {
+            Some(id) => {
+                if self.state.current.borrow().as_ref() != Some(id) {
+                    self.open_conv(id);
+                }
+                self.set_visible(true);
+                ON_SCREEN.with(|o| *o.borrow_mut() = Some(id.clone()));
+            }
+            None => {
+                self.set_visible(false);
+                ON_SCREEN.with(|o| *o.borrow_mut() = None);
+            }
+        }
+    }
+
     pub fn set_visible(&self, visible: bool) {
         self.state.visible.set(visible);
         if visible {
@@ -937,7 +974,10 @@ impl ChatPage {
                 let looking = self.state.visible.get()
                     && self.win.is_active()
                     && self.state.current.borrow().as_ref() == Some(&conv);
-                if !looking {
+                // One notification per message: the Chat page sends it (the
+                // room's chat doesn't), unless the room's chat shows it now.
+                let elsewhere = self.win.is_active() && ON_SCREEN.with(|o| o.borrow().as_ref() == Some(&conv));
+                if !looking && !elsewhere && !self.embedded.get() {
                     self.notify(&conv, &message);
                 }
                 self.update_badge();

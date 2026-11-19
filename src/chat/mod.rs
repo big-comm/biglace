@@ -627,19 +627,25 @@ fn store() -> &'static Mutex<Store> {
     STORE.get_or_init(|| Mutex::new(Store::open(&chat_dir())))
 }
 
-type Channel = (async_channel::Sender<ChatEvent>, async_channel::Receiver<ChatEvent>);
-
-fn channel() -> &'static Channel {
-    static CH: OnceLock<Channel> = OnceLock::new();
-    CH.get_or_init(async_channel::unbounded)
+/// Everyone listening (each chat view: the Chat page, a room's chat).
+fn listeners() -> &'static Mutex<Vec<async_channel::Sender<ChatEvent>>> {
+    static L: OnceLock<Mutex<Vec<async_channel::Sender<ChatEvent>>>> = OnceLock::new();
+    L.get_or_init(Default::default)
 }
 
+/// A stream of what happens, of its own: every listener gets every event.
 pub fn events() -> async_channel::Receiver<ChatEvent> {
-    channel().1.clone()
+    let (tx, rx) = async_channel::unbounded();
+    if let Ok(mut l) = listeners().lock() {
+        l.push(tx);
+    }
+    rx
 }
 
 fn emit(e: ChatEvent) {
-    let _ = channel().0.try_send(e);
+    if let Ok(mut l) = listeners().lock() {
+        l.retain(|tx| tx.try_send(e.clone()).is_ok() || !tx.is_closed());
+    }
 }
 
 pub fn conversations() -> Vec<Summary> {

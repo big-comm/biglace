@@ -246,7 +246,7 @@ pub fn build(app: &libadwaita::Application, start_hidden: bool) {
     sections.add_named(&chat_page.toolbar, Some("chat"));
     crate::chat::start();
     crate::avatars::start();
-    let rooms_page = rooms::RoomsPage::build(&toast);
+    let rooms_page = rooms::RoomsPage::build(&win, &toast);
     sections.add_named(&rooms_page.toolbar, Some("rooms"));
     sections.add_named(&groups_page.toolbar, Some("groups"));
     sections.add_named(&invites_page.toolbar, Some("invites"));

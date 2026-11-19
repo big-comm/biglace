@@ -13,6 +13,10 @@ use crate::trf;
 
 #[derive(Clone)]
 pub struct RoomsPage {
+    /// The group's conversation beside the room.
+    chat: super::chat::ChatPage,
+    btn_chat: gtk4::ToggleButton,
+    chat_split: libadwaita::OverlaySplitView,
     pub toolbar: libadwaita::ToolbarView,
     pub menu_btn: gtk4::MenuButton,
     stack: gtk4::Stack,
@@ -73,7 +77,7 @@ struct MemberRow {
 }
 
 impl RoomsPage {
-    pub fn build(toast: &libadwaita::ToastOverlay) -> Self {
+    pub fn build(win: &libadwaita::ApplicationWindow, toast: &libadwaita::ToastOverlay) -> Self {
         let toolbar = libadwaita::ToolbarView::new();
         let header = libadwaita::HeaderBar::new();
         header.set_title_widget(Some(&libadwaita::WindowTitle::new(&tr!("Rooms"), "")));
@@ -86,6 +90,14 @@ impl RoomsPage {
             .tooltip_text(tr!("Main menu"))
             .build();
         header.pack_end(&menu_btn);
+        // Talk in writing too, without leaving the room: the group's
+        // conversation slides in beside it (shown while in a room).
+        let btn_chat = gtk4::ToggleButton::builder()
+            .child(&libadwaita::ButtonContent::builder().icon_name("chat-message-new-symbolic").label(tr!("Chat")).build())
+            .tooltip_text(tr!("The group's conversation, beside the room"))
+            .visible(false)
+            .build();
+        header.pack_end(&btn_chat);
         header.pack_end(&btn_refresh);
         toolbar.add_top_bar(&header);
 
@@ -211,14 +223,37 @@ impl RoomsPage {
             .icon_name("audio-input-microphone-symbolic")
             .title(tr!("Rooms unavailable"))
             .build();
+        // The room's chat: the group's conversation, embedded — beside the
+        // room on wide windows, over it on narrower ones.
+        let chat = super::chat::ChatPage::build(win, toast, &gtk4::Label::new(None));
+        chat.embed();
+        let chat_split = libadwaita::OverlaySplitView::builder()
+            .sidebar_position(gtk4::PackType::End)
+            .content(&in_room)
+            .sidebar(&chat.toolbar)
+            .show_sidebar(false)
+            .min_sidebar_width(320.0)
+            .max_sidebar_width(420.0)
+            .sidebar_width_fraction(0.33)
+            .build();
+        let narrow = libadwaita::Breakpoint::new(
+            libadwaita::BreakpointCondition::parse("max-width: 1100sp").expect("valid breakpoint"),
+        );
+        narrow.add_setter(&chat_split, "collapsed", Some(&true.to_value()));
+        win.add_breakpoint(narrow);
+        let room_with_chat = chat_split.clone();
+
         let stack = gtk4::Stack::new();
         stack.add_named(&loading, Some("loading"));
         stack.add_named(&lobby, Some("lobby"));
-        stack.add_named(&in_room, Some("room"));
+        stack.add_named(&room_with_chat, Some("room"));
         stack.add_named(&error_page, Some("error"));
         toolbar.set_content(Some(&stack));
 
         let page = Self {
+            chat,
+            btn_chat: btn_chat.clone(),
+            chat_split,
             toolbar,
             menu_btn,
             stack,
@@ -257,6 +292,19 @@ impl RoomsPage {
             btn_speaker.connect_toggled(move |b| {
                 if b.is_active() {
                     stage.set_layout(super::room_stage::Layout::Speaker);
+                }
+            });
+        }
+        {
+            let page = page.clone();
+            btn_chat.connect_toggled(move |b| page.show_chat(b.is_active()));
+        }
+        {
+            // Over the room (narrow window), a click outside closes it.
+            let btn = btn_chat.clone();
+            page.chat_split.connect_show_sidebar_notify(move |s| {
+                if btn.is_active() != s.shows_sidebar() {
+                    btn.set_active(s.shows_sidebar());
                 }
             });
         }
@@ -464,6 +512,17 @@ impl RoomsPage {
         *self.room_hook.borrow_mut() = Some(Box::new(hook));
     }
 
+    /// Show (or hide) the group's conversation beside the room.
+    fn show_chat(&self, on: bool) {
+        let group = self.group.borrow().clone();
+        let on = on && group.is_some();
+        self.chat_split.set_show_sidebar(on);
+        match group.filter(|_| on) {
+            Some(g) => self.chat.show_only(Some(&crate::chat::ConvId::group(&g))),
+            None => self.chat.show_only(None),
+        }
+    }
+
     fn on_event(&self, ev: RoomEvent) {
         if let RoomEvent::State { group, muted, .. } = &ev {
             if let Some(hook) = self.room_hook.borrow().as_ref() {
@@ -513,11 +572,18 @@ impl RoomsPage {
                     set_camera_look(&self.btn_camera);
                 }
                 self.load_cameras();
+                self.btn_chat.set_visible(true);
+                if self.btn_chat.is_active() {
+                    self.show_chat(true);
+                }
                 self.stack.set_visible_child_name("room");
             }
             RoomEvent::ControlRequest { viewer, user } => self.ask_control(viewer, &user),
             RoomEvent::State { group: None, .. } => {
                 *self.group.borrow_mut() = None;
+                self.btn_chat.set_active(false);
+                self.btn_chat.set_visible(false);
+                self.show_chat(false);
                 self.sharing.borrow_mut().clear();
                 self.presenting.set(false);
                 self.stack.set_visible_child_name("lobby");
