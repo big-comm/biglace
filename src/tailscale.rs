@@ -1141,7 +1141,17 @@ pub fn connect(server: &str, authkey: &str, hostname: &str) -> Result<()> {
         dbg("connect: keyless reconnect didn't take — (re)authenticating with the key");
     }
 
-    // From here we need the key to register / re-authenticate.
+    // From here we need the key to register / re-authenticate. Once
+    // registered it isn't read at startup (a locked keyring, as after an
+    // automatic sign-in, would pop up its password prompt for nothing):
+    // fetch it now that it's really needed.
+    let stored;
+    let authkey = if authkey.is_empty() {
+        stored = crate::secrets::load_authkey(server).unwrap_or_default();
+        stored.trim()
+    } else {
+        authkey
+    };
     if authkey.is_empty() {
         if pre_status.registered {
             bail!(tr!("The pre-auth key was rejected by the server. Generate a new key in the BigScale panel and try again."));

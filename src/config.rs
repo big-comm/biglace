@@ -180,9 +180,9 @@ pub fn load() -> Config {
                 }
             } else if !cfg.enrolled {
                 // Needed to register: read it now. Once registered it's only a
-                // fallback, read in the background (a locked keyring — right
-                // after an automatic sign-in — would otherwise hold up the
-                // whole app until someone types its password).
+                // fallback, read when a connection really needs it (see
+                // tailscale::connect): a locked keyring — automatic sign-in —
+                // would otherwise hold up the app or prompt for nothing.
                 cfg.authkey = crate::secrets::load_authkey(&cfg.server_url).unwrap_or_default();
             }
             cfg
