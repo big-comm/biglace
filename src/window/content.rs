@@ -371,6 +371,9 @@ fn build_connected_page() -> (
 
     outer.append(&peers_list);
 
-    scroll.set_child(Some(&outer));
+    // On a wide (maximized) window the rows keep a readable width,
+    // centred, instead of stretching names and buttons far apart.
+    let clamp = libadwaita::Clamp::builder().maximum_size(960).tightening_threshold(720).child(&outer).build();
+    scroll.set_child(Some(&clamp));
     (scroll, self_row, btn_copy_self_ip, peers_list)
 }

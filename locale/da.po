@@ -133,8 +133,8 @@ msgid ""
 "The key to this account is no longer on this computer. Join with a new "
 "invite."
 msgstr ""
-"Nøglen til denne konto findes ikke længere på denne computer. Tilslut med en"
-" ny invitation."
+"Nøglen til denne konto findes ikke længere på denne computer. Tilslut med en "
+"ny invitation."
 
 #, rust-format
 msgid "Welcome back, {name}! Connecting…"
@@ -175,8 +175,8 @@ msgid "Account"
 msgstr "Konto"
 
 msgid ""
-"Signing out removes this device's identity from BigLace. You will need a new"
-" invite or key to join again."
+"Signing out removes this device's identity from BigLace. You will need a new "
+"invite or key to join again."
 msgstr ""
 "Når du logger ud, fjernes denne enheds identitet fra BigLace. Du skal bruge "
 "en ny invitation eller nøgle for at tilslutte dig igen."
@@ -210,8 +210,7 @@ msgstr ""
 "Opret forbindelse til netværket først, og åbn så invitationslinket igen."
 
 #, rust-format
-msgid ""
-"This invite is for another network ({host}). Sign out first to join it."
+msgid "This invite is for another network ({host}). Sign out first to join it."
 msgstr ""
 "Denne invitation er til et andet netværk ({host}). Log ud først for at "
 "tilslutte dig det."
@@ -219,8 +218,8 @@ msgstr ""
 msgid ""
 "This device is already signed in. Sign out first to join with an invite."
 msgstr ""
-"Denne enhed er allerede logget ind. Log ud først for at tilslutte dig med en"
-" invitation."
+"Denne enhed er allerede logget ind. Log ud først for at tilslutte dig med en "
+"invitation."
 
 msgid "Photo removed."
 msgstr "Foto fjernet."
@@ -234,8 +233,8 @@ msgid "Could not open the browser: {error}"
 msgstr "Kunne ikke åbne browseren: {error}"
 
 msgid ""
-"You can't open the admin panel: you're not an administrator of this network,"
-" or the panel can't be reached."
+"You can't open the admin panel: you're not an administrator of this network, "
+"or the panel can't be reached."
 msgstr ""
 "Du kan ikke åbne administrationspanelet: du er ikke administrator på dette "
 "netværk, eller panelet kan ikke nås."
@@ -261,9 +260,9 @@ msgid ""
 "({error}). This device can still reconnect; the key is only needed again to "
 "register it anew."
 msgstr ""
-"Gemt, men pre-auth-nøglen kunne ikke gemmes i systemets nøglering ({error})."
-" Denne enhed kan stadig genoprette forbindelsen; nøglen skal kun bruges igen"
-" for at registrere den på ny."
+"Gemt, men pre-auth-nøglen kunne ikke gemmes i systemets nøglering ({error}). "
+"Denne enhed kan stadig genoprette forbindelsen; nøglen skal kun bruges igen "
+"for at registrere den på ny."
 
 msgid "Connected"
 msgstr "Forbundet"
@@ -335,128 +334,179 @@ msgstr "{count} enheder gik offline"
 msgid "{on_count} online · {off_count} offline"
 msgstr "{on_count} online · {off_count} offline"
 
-msgid "Connected · 1 peer"
-msgstr "Forbundet · 1 peer"
+msgid ""
+"Invites from BigLace need a BigScale server that supports them. Ask your "
+"administrator to update the server, or to create the invite in the panel."
+msgstr ""
+"Invitationer fra BigLace kræver en BigScale-server, der understøtter dem. "
+"Bed din administrator om at opdatere serveren eller om at oprette "
+"invitationen i panelet."
+
+msgid "This device can't send invites (it isn't linked to a person's account)."
+msgstr ""
+"Denne enhed kan ikke sende invitationer (den er ikke knyttet til en persons "
+"konto)."
+
+msgid ""
+"The panel knows this device by a different key (BigLace was reinstalled?). "
+"Leave the network and join again to fix it."
+msgstr ""
+"Panelet kender denne enhed under en anden nøgle (blev BigLace "
+"geninstalleret?). Forlad netværket og tilslut dig igen for at rette det."
+
+msgid ""
+"The panel couldn't confirm this device. Make sure BigLace is up to date and "
+"stays open while connected, then try again."
+msgstr ""
+"Panelet kunne ikke bekræfte denne enhed. Sørg for, at BigLace er opdateret "
+"og forbliver åben, mens der er forbindelse, og prøv igen."
+
+msgid "You are no longer in that group."
+msgstr "Du er ikke længere i den gruppe."
+
+msgid ""
+"On this network everyone can reach everyone, so only the administrator can "
+"invite people."
+msgstr ""
+"På dette netværk kan alle nå alle, så kun administratoren kan invitere "
+"personer."
+
+msgid "You have too many pending invites. Cancel some or try again tomorrow."
+msgstr ""
+"Du har for mange ventende invitationer. Annuller nogle, eller prøv igen i "
+"morgen."
+
+msgid ""
+"On this network only administrators invite new people. You can still invite "
+"people already on the network into your groups."
+msgstr ""
+"På dette netværk er det kun administratorer, der inviterer nye personer. Du "
+"kan stadig invitere personer, der allerede er på netværket, ind i dine "
+"grupper."
 
 #, rust-format
-msgid "Connected · {n} peers"
-msgstr "Forbundet · {n} peers"
+msgid "Could not reach the panel: {error}"
+msgstr "Kunne ikke nå panelet: {error}"
 
-#, rust-format
-msgid "In the room {group} · muted"
-msgstr "I rummet {group} · lydløs"
+msgid "Waiting to be used"
+msgstr "Venter på at blive brugt"
 
-#, rust-format
-msgid "In the room {group}"
-msgstr "I rummet {group}"
+msgid "Used"
+msgstr "Brugt"
 
-msgid "Show BigLace"
-msgstr "Vis BigLace"
+msgid "Expired"
+msgstr "Udløbet"
 
-#, rust-format
-msgid "Room {group}"
-msgstr "Rum {group}"
+msgid "Cancelled"
+msgstr "Annulleret"
 
-msgid "Unmute (Ctrl+Alt+M)"
-msgstr "Slå lyd til (Ctrl+Alt+M)"
-
-msgid "Mute (Ctrl+Alt+M)"
-msgstr "Slå lyd fra (Ctrl+Alt+M)"
-
-msgid "Leave the room"
-msgstr "Forlad rummet"
-
-msgid "Quit"
-msgstr "Afslut"
-
-msgid "Main menu"
-msgstr "Hovedmenu"
-
-msgid "Search devices"
-msgstr "Søg efter enheder"
+msgid "Waiting for an administrator's approval"
+msgstr "Venter på en administrators godkendelse"
 
 msgid "Refresh"
 msgstr "Opdater"
 
+msgid "Main menu"
+msgstr "Hovedmenu"
+
+msgid "Bring someone to your network"
+msgstr "Få nogen med på dit netværk"
+
+msgid ""
+"Create a link or QR code and send it to the person. When they join, you two "
+"can reach each other's devices — no administrator needed. The link works "
+"once and stays valid until it's used or you cancel it."
+msgstr ""
+"Opret et link eller en QR-kode, og send det til personen. Når de tilslutter "
+"sig, kan I to nå hinandens enheder — ingen administrator nødvendig. Linket "
+"virker én gang og er gyldigt, indtil det bruges, eller du annullerer det."
+
+msgid "No invites yet"
+msgstr "Ingen invitationer endnu"
+
+msgid "Invites unavailable"
+msgstr "Invitationer er ikke tilgængelige"
+
+#, rust-format
+msgid "{user} joined"
+msgstr "{user} tilsluttede sig"
+
 msgid "Invite"
 msgstr "Inviter"
 
-msgid "Invite someone to your network"
-msgstr "Inviter nogen til dit netværk"
+#, rust-format
+msgid "group {group}"
+msgstr "gruppen {group}"
+
+msgid "Cancel this invite: the link stops working"
+msgstr "Annuller denne invitation: linket holder op med at virke"
+
+msgid "The person you invite will reach your devices, and you theirs."
+msgstr "Personen, du inviterer, kan nå dine enheder, og du deres."
+
+msgid "Who is it for? (optional)"
+msgstr "Hvem er den til? (valgfrit)"
+
+msgid "Access"
+msgstr "Adgang"
+
+msgid "Just the two of us"
+msgstr "Kun os to"
+
+msgid "You see each other's devices, nobody else"
+msgstr "I ser hinandens enheder, ingen andre"
+
+#, rust-format
+msgid "Also the group {group}"
+msgstr "Også gruppen {group}"
+
+msgid "They join the group and see everyone in it"
+msgstr "De tilslutter sig gruppen og ser alle i den"
+
+msgid "A network of their own"
+msgstr "Et helt eget netværk"
 
 msgid ""
-"Tailscale cannot write this device's DNS settings, so it can no longer keep "
-"peer names working. They may still resolve for now, from the configuration "
-"left over from before the failure, but that will break the next time the "
-"network changes — and BigLace will fall back to IP addresses. On most "
-"distributions `sudo resolvconf -u` repairs it."
+"No link to you: they see only their own devices and whoever they invite "
+"(you're the administrator)"
 msgstr ""
-"Tailscale kan ikke skrive denne enheds DNS-indstillinger, så den kan ikke "
-"længere holde peer-navne fungerende. De kan stadig blive slået op indtil "
-"videre, ud fra konfigurationen fra før fejlen, men det holder op med at "
-"virke næste gang netværket ændrer sig — og BigLace falder tilbage til IP-"
-"adresser. På de fleste distributioner reparerer `sudo resolvconf -u` det."
+"Ingen forbindelse til dig: de ser kun deres egne enheder og dem, de "
+"inviterer (du er administratoren)"
 
-msgid "Not connected"
-msgstr "Ikke forbundet"
+msgid "Create invite"
+msgstr "Opret invitation"
 
-msgid "Press Connect on the left to join the network."
-msgstr "Tryk på Forbind til venstre for at deltage i netværket."
+msgid "QR code of the invite link"
+msgstr "QR-kode til invitationslinket"
 
-msgid "The tailscale service is not running"
-msgstr "Tailscale-tjenesten kører ikke"
-
-msgid "BigLace needs the tailscaled background service to manage the network."
+msgid ""
+"Send the link or let the person scan the code with their phone. It works "
+"once and stays valid until used or cancelled."
 msgstr ""
-"BigLace har brug for baggrundstjenesten tailscaled for at administrere "
-"netværket."
+"Send linket, eller lad personen scanne koden med sin telefon. Det virker én "
+"gang og er gyldigt, indtil det bruges eller annulleres."
 
-msgid "Start service"
-msgstr "Start tjeneste"
+msgid "Copy link"
+msgstr "Kopiér link"
 
-msgid "Join the network"
-msgstr "Tilslut dig netværket"
+msgid "Done"
+msgstr "Færdig"
 
-msgid "Choose how you're going to sign in."
-msgstr "Vælg, hvordan du vil logge ind."
+msgid "Copied!"
+msgstr "Kopieret!"
 
-msgid "Ways to sign in"
-msgstr "Måder at logge ind på"
-
-msgid "Your account was kept on this computer. No invite needed."
-msgstr "Din konto blev gemt på denne computer. Ingen invitation nødvendig."
-
-msgid "I have an invite"
-msgstr "Jeg har en invitation"
-
-msgid "Someone on the network sent you a link or a QR code."
-msgstr "Nogen på netværket har sendt dig et link eller en QR-kode."
-
-msgid "I have an access key"
-msgstr "Jeg har en adgangsnøgle"
-
-msgid "A key the administrator created for you (starts with hskey-auth-)."
+msgid ""
+"This network asks an administrator to approve each invite: the link starts "
+"working once they do. Its status shows in Invites."
 msgstr ""
-"En nøgle, som administratoren har oprettet til dig (starter med hskey-"
-"auth-)."
+"Dette netværk kræver, at en administrator godkender hver invitation: linket "
+"begynder at virke, når de gør det. Status vises under Invitationer."
 
-msgid "I'm the administrator"
-msgstr "Jeg er administratoren"
+msgid "Show the full sidebar"
+msgstr "Vis hele sidepanelet"
 
-msgid "Sign in with the BigScale panel's admin username and password."
-msgstr "Log ind med BigScale-panelets administratorbrugernavn og adgangskode."
-
-msgid "This device"
-msgstr "Denne enhed"
-
-msgid "Copy IP address"
-msgstr "Kopier IP-adresse"
-
-msgid "Devices on the network"
-msgstr "Enheder på netværket"
-
-msgid "No other devices on the network yet."
-msgstr "Ingen andre enheder på netværket endnu."
+msgid "Show only icons in the sidebar"
+msgstr "Kun ikoner i sidepanelet"
 
 msgid "Sections"
 msgstr "Sektioner"
@@ -514,8 +564,8 @@ msgstr ""
 "browser."
 
 msgid ""
-"The name this device shows to other peers on the VPN — this is the Tailscale"
-" hostname, NOT your computer's name and NOT your user. Lowercase letters, "
+"The name this device shows to other peers on the VPN — this is the Tailscale "
+"hostname, NOT your computer's name and NOT your user. Lowercase letters, "
 "digits and hyphens. Example: 'tales-laptop', 'francois', 'office-pc'."
 msgstr ""
 "Navnet som denne enhed viser for andre peers på VPN'et — dette er Tailscale-"
@@ -529,11 +579,11 @@ msgid "Save"
 msgstr "Gem"
 
 msgid ""
-"Persist the server, key and device name above. Won't connect — press Connect"
-" afterwards."
+"Persist the server, key and device name above. Won't connect — press Connect "
+"afterwards."
 msgstr ""
-"Gem server, nøgle og enhedsnavn ovenfor. Opretter ikke forbindelse — tryk på"
-" Tilslut bagefter."
+"Gem server, nøgle og enhedsnavn ovenfor. Opretter ikke forbindelse — tryk på "
+"Tilslut bagefter."
 
 msgid "Connect automatically"
 msgstr "Opret forbindelse automatisk"
@@ -542,8 +592,8 @@ msgid "Join the network when BigLace starts"
 msgstr "Deltag i netværket, når BigLace starter"
 
 msgid ""
-"When on, BigLace runs 'tailscale up' as soon as it launches, so you join the"
-" mesh without clicking Connect every time."
+"When on, BigLace runs 'tailscale up' as soon as it launches, so you join the "
+"mesh without clicking Connect every time."
 msgstr ""
 "Når den er slået til, kører BigLace 'tailscale up' så snart den starter, så "
 "du tilslutter dig mesh'et uden at klikke på Tilslut hver gang."
@@ -574,9 +624,8 @@ msgid "Retry with backoff when the connection is lost"
 msgstr "Forsøg igen med backoff, når forbindelsen mistes"
 
 msgid ""
-"If the tunnel drops (network change, sleep, server hiccup), BigLace silently"
-" retries with growing delays instead of leaving you offline until you "
-"notice."
+"If the tunnel drops (network change, sleep, server hiccup), BigLace silently "
+"retries with growing delays instead of leaving you offline until you notice."
 msgstr ""
 "Hvis tunnelen afbrydes (netværksændring, dvale, serverfejl), forsøger "
 "BigLace stille og roligt igen med stigende forsinkelser i stedet for at "
@@ -607,307 +656,11 @@ msgid ""
 "Join or leave the mesh network. When connected, this device becomes "
 "reachable by the other peers in your account."
 msgstr ""
-"Deltag eller forlad mesh-netværket. Når du er tilsluttet, bliver denne enhed"
-" tilgængelig for de andre peers på din konto."
+"Deltag eller forlad mesh-netværket. Når du er tilsluttet, bliver denne enhed "
+"tilgængelig for de andre peers på din konto."
 
 msgid "Your photo"
 msgstr "Dit foto"
-
-msgid ""
-"Each of your groups has a voice room. Join it and talk with whoever is there"
-" — the sound goes straight between you, through the network."
-msgstr ""
-"Hver af dine grupper har et stemmerum. Gå ind og snak med dem, der er der — "
-"lyden går direkte mellem jer, gennem netværket."
-
-msgid "You're not in any group yet. Create one in Groups."
-msgstr "Du er ikke i nogen gruppe endnu. Opret en under Grupper."
-
-msgid "People in the room"
-msgstr "Personer i rummet"
-
-msgid "Everyone"
-msgstr "Alle"
-
-msgid "Who's speaking"
-msgstr "Hvem der taler"
-
-msgid "Mute"
-msgstr "Slå lyd fra"
-
-msgid "Mute your microphone for everyone"
-msgstr "Slå din mikrofon fra for alle"
-
-msgid "Leave"
-msgstr "Forlad"
-
-msgid "Which camera"
-msgstr "Hvilket kamera"
-
-msgid "Include the computer's sound when sharing the screen"
-msgstr "Medtag computerens lyd ved skærmdeling"
-
-msgid ""
-"Videos and music playing here go to the room too; the room's voices don't "
-"(no echo)"
-msgstr ""
-"Videoer og musik, der afspilles her, går også til rummet; rummets stemmer "
-"gør ikke (intet ekko)"
-
-msgid "Rooms unavailable"
-msgstr "Rum er ikke tilgængelige"
-
-#, rust-format
-msgid "Could not turn on the camera: {error}"
-msgstr "Kunne ikke tænde kameraet: {error}"
-
-#, rust-format
-msgid "Could not share the screen: {error}"
-msgstr "Kunne ikke dele skærmen: {error}"
-
-#, rust-format
-msgid "Could not reach the panel: {error}"
-msgstr "Kunne ikke nå panelet: {error}"
-
-msgid "Nobody here right now"
-msgstr "Ingen her lige nu"
-
-#, rust-format
-msgid "In the room: {people}"
-msgstr "I rummet: {people}"
-
-msgid "Join"
-msgstr "Tilslut"
-
-#, rust-format
-msgid "Join the room {group}"
-msgstr "Gå ind i rummet {group}"
-
-#, rust-format
-msgid "Could not join {group}: {error}"
-msgstr "Kunne ikke gå ind i {group}: {error}"
-
-msgid "📺 You're showing your screen to the room"
-msgstr "📺 Du viser din skærm for rummet"
-
-msgid "📺 You're showing your screen · 1 person watching"
-msgstr "📺 Du viser din skærm · 1 person ser med"
-
-#, rust-format
-msgid "📺 You're showing your screen · {count} people watching"
-msgstr "📺 Du viser din skærm · {count} personer ser med"
-
-msgid "1 person"
-msgstr "1 person"
-
-#, rust-format
-msgid "{count} people"
-msgstr "{count} personer"
-
-#, rust-format
-msgid "{people} · {talking} talking"
-msgstr "{people} · {talking} taler"
-
-msgid "you"
-msgstr "dig"
-
-msgid "connecting…"
-msgstr "opretter forbindelse…"
-
-msgid "muted"
-msgstr "lydløs"
-
-msgid "talking"
-msgstr "taler"
-
-msgid "quiet"
-msgstr "stille"
-
-msgid "Sharing screen"
-msgstr "Deler skærm"
-
-msgid "In control"
-msgstr "Har kontrol"
-
-msgid "Controls your screen now"
-msgstr "Styrer din skærm nu"
-
-msgid "Watching"
-msgstr "Ser med"
-
-msgid "Watching your screen"
-msgstr "Ser din skærm"
-
-#, rust-format
-msgid "{user} is showing their screen"
-msgstr "{user} viser sin skærm"
-
-msgid "Watch"
-msgstr "Se med"
-
-#, rust-format
-msgid "{user} asks to control your screen"
-msgstr "{user} beder om at styre din skærm"
-
-msgid ""
-"They'll be able to use your mouse and keyboard. You can take control back at"
-" any time."
-msgstr ""
-"De vil kunne bruge din mus og dit tastatur. Du kan tage kontrollen tilbage "
-"når som helst."
-
-msgid "Deny"
-msgstr "Afvis"
-
-msgid "Allow"
-msgstr "Tillad"
-
-msgid "Turn off camera"
-msgstr "Sluk kamera"
-
-msgid "Turn on camera"
-msgstr "Tænd kamera"
-
-msgid "No camera found on this computer"
-msgstr "Intet kamera fundet på denne computer"
-
-msgid "Stop sharing"
-msgstr "Stop deling"
-
-msgid "Share screen"
-msgstr "Del skærm"
-
-msgid "Stop showing your screen to the room"
-msgstr "Stop med at vise din skærm for rummet"
-
-msgid "Show your screen to everyone in the room"
-msgstr "Vis din skærm for alle i rummet"
-
-msgid "Take back control"
-msgstr "Tag kontrollen tilbage"
-
-msgid "Give control"
-msgstr "Giv kontrol"
-
-msgid "Stop them from using your mouse and keyboard"
-msgstr "Forhindr dem i at bruge din mus og dit tastatur"
-
-msgid "Let them use your mouse and keyboard"
-msgstr "Lad dem bruge din mus og dit tastatur"
-
-msgid "Sound level"
-msgstr "Lydniveau"
-
-msgid "Unmute"
-msgstr "Slå lyd til"
-
-msgid "This computer"
-msgstr "Denne computer"
-
-msgid "Who may use this computer remotely"
-msgstr "Hvem må bruge denne computer eksternt"
-
-msgid ""
-"Anyone you're connected to can ask to see and control this screen. Choose "
-"who is let in without asking, and who is never let in."
-msgstr ""
-"Alle, du er forbundet med, kan bede om at se og styre denne skærm. Vælg, "
-"hvem der lukkes ind uden at spørge, og hvem der aldrig lukkes ind."
-
-msgid "History of accesses"
-msgstr "Adgangshistorik"
-
-msgid "Kept on this computer only."
-msgstr "Gemmes kun på denne computer."
-
-msgid "Clear"
-msgstr "Ryd"
-
-msgid "Nobody has asked yet."
-msgstr "Ingen har spurgt endnu."
-
-msgid "When someone asks, you can choose to always let them in."
-msgstr "Når nogen spørger, kan du vælge altid at lukke dem ind."
-
-msgid "Ask every time"
-msgstr "Spørg hver gang"
-
-msgid "Always allow"
-msgstr "Tillad altid"
-
-msgid "Never allow"
-msgstr "Tillad aldrig"
-
-msgid "No accesses yet."
-msgstr "Ingen adgange endnu."
-
-msgid "Remote access"
-msgstr "Fjernadgang"
-
-msgid "Watched the screen shared with the room"
-msgstr "Så skærmen, der blev delt med rummet"
-
-msgid "Got control of the shared screen"
-msgstr "Fik kontrol over den delte skærm"
-
-msgid "Restarted the computer"
-msgstr "Genstartede computeren"
-
-msgid "Restarted the session"
-msgstr "Genstartede sessionen"
-
-msgid "Shut down the computer"
-msgstr "Lukkede computeren ned"
-
-msgid "allowed"
-msgstr "tilladt"
-
-msgid "allowed (always)"
-msgstr "tilladt (altid)"
-
-msgid "came back after a restart"
-msgstr "kom tilbage efter en genstart"
-
-msgid "denied"
-msgstr "afvist"
-
-msgid "blocked (never allowed)"
-msgstr "blokeret (aldrig tilladt)"
-
-msgid "ended"
-msgstr "afsluttet"
-
-#, rust-format
-msgid "{user} ({device})"
-msgstr "{user} ({device})"
-
-#, rust-format
-msgid "{done} of {total}"
-msgstr "{done} af {total}"
-
-msgid "Play"
-msgstr "Afspil"
-
-msgid "Download"
-msgstr "Hent"
-
-msgid "Open"
-msgstr "Åbn"
-
-msgid "Show in folder"
-msgstr "Vis i mappe"
-
-msgid "Pause"
-msgstr "Pause"
-
-msgid "Photo"
-msgstr "Foto"
-
-msgid "Video"
-msgstr "Video"
-
-msgid "Voice message"
-msgstr "Talebesked"
 
 msgid "New chat"
 msgstr "Ny chat"
@@ -976,8 +729,11 @@ msgid ""
 "Pick a conversation, or start one. Messages go straight between your "
 "computers — the server never sees them."
 msgstr ""
-"Vælg en samtale, eller start en. Beskeder går direkte mellem jeres computere"
-" — serveren ser dem aldrig."
+"Vælg en samtale, eller start en. Beskeder går direkte mellem jeres computere "
+"— serveren ser dem aldrig."
+
+msgid "People on the network"
+msgstr "Personer på netværket"
 
 msgid "Group"
 msgstr "Gruppe"
@@ -1156,20 +912,6 @@ msgstr ""
 "Denne enhed er ikke knyttet til en persons konto, så den har ingen grupper."
 
 msgid ""
-"The panel knows this device by a different key (BigLace was reinstalled?). "
-"Leave the network and join again to fix it."
-msgstr ""
-"Panelet kender denne enhed under en anden nøgle (blev BigLace "
-"geninstalleret?). Forlad netværket og tilslut dig igen for at rette det."
-
-msgid ""
-"The panel couldn't confirm this device. Make sure BigLace is up to date and "
-"stays open while connected, then try again."
-msgstr ""
-"Panelet kunne ikke bekræfte denne enhed. Sørg for, at BigLace er opdateret "
-"og forbliver åben, mens der er forbindelse, og prøv igen."
-
-msgid ""
 "On this network everyone already reaches everyone, so groups aren't needed. "
 "The administrator can set access rules first."
 msgstr ""
@@ -1178,9 +920,6 @@ msgstr ""
 
 msgid "You already created the maximum number of groups."
 msgstr "Du har allerede oprettet det maksimale antal grupper."
-
-msgid "You are no longer in that group."
-msgstr "Du er ikke længere i den gruppe."
 
 msgid "A group with that name already exists. Choose another name."
 msgstr "Der findes allerede en gruppe med det navn. Vælg et andet navn."
@@ -1254,8 +993,8 @@ msgid ""
 "People in the same group reach each other's devices. Create groups for "
 "family, work or friends, and invite people into them."
 msgstr ""
-"Personer i samme gruppe kan nå hinandens enheder. Opret grupper til familie,"
-" arbejde eller venner, og inviter folk ind i dem."
+"Personer i samme gruppe kan nå hinandens enheder. Opret grupper til familie, "
+"arbejde eller venner, og inviter folk ind i dem."
 
 msgid "Invitations for you"
 msgstr "Invitationer til dig"
@@ -1283,8 +1022,8 @@ msgstr "Invitation til en gruppe"
 msgid ""
 "{user} invites you to the group {group}. Open BigLace to accept or decline."
 msgstr ""
-"{user} inviterer dig til gruppen {group}. Åbn BigLace for at acceptere eller"
-" afvise."
+"{user} inviterer dig til gruppen {group}. Åbn BigLace for at acceptere eller "
+"afvise."
 
 #, rust-format
 msgid "{user} invites you to {group}"
@@ -1307,6 +1046,13 @@ msgstr "Du har tilsluttet dig {group}."
 msgid "Invitation declined."
 msgstr "Invitation afvist."
 
+msgid "1 person"
+msgstr "1 person"
+
+#, rust-format
+msgid "{count} people"
+msgstr "{count} personer"
+
 msgid "Created by you"
 msgstr "Oprettet af dig"
 
@@ -1316,6 +1062,9 @@ msgstr "Oprettet af {user}"
 
 msgid "Network group (administrator)"
 msgstr "Netværksgruppe (administrator)"
+
+msgid "you"
+msgstr "dig"
 
 msgid "owner"
 msgstr "ejer"
@@ -1339,11 +1088,10 @@ msgstr "Fjern {user}?"
 
 #, rust-format
 msgid ""
-"{user} leaves the group {group} and no longer reaches its members through "
-"it."
+"{user} leaves the group {group} and no longer reaches its members through it."
 msgstr ""
-"{user} forlader gruppen {group} og kan ikke længere nå dens medlemmer gennem"
-" den."
+"{user} forlader gruppen {group} og kan ikke længere nå dens medlemmer gennem "
+"den."
 
 msgid "Remove"
 msgstr "Fjern"
@@ -1362,6 +1110,9 @@ msgid ""
 msgstr ""
 "Du kan ikke længere nå gruppens medlemmer gennem den. For at komme tilbage "
 "skal nogen invitere dig igen."
+
+msgid "Leave"
+msgstr "Forlad"
 
 msgid "You left the group."
 msgstr "Du har forladt gruppen."
@@ -1403,6 +1154,9 @@ msgstr "Forbind med {user}?"
 msgid "You and {user} will reach each other's devices."
 msgstr "Du og {user} vil kunne nå hinandens enheder."
 
+msgid "Join"
+msgstr "Tilslut"
+
 msgid "Done. You can now reach each other's devices."
 msgstr "Færdig. I kan nu nå hinandens enheder."
 
@@ -1424,9 +1178,6 @@ msgid ""
 "If someone on the network has exactly this name, they get the invitation."
 msgstr "Hvis nogen på netværket har præcis dette navn, får de invitationen."
 
-msgid "People on the network"
-msgstr "Personer på netværket"
-
 #, rust-format
 msgid "Invite \"{name}\""
 msgstr "Inviter \"{name}\""
@@ -1447,9 +1198,9 @@ msgstr ""
 "de accepterer."
 
 msgid ""
-"Listed are the people you're already connected to. To invite someone else on"
-" the network, type their exact name. Each one gets the invitation in BigLace"
-" and decides whether to join."
+"Listed are the people you're already connected to. To invite someone else on "
+"the network, type their exact name. Each one gets the invitation in BigLace "
+"and decides whether to join."
 msgstr ""
 "Her vises de personer, du allerede er forbundet med. For at invitere en "
 "anden på netværket skal du skrive deres præcise navn. Hver af dem får "
@@ -1468,8 +1219,8 @@ msgid ""
 "You'll be the group's owner: you invite people into it and can remove them. "
 "Everyone in the group reaches each other's devices."
 msgstr ""
-"Du bliver gruppens ejer: du inviterer folk ind i den og kan fjerne dem. Alle"
-" i gruppen kan nå hinandens enheder."
+"Du bliver gruppens ejer: du inviterer folk ind i den og kan fjerne dem. Alle "
+"i gruppen kan nå hinandens enheder."
 
 msgid "Group name"
 msgstr "Gruppenavn"
@@ -1502,143 +1253,176 @@ msgid "Invite {user}"
 msgstr "Inviter {user}"
 
 msgid ""
-"Invites from BigLace need a BigScale server that supports them. Ask your "
-"administrator to update the server, or to create the invite in the panel."
+"Each of your groups has a voice room. Join it and talk with whoever is there "
+"— the sound goes straight between you, through the network."
 msgstr ""
-"Invitationer fra BigLace kræver en BigScale-server, der understøtter dem. "
-"Bed din administrator om at opdatere serveren eller om at oprette "
-"invitationen i panelet."
+"Hver af dine grupper har et stemmerum. Gå ind og snak med dem, der er der — "
+"lyden går direkte mellem jer, gennem netværket."
+
+msgid "You're not in any group yet. Create one in Groups."
+msgstr "Du er ikke i nogen gruppe endnu. Opret en under Grupper."
+
+msgid "People in the room"
+msgstr "Personer i rummet"
+
+msgid "Everyone"
+msgstr "Alle"
+
+msgid "Who's speaking"
+msgstr "Hvem der taler"
+
+msgid "Mute"
+msgstr "Slå lyd fra"
+
+msgid "Mute your microphone for everyone"
+msgstr "Slå din mikrofon fra for alle"
+
+msgid "Which camera"
+msgstr "Hvilket kamera"
+
+msgid "Include the computer's sound when sharing the screen"
+msgstr "Medtag computerens lyd ved skærmdeling"
 
 msgid ""
-"This device can't send invites (it isn't linked to a person's account)."
+"Videos and music playing here go to the room too; the room's voices don't "
+"(no echo)"
 msgstr ""
-"Denne enhed kan ikke sende invitationer (den er ikke knyttet til en persons "
-"konto)."
+"Videoer og musik, der afspilles her, går også til rummet; rummets stemmer "
+"gør ikke (intet ekko)"
 
-msgid ""
-"On this network everyone can reach everyone, so only the administrator can "
-"invite people."
-msgstr ""
-"På dette netværk kan alle nå alle, så kun administratoren kan invitere "
-"personer."
-
-msgid "You have too many pending invites. Cancel some or try again tomorrow."
-msgstr ""
-"Du har for mange ventende invitationer. Annuller nogle, eller prøv igen i "
-"morgen."
-
-msgid ""
-"On this network only administrators invite new people. You can still invite "
-"people already on the network into your groups."
-msgstr ""
-"På dette netværk er det kun administratorer, der inviterer nye personer. Du "
-"kan stadig invitere personer, der allerede er på netværket, ind i dine "
-"grupper."
-
-msgid "Waiting to be used"
-msgstr "Venter på at blive brugt"
-
-msgid "Used"
-msgstr "Brugt"
-
-msgid "Expired"
-msgstr "Udløbet"
-
-msgid "Cancelled"
-msgstr "Annulleret"
-
-msgid "Waiting for an administrator's approval"
-msgstr "Venter på en administrators godkendelse"
-
-msgid "Bring someone to your network"
-msgstr "Få nogen med på dit netværk"
-
-msgid ""
-"Create a link or QR code and send it to the person. When they join, you two "
-"can reach each other's devices — no administrator needed. The link works "
-"once and stays valid until it's used or you cancel it."
-msgstr ""
-"Opret et link eller en QR-kode, og send det til personen. Når de tilslutter "
-"sig, kan I to nå hinandens enheder — ingen administrator nødvendig. Linket "
-"virker én gang og er gyldigt, indtil det bruges, eller du annullerer det."
-
-msgid "No invites yet"
-msgstr "Ingen invitationer endnu"
-
-msgid "Invites unavailable"
-msgstr "Invitationer er ikke tilgængelige"
+msgid "Rooms unavailable"
+msgstr "Rum er ikke tilgængelige"
 
 #, rust-format
-msgid "{user} joined"
-msgstr "{user} tilsluttede sig"
+msgid "Could not turn on the camera: {error}"
+msgstr "Kunne ikke tænde kameraet: {error}"
 
 #, rust-format
-msgid "group {group}"
-msgstr "gruppen {group}"
+msgid "Could not share the screen: {error}"
+msgstr "Kunne ikke dele skærmen: {error}"
 
-msgid "Cancel this invite: the link stops working"
-msgstr "Annuller denne invitation: linket holder op med at virke"
-
-msgid "The person you invite will reach your devices, and you theirs."
-msgstr "Personen, du inviterer, kan nå dine enheder, og du deres."
-
-msgid "Who is it for? (optional)"
-msgstr "Hvem er den til? (valgfrit)"
-
-msgid "Access"
-msgstr "Adgang"
-
-msgid "Just the two of us"
-msgstr "Kun os to"
-
-msgid "You see each other's devices, nobody else"
-msgstr "I ser hinandens enheder, ingen andre"
+msgid "Nobody here right now"
+msgstr "Ingen her lige nu"
 
 #, rust-format
-msgid "Also the group {group}"
-msgstr "Også gruppen {group}"
+msgid "In the room: {people}"
+msgstr "I rummet: {people}"
 
-msgid "They join the group and see everyone in it"
-msgstr "De tilslutter sig gruppen og ser alle i den"
+#, rust-format
+msgid "Join the room {group}"
+msgstr "Gå ind i rummet {group}"
 
-msgid "A network of their own"
-msgstr "Et helt eget netværk"
+#, rust-format
+msgid "Could not join {group}: {error}"
+msgstr "Kunne ikke gå ind i {group}: {error}"
+
+msgid "📺 You're showing your screen to the room"
+msgstr "📺 Du viser din skærm for rummet"
+
+msgid "📺 You're showing your screen · 1 person watching"
+msgstr "📺 Du viser din skærm · 1 person ser med"
+
+#, rust-format
+msgid "📺 You're showing your screen · {count} people watching"
+msgstr "📺 Du viser din skærm · {count} personer ser med"
+
+#, rust-format
+msgid "Room {group}"
+msgstr "Rum {group}"
+
+#, rust-format
+msgid "{people} · {talking} talking"
+msgstr "{people} · {talking} taler"
+
+msgid "connecting…"
+msgstr "opretter forbindelse…"
+
+msgid "muted"
+msgstr "lydløs"
+
+msgid "talking"
+msgstr "taler"
+
+msgid "quiet"
+msgstr "stille"
+
+msgid "Sharing screen"
+msgstr "Deler skærm"
+
+msgid "In control"
+msgstr "Har kontrol"
+
+msgid "Controls your screen now"
+msgstr "Styrer din skærm nu"
+
+msgid "Watching"
+msgstr "Ser med"
+
+msgid "Watching your screen"
+msgstr "Ser din skærm"
+
+#, rust-format
+msgid "{user} is showing their screen"
+msgstr "{user} viser sin skærm"
+
+msgid "Watch"
+msgstr "Se med"
+
+#, rust-format
+msgid "{user} asks to control your screen"
+msgstr "{user} beder om at styre din skærm"
 
 msgid ""
-"No link to you: they see only their own devices and whoever they invite "
-"(you're the administrator)"
+"They'll be able to use your mouse and keyboard. You can take control back at "
+"any time."
 msgstr ""
-"Ingen forbindelse til dig: de ser kun deres egne enheder og dem, de "
-"inviterer (du er administratoren)"
+"De vil kunne bruge din mus og dit tastatur. Du kan tage kontrollen tilbage "
+"når som helst."
 
-msgid "Create invite"
-msgstr "Opret invitation"
+msgid "Deny"
+msgstr "Afvis"
 
-msgid "QR code of the invite link"
-msgstr "QR-kode til invitationslinket"
+msgid "Allow"
+msgstr "Tillad"
 
-msgid ""
-"Send the link or let the person scan the code with their phone. It works "
-"once and stays valid until used or cancelled."
-msgstr ""
-"Send linket, eller lad personen scanne koden med sin telefon. Det virker én "
-"gang og er gyldigt, indtil det bruges eller annulleres."
+msgid "Turn off camera"
+msgstr "Sluk kamera"
 
-msgid "Copy link"
-msgstr "Kopiér link"
+msgid "Turn on camera"
+msgstr "Tænd kamera"
 
-msgid "Done"
-msgstr "Færdig"
+msgid "No camera found on this computer"
+msgstr "Intet kamera fundet på denne computer"
 
-msgid "Copied!"
-msgstr "Kopieret!"
+msgid "Stop sharing"
+msgstr "Stop deling"
 
-msgid ""
-"This network asks an administrator to approve each invite: the link starts "
-"working once they do. Its status shows in Invites."
-msgstr ""
-"Dette netværk kræver, at en administrator godkender hver invitation: linket "
-"begynder at virke, når de gør det. Status vises under Invitationer."
+msgid "Share screen"
+msgstr "Del skærm"
+
+msgid "Stop showing your screen to the room"
+msgstr "Stop med at vise din skærm for rummet"
+
+msgid "Show your screen to everyone in the room"
+msgstr "Vis din skærm for alle i rummet"
+
+msgid "Take back control"
+msgstr "Tag kontrollen tilbage"
+
+msgid "Give control"
+msgstr "Giv kontrol"
+
+msgid "Stop them from using your mouse and keyboard"
+msgstr "Forhindr dem i at bruge din mus og dit tastatur"
+
+msgid "Let them use your mouse and keyboard"
+msgstr "Lad dem bruge din mus og dit tastatur"
+
+msgid "Sound level"
+msgstr "Lydniveau"
+
+msgid "Unmute"
+msgstr "Slå lyd til"
 
 msgid "System accent"
 msgstr "Systemets accentfarve"
@@ -1718,36 +1502,6 @@ msgstr "Billede…"
 msgid "Choose a background picture"
 msgstr "Vælg et baggrundsbillede"
 
-msgid "Message"
-msgstr "Besked"
-
-msgid "Bold"
-msgstr "Fed"
-
-msgid "Italic"
-msgstr "Kursiv"
-
-msgid "Underline"
-msgstr "Understreget"
-
-msgid "Strikethrough"
-msgstr "Gennemstreget"
-
-msgid "Monospace"
-msgstr "Fast bredde"
-
-msgid "Create link"
-msgstr "Opret link"
-
-msgid "Plain text"
-msgstr "Almindelig tekst"
-
-msgid "Formatting"
-msgstr "Formatering"
-
-msgid "Create"
-msgstr "Opret"
-
 msgid "Mesh VPN client for BigScale/Headscale."
 msgstr "Mesh VPN-klient til BigScale/Headscale."
 
@@ -1783,13 +1537,18 @@ msgstr "Forlad netværket?"
 
 #, rust-format
 msgid ""
-"This device leaves the network and its name becomes free. Your account {user} is kept: you can come back later from this computer, without an invite.\n"
+"This device leaves the network and its name becomes free. Your account "
+"{user} is kept: you can come back later from this computer, without an "
+"invite.\n"
 "\n"
-"If you won't come back, delete the account and the name {user} becomes free too."
+"If you won't come back, delete the account and the name {user} becomes free "
+"too."
 msgstr ""
-"Denne enhed forlader netværket, og dens navn bliver ledigt. Din konto {user} bevares: du kan komme tilbage senere fra denne computer uden en invitation.\n"
+"Denne enhed forlader netværket, og dens navn bliver ledigt. Din konto {user} "
+"bevares: du kan komme tilbage senere fra denne computer uden en invitation.\n"
 "\n"
-"Hvis du ikke kommer tilbage, så slet kontoen, så bliver navnet {user} også ledigt."
+"Hvis du ikke kommer tilbage, så slet kontoen, så bliver navnet {user} også "
+"ledigt."
 
 msgid "Leave and delete account"
 msgstr "Forlad og slet konto"
@@ -1804,8 +1563,7 @@ msgstr "Logger ud…"
 msgid ""
 "Signed out. Your account was kept: {count} other device(s) still use it."
 msgstr ""
-"Logget ud. Din konto blev bevaret: {count} andre enhed(er) bruger den "
-"stadig."
+"Logget ud. Din konto blev bevaret: {count} andre enhed(er) bruger den stadig."
 
 msgid ""
 "Couldn't delete the account: the panel can't be reached. Connect and try "
@@ -1827,11 +1585,15 @@ msgstr "Kunne ikke nå serveren"
 msgid ""
 "The control server didn't confirm the sign-out: {error}\n"
 "\n"
-"You can still sign out on this computer: BigLace forgets the saved key and account and disconnects. The server keeps listing this device until an administrator removes it."
+"You can still sign out on this computer: BigLace forgets the saved key and "
+"account and disconnects. The server keeps listing this device until an "
+"administrator removes it."
 msgstr ""
 "Kontrolserveren bekræftede ikke udlogningen: {error}\n"
 "\n"
-"Du kan stadig logge ud på denne computer: BigLace glemmer den gemte nøgle og konto og afbryder forbindelsen. Serveren bliver ved med at vise denne enhed, indtil en administrator fjerner den."
+"Du kan stadig logge ud på denne computer: BigLace glemmer den gemte nøgle og "
+"konto og afbryder forbindelsen. Serveren bliver ved med at vise denne enhed, "
+"indtil en administrator fjerner den."
 
 msgid "Sign out on this computer"
 msgstr "Log ud på denne computer"
@@ -1848,16 +1610,16 @@ msgid ""
 "Everyone else joins with an invite or an access key."
 msgstr ""
 "Kun for den, der administrerer BigScale-panelet: brug panelets "
-"administratorbrugernavn og adgangskode. Denne enhed tilslutter sig netværket"
-" under navnet nedenfor. Alle andre tilslutter sig med en invitation eller en"
-" adgangsnøgle."
+"administratorbrugernavn og adgangskode. Denne enhed tilslutter sig netværket "
+"under navnet nedenfor. Alle andre tilslutter sig med en invitation eller en "
+"adgangsnøgle."
 
 msgid "Panel URL"
 msgstr "Panel-URL"
 
 msgid ""
-"Address of your BigScale panel (e.g. panel.example.org). The https:// scheme"
-" is added automatically if you omit it."
+"Address of your BigScale panel (e.g. panel.example.org). The https:// scheme "
+"is added automatically if you omit it."
 msgstr ""
 "Adressen på dit BigScale-panel (f.eks. panel.example.org). https://-skemaet "
 "tilføjes automatisk, hvis du udelader det."
@@ -1879,8 +1641,8 @@ msgstr ""
 "Linux, Keychain på macOS, Credential Manager på Windows)."
 
 msgid ""
-"The name this device shows to other peers on the VPN — this is the Tailscale"
-" hostname, NOT your computer's name and NOT your user. Lowercase letters, "
+"The name this device shows to other peers on the VPN — this is the Tailscale "
+"hostname, NOT your computer's name and NOT your user. Lowercase letters, "
 "digits and hyphens. Example: 'tales-laptop', 'francois', 'office-pc'. Pick "
 "something other peers will recognise."
 msgstr ""
@@ -1939,13 +1701,13 @@ msgid ""
 "\"{name}\". If the account is yours, sign in again from the computer where "
 "you used it, or ask the administrator to free the name."
 msgstr ""
-"Det navn tilhører allerede en konto på dette netværk, så vi foreslog "
-"\"{name}\". Hvis kontoen er din, så log ind igen fra den computer, hvor du "
-"brugte den, eller bed administratoren om at frigive navnet."
+"Det navn tilhører allerede en konto på dette netværk, så vi foreslog \"{name}"
+"\". Hvis kontoen er din, så log ind igen fra den computer, hvor du brugte "
+"den, eller bed administratoren om at frigive navnet."
 
 msgid ""
-"That name already belongs to an account on this network. Try another one, or"
-" ask the administrator to free it."
+"That name already belongs to an account on this network. Try another one, or "
+"ask the administrator to free it."
 msgstr ""
 "Det navn tilhører allerede en konto på dette netværk. Prøv et andet, eller "
 "bed administratoren om at frigive det."
@@ -2007,11 +1769,11 @@ msgid "Joining…"
 msgstr "Tilslutter…"
 
 msgid ""
-"That doesn't look like an invite link. It starts with https:// and contains "
-"/join#."
+"That doesn't look like an invite link. It starts with https:// and contains /"
+"join#."
 msgstr ""
-"Det ligner ikke et invitationslink. Det starter med https:// og indeholder "
-"/join#."
+"Det ligner ikke et invitationslink. Det starter med https:// og indeholder /"
+"join#."
 
 msgid "Type your name."
 msgstr "Skriv dit navn."
@@ -2026,6 +1788,36 @@ msgstr ""
 msgid "Welcome, {name}! Connecting…"
 msgstr "Velkommen, {name}! Opretter forbindelse…"
 
+msgid "Message"
+msgstr "Besked"
+
+msgid "Bold"
+msgstr "Fed"
+
+msgid "Italic"
+msgstr "Kursiv"
+
+msgid "Underline"
+msgstr "Understreget"
+
+msgid "Strikethrough"
+msgstr "Gennemstreget"
+
+msgid "Monospace"
+msgstr "Fast bredde"
+
+msgid "Create link"
+msgstr "Opret link"
+
+msgid "Plain text"
+msgstr "Almindelig tekst"
+
+msgid "Formatting"
+msgstr "Formatering"
+
+msgid "Create"
+msgstr "Opret"
+
 msgid "End access"
 msgstr "Afslut adgang"
 
@@ -2038,8 +1830,8 @@ msgstr "Fjernadgang startet"
 
 #, rust-format
 msgid ""
-"{user} ({device}) is seeing and controlling this screen. Open BigLace to end"
-" the access."
+"{user} ({device}) is seeing and controlling this screen. Open BigLace to end "
+"the access."
 msgstr ""
 "{user} ({device}) ser og styrer denne skærm. Åbn BigLace for at afslutte "
 "adgangen."
@@ -2089,11 +1881,11 @@ msgid "Restart {name}'s computer?"
 msgstr "Genstart {name}s computer?"
 
 msgid ""
-"It restarts, signs in by itself and locks the screen right away; this window"
-" connects again when it's back. Unsaved work there is lost."
+"It restarts, signs in by itself and locks the screen right away; this window "
+"connects again when it's back. Unsaved work there is lost."
 msgstr ""
-"Den genstarter, logger selv ind og låser skærmen med det samme; dette vindue"
-" opretter forbindelse igen, når den er tilbage. Ikke-gemt arbejde der går "
+"Den genstarter, logger selv ind og låser skærmen med det samme; dette vindue "
+"opretter forbindelse igen, når den er tilbage. Ikke-gemt arbejde der går "
 "tabt."
 
 msgid "Restart"
@@ -2109,8 +1901,8 @@ msgid ""
 "Unsaved work there is lost."
 msgstr ""
 "De åbne programmer der lukkes, computeren logger selv ud og ind igen (uden "
-"at genstarte) og låser skærmen; dette vindue opretter forbindelse igen. "
-"Ikke-gemt arbejde der går tabt."
+"at genstarte) og låser skærmen; dette vindue opretter forbindelse igen. Ikke-"
+"gemt arbejde der går tabt."
 
 msgid "Restart the session"
 msgstr "Genstart sessionen"
@@ -2196,8 +1988,8 @@ msgid "{name} didn't allow the access."
 msgstr "{name} tillod ikke adgangen."
 
 msgid ""
-"That computer couldn't confirm this device. Make sure both run an up-to-date"
-" BigLace."
+"That computer couldn't confirm this device. Make sure both run an up-to-date "
+"BigLace."
 msgstr ""
 "Den computer kunne ikke bekræfte denne enhed. Sørg for, at begge kører en "
 "opdateret BigLace."
@@ -2271,6 +2063,36 @@ msgstr "Adgangen til {name}s skærm er afsluttet: {error}"
 msgid "Give back control"
 msgstr "Giv kontrollen tilbage"
 
+msgid "Connected · 1 peer"
+msgstr "Forbundet · 1 peer"
+
+#, rust-format
+msgid "Connected · {n} peers"
+msgstr "Forbundet · {n} peers"
+
+#, rust-format
+msgid "In the room {group} · muted"
+msgstr "I rummet {group} · lydløs"
+
+#, rust-format
+msgid "In the room {group}"
+msgstr "I rummet {group}"
+
+msgid "Show BigLace"
+msgstr "Vis BigLace"
+
+msgid "Unmute (Ctrl+Alt+M)"
+msgstr "Slå lyd til (Ctrl+Alt+M)"
+
+msgid "Mute (Ctrl+Alt+M)"
+msgstr "Slå lyd fra (Ctrl+Alt+M)"
+
+msgid "Leave the room"
+msgstr "Forlad rummet"
+
+msgid "Quit"
+msgstr "Afslut"
+
 msgid "direct"
 msgstr "direkte"
 
@@ -2288,8 +2110,8 @@ msgid ""
 "Signal sent to {name} (by {via}). If it's set to turn on over the network, "
 "it shows up in a minute or two."
 msgstr ""
-"Signal sendt til {name} (via {via}). Hvis den er indstillet til at tænde via"
-" netværket, dukker den op om et minut eller to."
+"Signal sendt til {name} (via {via}). Hvis den er indstillet til at tænde via "
+"netværket, dukker den op om et minut eller to."
 
 #, rust-format
 msgid "Could not turn on {name}: {error}"
@@ -2306,6 +2128,9 @@ msgstr "Fastgjort til toppen"
 
 msgid "Unpinned"
 msgstr "Ikke fastgjort"
+
+msgid "Copy IP address"
+msgstr "Kopier IP-adresse"
 
 msgid "Open files (SFTP)"
 msgstr "Åbn filer (SFTP)"
@@ -2354,6 +2179,204 @@ msgstr "Kunne ikke opdatere udgangsnode"
 
 msgid "Copy"
 msgstr "Kopier"
+
+msgid "Search devices"
+msgstr "Søg efter enheder"
+
+msgid "Invite someone to your network"
+msgstr "Inviter nogen til dit netværk"
+
+msgid ""
+"Tailscale cannot write this device's DNS settings, so it can no longer keep "
+"peer names working. They may still resolve for now, from the configuration "
+"left over from before the failure, but that will break the next time the "
+"network changes — and BigLace will fall back to IP addresses. On most "
+"distributions `sudo resolvconf -u` repairs it."
+msgstr ""
+"Tailscale kan ikke skrive denne enheds DNS-indstillinger, så den kan ikke "
+"længere holde peer-navne fungerende. De kan stadig blive slået op indtil "
+"videre, ud fra konfigurationen fra før fejlen, men det holder op med at "
+"virke næste gang netværket ændrer sig — og BigLace falder tilbage til IP-"
+"adresser. På de fleste distributioner reparerer `sudo resolvconf -u` det."
+
+msgid "Not connected"
+msgstr "Ikke forbundet"
+
+msgid "Press Connect on the left to join the network."
+msgstr "Tryk på Forbind til venstre for at deltage i netværket."
+
+msgid "The tailscale service is not running"
+msgstr "Tailscale-tjenesten kører ikke"
+
+msgid "BigLace needs the tailscaled background service to manage the network."
+msgstr ""
+"BigLace har brug for baggrundstjenesten tailscaled for at administrere "
+"netværket."
+
+msgid "Start service"
+msgstr "Start tjeneste"
+
+msgid "Join the network"
+msgstr "Tilslut dig netværket"
+
+msgid "Choose how you're going to sign in."
+msgstr "Vælg, hvordan du vil logge ind."
+
+msgid "Ways to sign in"
+msgstr "Måder at logge ind på"
+
+msgid "Your account was kept on this computer. No invite needed."
+msgstr "Din konto blev gemt på denne computer. Ingen invitation nødvendig."
+
+msgid "I have an invite"
+msgstr "Jeg har en invitation"
+
+msgid "Someone on the network sent you a link or a QR code."
+msgstr "Nogen på netværket har sendt dig et link eller en QR-kode."
+
+msgid "I have an access key"
+msgstr "Jeg har en adgangsnøgle"
+
+msgid "A key the administrator created for you (starts with hskey-auth-)."
+msgstr ""
+"En nøgle, som administratoren har oprettet til dig (starter med hskey-auth-)."
+
+msgid "I'm the administrator"
+msgstr "Jeg er administratoren"
+
+msgid "Sign in with the BigScale panel's admin username and password."
+msgstr "Log ind med BigScale-panelets administratorbrugernavn og adgangskode."
+
+msgid "This device"
+msgstr "Denne enhed"
+
+msgid "Devices on the network"
+msgstr "Enheder på netværket"
+
+msgid "No other devices on the network yet."
+msgstr "Ingen andre enheder på netværket endnu."
+
+msgid "you are not in a room"
+msgstr "du er ikke i et rum"
+
+msgid "screen sharing isn't available on this computer"
+msgstr "skærmdeling er ikke tilgængelig på denne computer"
+
+#, rust-format
+msgid "The computer's sound can't be shared: {error}"
+msgstr "Computerens lyd kan ikke deles: {error}"
+
+#, rust-format
+msgid "The screen share stopped: {error}"
+msgstr "Skærmdelingen stoppede: {error}"
+
+msgid "This computer"
+msgstr "Denne computer"
+
+msgid "Who may use this computer remotely"
+msgstr "Hvem må bruge denne computer eksternt"
+
+msgid ""
+"Anyone you're connected to can ask to see and control this screen. Choose "
+"who is let in without asking, and who is never let in."
+msgstr ""
+"Alle, du er forbundet med, kan bede om at se og styre denne skærm. Vælg, "
+"hvem der lukkes ind uden at spørge, og hvem der aldrig lukkes ind."
+
+msgid "History of accesses"
+msgstr "Adgangshistorik"
+
+msgid "Kept on this computer only."
+msgstr "Gemmes kun på denne computer."
+
+msgid "Clear"
+msgstr "Ryd"
+
+msgid "Nobody has asked yet."
+msgstr "Ingen har spurgt endnu."
+
+msgid "When someone asks, you can choose to always let them in."
+msgstr "Når nogen spørger, kan du vælge altid at lukke dem ind."
+
+msgid "Ask every time"
+msgstr "Spørg hver gang"
+
+msgid "Always allow"
+msgstr "Tillad altid"
+
+msgid "Never allow"
+msgstr "Tillad aldrig"
+
+msgid "No accesses yet."
+msgstr "Ingen adgange endnu."
+
+msgid "Remote access"
+msgstr "Fjernadgang"
+
+msgid "Watched the screen shared with the room"
+msgstr "Så skærmen, der blev delt med rummet"
+
+msgid "Got control of the shared screen"
+msgstr "Fik kontrol over den delte skærm"
+
+msgid "Restarted the computer"
+msgstr "Genstartede computeren"
+
+msgid "Restarted the session"
+msgstr "Genstartede sessionen"
+
+msgid "Shut down the computer"
+msgstr "Lukkede computeren ned"
+
+msgid "allowed"
+msgstr "tilladt"
+
+msgid "allowed (always)"
+msgstr "tilladt (altid)"
+
+msgid "came back after a restart"
+msgstr "kom tilbage efter en genstart"
+
+msgid "denied"
+msgstr "afvist"
+
+msgid "blocked (never allowed)"
+msgstr "blokeret (aldrig tilladt)"
+
+msgid "ended"
+msgstr "afsluttet"
+
+#, rust-format
+msgid "{user} ({device})"
+msgstr "{user} ({device})"
+
+#, rust-format
+msgid "{done} of {total}"
+msgstr "{done} af {total}"
+
+msgid "Play"
+msgstr "Afspil"
+
+msgid "Download"
+msgstr "Hent"
+
+msgid "Open"
+msgstr "Åbn"
+
+msgid "Show in folder"
+msgstr "Vis i mappe"
+
+msgid "Pause"
+msgstr "Pause"
+
+msgid "Photo"
+msgstr "Foto"
+
+msgid "Video"
+msgstr "Video"
+
+msgid "Voice message"
+msgstr "Talebesked"
 
 msgid "Smileys & people"
 msgstr "Smileys og personer"
@@ -2412,8 +2435,8 @@ msgstr ""
 "{user}s computer er slukket eller offline — prøv igen, når den er tilbage"
 
 msgid ""
-"the file arrived different from the original (damaged on the way) — download"
-" it again"
+"the file arrived different from the original (damaged on the way) — download "
+"it again"
 msgstr ""
 "filen kom frem anderledes end originalen (beskadiget undervejs) — download "
 "den igen"
@@ -2457,8 +2480,7 @@ msgstr "📌 (frigjorde beskeden)"
 msgid "nothing was recorded — is a microphone connected?"
 msgstr "intet blev optaget — er der tilsluttet en mikrofon?"
 
-msgid ""
-"this computer can't restart remotely (BigLace's helper isn't installed)"
+msgid "this computer can't restart remotely (BigLace's helper isn't installed)"
 msgstr ""
 "denne computer kan ikke genstartes eksternt (BigLaces hjælper er ikke "
 "installeret)"
@@ -2492,22 +2514,8 @@ msgstr ""
 msgid "access to the camera was refused"
 msgstr "adgang til kameraet blev afvist"
 
-msgid "you are not in a room"
-msgstr "du er ikke i et rum"
-
 msgid "Mute or unmute the microphone in a BigLace room"
 msgstr "Slå mikrofonen til eller fra i et BigLace-rum"
-
-msgid "screen sharing isn't available on this computer"
-msgstr "skærmdeling er ikke tilgængelig på denne computer"
-
-#, rust-format
-msgid "The computer's sound can't be shared: {error}"
-msgstr "Computerens lyd kan ikke deles: {error}"
-
-#, rust-format
-msgid "The screen share stopped: {error}"
-msgstr "Skærmdelingen stoppede: {error}"
 
 msgid "BigLace doesn't know that computer's network card yet"
 msgstr "BigLace kender endnu ikke den computers netværkskort"
@@ -2517,6 +2525,12 @@ msgstr "denne computer"
 
 msgid "no computer on its network is on to send the signal"
 msgstr "ingen computer på dens netværk er tændt til at sende signalet"
+
+msgid "Open with another app"
+msgstr "Åbn med et andet program"
+
+msgid "Close"
+msgstr "Luk"
 
 #~ msgid "Panel credentials"
 #~ msgstr "Panel-legitimationsoplysninger"
@@ -2529,8 +2543,8 @@ msgstr "ingen computer på dens netværk er tændt til at sende signalet"
 
 #~ msgid "Use the panel on the left to sign in or paste a pre-auth key."
 #~ msgstr ""
-#~ "Brug panelet til venstre til at logge ind eller indsætte en forhåndsgodkendt"
-#~ " nøgle."
+#~ "Brug panelet til venstre til at logge ind eller indsætte en "
+#~ "forhåndsgodkendt nøgle."
 
 #~ msgid "Connect via panel account"
 #~ msgstr "Opret forbindelse via panelkonto"
@@ -2609,8 +2623,8 @@ msgstr "ingen computer på dens netværk er tændt til at sende signalet"
 #~ msgstr "Din identitet på netværket"
 
 #~ msgid ""
-#~ "Personal key generated for you in the BigScale panel (\"New key\" in Users)."
-#~ " Each person uses their own — this is not the server's key."
+#~ "Personal key generated for you in the BigScale panel (\"New key\" in "
+#~ "Users). Each person uses their own — this is not the server's key."
 #~ msgstr ""
 #~ "Personlig nøgle genereret til dig i BigScale-panelet (\"Ny nøgle\" under "
 #~ "Brugere). Hver person bruger deres egen – dette er ikke serverens nøgle."

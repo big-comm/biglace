@@ -32,8 +32,8 @@ msgid ""
 "No terminal emulator found. Install one (Konsole, GNOME Terminal, xterm…) "
 "and try again."
 msgstr ""
-"Nenhum emulador de terminal encontrado. Instale um (Konsole, GNOME Terminal,"
-" xterm…) e tente novamente."
+"Nenhum emulador de terminal encontrado. Instale um (Konsole, GNOME Terminal, "
+"xterm…) e tente novamente."
 
 msgid "Failed to run tailscale"
 msgstr "Falha ao executar tailscale"
@@ -51,8 +51,8 @@ msgid ""
 "The pre-auth key was rejected by the server. Generate a new key in the "
 "BigScale panel and try again."
 msgstr ""
-"A chave de pré-autenticação foi rejeitada pelo servidor. Gere uma nova chave"
-" no painel BigScale e tente novamente."
+"A chave de pré-autenticação foi rejeitada pelo servidor. Gere uma nova chave "
+"no painel BigScale e tente novamente."
 
 msgid "Sign in or paste a pre-auth key first."
 msgstr "Inicie sessão ou cole uma chave de pré-autenticação primeiro."
@@ -172,8 +172,8 @@ msgid "Account"
 msgstr "Conta"
 
 msgid ""
-"Signing out removes this device's identity from BigLace. You will need a new"
-" invite or key to join again."
+"Signing out removes this device's identity from BigLace. You will need a new "
+"invite or key to join again."
 msgstr ""
 "Sair da conta remove a identidade deste dispositivo do BigLace. Para entrar "
 "de novo, você vai precisar de um novo convite ou chave."
@@ -206,8 +206,7 @@ msgid "Connect to the network first, then open the invite link again."
 msgstr "Ligue-se à rede primeiro e abra o link do convite de novo."
 
 #, rust-format
-msgid ""
-"This invite is for another network ({host}). Sign out first to join it."
+msgid "This invite is for another network ({host}). Sign out first to join it."
 msgstr ""
 "Este convite é de outra rede ({host}). Saia da conta primeiro para entrar "
 "nela."
@@ -230,8 +229,8 @@ msgid "Could not open the browser: {error}"
 msgstr "Não foi possível abrir o navegador: {error}"
 
 msgid ""
-"You can't open the admin panel: you're not an administrator of this network,"
-" or the panel can't be reached."
+"You can't open the admin panel: you're not an administrator of this network, "
+"or the panel can't be reached."
 msgstr ""
 "Não foi possível abrir o painel: você não é administrador desta rede, ou o "
 "painel não responde."
@@ -331,125 +330,177 @@ msgstr "{count} dispositivos ficaram offline"
 msgid "{on_count} online · {off_count} offline"
 msgstr "{on_count} online · {off_count} offline"
 
-msgid "Connected · 1 peer"
-msgstr "Conectado · 1 peer"
+msgid ""
+"Invites from BigLace need a BigScale server that supports them. Ask your "
+"administrator to update the server, or to create the invite in the panel."
+msgstr ""
+"Convites pelo BigLace precisam de um servidor BigScale que aceite esse "
+"recurso. Peça ao administrador para atualizar o servidor ou criar o convite "
+"no painel."
+
+msgid "This device can't send invites (it isn't linked to a person's account)."
+msgstr ""
+"Este dispositivo não pode enviar convites (ele não está ligado à conta de "
+"uma pessoa)."
+
+msgid ""
+"The panel knows this device by a different key (BigLace was reinstalled?). "
+"Leave the network and join again to fix it."
+msgstr ""
+"O painel conhece este dispositivo por outra chave (o BigLace foi "
+"reinstalado?). Saia da rede e entre novamente para resolver."
+
+msgid ""
+"The panel couldn't confirm this device. Make sure BigLace is up to date and "
+"stays open while connected, then try again."
+msgstr ""
+"O painel não conseguiu confirmar este dispositivo. Verifique se o BigLace "
+"está atualizado e fica aberto enquanto ligado, e tente novamente."
+
+msgid "You are no longer in that group."
+msgstr "Você não está mais nesse grupo."
+
+msgid ""
+"On this network everyone can reach everyone, so only the administrator can "
+"invite people."
+msgstr ""
+"Nesta rede todos acessam todos, por isso só o administrador pode convidar "
+"pessoas."
+
+msgid "You have too many pending invites. Cancel some or try again tomorrow."
+msgstr ""
+"Você tem convites pendentes demais. Cancele alguns ou tente de novo amanhã."
+
+msgid ""
+"On this network only administrators invite new people. You can still invite "
+"people already on the network into your groups."
+msgstr ""
+"Nesta rede só os administradores convidam pessoas novas. Ainda pode chamar "
+"para os seus grupos quem já está na rede."
 
 #, rust-format
-msgid "Connected · {n} peers"
-msgstr "Conectado · {n} peers"
+msgid "Could not reach the panel: {error}"
+msgstr "Não foi possível falar com o painel: {error}"
 
-#, rust-format
-msgid "In the room {group} · muted"
-msgstr "Na sala {group} · silenciado"
+msgid "Waiting to be used"
+msgstr "Aguardando uso"
 
-#, rust-format
-msgid "In the room {group}"
-msgstr "Na sala {group}"
+msgid "Used"
+msgstr "Usado"
 
-msgid "Show BigLace"
-msgstr "Mostrar BigLace"
+msgid "Expired"
+msgstr "Expirado"
 
-#, rust-format
-msgid "Room {group}"
-msgstr "Sala {group}"
+msgid "Cancelled"
+msgstr "Cancelado"
 
-msgid "Unmute (Ctrl+Alt+M)"
-msgstr "Ativar microfone (Ctrl+Alt+M)"
-
-msgid "Mute (Ctrl+Alt+M)"
-msgstr "Silenciar (Ctrl+Alt+M)"
-
-msgid "Leave the room"
-msgstr "Sair da sala"
-
-msgid "Quit"
-msgstr "Sair"
-
-msgid "Main menu"
-msgstr "Menu principal"
-
-msgid "Search devices"
-msgstr "Procurar dispositivos"
+msgid "Waiting for an administrator's approval"
+msgstr "Aguardando aprovação de um administrador"
 
 msgid "Refresh"
 msgstr "Atualizar"
 
+msgid "Main menu"
+msgstr "Menu principal"
+
+msgid "Bring someone to your network"
+msgstr "Traga alguém para a sua rede"
+
+msgid ""
+"Create a link or QR code and send it to the person. When they join, you two "
+"can reach each other's devices — no administrator needed. The link works "
+"once and stays valid until it's used or you cancel it."
+msgstr ""
+"Crie um link ou QR code e envie para a pessoa. Quando ela entrar, vocês dois "
+"acessam os dispositivos um do outro — sem precisar de administrador. O link "
+"funciona uma vez e vale até ser usado ou você cancelar."
+
+msgid "No invites yet"
+msgstr "Nenhum convite ainda"
+
+msgid "Invites unavailable"
+msgstr "Convites indisponíveis"
+
+#, rust-format
+msgid "{user} joined"
+msgstr "{user} entrou"
+
 msgid "Invite"
 msgstr "Convidar"
 
-msgid "Invite someone to your network"
-msgstr "Convide alguém para a sua rede"
+#, rust-format
+msgid "group {group}"
+msgstr "grupo {group}"
+
+msgid "Cancel this invite: the link stops working"
+msgstr "Cancelar este convite: o link para de funcionar"
+
+msgid "The person you invite will reach your devices, and you theirs."
+msgstr "A pessoa convidada vai acessar seus dispositivos, e você os dela."
+
+msgid "Who is it for? (optional)"
+msgstr "Para quem é? (opcional)"
+
+msgid "Access"
+msgstr "Acesso"
+
+msgid "Just the two of us"
+msgstr "Só nós dois"
+
+msgid "You see each other's devices, nobody else"
+msgstr "Veem os dispositivos um do outro, e mais ninguém"
+
+#, rust-format
+msgid "Also the group {group}"
+msgstr "Também o grupo {group}"
+
+msgid "They join the group and see everyone in it"
+msgstr "A pessoa entra no grupo e vê todos que estão nele"
+
+msgid "A network of their own"
+msgstr "Uma rede só dela"
 
 msgid ""
-"Tailscale cannot write this device's DNS settings, so it can no longer keep "
-"peer names working. They may still resolve for now, from the configuration "
-"left over from before the failure, but that will break the next time the "
-"network changes — and BigLace will fall back to IP addresses. On most "
-"distributions `sudo resolvconf -u` repairs it."
+"No link to you: they see only their own devices and whoever they invite "
+"(you're the administrator)"
 msgstr ""
-"O Tailscale não consegue escrever as definições de DNS deste dispositivo, "
-"pelo que já não consegue manter os nomes dos pares a funcionar. Ainda podem "
-"resolver por agora, com a configuração que ficou de antes da falha, mas isso"
-" vai deixar de funcionar na próxima alteração de rede — e o BigLace passa a "
-"usar endereços IP. Na maioria das distribuições, `sudo resolvconf -u` "
-"resolve."
+"Sem ligação consigo: a pessoa vê só os próprios dispositivos e quem convidar "
+"(é o administrador)"
 
-msgid "Not connected"
-msgstr "Não ligado"
+msgid "Create invite"
+msgstr "Criar convite"
 
-msgid "Press Connect on the left to join the network."
-msgstr "Carregue em Ligar à esquerda para entrar na rede."
+msgid "QR code of the invite link"
+msgstr "QR code do link de convite"
 
-msgid "The tailscale service is not running"
-msgstr "O serviço tailscale não está em execução"
+msgid ""
+"Send the link or let the person scan the code with their phone. It works "
+"once and stays valid until used or cancelled."
+msgstr ""
+"Envie o link ou peça para a pessoa ler o código com o celular. Funciona uma "
+"vez e vale até ser usado ou cancelado."
 
-msgid "BigLace needs the tailscaled background service to manage the network."
-msgstr "O BigLace precisa do serviço tailscaled para gerir a rede."
+msgid "Copy link"
+msgstr "Copiar link"
 
-msgid "Start service"
-msgstr "Iniciar serviço"
+msgid "Done"
+msgstr "Concluído"
 
-msgid "Join the network"
-msgstr "Entrar na rede"
+msgid "Copied!"
+msgstr "Copiado!"
 
-msgid "Choose how you're going to sign in."
-msgstr "Escolha como vai entrar."
+msgid ""
+"This network asks an administrator to approve each invite: the link starts "
+"working once they do. Its status shows in Invites."
+msgstr ""
+"Nesta rede um administrador aprova cada convite: o link passa a funcionar "
+"quando ele aprovar. A situação aparece em Convites."
 
-msgid "Ways to sign in"
-msgstr "Formas de entrar"
+msgid "Show the full sidebar"
+msgstr "Mostrar a barra lateral completa"
 
-msgid "Your account was kept on this computer. No invite needed."
-msgstr "Sua conta ficou guardada neste computador. Não precisa de convite."
-
-msgid "I have an invite"
-msgstr "Tenho um convite"
-
-msgid "Someone on the network sent you a link or a QR code."
-msgstr "Alguém da rede enviou-lhe uma ligação ou um código QR."
-
-msgid "I have an access key"
-msgstr "Tenho uma chave de acesso"
-
-msgid "A key the administrator created for you (starts with hskey-auth-)."
-msgstr "Uma chave que o administrador criou para si (começa com hskey-auth-)."
-
-msgid "I'm the administrator"
-msgstr "Sou o administrador"
-
-msgid "Sign in with the BigScale panel's admin username and password."
-msgstr "Entre com o usuário e a senha de administrador do painel BigScale."
-
-msgid "This device"
-msgstr "Este dispositivo"
-
-msgid "Copy IP address"
-msgstr "Copiar endereço IP"
-
-msgid "Devices on the network"
-msgstr "Dispositivos na rede"
-
-msgid "No other devices on the network yet."
-msgstr "Ainda não há outros dispositivos na rede."
+msgid "Show only icons in the sidebar"
+msgstr "Mostrar só ícones na barra lateral"
 
 msgid "Sections"
 msgstr "Seções"
@@ -507,8 +558,8 @@ msgstr ""
 "navegador."
 
 msgid ""
-"The name this device shows to other peers on the VPN — this is the Tailscale"
-" hostname, NOT your computer's name and NOT your user. Lowercase letters, "
+"The name this device shows to other peers on the VPN — this is the Tailscale "
+"hostname, NOT your computer's name and NOT your user. Lowercase letters, "
 "digits and hyphens. Example: 'tales-laptop', 'francois', 'office-pc'."
 msgstr ""
 "O nome que este dispositivo mostra para outros pares na VPN — este é o "
@@ -523,8 +574,8 @@ msgid "Save"
 msgstr "Guardar"
 
 msgid ""
-"Persist the server, key and device name above. Won't connect — press Connect"
-" afterwards."
+"Persist the server, key and device name above. Won't connect — press Connect "
+"afterwards."
 msgstr ""
 "Persistir o servidor, a chave e o nome do dispositivo acima. Não irá "
 "conectar — pressione Conectar depois."
@@ -536,8 +587,8 @@ msgid "Join the network when BigLace starts"
 msgstr "Entrar na rede ao iniciar o BigLace"
 
 msgid ""
-"When on, BigLace runs 'tailscale up' as soon as it launches, so you join the"
-" mesh without clicking Connect every time."
+"When on, BigLace runs 'tailscale up' as soon as it launches, so you join the "
+"mesh without clicking Connect every time."
 msgstr ""
 "Quando ativado, o BigLace executa 'tailscale up' assim que é iniciado, para "
 "que você entre na malha sem precisar clicar em Conectar toda vez."
@@ -568,9 +619,8 @@ msgid "Retry with backoff when the connection is lost"
 msgstr "Tentar novamente com espera progressiva quando a conexão for perdida"
 
 msgid ""
-"If the tunnel drops (network change, sleep, server hiccup), BigLace silently"
-" retries with growing delays instead of leaving you offline until you "
-"notice."
+"If the tunnel drops (network change, sleep, server hiccup), BigLace silently "
+"retries with growing delays instead of leaving you offline until you notice."
 msgstr ""
 "Se o túnel cair (mudança de rede, suspensão, falha no servidor), o BigLace "
 "tenta novamente silenciosamente com atrasos crescentes, em vez de deixá-lo "
@@ -584,8 +634,7 @@ msgstr "Notificar sobre alterações de pares"
 
 msgid "Show a desktop notification when peers go online/offline"
 msgstr ""
-"Mostrar uma notificação na área de trabalho quando pares ficam "
-"online/offline"
+"Mostrar uma notificação na área de trabalho quando pares ficam online/offline"
 
 msgid ""
 "Send a desktop toast when another device on your network goes online or "
@@ -608,302 +657,6 @@ msgstr ""
 
 msgid "Your photo"
 msgstr "A sua foto"
-
-msgid ""
-"Each of your groups has a voice room. Join it and talk with whoever is there"
-" — the sound goes straight between you, through the network."
-msgstr ""
-"Cada grupo seu tem uma sala de voz. Entre e converse com quem estiver lá — o"
-" som vai direto entre vocês, pela rede."
-
-msgid "You're not in any group yet. Create one in Groups."
-msgstr "Você ainda não está em nenhum grupo. Crie um em Grupos."
-
-msgid "People in the room"
-msgstr "Pessoas na sala"
-
-msgid "Everyone"
-msgstr "Todos"
-
-msgid "Who's speaking"
-msgstr "Quem fala"
-
-msgid "Mute"
-msgstr "Silenciar"
-
-msgid "Mute your microphone for everyone"
-msgstr "Silenciar seu microfone para todos"
-
-msgid "Leave"
-msgstr "Sair"
-
-msgid "Which camera"
-msgstr "Qual câmara"
-
-msgid "Include the computer's sound when sharing the screen"
-msgstr "Incluir o som do computador ao partilhar o ecrã"
-
-msgid ""
-"Videos and music playing here go to the room too; the room's voices don't "
-"(no echo)"
-msgstr ""
-"Vídeos e músicas a tocar aqui vão também para a sala; as vozes da sala não "
-"(sem eco)"
-
-msgid "Rooms unavailable"
-msgstr "Salas indisponíveis"
-
-#, rust-format
-msgid "Could not turn on the camera: {error}"
-msgstr "Não foi possível ligar a câmara: {error}"
-
-#, rust-format
-msgid "Could not share the screen: {error}"
-msgstr "Não foi possível partilhar o ecrã: {error}"
-
-#, rust-format
-msgid "Could not reach the panel: {error}"
-msgstr "Não foi possível falar com o painel: {error}"
-
-msgid "Nobody here right now"
-msgstr "Ninguém na sala agora"
-
-#, rust-format
-msgid "In the room: {people}"
-msgstr "Na sala: {people}"
-
-msgid "Join"
-msgstr "Entrar"
-
-#, rust-format
-msgid "Join the room {group}"
-msgstr "Entrar na sala {group}"
-
-#, rust-format
-msgid "Could not join {group}: {error}"
-msgstr "Não foi possível entrar em {group}: {error}"
-
-msgid "📺 You're showing your screen to the room"
-msgstr "📺 Está a mostrar o seu ecrã à sala"
-
-msgid "📺 You're showing your screen · 1 person watching"
-msgstr "📺 Está a mostrar o seu ecrã · 1 pessoa a ver"
-
-#, rust-format
-msgid "📺 You're showing your screen · {count} people watching"
-msgstr "📺 Está a mostrar o seu ecrã · {count} pessoas a ver"
-
-msgid "1 person"
-msgstr "1 pessoa"
-
-#, rust-format
-msgid "{count} people"
-msgstr "{count} pessoas"
-
-#, rust-format
-msgid "{people} · {talking} talking"
-msgstr "{people} · {talking} a falar"
-
-msgid "you"
-msgstr "você"
-
-msgid "connecting…"
-msgstr "a ligar…"
-
-msgid "muted"
-msgstr "silenciado"
-
-msgid "talking"
-msgstr "a falar"
-
-msgid "quiet"
-msgstr "em silêncio"
-
-msgid "Sharing screen"
-msgstr "A partilhar o ecrã"
-
-msgid "In control"
-msgstr "No controlo"
-
-msgid "Controls your screen now"
-msgstr "Está a controlar o seu ecrã agora"
-
-msgid "Watching"
-msgstr "A ver"
-
-msgid "Watching your screen"
-msgstr "A ver o seu ecrã"
-
-#, rust-format
-msgid "{user} is showing their screen"
-msgstr "{user} está a mostrar o ecrã"
-
-msgid "Watch"
-msgstr "Ver"
-
-#, rust-format
-msgid "{user} asks to control your screen"
-msgstr "{user} pede para controlar o seu ecrã"
-
-msgid ""
-"They'll be able to use your mouse and keyboard. You can take control back at"
-" any time."
-msgstr ""
-"A pessoa poderá usar o seu rato e teclado. Pode retomar o controlo a "
-"qualquer momento."
-
-msgid "Deny"
-msgstr "Recusar"
-
-msgid "Allow"
-msgstr "Permitir"
-
-msgid "Turn off camera"
-msgstr "Desligar câmara"
-
-msgid "Turn on camera"
-msgstr "Ligar câmara"
-
-msgid "No camera found on this computer"
-msgstr "Nenhuma câmara encontrada neste computador"
-
-msgid "Stop sharing"
-msgstr "Parar de partilhar"
-
-msgid "Share screen"
-msgstr "Partilhar ecrã"
-
-msgid "Stop showing your screen to the room"
-msgstr "Parar de mostrar o seu ecrã à sala"
-
-msgid "Show your screen to everyone in the room"
-msgstr "Mostrar o seu ecrã a todos na sala"
-
-msgid "Take back control"
-msgstr "Retomar controlo"
-
-msgid "Give control"
-msgstr "Dar controlo"
-
-msgid "Stop them from using your mouse and keyboard"
-msgstr "Impedir que a pessoa use o seu rato e teclado"
-
-msgid "Let them use your mouse and keyboard"
-msgstr "Deixar a pessoa usar o seu rato e teclado"
-
-msgid "Sound level"
-msgstr "Nível do som"
-
-msgid "Unmute"
-msgstr "Ativar microfone"
-
-msgid "This computer"
-msgstr "Este computador"
-
-msgid "Who may use this computer remotely"
-msgstr "Quem pode usar este computador à distância"
-
-msgid ""
-"Anyone you're connected to can ask to see and control this screen. Choose "
-"who is let in without asking, and who is never let in."
-msgstr ""
-"Quem tem ligação consigo pode pedir para ver e controlar este ecrã. Escolha "
-"quem entra sem perguntar e quem nunca entra."
-
-msgid "History of accesses"
-msgstr "Histórico de acessos"
-
-msgid "Kept on this computer only."
-msgstr "Guardado apenas neste computador."
-
-msgid "Clear"
-msgstr "Limpar"
-
-msgid "Nobody has asked yet."
-msgstr "Ninguém pediu acesso ainda."
-
-msgid "When someone asks, you can choose to always let them in."
-msgstr "Quando alguém pedir, pode escolher deixar sempre."
-
-msgid "Ask every time"
-msgstr "Perguntar sempre"
-
-msgid "Always allow"
-msgstr "Permitir sempre"
-
-msgid "Never allow"
-msgstr "Nunca permitir"
-
-msgid "No accesses yet."
-msgstr "Nenhum acesso ainda."
-
-msgid "Remote access"
-msgstr "Acesso remoto"
-
-msgid "Watched the screen shared with the room"
-msgstr "Viu o ecrã partilhado na sala"
-
-msgid "Got control of the shared screen"
-msgstr "Recebeu o controlo do ecrã partilhado"
-
-msgid "Restarted the computer"
-msgstr "Reiniciou o computador"
-
-msgid "Restarted the session"
-msgstr "Reiniciou a sessão"
-
-msgid "Shut down the computer"
-msgstr "Desligou o computador"
-
-msgid "allowed"
-msgstr "permitido"
-
-msgid "allowed (always)"
-msgstr "permitido (sempre)"
-
-msgid "came back after a restart"
-msgstr "voltou depois de reiniciar"
-
-msgid "denied"
-msgstr "recusado"
-
-msgid "blocked (never allowed)"
-msgstr "bloqueado (nunca permitir)"
-
-msgid "ended"
-msgstr "terminado"
-
-#, rust-format
-msgid "{user} ({device})"
-msgstr "{user} ({device})"
-
-#, rust-format
-msgid "{done} of {total}"
-msgstr "{done} de {total}"
-
-msgid "Play"
-msgstr "Reproduzir"
-
-msgid "Download"
-msgstr "Transferir"
-
-msgid "Open"
-msgstr "Abrir"
-
-msgid "Show in folder"
-msgstr "Mostrar na pasta"
-
-msgid "Pause"
-msgstr "Pausar"
-
-msgid "Photo"
-msgstr "Fotografia"
-
-msgid "Video"
-msgstr "Vídeo"
-
-msgid "Voice message"
-msgstr "Mensagem de voz"
 
 msgid "New chat"
 msgstr "Nova conversa"
@@ -974,6 +727,9 @@ msgid ""
 msgstr ""
 "Escolha uma conversa ou comece uma nova. As mensagens vão direto entre os "
 "computadores — o servidor nunca as vê."
+
+msgid "People on the network"
+msgstr "Pessoas na rede"
 
 msgid "Group"
 msgstr "Grupo"
@@ -1153,20 +909,6 @@ msgstr ""
 "grupos."
 
 msgid ""
-"The panel knows this device by a different key (BigLace was reinstalled?). "
-"Leave the network and join again to fix it."
-msgstr ""
-"O painel conhece este dispositivo por outra chave (o BigLace foi "
-"reinstalado?). Saia da rede e entre novamente para resolver."
-
-msgid ""
-"The panel couldn't confirm this device. Make sure BigLace is up to date and "
-"stays open while connected, then try again."
-msgstr ""
-"O painel não conseguiu confirmar este dispositivo. Verifique se o BigLace "
-"está atualizado e fica aberto enquanto ligado, e tente novamente."
-
-msgid ""
 "On this network everyone already reaches everyone, so groups aren't needed. "
 "The administrator can set access rules first."
 msgstr ""
@@ -1176,23 +918,19 @@ msgstr ""
 msgid "You already created the maximum number of groups."
 msgstr "Você já criou o número máximo de grupos."
 
-msgid "You are no longer in that group."
-msgstr "Você não está mais nesse grupo."
-
 msgid "A group with that name already exists. Choose another name."
 msgstr "Já existe um grupo com esse nome. Escolha outro."
 
 msgid ""
 "Use lowercase letters, digits and hyphens, starting with a letter or digit."
-msgstr ""
-"Use letras minúsculas, números e hífen, começando por letra ou número."
+msgstr "Use letras minúsculas, números e hífen, começando por letra ou número."
 
 msgid ""
 "The administrator uses this group in the network's rules, so it can't be "
 "deleted. Ask the administrator."
 msgstr ""
-"O administrador usa este grupo nas regras da rede, por isso ele não pode ser"
-" apagado. Fale com o administrador."
+"O administrador usa este grupo nas regras da rede, por isso ele não pode ser "
+"apagado. Fale com o administrador."
 
 msgid "Only the person who created the group can do that."
 msgstr "Só quem criou o grupo pode fazer isso."
@@ -1283,8 +1021,7 @@ msgstr "{user} convida você para {group}"
 
 msgid "Joining lets you and the group's members reach each other's devices."
 msgstr ""
-"Ao entrar, você e os membros do grupo acessam os dispositivos uns dos "
-"outros."
+"Ao entrar, você e os membros do grupo acessam os dispositivos uns dos outros."
 
 msgid "Decline"
 msgstr "Recusar"
@@ -1299,6 +1036,13 @@ msgstr "Você entrou em {group}."
 msgid "Invitation declined."
 msgstr "Convite recusado."
 
+msgid "1 person"
+msgstr "1 pessoa"
+
+#, rust-format
+msgid "{count} people"
+msgstr "{count} pessoas"
+
 msgid "Created by you"
 msgstr "Criado por si"
 
@@ -1308,6 +1052,9 @@ msgstr "Criado por {user}"
 
 msgid "Network group (administrator)"
 msgstr "Grupo da rede (administrador)"
+
+msgid "you"
+msgstr "você"
 
 msgid "owner"
 msgstr "dono"
@@ -1331,8 +1078,7 @@ msgstr "Remover {user}?"
 
 #, rust-format
 msgid ""
-"{user} leaves the group {group} and no longer reaches its members through "
-"it."
+"{user} leaves the group {group} and no longer reaches its members through it."
 msgstr "{user} sai do grupo {group} e deixa de acessar os membros por ele."
 
 msgid "Remove"
@@ -1350,8 +1096,11 @@ msgid ""
 "You stop reaching the group's members through it. To come back, someone has "
 "to invite you again."
 msgstr ""
-"Você deixa de acessar os membros por este grupo. Para voltar, alguém precisa"
-" convidar você de novo."
+"Você deixa de acessar os membros por este grupo. Para voltar, alguém precisa "
+"convidar você de novo."
+
+msgid "Leave"
+msgstr "Sair"
 
 msgid "You left the group."
 msgstr "Você saiu do grupo."
@@ -1364,8 +1113,7 @@ msgid ""
 "Its members stop reaching each other through this group. People stay on the "
 "network."
 msgstr ""
-"Os membros deixam de se acessar por este grupo. As pessoas continuam na "
-"rede."
+"Os membros deixam de se acessar por este grupo. As pessoas continuam na rede."
 
 msgid "Group deleted."
 msgstr "Grupo apagado."
@@ -1379,12 +1127,11 @@ msgid ""
 "{user} invited you. You and the group's members will reach each other's "
 "devices."
 msgstr ""
-"{user} convidou você. Você e os membros do grupo vão acessar os dispositivos"
-" uns dos outros."
+"{user} convidou você. Você e os membros do grupo vão acessar os dispositivos "
+"uns dos outros."
 
 msgid "You and the group's members will reach each other's devices."
-msgstr ""
-"Você e os membros do grupo vão acessar os dispositivos uns dos outros."
+msgstr "Você e os membros do grupo vão acessar os dispositivos uns dos outros."
 
 #, rust-format
 msgid "Connect with {user}?"
@@ -1393,6 +1140,9 @@ msgstr "Conectar com {user}?"
 #, rust-format
 msgid "You and {user} will reach each other's devices."
 msgstr "Você e {user} vão acessar os dispositivos um do outro."
+
+msgid "Join"
+msgstr "Entrar"
 
 msgid "Done. You can now reach each other's devices."
 msgstr "Pronto. Agora vocês acessam os dispositivos um do outro."
@@ -1416,9 +1166,6 @@ msgid ""
 msgstr ""
 "Se alguém na rede tiver exatamente esse nome, essa pessoa recebe o convite."
 
-msgid "People on the network"
-msgstr "Pessoas na rede"
-
 #, rust-format
 msgid "Invite \"{name}\""
 msgstr "Convidar \"{name}\""
@@ -1438,9 +1185,9 @@ msgstr ""
 "{count} convites enviados. As pessoas aparecem no grupo conforme aceitarem."
 
 msgid ""
-"Listed are the people you're already connected to. To invite someone else on"
-" the network, type their exact name. Each one gets the invitation in BigLace"
-" and decides whether to join."
+"Listed are the people you're already connected to. To invite someone else on "
+"the network, type their exact name. Each one gets the invitation in BigLace "
+"and decides whether to join."
 msgstr ""
 "Aparecem as pessoas com quem já tem ligação. Para convidar outra pessoa da "
 "rede, escreva o nome exato dela. Cada uma recebe o convite no BigLace e "
@@ -1459,8 +1206,8 @@ msgid ""
 "You'll be the group's owner: you invite people into it and can remove them. "
 "Everyone in the group reaches each other's devices."
 msgstr ""
-"Você será o dono do grupo: convida pessoas e pode removê-las. Todos no grupo"
-" acessam os dispositivos uns dos outros."
+"Você será o dono do grupo: convida pessoas e pode removê-las. Todos no grupo "
+"acessam os dispositivos uns dos outros."
 
 msgid "Group name"
 msgstr "Nome do grupo"
@@ -1493,141 +1240,176 @@ msgid "Invite {user}"
 msgstr "Convidar {user}"
 
 msgid ""
-"Invites from BigLace need a BigScale server that supports them. Ask your "
-"administrator to update the server, or to create the invite in the panel."
+"Each of your groups has a voice room. Join it and talk with whoever is there "
+"— the sound goes straight between you, through the network."
 msgstr ""
-"Convites pelo BigLace precisam de um servidor BigScale que aceite esse "
-"recurso. Peça ao administrador para atualizar o servidor ou criar o convite "
-"no painel."
+"Cada grupo seu tem uma sala de voz. Entre e converse com quem estiver lá — o "
+"som vai direto entre vocês, pela rede."
+
+msgid "You're not in any group yet. Create one in Groups."
+msgstr "Você ainda não está em nenhum grupo. Crie um em Grupos."
+
+msgid "People in the room"
+msgstr "Pessoas na sala"
+
+msgid "Everyone"
+msgstr "Todos"
+
+msgid "Who's speaking"
+msgstr "Quem fala"
+
+msgid "Mute"
+msgstr "Silenciar"
+
+msgid "Mute your microphone for everyone"
+msgstr "Silenciar seu microfone para todos"
+
+msgid "Which camera"
+msgstr "Qual câmara"
+
+msgid "Include the computer's sound when sharing the screen"
+msgstr "Incluir o som do computador ao partilhar o ecrã"
 
 msgid ""
-"This device can't send invites (it isn't linked to a person's account)."
+"Videos and music playing here go to the room too; the room's voices don't "
+"(no echo)"
 msgstr ""
-"Este dispositivo não pode enviar convites (ele não está ligado à conta de "
-"uma pessoa)."
+"Vídeos e músicas a tocar aqui vão também para a sala; as vozes da sala não "
+"(sem eco)"
 
-msgid ""
-"On this network everyone can reach everyone, so only the administrator can "
-"invite people."
-msgstr ""
-"Nesta rede todos acessam todos, por isso só o administrador pode convidar "
-"pessoas."
-
-msgid "You have too many pending invites. Cancel some or try again tomorrow."
-msgstr ""
-"Você tem convites pendentes demais. Cancele alguns ou tente de novo amanhã."
-
-msgid ""
-"On this network only administrators invite new people. You can still invite "
-"people already on the network into your groups."
-msgstr ""
-"Nesta rede só os administradores convidam pessoas novas. Ainda pode chamar "
-"para os seus grupos quem já está na rede."
-
-msgid "Waiting to be used"
-msgstr "Aguardando uso"
-
-msgid "Used"
-msgstr "Usado"
-
-msgid "Expired"
-msgstr "Expirado"
-
-msgid "Cancelled"
-msgstr "Cancelado"
-
-msgid "Waiting for an administrator's approval"
-msgstr "Aguardando aprovação de um administrador"
-
-msgid "Bring someone to your network"
-msgstr "Traga alguém para a sua rede"
-
-msgid ""
-"Create a link or QR code and send it to the person. When they join, you two "
-"can reach each other's devices — no administrator needed. The link works "
-"once and stays valid until it's used or you cancel it."
-msgstr ""
-"Crie um link ou QR code e envie para a pessoa. Quando ela entrar, vocês dois"
-" acessam os dispositivos um do outro — sem precisar de administrador. O link"
-" funciona uma vez e vale até ser usado ou você cancelar."
-
-msgid "No invites yet"
-msgstr "Nenhum convite ainda"
-
-msgid "Invites unavailable"
-msgstr "Convites indisponíveis"
+msgid "Rooms unavailable"
+msgstr "Salas indisponíveis"
 
 #, rust-format
-msgid "{user} joined"
-msgstr "{user} entrou"
+msgid "Could not turn on the camera: {error}"
+msgstr "Não foi possível ligar a câmara: {error}"
 
 #, rust-format
-msgid "group {group}"
-msgstr "grupo {group}"
+msgid "Could not share the screen: {error}"
+msgstr "Não foi possível partilhar o ecrã: {error}"
 
-msgid "Cancel this invite: the link stops working"
-msgstr "Cancelar este convite: o link para de funcionar"
-
-msgid "The person you invite will reach your devices, and you theirs."
-msgstr "A pessoa convidada vai acessar seus dispositivos, e você os dela."
-
-msgid "Who is it for? (optional)"
-msgstr "Para quem é? (opcional)"
-
-msgid "Access"
-msgstr "Acesso"
-
-msgid "Just the two of us"
-msgstr "Só nós dois"
-
-msgid "You see each other's devices, nobody else"
-msgstr "Veem os dispositivos um do outro, e mais ninguém"
+msgid "Nobody here right now"
+msgstr "Ninguém na sala agora"
 
 #, rust-format
-msgid "Also the group {group}"
-msgstr "Também o grupo {group}"
+msgid "In the room: {people}"
+msgstr "Na sala: {people}"
 
-msgid "They join the group and see everyone in it"
-msgstr "A pessoa entra no grupo e vê todos que estão nele"
+#, rust-format
+msgid "Join the room {group}"
+msgstr "Entrar na sala {group}"
 
-msgid "A network of their own"
-msgstr "Uma rede só dela"
+#, rust-format
+msgid "Could not join {group}: {error}"
+msgstr "Não foi possível entrar em {group}: {error}"
+
+msgid "📺 You're showing your screen to the room"
+msgstr "📺 Está a mostrar o seu ecrã à sala"
+
+msgid "📺 You're showing your screen · 1 person watching"
+msgstr "📺 Está a mostrar o seu ecrã · 1 pessoa a ver"
+
+#, rust-format
+msgid "📺 You're showing your screen · {count} people watching"
+msgstr "📺 Está a mostrar o seu ecrã · {count} pessoas a ver"
+
+#, rust-format
+msgid "Room {group}"
+msgstr "Sala {group}"
+
+#, rust-format
+msgid "{people} · {talking} talking"
+msgstr "{people} · {talking} a falar"
+
+msgid "connecting…"
+msgstr "a ligar…"
+
+msgid "muted"
+msgstr "silenciado"
+
+msgid "talking"
+msgstr "a falar"
+
+msgid "quiet"
+msgstr "em silêncio"
+
+msgid "Sharing screen"
+msgstr "A partilhar o ecrã"
+
+msgid "In control"
+msgstr "No controlo"
+
+msgid "Controls your screen now"
+msgstr "Está a controlar o seu ecrã agora"
+
+msgid "Watching"
+msgstr "A ver"
+
+msgid "Watching your screen"
+msgstr "A ver o seu ecrã"
+
+#, rust-format
+msgid "{user} is showing their screen"
+msgstr "{user} está a mostrar o ecrã"
+
+msgid "Watch"
+msgstr "Ver"
+
+#, rust-format
+msgid "{user} asks to control your screen"
+msgstr "{user} pede para controlar o seu ecrã"
 
 msgid ""
-"No link to you: they see only their own devices and whoever they invite "
-"(you're the administrator)"
+"They'll be able to use your mouse and keyboard. You can take control back at "
+"any time."
 msgstr ""
-"Sem ligação consigo: a pessoa vê só os próprios dispositivos e quem convidar"
-" (é o administrador)"
+"A pessoa poderá usar o seu rato e teclado. Pode retomar o controlo a "
+"qualquer momento."
 
-msgid "Create invite"
-msgstr "Criar convite"
+msgid "Deny"
+msgstr "Recusar"
 
-msgid "QR code of the invite link"
-msgstr "QR code do link de convite"
+msgid "Allow"
+msgstr "Permitir"
 
-msgid ""
-"Send the link or let the person scan the code with their phone. It works "
-"once and stays valid until used or cancelled."
-msgstr ""
-"Envie o link ou peça para a pessoa ler o código com o celular. Funciona uma "
-"vez e vale até ser usado ou cancelado."
+msgid "Turn off camera"
+msgstr "Desligar câmara"
 
-msgid "Copy link"
-msgstr "Copiar link"
+msgid "Turn on camera"
+msgstr "Ligar câmara"
 
-msgid "Done"
-msgstr "Concluído"
+msgid "No camera found on this computer"
+msgstr "Nenhuma câmara encontrada neste computador"
 
-msgid "Copied!"
-msgstr "Copiado!"
+msgid "Stop sharing"
+msgstr "Parar de partilhar"
 
-msgid ""
-"This network asks an administrator to approve each invite: the link starts "
-"working once they do. Its status shows in Invites."
-msgstr ""
-"Nesta rede um administrador aprova cada convite: o link passa a funcionar "
-"quando ele aprovar. A situação aparece em Convites."
+msgid "Share screen"
+msgstr "Partilhar ecrã"
+
+msgid "Stop showing your screen to the room"
+msgstr "Parar de mostrar o seu ecrã à sala"
+
+msgid "Show your screen to everyone in the room"
+msgstr "Mostrar o seu ecrã a todos na sala"
+
+msgid "Take back control"
+msgstr "Retomar controlo"
+
+msgid "Give control"
+msgstr "Dar controlo"
+
+msgid "Stop them from using your mouse and keyboard"
+msgstr "Impedir que a pessoa use o seu rato e teclado"
+
+msgid "Let them use your mouse and keyboard"
+msgstr "Deixar a pessoa usar o seu rato e teclado"
+
+msgid "Sound level"
+msgstr "Nível do som"
+
+msgid "Unmute"
+msgstr "Ativar microfone"
 
 msgid "System accent"
 msgstr "Cor do sistema"
@@ -1707,42 +1489,11 @@ msgstr "Imagem…"
 msgid "Choose a background picture"
 msgstr "Escolha uma imagem de fundo"
 
-msgid "Message"
-msgstr "Mensagem"
-
-msgid "Bold"
-msgstr "Negrito"
-
-msgid "Italic"
-msgstr "Itálico"
-
-msgid "Underline"
-msgstr "Sublinhado"
-
-msgid "Strikethrough"
-msgstr "Riscado"
-
-msgid "Monospace"
-msgstr "Monoespaçado"
-
-msgid "Create link"
-msgstr "Criar ligação"
-
-msgid "Plain text"
-msgstr "Texto simples"
-
-msgid "Formatting"
-msgstr "Formatação"
-
-msgid "Create"
-msgstr "Criar"
-
 msgid "Mesh VPN client for BigScale/Headscale."
 msgstr "Cliente VPN Mesh para BigScale/Headscale."
 
 msgid "Done. You will no longer need a password to connect or disconnect."
-msgstr ""
-"Pronto. Você não precisará mais de senha para conectar ou desconectar."
+msgstr "Pronto. Você não precisará mais de senha para conectar ou desconectar."
 
 #, rust-format
 msgid "Failed: {error}"
@@ -1771,11 +1522,15 @@ msgstr "Sair da rede?"
 
 #, rust-format
 msgid ""
-"This device leaves the network and its name becomes free. Your account {user} is kept: you can come back later from this computer, without an invite.\n"
+"This device leaves the network and its name becomes free. Your account "
+"{user} is kept: you can come back later from this computer, without an "
+"invite.\n"
 "\n"
-"If you won't come back, delete the account and the name {user} becomes free too."
+"If you won't come back, delete the account and the name {user} becomes free "
+"too."
 msgstr ""
-"Este dispositivo sai da rede e o nome dele fica livre. Sua conta {user} continua: você pode voltar depois por este computador, sem convite.\n"
+"Este dispositivo sai da rede e o nome dele fica livre. Sua conta {user} "
+"continua: você pode voltar depois por este computador, sem convite.\n"
 "\n"
 "Se não for voltar, apague a conta e o nome {user} também fica livre."
 
@@ -1792,8 +1547,8 @@ msgstr "A terminar sessão…"
 msgid ""
 "Signed out. Your account was kept: {count} other device(s) still use it."
 msgstr ""
-"Sessão terminada. A conta foi mantida: {count} outro(s) dispositivo(s) ainda"
-" a usam."
+"Sessão terminada. A conta foi mantida: {count} outro(s) dispositivo(s) ainda "
+"a usam."
 
 msgid ""
 "Couldn't delete the account: the panel can't be reached. Connect and try "
@@ -1815,11 +1570,15 @@ msgstr "Não foi possível falar com o servidor"
 msgid ""
 "The control server didn't confirm the sign-out: {error}\n"
 "\n"
-"You can still sign out on this computer: BigLace forgets the saved key and account and disconnects. The server keeps listing this device until an administrator removes it."
+"You can still sign out on this computer: BigLace forgets the saved key and "
+"account and disconnects. The server keeps listing this device until an "
+"administrator removes it."
 msgstr ""
 "O servidor de controle não confirmou a saída: {error}\n"
 "\n"
-"Você ainda pode sair neste computador: o BigLace esquece a chave e a conta salvas e desconecta. O servidor continua listando este dispositivo até um administrador removê-lo."
+"Você ainda pode sair neste computador: o BigLace esquece a chave e a conta "
+"salvas e desconecta. O servidor continua listando este dispositivo até um "
+"administrador removê-lo."
 
 msgid "Sign out on this computer"
 msgstr "Sair neste computador"
@@ -1843,8 +1602,8 @@ msgid "Panel URL"
 msgstr "URL do painel"
 
 msgid ""
-"Address of your BigScale panel (e.g. panel.example.org). The https:// scheme"
-" is added automatically if you omit it."
+"Address of your BigScale panel (e.g. panel.example.org). The https:// scheme "
+"is added automatically if you omit it."
 msgstr ""
 "Endereço do seu painel BigScale (ex.: painel.exemplo.org). O esquema "
 "https:// é adicionado automaticamente se você omiti-lo."
@@ -1868,8 +1627,8 @@ msgstr ""
 "Keychain no macOS, Gerenciador de Credenciais no Windows)."
 
 msgid ""
-"The name this device shows to other peers on the VPN — this is the Tailscale"
-" hostname, NOT your computer's name and NOT your user. Lowercase letters, "
+"The name this device shows to other peers on the VPN — this is the Tailscale "
+"hostname, NOT your computer's name and NOT your user. Lowercase letters, "
 "digits and hyphens. Example: 'tales-laptop', 'francois', 'office-pc'. Pick "
 "something other peers will recognise."
 msgstr ""
@@ -1928,13 +1687,13 @@ msgid ""
 "\"{name}\". If the account is yours, sign in again from the computer where "
 "you used it, or ask the administrator to free the name."
 msgstr ""
-"Esse nome já pertence a uma conta nesta rede, por isso sugerimos \"{name}\"."
-" Se a conta é sua, entre de novo pelo computador onde você a usava, ou peça "
+"Esse nome já pertence a uma conta nesta rede, por isso sugerimos \"{name}\". "
+"Se a conta é sua, entre de novo pelo computador onde você a usava, ou peça "
 "ao administrador para liberar o nome."
 
 msgid ""
-"That name already belongs to an account on this network. Try another one, or"
-" ask the administrator to free it."
+"That name already belongs to an account on this network. Try another one, or "
+"ask the administrator to free it."
 msgstr ""
 "Esse nome já pertence a uma conta nesta rede. Tente outro, ou peça ao "
 "administrador para liberá-lo."
@@ -1979,8 +1738,7 @@ msgstr "Seu nome"
 
 msgid "How others will see you on the network, e.g. 'Maria' or 'Office PC'."
 msgstr ""
-"Como os outros verão você na rede, por exemplo 'Maria' ou 'PC do "
-"escritório'."
+"Como os outros verão você na rede, por exemplo 'Maria' ou 'PC do escritório'."
 
 msgid ""
 "The name this device shows to other peers. Lowercase letters, digits and "
@@ -1996,8 +1754,8 @@ msgid "Joining…"
 msgstr "Entrando…"
 
 msgid ""
-"That doesn't look like an invite link. It starts with https:// and contains "
-"/join#."
+"That doesn't look like an invite link. It starts with https:// and contains /"
+"join#."
 msgstr ""
 "Isso não parece um link de convite. Ele começa com https:// e contém /join#."
 
@@ -2012,6 +1770,36 @@ msgstr "Bem-vindo(a), {name}! Você entrou no grupo {group}. Conectando…"
 msgid "Welcome, {name}! Connecting…"
 msgstr "Bem-vindo(a), {name}! Conectando…"
 
+msgid "Message"
+msgstr "Mensagem"
+
+msgid "Bold"
+msgstr "Negrito"
+
+msgid "Italic"
+msgstr "Itálico"
+
+msgid "Underline"
+msgstr "Sublinhado"
+
+msgid "Strikethrough"
+msgstr "Riscado"
+
+msgid "Monospace"
+msgstr "Monoespaçado"
+
+msgid "Create link"
+msgstr "Criar ligação"
+
+msgid "Plain text"
+msgstr "Texto simples"
+
+msgid "Formatting"
+msgstr "Formatação"
+
+msgid "Create"
+msgstr "Criar"
+
 msgid "End access"
 msgstr "Encerrar acesso"
 
@@ -2024,8 +1812,8 @@ msgstr "Acesso remoto iniciado"
 
 #, rust-format
 msgid ""
-"{user} ({device}) is seeing and controlling this screen. Open BigLace to end"
-" the access."
+"{user} ({device}) is seeing and controlling this screen. Open BigLace to end "
+"the access."
 msgstr ""
 "{user} ({device}) está a ver e a controlar este ecrã. Abra o BigLace para "
 "terminar o acesso."
@@ -2075,11 +1863,11 @@ msgid "Restart {name}'s computer?"
 msgstr "Reiniciar o computador de {name}?"
 
 msgid ""
-"It restarts, signs in by itself and locks the screen right away; this window"
-" connects again when it's back. Unsaved work there is lost."
+"It restarts, signs in by itself and locks the screen right away; this window "
+"connects again when it's back. Unsaved work there is lost."
 msgstr ""
-"Ele reinicia, entra sozinho e bloqueia o ecrã de imediato; esta janela volta"
-" a ligar-se quando ele voltar. O que não estiver guardado lá será perdido."
+"Ele reinicia, entra sozinho e bloqueia o ecrã de imediato; esta janela volta "
+"a ligar-se quando ele voltar. O que não estiver guardado lá será perdido."
 
 msgid "Restart"
 msgstr "Reiniciar"
@@ -2108,8 +1896,8 @@ msgid ""
 "You won't be able to reach it again until someone turns it on. Unsaved work "
 "there is lost."
 msgstr ""
-"Só voltará a aceder-lhe quando alguém o ligar. O que não estiver guardado lá"
-" será perdido."
+"Só voltará a aceder-lhe quando alguém o ligar. O que não estiver guardado lá "
+"será perdido."
 
 msgid "Shut Down"
 msgstr "Desligar"
@@ -2181,8 +1969,8 @@ msgid "{name} didn't allow the access."
 msgstr "{name} não permitiu o acesso."
 
 msgid ""
-"That computer couldn't confirm this device. Make sure both run an up-to-date"
-" BigLace."
+"That computer couldn't confirm this device. Make sure both run an up-to-date "
+"BigLace."
 msgstr ""
 "Aquele computador não conseguiu confirmar este dispositivo. Verifique se os "
 "dois estão com o BigLace atualizado."
@@ -2256,6 +2044,36 @@ msgstr "O acesso ao ecrã de {name} terminou: {error}"
 msgid "Give back control"
 msgstr "Devolver controlo"
 
+msgid "Connected · 1 peer"
+msgstr "Conectado · 1 peer"
+
+#, rust-format
+msgid "Connected · {n} peers"
+msgstr "Conectado · {n} peers"
+
+#, rust-format
+msgid "In the room {group} · muted"
+msgstr "Na sala {group} · silenciado"
+
+#, rust-format
+msgid "In the room {group}"
+msgstr "Na sala {group}"
+
+msgid "Show BigLace"
+msgstr "Mostrar BigLace"
+
+msgid "Unmute (Ctrl+Alt+M)"
+msgstr "Ativar microfone (Ctrl+Alt+M)"
+
+msgid "Mute (Ctrl+Alt+M)"
+msgstr "Silenciar (Ctrl+Alt+M)"
+
+msgid "Leave the room"
+msgstr "Sair da sala"
+
+msgid "Quit"
+msgstr "Sair"
+
 msgid "direct"
 msgstr "direta"
 
@@ -2291,6 +2109,9 @@ msgstr "Fixado ao topo"
 
 msgid "Unpinned"
 msgstr "Desafixado"
+
+msgid "Copy IP address"
+msgstr "Copiar endereço IP"
 
 msgid "Open files (SFTP)"
 msgstr "Abrir ficheiros (SFTP)"
@@ -2339,6 +2160,202 @@ msgstr "Falha ao atualizar o nó de saída"
 
 msgid "Copy"
 msgstr "Copiar"
+
+msgid "Search devices"
+msgstr "Procurar dispositivos"
+
+msgid "Invite someone to your network"
+msgstr "Convide alguém para a sua rede"
+
+msgid ""
+"Tailscale cannot write this device's DNS settings, so it can no longer keep "
+"peer names working. They may still resolve for now, from the configuration "
+"left over from before the failure, but that will break the next time the "
+"network changes — and BigLace will fall back to IP addresses. On most "
+"distributions `sudo resolvconf -u` repairs it."
+msgstr ""
+"O Tailscale não consegue escrever as definições de DNS deste dispositivo, "
+"pelo que já não consegue manter os nomes dos pares a funcionar. Ainda podem "
+"resolver por agora, com a configuração que ficou de antes da falha, mas isso "
+"vai deixar de funcionar na próxima alteração de rede — e o BigLace passa a "
+"usar endereços IP. Na maioria das distribuições, `sudo resolvconf -u` "
+"resolve."
+
+msgid "Not connected"
+msgstr "Não ligado"
+
+msgid "Press Connect on the left to join the network."
+msgstr "Carregue em Ligar à esquerda para entrar na rede."
+
+msgid "The tailscale service is not running"
+msgstr "O serviço tailscale não está em execução"
+
+msgid "BigLace needs the tailscaled background service to manage the network."
+msgstr "O BigLace precisa do serviço tailscaled para gerir a rede."
+
+msgid "Start service"
+msgstr "Iniciar serviço"
+
+msgid "Join the network"
+msgstr "Entrar na rede"
+
+msgid "Choose how you're going to sign in."
+msgstr "Escolha como vai entrar."
+
+msgid "Ways to sign in"
+msgstr "Formas de entrar"
+
+msgid "Your account was kept on this computer. No invite needed."
+msgstr "Sua conta ficou guardada neste computador. Não precisa de convite."
+
+msgid "I have an invite"
+msgstr "Tenho um convite"
+
+msgid "Someone on the network sent you a link or a QR code."
+msgstr "Alguém da rede enviou-lhe uma ligação ou um código QR."
+
+msgid "I have an access key"
+msgstr "Tenho uma chave de acesso"
+
+msgid "A key the administrator created for you (starts with hskey-auth-)."
+msgstr "Uma chave que o administrador criou para si (começa com hskey-auth-)."
+
+msgid "I'm the administrator"
+msgstr "Sou o administrador"
+
+msgid "Sign in with the BigScale panel's admin username and password."
+msgstr "Entre com o usuário e a senha de administrador do painel BigScale."
+
+msgid "This device"
+msgstr "Este dispositivo"
+
+msgid "Devices on the network"
+msgstr "Dispositivos na rede"
+
+msgid "No other devices on the network yet."
+msgstr "Ainda não há outros dispositivos na rede."
+
+msgid "you are not in a room"
+msgstr "não está numa sala"
+
+msgid "screen sharing isn't available on this computer"
+msgstr "a partilha de ecrã não está disponível neste computador"
+
+#, rust-format
+msgid "The computer's sound can't be shared: {error}"
+msgstr "Não foi possível partilhar o som do computador: {error}"
+
+#, rust-format
+msgid "The screen share stopped: {error}"
+msgstr "A partilha de ecrã parou: {error}"
+
+msgid "This computer"
+msgstr "Este computador"
+
+msgid "Who may use this computer remotely"
+msgstr "Quem pode usar este computador à distância"
+
+msgid ""
+"Anyone you're connected to can ask to see and control this screen. Choose "
+"who is let in without asking, and who is never let in."
+msgstr ""
+"Quem tem ligação consigo pode pedir para ver e controlar este ecrã. Escolha "
+"quem entra sem perguntar e quem nunca entra."
+
+msgid "History of accesses"
+msgstr "Histórico de acessos"
+
+msgid "Kept on this computer only."
+msgstr "Guardado apenas neste computador."
+
+msgid "Clear"
+msgstr "Limpar"
+
+msgid "Nobody has asked yet."
+msgstr "Ninguém pediu acesso ainda."
+
+msgid "When someone asks, you can choose to always let them in."
+msgstr "Quando alguém pedir, pode escolher deixar sempre."
+
+msgid "Ask every time"
+msgstr "Perguntar sempre"
+
+msgid "Always allow"
+msgstr "Permitir sempre"
+
+msgid "Never allow"
+msgstr "Nunca permitir"
+
+msgid "No accesses yet."
+msgstr "Nenhum acesso ainda."
+
+msgid "Remote access"
+msgstr "Acesso remoto"
+
+msgid "Watched the screen shared with the room"
+msgstr "Viu o ecrã partilhado na sala"
+
+msgid "Got control of the shared screen"
+msgstr "Recebeu o controlo do ecrã partilhado"
+
+msgid "Restarted the computer"
+msgstr "Reiniciou o computador"
+
+msgid "Restarted the session"
+msgstr "Reiniciou a sessão"
+
+msgid "Shut down the computer"
+msgstr "Desligou o computador"
+
+msgid "allowed"
+msgstr "permitido"
+
+msgid "allowed (always)"
+msgstr "permitido (sempre)"
+
+msgid "came back after a restart"
+msgstr "voltou depois de reiniciar"
+
+msgid "denied"
+msgstr "recusado"
+
+msgid "blocked (never allowed)"
+msgstr "bloqueado (nunca permitir)"
+
+msgid "ended"
+msgstr "terminado"
+
+#, rust-format
+msgid "{user} ({device})"
+msgstr "{user} ({device})"
+
+#, rust-format
+msgid "{done} of {total}"
+msgstr "{done} de {total}"
+
+msgid "Play"
+msgstr "Reproduzir"
+
+msgid "Download"
+msgstr "Transferir"
+
+msgid "Open"
+msgstr "Abrir"
+
+msgid "Show in folder"
+msgstr "Mostrar na pasta"
+
+msgid "Pause"
+msgstr "Pausar"
+
+msgid "Photo"
+msgstr "Fotografia"
+
+msgid "Video"
+msgstr "Vídeo"
+
+msgid "Voice message"
+msgstr "Mensagem de voz"
 
 msgid "Smileys & people"
 msgstr "Emojis e pessoas"
@@ -2394,12 +2411,12 @@ msgstr "esse nome de ficheiro não pode ser enviado"
 #, rust-format
 msgid "{user}'s computer is off or offline — try again when it's back"
 msgstr ""
-"o computador de {user} está desligado ou fora da rede — tente de novo quando"
-" voltar"
+"o computador de {user} está desligado ou fora da rede — tente de novo quando "
+"voltar"
 
 msgid ""
-"the file arrived different from the original (damaged on the way) — download"
-" it again"
+"the file arrived different from the original (damaged on the way) — download "
+"it again"
 msgstr ""
 "o ficheiro chegou diferente do original (danificado pelo caminho) — "
 "transfira de novo"
@@ -2413,8 +2430,7 @@ msgstr "o ficheiro não está disponível"
 
 msgid "the transfer was interrupted — try again to resume it"
 msgstr ""
-"a transferência foi interrompida — tente de novo para continuar de onde "
-"parou"
+"a transferência foi interrompida — tente de novo para continuar de onde parou"
 
 msgid "message too long"
 msgstr "mensagem demasiado longa"
@@ -2446,8 +2462,7 @@ msgstr "📌 (desafixou a mensagem)"
 msgid "nothing was recorded — is a microphone connected?"
 msgstr "nada foi gravado — há um microfone ligado?"
 
-msgid ""
-"this computer can't restart remotely (BigLace's helper isn't installed)"
+msgid "this computer can't restart remotely (BigLace's helper isn't installed)"
 msgstr ""
 "este computador não pode ser reiniciado à distância (o ajudante do BigLace "
 "não está instalado)"
@@ -2481,22 +2496,8 @@ msgstr ""
 msgid "access to the camera was refused"
 msgstr "o acesso à câmara foi recusado"
 
-msgid "you are not in a room"
-msgstr "não está numa sala"
-
 msgid "Mute or unmute the microphone in a BigLace room"
 msgstr "Silenciar ou ativar o microfone numa sala do BigLace"
-
-msgid "screen sharing isn't available on this computer"
-msgstr "a partilha de ecrã não está disponível neste computador"
-
-#, rust-format
-msgid "The computer's sound can't be shared: {error}"
-msgstr "Não foi possível partilhar o som do computador: {error}"
-
-#, rust-format
-msgid "The screen share stopped: {error}"
-msgstr "A partilha de ecrã parou: {error}"
 
 msgid "BigLace doesn't know that computer's network card yet"
 msgstr "o BigLace ainda não conhece a placa de rede desse computador"
@@ -2506,6 +2507,12 @@ msgstr "este computador"
 
 msgid "no computer on its network is on to send the signal"
 msgstr "nenhum computador da rede dele está ligado para enviar o sinal"
+
+msgid "Open with another app"
+msgstr "Abrir com outra aplicação"
+
+msgid "Close"
+msgstr "Fechar"
 
 #~ msgid "Panel credentials"
 #~ msgstr "Credenciais do painel"
@@ -2529,8 +2536,8 @@ msgstr "nenhum computador da rede dele está ligado para enviar o sinal"
 #~ "will be created on the network automatically — no manual key needed."
 #~ msgstr ""
 #~ "Inicie sessão com o seu nome de utilizador e palavra-passe do painel "
-#~ "BigScale. Uma identidade de dispositivo será criada automaticamente na rede "
-#~ "— não é necessária nenhuma chave manual."
+#~ "BigScale. Uma identidade de dispositivo será criada automaticamente na "
+#~ "rede — não é necessária nenhuma chave manual."
 
 #~ msgid "Connected ·"
 #~ msgstr "Conectado ·"
@@ -2601,8 +2608,8 @@ msgstr "nenhum computador da rede dele está ligado para enviar o sinal"
 #~ msgstr "Sua identidade na rede"
 
 #~ msgid ""
-#~ "Personal key generated for you in the BigScale panel (\"New key\" in Users)."
-#~ " Each person uses their own — this is not the server's key."
+#~ "Personal key generated for you in the BigScale panel (\"New key\" in "
+#~ "Users). Each person uses their own — this is not the server's key."
 #~ msgstr ""
 #~ "Chave pessoal gerada para você no painel do BigScale (\"Nova chave\" em "
 #~ "Usuários). Cada pessoa usa a sua própria — esta não é a chave do servidor."
@@ -2641,12 +2648,12 @@ msgstr "nenhum computador da rede dele está ligado para enviar o sinal"
 #~ "Got an invite link? Use it to join the network. Admins can sign in with "
 #~ "their panel account."
 #~ msgstr ""
-#~ "Recebeu um link de convite? Use-o para entrar na rede. Administradores podem"
-#~ " entrar com a conta do painel."
+#~ "Recebeu um link de convite? Use-o para entrar na rede. Administradores "
+#~ "podem entrar com a conta do painel."
 
 #~ msgid ""
-#~ "The person you invite will reach your devices, and you theirs. You can also "
-#~ "add them to one of your groups."
+#~ "The person you invite will reach your devices, and you theirs. You can "
+#~ "also add them to one of your groups."
 #~ msgstr ""
 #~ "A pessoa convidada vai acessar seus dispositivos, e você os dela. Você "
 #~ "também pode colocá-la em um dos seus grupos."
@@ -2660,11 +2667,13 @@ msgstr "nenhum computador da rede dele está ligado para enviar o sinal"
 #~ msgid ""
 #~ "{user} (device {device}) wants to see and control this screen.\n"
 #~ "\n"
-#~ "Only allow it if you know this person and expect it. You can end the access at any time."
+#~ "Only allow it if you know this person and expect it. You can end the "
+#~ "access at any time."
 #~ msgstr ""
 #~ "{user} (dispositivo {device}) quer ver e controlar este ecrã.\n"
 #~ "\n"
-#~ "Só permita se conhece esta pessoa e está à espera disso. Pode terminar o acesso a qualquer momento."
+#~ "Só permita se conhece esta pessoa e está à espera disso. Pode terminar o "
+#~ "acesso a qualquer momento."
 
 #~ msgid "{user} ({device}) is seeing and controlling this screen."
 #~ msgstr "{user} ({device}) está a ver e a controlar este ecrã."

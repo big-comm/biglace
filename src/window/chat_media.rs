@@ -192,8 +192,9 @@ fn media(
     let (conv, id, file) = (conv.clone(), m.id.clone(), local.map(std::path::Path::to_path_buf));
     let act = {
         let frame = frame.clone();
+        // Pictures and videos open full screen right here (like Telegram).
         move || match &file {
-            Some(p) => open(&frame, p),
+            Some(p) => super::media_viewer::show(&frame, p, video),
             None => files::download(&conv, &id),
         }
     };

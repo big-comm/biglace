@@ -175,8 +175,8 @@ msgid "Account"
 msgstr "Konto"
 
 msgid ""
-"Signing out removes this device's identity from BigLace. You will need a new"
-" invite or key to join again."
+"Signing out removes this device's identity from BigLace. You will need a new "
+"invite or key to join again."
 msgstr ""
 "Utloggning tar bort den här enhetens identitet från BigLace. Du behöver en "
 "ny inbjudan eller nyckel för att gå med igen."
@@ -209,8 +209,7 @@ msgid "Connect to the network first, then open the invite link again."
 msgstr "Anslut till nätverket först och öppna sedan inbjudningslänken igen."
 
 #, rust-format
-msgid ""
-"This invite is for another network ({host}). Sign out first to join it."
+msgid "This invite is for another network ({host}). Sign out first to join it."
 msgstr ""
 "Den här inbjudan gäller ett annat nätverk ({host}). Logga ut först för att "
 "gå med i det."
@@ -233,8 +232,8 @@ msgid "Could not open the browser: {error}"
 msgstr "Kunde inte öppna webbläsaren: {error}"
 
 msgid ""
-"You can't open the admin panel: you're not an administrator of this network,"
-" or the panel can't be reached."
+"You can't open the admin panel: you're not an administrator of this network, "
+"or the panel can't be reached."
 msgstr ""
 "Du kan inte öppna administratörspanelen: du är inte administratör för det "
 "här nätverket, eller så går panelen inte att nå."
@@ -261,8 +260,8 @@ msgid ""
 "register it anew."
 msgstr ""
 "Sparat, men förautentiseringsnyckeln kunde inte lagras i systemets "
-"nyckelring ({error}). Enheten kan ändå återansluta; nyckeln behövs bara igen"
-" för att registrera den på nytt."
+"nyckelring ({error}). Enheten kan ändå återansluta; nyckeln behövs bara igen "
+"för att registrera den på nytt."
 
 msgid "Connected"
 msgstr "Ansluten"
@@ -334,125 +333,177 @@ msgstr "{count} enheter gick offline"
 msgid "{on_count} online · {off_count} offline"
 msgstr "{on_count} online · {off_count} offline"
 
-msgid "Connected · 1 peer"
-msgstr "Ansluten · 1 anslutning"
+msgid ""
+"Invites from BigLace need a BigScale server that supports them. Ask your "
+"administrator to update the server, or to create the invite in the panel."
+msgstr ""
+"Inbjudningar från BigLace kräver en BigScale-server som stöder dem. Be din "
+"administratör att uppdatera servern eller att skapa inbjudan i panelen."
+
+msgid "This device can't send invites (it isn't linked to a person's account)."
+msgstr ""
+"Den här enheten kan inte skicka inbjudningar (den är inte kopplad till en "
+"persons konto)."
+
+msgid ""
+"The panel knows this device by a different key (BigLace was reinstalled?). "
+"Leave the network and join again to fix it."
+msgstr ""
+"Panelen känner till den här enheten med en annan nyckel (har BigLace "
+"installerats om?). Lämna nätverket och gå med igen för att åtgärda det."
+
+msgid ""
+"The panel couldn't confirm this device. Make sure BigLace is up to date and "
+"stays open while connected, then try again."
+msgstr ""
+"Panelen kunde inte bekräfta den här enheten. Se till att BigLace är "
+"uppdaterat och förblir öppet medan du är ansluten, och försök sedan igen."
+
+msgid "You are no longer in that group."
+msgstr "Du är inte längre med i den gruppen."
+
+msgid ""
+"On this network everyone can reach everyone, so only the administrator can "
+"invite people."
+msgstr ""
+"I det här nätverket kan alla nå alla, så endast administratören kan bjuda in "
+"personer."
+
+msgid "You have too many pending invites. Cancel some or try again tomorrow."
+msgstr ""
+"Du har för många väntande inbjudningar. Avbryt några eller försök igen i "
+"morgon."
+
+msgid ""
+"On this network only administrators invite new people. You can still invite "
+"people already on the network into your groups."
+msgstr ""
+"I det här nätverket bjuder endast administratörer in nya personer. Du kan "
+"fortfarande bjuda in personer som redan finns i nätverket till dina grupper."
 
 #, rust-format
-msgid "Connected · {n} peers"
-msgstr "Ansluten · {n} anslutningar"
+msgid "Could not reach the panel: {error}"
+msgstr "Kunde inte nå panelen: {error}"
 
-#, rust-format
-msgid "In the room {group} · muted"
-msgstr "I rummet {group} · ljud av"
+msgid "Waiting to be used"
+msgstr "Väntar på att användas"
 
-#, rust-format
-msgid "In the room {group}"
-msgstr "I rummet {group}"
+msgid "Used"
+msgstr "Använd"
 
-msgid "Show BigLace"
-msgstr "Visa BigLace"
+msgid "Expired"
+msgstr "Utgången"
 
-#, rust-format
-msgid "Room {group}"
-msgstr "Rum {group}"
+msgid "Cancelled"
+msgstr "Avbruten"
 
-msgid "Unmute (Ctrl+Alt+M)"
-msgstr "Slå på ljud (Ctrl+Alt+M)"
-
-msgid "Mute (Ctrl+Alt+M)"
-msgstr "Stäng av ljud (Ctrl+Alt+M)"
-
-msgid "Leave the room"
-msgstr "Lämna rummet"
-
-msgid "Quit"
-msgstr "Avsluta"
-
-msgid "Main menu"
-msgstr "Huvudmeny"
-
-msgid "Search devices"
-msgstr "Sök enheter"
+msgid "Waiting for an administrator's approval"
+msgstr "Väntar på en administratörs godkännande"
 
 msgid "Refresh"
 msgstr "Uppdatera"
 
+msgid "Main menu"
+msgstr "Huvudmeny"
+
+msgid "Bring someone to your network"
+msgstr "Ta med någon till ditt nätverk"
+
+msgid ""
+"Create a link or QR code and send it to the person. When they join, you two "
+"can reach each other's devices — no administrator needed. The link works "
+"once and stays valid until it's used or you cancel it."
+msgstr ""
+"Skapa en länk eller QR-kod och skicka den till personen. När hen går med kan "
+"ni nå varandras enheter — ingen administratör behövs. Länken fungerar en "
+"gång och är giltig tills den används eller du avbryter den."
+
+msgid "No invites yet"
+msgstr "Inga inbjudningar än"
+
+msgid "Invites unavailable"
+msgstr "Inbjudningar är inte tillgängliga"
+
+#, rust-format
+msgid "{user} joined"
+msgstr "{user} gick med"
+
 msgid "Invite"
 msgstr "Bjud in"
 
-msgid "Invite someone to your network"
-msgstr "Bjud in någon till ditt nätverk"
+#, rust-format
+msgid "group {group}"
+msgstr "gruppen {group}"
+
+msgid "Cancel this invite: the link stops working"
+msgstr "Avbryt den här inbjudan: länken slutar fungera"
+
+msgid "The person you invite will reach your devices, and you theirs."
+msgstr "Personen du bjuder in kommer att nå dina enheter, och du deras."
+
+msgid "Who is it for? (optional)"
+msgstr "Vem är den till? (valfritt)"
+
+msgid "Access"
+msgstr "Åtkomst"
+
+msgid "Just the two of us"
+msgstr "Bara vi två"
+
+msgid "You see each other's devices, nobody else"
+msgstr "Ni ser varandras enheter, ingen annan"
+
+#, rust-format
+msgid "Also the group {group}"
+msgstr "Även gruppen {group}"
+
+msgid "They join the group and see everyone in it"
+msgstr "De går med i gruppen och ser alla i den"
+
+msgid "A network of their own"
+msgstr "Ett eget nätverk"
 
 msgid ""
-"Tailscale cannot write this device's DNS settings, so it can no longer keep "
-"peer names working. They may still resolve for now, from the configuration "
-"left over from before the failure, but that will break the next time the "
-"network changes — and BigLace will fall back to IP addresses. On most "
-"distributions `sudo resolvconf -u` repairs it."
+"No link to you: they see only their own devices and whoever they invite "
+"(you're the administrator)"
 msgstr ""
-"Tailscale kan inte skriva den här enhetens DNS-inställningar och kan därför "
-"inte längre hålla peer-namnen fungerande. De kan fortfarande matchas ett "
-"tag, från konfigurationen som blev kvar från före felet, men det slutar "
-"fungera nästa gång nätverket ändras — och BigLace går då tillbaka till IP-"
-"adresser. På de flesta distributioner reparerar `sudo resolvconf -u` det."
+"Ingen koppling till dig: de ser bara sina egna enheter och dem de bjuder in "
+"(du är administratör)"
 
-msgid "Not connected"
-msgstr "Inte ansluten"
+msgid "Create invite"
+msgstr "Skapa inbjudan"
 
-msgid "Press Connect on the left to join the network."
-msgstr "Tryck på Anslut till vänster för att ansluta till nätverket."
+msgid "QR code of the invite link"
+msgstr "QR-kod för inbjudningslänken"
 
-msgid "The tailscale service is not running"
-msgstr "Tailscale-tjänsten körs inte"
-
-msgid "BigLace needs the tailscaled background service to manage the network."
+msgid ""
+"Send the link or let the person scan the code with their phone. It works "
+"once and stays valid until used or cancelled."
 msgstr ""
-"BigLace behöver bakgrundstjänsten tailscaled för att hantera nätverket."
+"Skicka länken eller låt personen skanna koden med sin telefon. Den fungerar "
+"en gång och är giltig tills den används eller avbryts."
 
-msgid "Start service"
-msgstr "Starta tjänst"
+msgid "Copy link"
+msgstr "Kopiera länk"
 
-msgid "Join the network"
-msgstr "Gå med i nätverket"
+msgid "Done"
+msgstr "Klar"
 
-msgid "Choose how you're going to sign in."
-msgstr "Välj hur du ska logga in."
+msgid "Copied!"
+msgstr "Kopierad!"
 
-msgid "Ways to sign in"
-msgstr "Sätt att logga in"
+msgid ""
+"This network asks an administrator to approve each invite: the link starts "
+"working once they do. Its status shows in Invites."
+msgstr ""
+"Det här nätverket kräver att en administratör godkänner varje inbjudan: "
+"länken börjar fungera när det har skett. Statusen visas under Inbjudningar."
 
-msgid "Your account was kept on this computer. No invite needed."
-msgstr "Ditt konto har sparats på den här datorn. Ingen inbjudan behövs."
+msgid "Show the full sidebar"
+msgstr "Visa hela sidofältet"
 
-msgid "I have an invite"
-msgstr "Jag har en inbjudan"
-
-msgid "Someone on the network sent you a link or a QR code."
-msgstr "Någon i nätverket har skickat en länk eller en QR-kod till dig."
-
-msgid "I have an access key"
-msgstr "Jag har en åtkomstnyckel"
-
-msgid "A key the administrator created for you (starts with hskey-auth-)."
-msgstr "En nyckel som administratören skapat åt dig (börjar med hskey-auth-)."
-
-msgid "I'm the administrator"
-msgstr "Jag är administratör"
-
-msgid "Sign in with the BigScale panel's admin username and password."
-msgstr "Logga in med BigScale-panelens administratörsnamn och lösenord."
-
-msgid "This device"
-msgstr "Denna enhet"
-
-msgid "Copy IP address"
-msgstr "Kopiera IP-adress"
-
-msgid "Devices on the network"
-msgstr "Enheter i nätverket"
-
-msgid "No other devices on the network yet."
-msgstr "Inga andra enheter i nätverket än."
+msgid "Show only icons in the sidebar"
+msgstr "Bara ikoner i sidofältet"
 
 msgid "Sections"
 msgstr "Avsnitt"
@@ -510,8 +561,8 @@ msgstr ""
 "en webbläsare."
 
 msgid ""
-"The name this device shows to other peers on the VPN — this is the Tailscale"
-" hostname, NOT your computer's name and NOT your user. Lowercase letters, "
+"The name this device shows to other peers on the VPN — this is the Tailscale "
+"hostname, NOT your computer's name and NOT your user. Lowercase letters, "
 "digits and hyphens. Example: 'tales-laptop', 'francois', 'office-pc'."
 msgstr ""
 "Namnet som denna enhet visar för andra peers i VPN:et — detta är Tailscale-"
@@ -525,8 +576,8 @@ msgid "Save"
 msgstr "Spara"
 
 msgid ""
-"Persist the server, key and device name above. Won't connect — press Connect"
-" afterwards."
+"Persist the server, key and device name above. Won't connect — press Connect "
+"afterwards."
 msgstr ""
 "Spara servern, nyckeln och enhetsnamnet ovan. Ansluter inte — tryck på "
 "Anslut efteråt."
@@ -538,8 +589,8 @@ msgid "Join the network when BigLace starts"
 msgstr "Anslut till nätverket när BigLace startar"
 
 msgid ""
-"When on, BigLace runs 'tailscale up' as soon as it launches, so you join the"
-" mesh without clicking Connect every time."
+"When on, BigLace runs 'tailscale up' as soon as it launches, so you join the "
+"mesh without clicking Connect every time."
 msgstr ""
 "När den är påslagen kör BigLace 'tailscale up' så snart den startar, så att "
 "du ansluter till nätet utan att klicka på Anslut varje gång."
@@ -570,13 +621,12 @@ msgid "Retry with backoff when the connection is lost"
 msgstr "Försök igen med backoff när anslutningen bryts"
 
 msgid ""
-"If the tunnel drops (network change, sleep, server hiccup), BigLace silently"
-" retries with growing delays instead of leaving you offline until you "
-"notice."
+"If the tunnel drops (network change, sleep, server hiccup), BigLace silently "
+"retries with growing delays instead of leaving you offline until you notice."
 msgstr ""
-"Om tunneln bryts (nätverksändring, viloläge, serverproblem) försöker BigLace"
-" tyst igen med ökande fördröjningar istället för att lämna dig offline tills"
-" du märker det."
+"Om tunneln bryts (nätverksändring, viloläge, serverproblem) försöker BigLace "
+"tyst igen med ökande fördröjningar istället för att lämna dig offline tills "
+"du märker det."
 
 msgid "Toggle auto-reconnect"
 msgstr "Växla automatisk återanslutning"
@@ -603,307 +653,11 @@ msgid ""
 "Join or leave the mesh network. When connected, this device becomes "
 "reachable by the other peers in your account."
 msgstr ""
-"Gå med i eller lämna mesh-nätverket. När du är ansluten blir den här enheten"
-" nåbar för andra peers i ditt konto."
+"Gå med i eller lämna mesh-nätverket. När du är ansluten blir den här enheten "
+"nåbar för andra peers i ditt konto."
 
 msgid "Your photo"
 msgstr "Ditt foto"
-
-msgid ""
-"Each of your groups has a voice room. Join it and talk with whoever is there"
-" — the sound goes straight between you, through the network."
-msgstr ""
-"Var och en av dina grupper har ett röstrum. Gå med och prata med dem som är "
-"där — ljudet går direkt mellan er, genom nätverket."
-
-msgid "You're not in any group yet. Create one in Groups."
-msgstr "Du är inte med i någon grupp än. Skapa en under Grupper."
-
-msgid "People in the room"
-msgstr "Personer i rummet"
-
-msgid "Everyone"
-msgstr "Alla"
-
-msgid "Who's speaking"
-msgstr "Vem som pratar"
-
-msgid "Mute"
-msgstr "Stäng av ljud"
-
-msgid "Mute your microphone for everyone"
-msgstr "Stäng av din mikrofon för alla"
-
-msgid "Leave"
-msgstr "Lämna"
-
-msgid "Which camera"
-msgstr "Vilken kamera"
-
-msgid "Include the computer's sound when sharing the screen"
-msgstr "Inkludera datorns ljud vid skärmdelning"
-
-msgid ""
-"Videos and music playing here go to the room too; the room's voices don't "
-"(no echo)"
-msgstr ""
-"Videor och musik som spelas här går också till rummet; rummets röster gör "
-"det inte (inget eko)"
-
-msgid "Rooms unavailable"
-msgstr "Rum är inte tillgängliga"
-
-#, rust-format
-msgid "Could not turn on the camera: {error}"
-msgstr "Det gick inte att slå på kameran: {error}"
-
-#, rust-format
-msgid "Could not share the screen: {error}"
-msgstr "Kunde inte dela skärmen: {error}"
-
-#, rust-format
-msgid "Could not reach the panel: {error}"
-msgstr "Kunde inte nå panelen: {error}"
-
-msgid "Nobody here right now"
-msgstr "Ingen här just nu"
-
-#, rust-format
-msgid "In the room: {people}"
-msgstr "I rummet: {people}"
-
-msgid "Join"
-msgstr "Gå med"
-
-#, rust-format
-msgid "Join the room {group}"
-msgstr "Gå med i rummet {group}"
-
-#, rust-format
-msgid "Could not join {group}: {error}"
-msgstr "Kunde inte gå med i {group}: {error}"
-
-msgid "📺 You're showing your screen to the room"
-msgstr "📺 Du visar din skärm för rummet"
-
-msgid "📺 You're showing your screen · 1 person watching"
-msgstr "📺 Du visar din skärm · 1 person tittar"
-
-#, rust-format
-msgid "📺 You're showing your screen · {count} people watching"
-msgstr "📺 Du visar din skärm · {count} personer tittar"
-
-msgid "1 person"
-msgstr "1 person"
-
-#, rust-format
-msgid "{count} people"
-msgstr "{count} personer"
-
-#, rust-format
-msgid "{people} · {talking} talking"
-msgstr "{people} · {talking} pratar"
-
-msgid "you"
-msgstr "du"
-
-msgid "connecting…"
-msgstr "ansluter…"
-
-msgid "muted"
-msgstr "ljud av"
-
-msgid "talking"
-msgstr "pratar"
-
-msgid "quiet"
-msgstr "tyst"
-
-msgid "Sharing screen"
-msgstr "Delar skärm"
-
-msgid "In control"
-msgstr "Har kontroll"
-
-msgid "Controls your screen now"
-msgstr "Styr din skärm nu"
-
-msgid "Watching"
-msgstr "Tittar"
-
-msgid "Watching your screen"
-msgstr "Tittar på din skärm"
-
-#, rust-format
-msgid "{user} is showing their screen"
-msgstr "{user} visar sin skärm"
-
-msgid "Watch"
-msgstr "Titta"
-
-#, rust-format
-msgid "{user} asks to control your screen"
-msgstr "{user} ber om att få styra din skärm"
-
-msgid ""
-"They'll be able to use your mouse and keyboard. You can take control back at"
-" any time."
-msgstr ""
-"De kommer att kunna använda din mus och ditt tangentbord. Du kan ta tillbaka"
-" kontrollen när som helst."
-
-msgid "Deny"
-msgstr "Neka"
-
-msgid "Allow"
-msgstr "Tillåt"
-
-msgid "Turn off camera"
-msgstr "Stäng av kameran"
-
-msgid "Turn on camera"
-msgstr "Slå på kameran"
-
-msgid "No camera found on this computer"
-msgstr "Ingen kamera hittades på den här datorn"
-
-msgid "Stop sharing"
-msgstr "Sluta dela"
-
-msgid "Share screen"
-msgstr "Dela skärm"
-
-msgid "Stop showing your screen to the room"
-msgstr "Sluta visa din skärm för rummet"
-
-msgid "Show your screen to everyone in the room"
-msgstr "Visa din skärm för alla i rummet"
-
-msgid "Take back control"
-msgstr "Ta tillbaka kontrollen"
-
-msgid "Give control"
-msgstr "Ge kontroll"
-
-msgid "Stop them from using your mouse and keyboard"
-msgstr "Hindra dem från att använda din mus och ditt tangentbord"
-
-msgid "Let them use your mouse and keyboard"
-msgstr "Låt dem använda din mus och ditt tangentbord"
-
-msgid "Sound level"
-msgstr "Ljudnivå"
-
-msgid "Unmute"
-msgstr "Slå på ljud"
-
-msgid "This computer"
-msgstr "Den här datorn"
-
-msgid "Who may use this computer remotely"
-msgstr "Vem får använda den här datorn på distans"
-
-msgid ""
-"Anyone you're connected to can ask to see and control this screen. Choose "
-"who is let in without asking, and who is never let in."
-msgstr ""
-"Alla du är ansluten till kan be om att se och styra den här skärmen. Välj "
-"vem som släpps in utan att fråga och vem som aldrig släpps in."
-
-msgid "History of accesses"
-msgstr "Åtkomsthistorik"
-
-msgid "Kept on this computer only."
-msgstr "Sparas endast på den här datorn."
-
-msgid "Clear"
-msgstr "Rensa"
-
-msgid "Nobody has asked yet."
-msgstr "Ingen har frågat än."
-
-msgid "When someone asks, you can choose to always let them in."
-msgstr "När någon frågar kan du välja att alltid släppa in dem."
-
-msgid "Ask every time"
-msgstr "Fråga varje gång"
-
-msgid "Always allow"
-msgstr "Tillåt alltid"
-
-msgid "Never allow"
-msgstr "Tillåt aldrig"
-
-msgid "No accesses yet."
-msgstr "Inga åtkomster än."
-
-msgid "Remote access"
-msgstr "Fjärråtkomst"
-
-msgid "Watched the screen shared with the room"
-msgstr "Tittade på skärmen som delades med rummet"
-
-msgid "Got control of the shared screen"
-msgstr "Fick kontroll över den delade skärmen"
-
-msgid "Restarted the computer"
-msgstr "Startade om datorn"
-
-msgid "Restarted the session"
-msgstr "Startade om sessionen"
-
-msgid "Shut down the computer"
-msgstr "Stängde av datorn"
-
-msgid "allowed"
-msgstr "tillåten"
-
-msgid "allowed (always)"
-msgstr "tillåten (alltid)"
-
-msgid "came back after a restart"
-msgstr "kom tillbaka efter en omstart"
-
-msgid "denied"
-msgstr "nekad"
-
-msgid "blocked (never allowed)"
-msgstr "blockerad (tillåts aldrig)"
-
-msgid "ended"
-msgstr "avslutad"
-
-#, rust-format
-msgid "{user} ({device})"
-msgstr "{user} ({device})"
-
-#, rust-format
-msgid "{done} of {total}"
-msgstr "{done} av {total}"
-
-msgid "Play"
-msgstr "Spela upp"
-
-msgid "Download"
-msgstr "Hämta"
-
-msgid "Open"
-msgstr "Öppna"
-
-msgid "Show in folder"
-msgstr "Visa i mapp"
-
-msgid "Pause"
-msgstr "Pausa"
-
-msgid "Photo"
-msgstr "Foto"
-
-msgid "Video"
-msgstr "Video"
-
-msgid "Voice message"
-msgstr "Röstmeddelande"
 
 msgid "New chat"
 msgstr "Ny chatt"
@@ -974,6 +728,9 @@ msgid ""
 msgstr ""
 "Välj en konversation eller starta en. Meddelanden går direkt mellan era "
 "datorer — servern ser dem aldrig."
+
+msgid "People on the network"
+msgstr "Personer i nätverket"
 
 msgid "Group"
 msgstr "Grupp"
@@ -1153,20 +910,6 @@ msgstr ""
 "grupper."
 
 msgid ""
-"The panel knows this device by a different key (BigLace was reinstalled?). "
-"Leave the network and join again to fix it."
-msgstr ""
-"Panelen känner till den här enheten med en annan nyckel (har BigLace "
-"installerats om?). Lämna nätverket och gå med igen för att åtgärda det."
-
-msgid ""
-"The panel couldn't confirm this device. Make sure BigLace is up to date and "
-"stays open while connected, then try again."
-msgstr ""
-"Panelen kunde inte bekräfta den här enheten. Se till att BigLace är "
-"uppdaterat och förblir öppet medan du är ansluten, och försök sedan igen."
-
-msgid ""
 "On this network everyone already reaches everyone, so groups aren't needed. "
 "The administrator can set access rules first."
 msgstr ""
@@ -1175,9 +918,6 @@ msgstr ""
 
 msgid "You already created the maximum number of groups."
 msgstr "Du har redan skapat det högsta antalet grupper."
-
-msgid "You are no longer in that group."
-msgstr "Du är inte längre med i den gruppen."
 
 msgid "A group with that name already exists. Choose another name."
 msgstr "Det finns redan en grupp med det namnet. Välj ett annat namn."
@@ -1250,8 +990,8 @@ msgid ""
 "People in the same group reach each other's devices. Create groups for "
 "family, work or friends, and invite people into them."
 msgstr ""
-"Personer i samma grupp når varandras enheter. Skapa grupper för familj, jobb"
-" eller vänner och bjud in personer till dem."
+"Personer i samma grupp når varandras enheter. Skapa grupper för familj, jobb "
+"eller vänner och bjud in personer till dem."
 
 msgid "Invitations for you"
 msgstr "Inbjudningar till dig"
@@ -1302,6 +1042,13 @@ msgstr "Du gick med i {group}."
 msgid "Invitation declined."
 msgstr "Inbjudan avböjd."
 
+msgid "1 person"
+msgstr "1 person"
+
+#, rust-format
+msgid "{count} people"
+msgstr "{count} personer"
+
 msgid "Created by you"
 msgstr "Skapad av dig"
 
@@ -1311,6 +1058,9 @@ msgstr "Skapad av {user}"
 
 msgid "Network group (administrator)"
 msgstr "Nätverksgrupp (administratör)"
+
+msgid "you"
+msgstr "du"
 
 msgid "owner"
 msgstr "ägare"
@@ -1334,8 +1084,7 @@ msgstr "Ta bort {user}?"
 
 #, rust-format
 msgid ""
-"{user} leaves the group {group} and no longer reaches its members through "
-"it."
+"{user} leaves the group {group} and no longer reaches its members through it."
 msgstr ""
 "{user} lämnar gruppen {group} och når inte längre dess medlemmar genom den."
 
@@ -1356,6 +1105,9 @@ msgid ""
 msgstr ""
 "Du slutar nå gruppens medlemmar genom den. För att komma tillbaka måste "
 "någon bjuda in dig igen."
+
+msgid "Leave"
+msgstr "Lämna"
 
 msgid "You left the group."
 msgstr "Du lämnade gruppen."
@@ -1397,6 +1149,9 @@ msgstr "Anslut till {user}?"
 msgid "You and {user} will reach each other's devices."
 msgstr "Du och {user} kommer att nå varandras enheter."
 
+msgid "Join"
+msgstr "Gå med"
+
 msgid "Done. You can now reach each other's devices."
 msgstr "Klart. Nu kan ni nå varandras enheter."
 
@@ -1418,9 +1173,6 @@ msgid ""
 "If someone on the network has exactly this name, they get the invitation."
 msgstr "Om någon i nätverket har exakt det här namnet får de inbjudan."
 
-msgid "People on the network"
-msgstr "Personer i nätverket"
-
 #, rust-format
 msgid "Invite \"{name}\""
 msgstr "Bjud in \"{name}\""
@@ -1440,9 +1192,9 @@ msgstr ""
 "{count} inbjudningar skickade. Personerna visas i gruppen när de accepterar."
 
 msgid ""
-"Listed are the people you're already connected to. To invite someone else on"
-" the network, type their exact name. Each one gets the invitation in BigLace"
-" and decides whether to join."
+"Listed are the people you're already connected to. To invite someone else on "
+"the network, type their exact name. Each one gets the invitation in BigLace "
+"and decides whether to join."
 msgstr ""
 "Här listas personerna du redan är ansluten till. För att bjuda in någon "
 "annan i nätverket, skriv deras exakta namn. Var och en får inbjudan i "
@@ -1494,141 +1246,176 @@ msgid "Invite {user}"
 msgstr "Bjud in {user}"
 
 msgid ""
-"Invites from BigLace need a BigScale server that supports them. Ask your "
-"administrator to update the server, or to create the invite in the panel."
+"Each of your groups has a voice room. Join it and talk with whoever is there "
+"— the sound goes straight between you, through the network."
 msgstr ""
-"Inbjudningar från BigLace kräver en BigScale-server som stöder dem. Be din "
-"administratör att uppdatera servern eller att skapa inbjudan i panelen."
+"Var och en av dina grupper har ett röstrum. Gå med och prata med dem som är "
+"där — ljudet går direkt mellan er, genom nätverket."
+
+msgid "You're not in any group yet. Create one in Groups."
+msgstr "Du är inte med i någon grupp än. Skapa en under Grupper."
+
+msgid "People in the room"
+msgstr "Personer i rummet"
+
+msgid "Everyone"
+msgstr "Alla"
+
+msgid "Who's speaking"
+msgstr "Vem som pratar"
+
+msgid "Mute"
+msgstr "Stäng av ljud"
+
+msgid "Mute your microphone for everyone"
+msgstr "Stäng av din mikrofon för alla"
+
+msgid "Which camera"
+msgstr "Vilken kamera"
+
+msgid "Include the computer's sound when sharing the screen"
+msgstr "Inkludera datorns ljud vid skärmdelning"
 
 msgid ""
-"This device can't send invites (it isn't linked to a person's account)."
+"Videos and music playing here go to the room too; the room's voices don't "
+"(no echo)"
 msgstr ""
-"Den här enheten kan inte skicka inbjudningar (den är inte kopplad till en "
-"persons konto)."
+"Videor och musik som spelas här går också till rummet; rummets röster gör "
+"det inte (inget eko)"
 
-msgid ""
-"On this network everyone can reach everyone, so only the administrator can "
-"invite people."
-msgstr ""
-"I det här nätverket kan alla nå alla, så endast administratören kan bjuda in"
-" personer."
-
-msgid "You have too many pending invites. Cancel some or try again tomorrow."
-msgstr ""
-"Du har för många väntande inbjudningar. Avbryt några eller försök igen i "
-"morgon."
-
-msgid ""
-"On this network only administrators invite new people. You can still invite "
-"people already on the network into your groups."
-msgstr ""
-"I det här nätverket bjuder endast administratörer in nya personer. Du kan "
-"fortfarande bjuda in personer som redan finns i nätverket till dina grupper."
-
-msgid "Waiting to be used"
-msgstr "Väntar på att användas"
-
-msgid "Used"
-msgstr "Använd"
-
-msgid "Expired"
-msgstr "Utgången"
-
-msgid "Cancelled"
-msgstr "Avbruten"
-
-msgid "Waiting for an administrator's approval"
-msgstr "Väntar på en administratörs godkännande"
-
-msgid "Bring someone to your network"
-msgstr "Ta med någon till ditt nätverk"
-
-msgid ""
-"Create a link or QR code and send it to the person. When they join, you two "
-"can reach each other's devices — no administrator needed. The link works "
-"once and stays valid until it's used or you cancel it."
-msgstr ""
-"Skapa en länk eller QR-kod och skicka den till personen. När hen går med kan"
-" ni nå varandras enheter — ingen administratör behövs. Länken fungerar en "
-"gång och är giltig tills den används eller du avbryter den."
-
-msgid "No invites yet"
-msgstr "Inga inbjudningar än"
-
-msgid "Invites unavailable"
-msgstr "Inbjudningar är inte tillgängliga"
+msgid "Rooms unavailable"
+msgstr "Rum är inte tillgängliga"
 
 #, rust-format
-msgid "{user} joined"
-msgstr "{user} gick med"
+msgid "Could not turn on the camera: {error}"
+msgstr "Det gick inte att slå på kameran: {error}"
 
 #, rust-format
-msgid "group {group}"
-msgstr "gruppen {group}"
+msgid "Could not share the screen: {error}"
+msgstr "Kunde inte dela skärmen: {error}"
 
-msgid "Cancel this invite: the link stops working"
-msgstr "Avbryt den här inbjudan: länken slutar fungera"
-
-msgid "The person you invite will reach your devices, and you theirs."
-msgstr "Personen du bjuder in kommer att nå dina enheter, och du deras."
-
-msgid "Who is it for? (optional)"
-msgstr "Vem är den till? (valfritt)"
-
-msgid "Access"
-msgstr "Åtkomst"
-
-msgid "Just the two of us"
-msgstr "Bara vi två"
-
-msgid "You see each other's devices, nobody else"
-msgstr "Ni ser varandras enheter, ingen annan"
+msgid "Nobody here right now"
+msgstr "Ingen här just nu"
 
 #, rust-format
-msgid "Also the group {group}"
-msgstr "Även gruppen {group}"
+msgid "In the room: {people}"
+msgstr "I rummet: {people}"
 
-msgid "They join the group and see everyone in it"
-msgstr "De går med i gruppen och ser alla i den"
+#, rust-format
+msgid "Join the room {group}"
+msgstr "Gå med i rummet {group}"
 
-msgid "A network of their own"
-msgstr "Ett eget nätverk"
+#, rust-format
+msgid "Could not join {group}: {error}"
+msgstr "Kunde inte gå med i {group}: {error}"
+
+msgid "📺 You're showing your screen to the room"
+msgstr "📺 Du visar din skärm för rummet"
+
+msgid "📺 You're showing your screen · 1 person watching"
+msgstr "📺 Du visar din skärm · 1 person tittar"
+
+#, rust-format
+msgid "📺 You're showing your screen · {count} people watching"
+msgstr "📺 Du visar din skärm · {count} personer tittar"
+
+#, rust-format
+msgid "Room {group}"
+msgstr "Rum {group}"
+
+#, rust-format
+msgid "{people} · {talking} talking"
+msgstr "{people} · {talking} pratar"
+
+msgid "connecting…"
+msgstr "ansluter…"
+
+msgid "muted"
+msgstr "ljud av"
+
+msgid "talking"
+msgstr "pratar"
+
+msgid "quiet"
+msgstr "tyst"
+
+msgid "Sharing screen"
+msgstr "Delar skärm"
+
+msgid "In control"
+msgstr "Har kontroll"
+
+msgid "Controls your screen now"
+msgstr "Styr din skärm nu"
+
+msgid "Watching"
+msgstr "Tittar"
+
+msgid "Watching your screen"
+msgstr "Tittar på din skärm"
+
+#, rust-format
+msgid "{user} is showing their screen"
+msgstr "{user} visar sin skärm"
+
+msgid "Watch"
+msgstr "Titta"
+
+#, rust-format
+msgid "{user} asks to control your screen"
+msgstr "{user} ber om att få styra din skärm"
 
 msgid ""
-"No link to you: they see only their own devices and whoever they invite "
-"(you're the administrator)"
+"They'll be able to use your mouse and keyboard. You can take control back at "
+"any time."
 msgstr ""
-"Ingen koppling till dig: de ser bara sina egna enheter och dem de bjuder in "
-"(du är administratör)"
+"De kommer att kunna använda din mus och ditt tangentbord. Du kan ta tillbaka "
+"kontrollen när som helst."
 
-msgid "Create invite"
-msgstr "Skapa inbjudan"
+msgid "Deny"
+msgstr "Neka"
 
-msgid "QR code of the invite link"
-msgstr "QR-kod för inbjudningslänken"
+msgid "Allow"
+msgstr "Tillåt"
 
-msgid ""
-"Send the link or let the person scan the code with their phone. It works "
-"once and stays valid until used or cancelled."
-msgstr ""
-"Skicka länken eller låt personen skanna koden med sin telefon. Den fungerar "
-"en gång och är giltig tills den används eller avbryts."
+msgid "Turn off camera"
+msgstr "Stäng av kameran"
 
-msgid "Copy link"
-msgstr "Kopiera länk"
+msgid "Turn on camera"
+msgstr "Slå på kameran"
 
-msgid "Done"
-msgstr "Klar"
+msgid "No camera found on this computer"
+msgstr "Ingen kamera hittades på den här datorn"
 
-msgid "Copied!"
-msgstr "Kopierad!"
+msgid "Stop sharing"
+msgstr "Sluta dela"
 
-msgid ""
-"This network asks an administrator to approve each invite: the link starts "
-"working once they do. Its status shows in Invites."
-msgstr ""
-"Det här nätverket kräver att en administratör godkänner varje inbjudan: "
-"länken börjar fungera när det har skett. Statusen visas under Inbjudningar."
+msgid "Share screen"
+msgstr "Dela skärm"
+
+msgid "Stop showing your screen to the room"
+msgstr "Sluta visa din skärm för rummet"
+
+msgid "Show your screen to everyone in the room"
+msgstr "Visa din skärm för alla i rummet"
+
+msgid "Take back control"
+msgstr "Ta tillbaka kontrollen"
+
+msgid "Give control"
+msgstr "Ge kontroll"
+
+msgid "Stop them from using your mouse and keyboard"
+msgstr "Hindra dem från att använda din mus och ditt tangentbord"
+
+msgid "Let them use your mouse and keyboard"
+msgstr "Låt dem använda din mus och ditt tangentbord"
+
+msgid "Sound level"
+msgstr "Ljudnivå"
+
+msgid "Unmute"
+msgstr "Slå på ljud"
 
 msgid "System accent"
 msgstr "Systemets accentfärg"
@@ -1708,36 +1495,6 @@ msgstr "Bild…"
 msgid "Choose a background picture"
 msgstr "Välj en bakgrundsbild"
 
-msgid "Message"
-msgstr "Meddelande"
-
-msgid "Bold"
-msgstr "Fet"
-
-msgid "Italic"
-msgstr "Kursiv"
-
-msgid "Underline"
-msgstr "Understruken"
-
-msgid "Strikethrough"
-msgstr "Genomstruken"
-
-msgid "Monospace"
-msgstr "Fast bredd"
-
-msgid "Create link"
-msgstr "Skapa länk"
-
-msgid "Plain text"
-msgstr "Oformaterad text"
-
-msgid "Formatting"
-msgstr "Formatering"
-
-msgid "Create"
-msgstr "Skapa"
-
 msgid "Mesh VPN client for BigScale/Headscale."
 msgstr "Mesh VPN-klient för BigScale/Headscale."
 
@@ -1773,13 +1530,19 @@ msgstr "Lämna nätverket?"
 
 #, rust-format
 msgid ""
-"This device leaves the network and its name becomes free. Your account {user} is kept: you can come back later from this computer, without an invite.\n"
+"This device leaves the network and its name becomes free. Your account "
+"{user} is kept: you can come back later from this computer, without an "
+"invite.\n"
 "\n"
-"If you won't come back, delete the account and the name {user} becomes free too."
+"If you won't come back, delete the account and the name {user} becomes free "
+"too."
 msgstr ""
-"Den här enheten lämnar nätverket och dess namn blir ledigt. Ditt konto {user} behålls: du kan komma tillbaka senare från den här datorn, utan inbjudan.\n"
+"Den här enheten lämnar nätverket och dess namn blir ledigt. Ditt konto "
+"{user} behålls: du kan komma tillbaka senare från den här datorn, utan "
+"inbjudan.\n"
 "\n"
-"Om du inte tänker komma tillbaka, ta bort kontot så blir även namnet {user} ledigt."
+"Om du inte tänker komma tillbaka, ta bort kontot så blir även namnet {user} "
+"ledigt."
 
 msgid "Leave and delete account"
 msgstr "Lämna och ta bort konto"
@@ -1816,11 +1579,15 @@ msgstr "Kunde inte nå servern"
 msgid ""
 "The control server didn't confirm the sign-out: {error}\n"
 "\n"
-"You can still sign out on this computer: BigLace forgets the saved key and account and disconnects. The server keeps listing this device until an administrator removes it."
+"You can still sign out on this computer: BigLace forgets the saved key and "
+"account and disconnects. The server keeps listing this device until an "
+"administrator removes it."
 msgstr ""
 "Kontrollservern bekräftade inte utloggningen: {error}\n"
 "\n"
-"Du kan ändå logga ut på den här datorn: BigLace glömmer den sparade nyckeln och kontot och kopplar från. Servern fortsätter att lista enheten tills en administratör tar bort den."
+"Du kan ändå logga ut på den här datorn: BigLace glömmer den sparade nyckeln "
+"och kontot och kopplar från. Servern fortsätter att lista enheten tills en "
+"administratör tar bort den."
 
 msgid "Sign out on this computer"
 msgstr "Logga ut på den här datorn"
@@ -1844,8 +1611,8 @@ msgid "Panel URL"
 msgstr "Panel-URL"
 
 msgid ""
-"Address of your BigScale panel (e.g. panel.example.org). The https:// scheme"
-" is added automatically if you omit it."
+"Address of your BigScale panel (e.g. panel.example.org). The https:// scheme "
+"is added automatically if you omit it."
 msgstr ""
 "Adress till din BigScale-panel (t.ex. panel.example.org). Schemat https:// "
 "läggs till automatiskt om du utelämnar det."
@@ -1868,8 +1635,8 @@ msgstr ""
 "Linux, Keychain på macOS, Credential Manager på Windows)."
 
 msgid ""
-"The name this device shows to other peers on the VPN — this is the Tailscale"
-" hostname, NOT your computer's name and NOT your user. Lowercase letters, "
+"The name this device shows to other peers on the VPN — this is the Tailscale "
+"hostname, NOT your computer's name and NOT your user. Lowercase letters, "
 "digits and hyphens. Example: 'tales-laptop', 'francois', 'office-pc'. Pick "
 "something other peers will recognise."
 msgstr ""
@@ -1929,12 +1696,12 @@ msgid ""
 "you used it, or ask the administrator to free the name."
 msgstr ""
 "Det namnet tillhör redan ett konto i det här nätverket, så vi föreslog "
-"\"{name}\". Om kontot är ditt, logga in igen från datorn där du använde det,"
-" eller be administratören att frigöra namnet."
+"\"{name}\". Om kontot är ditt, logga in igen från datorn där du använde det, "
+"eller be administratören att frigöra namnet."
 
 msgid ""
-"That name already belongs to an account on this network. Try another one, or"
-" ask the administrator to free it."
+"That name already belongs to an account on this network. Try another one, or "
+"ask the administrator to free it."
 msgstr ""
 "Det namnet tillhör redan ett konto i det här nätverket. Prova ett annat "
 "eller be administratören att frigöra det."
@@ -1952,12 +1719,11 @@ msgid ""
 "This invite is waiting for the network administrator's approval. Try again "
 "once the person who invited you says it was approved."
 msgstr ""
-"Den här inbjudan väntar på nätverksadministratörens godkännande. Försök igen"
-" när personen som bjöd in dig säger att den har godkänts."
+"Den här inbjudan väntar på nätverksadministratörens godkännande. Försök igen "
+"när personen som bjöd in dig säger att den har godkänts."
 
 msgid "This invite is not valid. Check the link or ask for a new one."
-msgstr ""
-"Den här inbjudan är inte giltig. Kontrollera länken eller be om en ny."
+msgstr "Den här inbjudan är inte giltig. Kontrollera länken eller be om en ny."
 
 msgid ""
 "This server doesn't support invites yet. Sign in with a panel account "
@@ -1996,8 +1762,8 @@ msgid "Joining…"
 msgstr "Går med…"
 
 msgid ""
-"That doesn't look like an invite link. It starts with https:// and contains "
-"/join#."
+"That doesn't look like an invite link. It starts with https:// and contains /"
+"join#."
 msgstr ""
 "Det ser inte ut som en inbjudningslänk. Den börjar med https:// och "
 "innehåller /join#."
@@ -2013,6 +1779,36 @@ msgstr "Välkommen, {name}! Du gick med i gruppen {group}. Ansluter…"
 msgid "Welcome, {name}! Connecting…"
 msgstr "Välkommen, {name}! Ansluter…"
 
+msgid "Message"
+msgstr "Meddelande"
+
+msgid "Bold"
+msgstr "Fet"
+
+msgid "Italic"
+msgstr "Kursiv"
+
+msgid "Underline"
+msgstr "Understruken"
+
+msgid "Strikethrough"
+msgstr "Genomstruken"
+
+msgid "Monospace"
+msgstr "Fast bredd"
+
+msgid "Create link"
+msgstr "Skapa länk"
+
+msgid "Plain text"
+msgstr "Oformaterad text"
+
+msgid "Formatting"
+msgstr "Formatering"
+
+msgid "Create"
+msgstr "Skapa"
+
 msgid "End access"
 msgstr "Avsluta åtkomst"
 
@@ -2025,8 +1821,8 @@ msgstr "Fjärråtkomst startad"
 
 #, rust-format
 msgid ""
-"{user} ({device}) is seeing and controlling this screen. Open BigLace to end"
-" the access."
+"{user} ({device}) is seeing and controlling this screen. Open BigLace to end "
+"the access."
 msgstr ""
 "{user} ({device}) ser och styr den här skärmen. Öppna BigLace för att "
 "avsluta åtkomsten."
@@ -2076,8 +1872,8 @@ msgid "Restart {name}'s computer?"
 msgstr "Starta om {name}s dator?"
 
 msgid ""
-"It restarts, signs in by itself and locks the screen right away; this window"
-" connects again when it's back. Unsaved work there is lost."
+"It restarts, signs in by itself and locks the screen right away; this window "
+"connects again when it's back. Unsaved work there is lost."
 msgstr ""
 "Den startar om, loggar in av sig själv och låser skärmen direkt; det här "
 "fönstret ansluter igen när den är tillbaka. Osparat arbete där går förlorat."
@@ -2182,8 +1978,8 @@ msgid "{name} didn't allow the access."
 msgstr "{name} tillät inte åtkomsten."
 
 msgid ""
-"That computer couldn't confirm this device. Make sure both run an up-to-date"
-" BigLace."
+"That computer couldn't confirm this device. Make sure both run an up-to-date "
+"BigLace."
 msgstr ""
 "Den datorn kunde inte bekräfta den här enheten. Se till att båda kör ett "
 "uppdaterat BigLace."
@@ -2193,8 +1989,7 @@ msgid ""
 "{name}'s computer can't share its screen (screen sharing isn't available "
 "there)."
 msgstr ""
-"{name}s dator kan inte dela sin skärm (skärmdelning är inte tillgänglig "
-"där)."
+"{name}s dator kan inte dela sin skärm (skärmdelning är inte tillgänglig där)."
 
 #, rust-format
 msgid "Could not connect: {error}"
@@ -2257,6 +2052,36 @@ msgstr "Åtkomsten till {name}s skärm avslutades: {error}"
 msgid "Give back control"
 msgstr "Lämna tillbaka kontrollen"
 
+msgid "Connected · 1 peer"
+msgstr "Ansluten · 1 anslutning"
+
+#, rust-format
+msgid "Connected · {n} peers"
+msgstr "Ansluten · {n} anslutningar"
+
+#, rust-format
+msgid "In the room {group} · muted"
+msgstr "I rummet {group} · ljud av"
+
+#, rust-format
+msgid "In the room {group}"
+msgstr "I rummet {group}"
+
+msgid "Show BigLace"
+msgstr "Visa BigLace"
+
+msgid "Unmute (Ctrl+Alt+M)"
+msgstr "Slå på ljud (Ctrl+Alt+M)"
+
+msgid "Mute (Ctrl+Alt+M)"
+msgstr "Stäng av ljud (Ctrl+Alt+M)"
+
+msgid "Leave the room"
+msgstr "Lämna rummet"
+
+msgid "Quit"
+msgstr "Avsluta"
+
 msgid "direct"
 msgstr "direkt"
 
@@ -2292,6 +2117,9 @@ msgstr "Fäst överst"
 
 msgid "Unpinned"
 msgstr "Avfäst"
+
+msgid "Copy IP address"
+msgstr "Kopiera IP-adress"
 
 msgid "Open files (SFTP)"
 msgstr "Öppna filer (SFTP)"
@@ -2340,6 +2168,202 @@ msgstr "Misslyckades med att uppdatera utgångsnod"
 
 msgid "Copy"
 msgstr "Kopiera"
+
+msgid "Search devices"
+msgstr "Sök enheter"
+
+msgid "Invite someone to your network"
+msgstr "Bjud in någon till ditt nätverk"
+
+msgid ""
+"Tailscale cannot write this device's DNS settings, so it can no longer keep "
+"peer names working. They may still resolve for now, from the configuration "
+"left over from before the failure, but that will break the next time the "
+"network changes — and BigLace will fall back to IP addresses. On most "
+"distributions `sudo resolvconf -u` repairs it."
+msgstr ""
+"Tailscale kan inte skriva den här enhetens DNS-inställningar och kan därför "
+"inte längre hålla peer-namnen fungerande. De kan fortfarande matchas ett "
+"tag, från konfigurationen som blev kvar från före felet, men det slutar "
+"fungera nästa gång nätverket ändras — och BigLace går då tillbaka till IP-"
+"adresser. På de flesta distributioner reparerar `sudo resolvconf -u` det."
+
+msgid "Not connected"
+msgstr "Inte ansluten"
+
+msgid "Press Connect on the left to join the network."
+msgstr "Tryck på Anslut till vänster för att ansluta till nätverket."
+
+msgid "The tailscale service is not running"
+msgstr "Tailscale-tjänsten körs inte"
+
+msgid "BigLace needs the tailscaled background service to manage the network."
+msgstr ""
+"BigLace behöver bakgrundstjänsten tailscaled för att hantera nätverket."
+
+msgid "Start service"
+msgstr "Starta tjänst"
+
+msgid "Join the network"
+msgstr "Gå med i nätverket"
+
+msgid "Choose how you're going to sign in."
+msgstr "Välj hur du ska logga in."
+
+msgid "Ways to sign in"
+msgstr "Sätt att logga in"
+
+msgid "Your account was kept on this computer. No invite needed."
+msgstr "Ditt konto har sparats på den här datorn. Ingen inbjudan behövs."
+
+msgid "I have an invite"
+msgstr "Jag har en inbjudan"
+
+msgid "Someone on the network sent you a link or a QR code."
+msgstr "Någon i nätverket har skickat en länk eller en QR-kod till dig."
+
+msgid "I have an access key"
+msgstr "Jag har en åtkomstnyckel"
+
+msgid "A key the administrator created for you (starts with hskey-auth-)."
+msgstr "En nyckel som administratören skapat åt dig (börjar med hskey-auth-)."
+
+msgid "I'm the administrator"
+msgstr "Jag är administratör"
+
+msgid "Sign in with the BigScale panel's admin username and password."
+msgstr "Logga in med BigScale-panelens administratörsnamn och lösenord."
+
+msgid "This device"
+msgstr "Denna enhet"
+
+msgid "Devices on the network"
+msgstr "Enheter i nätverket"
+
+msgid "No other devices on the network yet."
+msgstr "Inga andra enheter i nätverket än."
+
+msgid "you are not in a room"
+msgstr "du är inte i något rum"
+
+msgid "screen sharing isn't available on this computer"
+msgstr "skärmdelning är inte tillgänglig på den här datorn"
+
+#, rust-format
+msgid "The computer's sound can't be shared: {error}"
+msgstr "Datorns ljud kan inte delas: {error}"
+
+#, rust-format
+msgid "The screen share stopped: {error}"
+msgstr "Skärmdelningen stoppades: {error}"
+
+msgid "This computer"
+msgstr "Den här datorn"
+
+msgid "Who may use this computer remotely"
+msgstr "Vem får använda den här datorn på distans"
+
+msgid ""
+"Anyone you're connected to can ask to see and control this screen. Choose "
+"who is let in without asking, and who is never let in."
+msgstr ""
+"Alla du är ansluten till kan be om att se och styra den här skärmen. Välj "
+"vem som släpps in utan att fråga och vem som aldrig släpps in."
+
+msgid "History of accesses"
+msgstr "Åtkomsthistorik"
+
+msgid "Kept on this computer only."
+msgstr "Sparas endast på den här datorn."
+
+msgid "Clear"
+msgstr "Rensa"
+
+msgid "Nobody has asked yet."
+msgstr "Ingen har frågat än."
+
+msgid "When someone asks, you can choose to always let them in."
+msgstr "När någon frågar kan du välja att alltid släppa in dem."
+
+msgid "Ask every time"
+msgstr "Fråga varje gång"
+
+msgid "Always allow"
+msgstr "Tillåt alltid"
+
+msgid "Never allow"
+msgstr "Tillåt aldrig"
+
+msgid "No accesses yet."
+msgstr "Inga åtkomster än."
+
+msgid "Remote access"
+msgstr "Fjärråtkomst"
+
+msgid "Watched the screen shared with the room"
+msgstr "Tittade på skärmen som delades med rummet"
+
+msgid "Got control of the shared screen"
+msgstr "Fick kontroll över den delade skärmen"
+
+msgid "Restarted the computer"
+msgstr "Startade om datorn"
+
+msgid "Restarted the session"
+msgstr "Startade om sessionen"
+
+msgid "Shut down the computer"
+msgstr "Stängde av datorn"
+
+msgid "allowed"
+msgstr "tillåten"
+
+msgid "allowed (always)"
+msgstr "tillåten (alltid)"
+
+msgid "came back after a restart"
+msgstr "kom tillbaka efter en omstart"
+
+msgid "denied"
+msgstr "nekad"
+
+msgid "blocked (never allowed)"
+msgstr "blockerad (tillåts aldrig)"
+
+msgid "ended"
+msgstr "avslutad"
+
+#, rust-format
+msgid "{user} ({device})"
+msgstr "{user} ({device})"
+
+#, rust-format
+msgid "{done} of {total}"
+msgstr "{done} av {total}"
+
+msgid "Play"
+msgstr "Spela upp"
+
+msgid "Download"
+msgstr "Hämta"
+
+msgid "Open"
+msgstr "Öppna"
+
+msgid "Show in folder"
+msgstr "Visa i mapp"
+
+msgid "Pause"
+msgstr "Pausa"
+
+msgid "Photo"
+msgstr "Foto"
+
+msgid "Video"
+msgstr "Video"
+
+msgid "Voice message"
+msgstr "Röstmeddelande"
 
 msgid "Smileys & people"
 msgstr "Smileys och personer"
@@ -2398,8 +2422,8 @@ msgstr ""
 "{user}s dator är avstängd eller offline — försök igen när den är tillbaka"
 
 msgid ""
-"the file arrived different from the original (damaged on the way) — download"
-" it again"
+"the file arrived different from the original (damaged on the way) — download "
+"it again"
 msgstr ""
 "filen kom fram annorlunda än originalet (skadad på vägen) — ladda ner den "
 "igen"
@@ -2443,11 +2467,10 @@ msgstr "📌 (lossade meddelandet)"
 msgid "nothing was recorded — is a microphone connected?"
 msgstr "inget spelades in — är en mikrofon ansluten?"
 
-msgid ""
-"this computer can't restart remotely (BigLace's helper isn't installed)"
+msgid "this computer can't restart remotely (BigLace's helper isn't installed)"
 msgstr ""
-"den här datorn kan inte startas om på distans (BigLaces hjälpprogram är inte"
-" installerat)"
+"den här datorn kan inte startas om på distans (BigLaces hjälpprogram är inte "
+"installerat)"
 
 #, rust-format
 msgid "could not prepare the automatic sign-in: {error}"
@@ -2472,28 +2495,14 @@ msgid ""
 "the screen there is locked, and GNOME doesn't allow remote access to a "
 "locked screen — ask the person to unlock it"
 msgstr ""
-"skärmen där är låst, och GNOME tillåter inte fjärråtkomst till en låst skärm"
-" — be personen att låsa upp den"
+"skärmen där är låst, och GNOME tillåter inte fjärråtkomst till en låst skärm "
+"— be personen att låsa upp den"
 
 msgid "access to the camera was refused"
 msgstr "åtkomst till kameran nekades"
 
-msgid "you are not in a room"
-msgstr "du är inte i något rum"
-
 msgid "Mute or unmute the microphone in a BigLace room"
 msgstr "Slå av eller på mikrofonen i ett BigLace-rum"
-
-msgid "screen sharing isn't available on this computer"
-msgstr "skärmdelning är inte tillgänglig på den här datorn"
-
-#, rust-format
-msgid "The computer's sound can't be shared: {error}"
-msgstr "Datorns ljud kan inte delas: {error}"
-
-#, rust-format
-msgid "The screen share stopped: {error}"
-msgstr "Skärmdelningen stoppades: {error}"
 
 msgid "BigLace doesn't know that computer's network card yet"
 msgstr "BigLace känner inte till den datorns nätverkskort än"
@@ -2503,6 +2512,12 @@ msgstr "den här datorn"
 
 msgid "no computer on its network is on to send the signal"
 msgstr "ingen dator i dess nätverk är på för att skicka signalen"
+
+msgid "Open with another app"
+msgstr "Öppna med en annan app"
+
+msgid "Close"
+msgstr "Stäng"
 
 #~ msgid "Panel credentials"
 #~ msgstr "Paneluppgifter"
@@ -2595,11 +2610,12 @@ msgstr "ingen dator i dess nätverk är på för att skicka signalen"
 #~ msgstr "Din identitet i nätverket"
 
 #~ msgid ""
-#~ "Personal key generated for you in the BigScale panel (\"New key\" in Users)."
-#~ " Each person uses their own — this is not the server's key."
+#~ "Personal key generated for you in the BigScale panel (\"New key\" in "
+#~ "Users). Each person uses their own — this is not the server's key."
 #~ msgstr ""
 #~ "Personlig nyckel genererad åt dig i BigScale-panelen (\"Ny nyckel\" under "
-#~ "Användare). Varje person använder sin egen – detta är inte serverns nyckel."
+#~ "Användare). Varje person använder sin egen – detta är inte serverns "
+#~ "nyckel."
 
 #~ msgid "Pre-auth key (yours)"
 #~ msgstr "För-auktoriseringsnyckel (din)"

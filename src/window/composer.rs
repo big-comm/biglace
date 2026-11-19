@@ -44,7 +44,11 @@ pub struct Composer {
     emoji: OpenEmoji,
     /// Gets pictures and files pasted with Ctrl+V.
     paste_files: PasteFiles,
+    /// Who can be "@mentioned" here (set by the page, per conversation).
+    mention_source: MentionSource,
 }
+
+type MentionSource = std::rc::Rc<std::cell::RefCell<Option<Box<dyn Fn() -> Vec<String>>>>>;
 
 type PasteFiles = std::rc::Rc<std::cell::RefCell<Option<Box<dyn Fn(Vec<std::path::PathBuf>)>>>>;
 
@@ -142,8 +146,9 @@ impl Composer {
                 }
             });
         }
-        let c = Self { widget, view, emoji: Default::default(), paste_files: Default::default() };
+        let c = Self { widget, view, emoji: Default::default(), paste_files: Default::default(), mention_source: Default::default() };
         c.setup_paste();
+        c.setup_mentions();
         c.setup_actions(win);
         c
     }
@@ -357,6 +362,159 @@ impl Composer {
     }
 
     /// What Ctrl+; and "Emoji" in the context menu do.
+    /// Who may be mentioned with "@" (asked each time the list opens).
+    pub fn on_mention_candidates(&self, source: impl Fn() -> Vec<String> + 'static) {
+        *self.mention_source.borrow_mut() = Some(Box::new(source));
+    }
+
+    /// Typing "@" opens a list of people (filtered as you type); Enter, Tab
+    /// or a click puts "@name " in, arrows move, Esc closes — like Telegram.
+    fn setup_mentions(&self) {
+        use gtk4::glib;
+        use std::rc::Rc;
+        let list = gtk4::ListBox::new();
+        list.add_css_class("mention-list");
+        list.set_selection_mode(gtk4::SelectionMode::Single);
+        let pop = gtk4::Popover::builder()
+            .child(&list)
+            .has_arrow(false)
+            .autohide(false)
+            .position(gtk4::PositionType::Top)
+            .build();
+        pop.set_parent(&self.view);
+        pop.add_css_class("menu");
+        {
+            let pop = pop.clone();
+            self.view.connect_destroy(move |_| pop.unparent());
+        }
+        // The "@word" the cursor is in: (offset of "@", what follows it).
+        let token = |view: &gtk4::TextView| -> Option<(i32, String)> {
+            let buf = view.buffer();
+            let cursor = buf.iter_at_mark(&buf.get_insert());
+            let mut start = cursor;
+            start.set_line_offset(0);
+            let before = buf.text(&start, &cursor, false).to_string();
+            let at = before.rfind('@')?;
+            let typed = &before[at + 1..];
+            if !typed.chars().all(|c| c.is_ascii_alphanumeric() || c == '-' || c == '_') {
+                return None;
+            }
+            if before[..at].chars().last().is_some_and(|p| !p.is_whitespace() && !"([{\"'".contains(p)) {
+                return None;
+            }
+            let at_offset = cursor.offset() - typed.chars().count() as i32 - 1;
+            Some((at_offset, typed.to_string()))
+        };
+        let token = Rc::new(token);
+        let choose = {
+            let (view, pop) = (self.view.clone(), pop.clone());
+            let token = token.clone();
+            Rc::new(move |name: &str| {
+                pop.popdown();
+                let Some((at, _)) = token(&view) else { return };
+                let buf = view.buffer();
+                let mut start = buf.iter_at_offset(at);
+                let mut end = buf.iter_at_mark(&buf.get_insert());
+                buf.delete(&mut start, &mut end);
+                buf.insert_at_cursor(&format!("@{name} "));
+                view.grab_focus();
+            })
+        };
+        {
+            let choose = choose.clone();
+            list.connect_row_activated(move |_, row| choose(&row.widget_name()));
+        }
+        let update = {
+            let (view, pop, list, source) = (self.view.clone(), pop.clone(), list.clone(), self.mention_source.clone());
+            let token = token.clone();
+            move || {
+                let found = token(&view).and_then(|(_, typed)| {
+                    let people = source.borrow().as_ref().map(|f| f()).unwrap_or_default();
+                    let typed = typed.to_lowercase();
+                    let mut hits: Vec<String> = people.into_iter().filter(|p| p.to_lowercase().starts_with(&typed)).collect();
+                    hits.sort();
+                    hits.truncate(6);
+                    (!hits.is_empty()).then_some(hits)
+                });
+                let Some(hits) = found else {
+                    pop.popdown();
+                    return;
+                };
+                while let Some(c) = list.first_child() {
+                    list.remove(&c);
+                }
+                for name in &hits {
+                    let line = gtk4::Box::new(gtk4::Orientation::Horizontal, 8);
+                    let avatar = libadwaita::Avatar::new(24, Some(name), true);
+                    crate::avatars::bind(&avatar, name);
+                    line.append(&avatar);
+                    line.append(&gtk4::Label::new(Some(&format!("@{name}"))));
+                    let row = gtk4::ListBoxRow::builder().child(&line).build();
+                    row.set_widget_name(name);
+                    list.append(&row);
+                }
+                list.select_row(list.row_at_index(0).as_ref());
+                // Point at the cursor.
+                let buf = view.buffer();
+                let rect = view.iter_location(&buf.iter_at_mark(&buf.get_insert()));
+                let (x, y) = view.buffer_to_window_coords(gtk4::TextWindowType::Widget, rect.x(), rect.y());
+                pop.set_pointing_to(Some(&gtk4::gdk::Rectangle::new(x, y, 1, rect.height())));
+                if !pop.is_visible() {
+                    pop.popup();
+                }
+            }
+        };
+        let update = Rc::new(update);
+        {
+            let update = update.clone();
+            self.view.buffer().connect_changed(move |_| {
+                let update = update.clone();
+                glib::idle_add_local_once(move || update());
+            });
+        }
+        {
+            let pop = pop.clone();
+            self.view.connect_has_focus_notify(move |v| {
+                if !v.has_focus() {
+                    pop.popdown();
+                }
+            });
+        }
+        let keys = gtk4::EventControllerKey::new();
+        keys.set_propagation_phase(gtk4::PropagationPhase::Capture);
+        {
+            let (pop, list) = (pop.clone(), list.clone());
+            keys.connect_key_pressed(move |_, key, _, _| {
+                use gtk4::gdk::Key;
+                if !pop.is_visible() {
+                    return glib::Propagation::Proceed;
+                }
+                let index = list.selected_row().map(|r| r.index()).unwrap_or(0);
+                match key {
+                    Key::Up | Key::Down => {
+                        let next = if key == Key::Up { index - 1 } else { index + 1 };
+                        if let Some(r) = list.row_at_index(next) {
+                            list.select_row(Some(&r));
+                        }
+                        glib::Propagation::Stop
+                    }
+                    Key::Return | Key::KP_Enter | Key::Tab => {
+                        if let Some(r) = list.selected_row() {
+                            choose(&r.widget_name());
+                        }
+                        glib::Propagation::Stop
+                    }
+                    Key::Escape => {
+                        pop.popdown();
+                        glib::Propagation::Stop
+                    }
+                    _ => glib::Propagation::Proceed,
+                }
+            });
+        }
+        self.view.add_controller(keys);
+    }
+
     pub fn on_emoji(&self, open: impl Fn() + 'static) {
         *self.emoji.borrow_mut() = Some(Box::new(open));
     }

@@ -135,8 +135,8 @@ msgid ""
 "The key to this account is no longer on this computer. Join with a new "
 "invite."
 msgstr ""
-"Το κλειδί αυτού του λογαριασμού δεν βρίσκεται πλέον σε αυτόν τον υπολογιστή."
-" Συμμετάσχετε με νέα πρόσκληση."
+"Το κλειδί αυτού του λογαριασμού δεν βρίσκεται πλέον σε αυτόν τον υπολογιστή. "
+"Συμμετάσχετε με νέα πρόσκληση."
 
 #, rust-format
 msgid "Welcome back, {name}! Connecting…"
@@ -178,8 +178,8 @@ msgid "Account"
 msgstr "Λογαριασμός"
 
 msgid ""
-"Signing out removes this device's identity from BigLace. You will need a new"
-" invite or key to join again."
+"Signing out removes this device's identity from BigLace. You will need a new "
+"invite or key to join again."
 msgstr ""
 "Η αποσύνδεση αφαιρεί την ταυτότητα αυτής της συσκευής από το BigLace. Θα "
 "χρειαστείτε νέα πρόσκληση ή κλειδί για να συμμετάσχετε ξανά."
@@ -213,8 +213,7 @@ msgstr ""
 "Συνδεθείτε πρώτα στο δίκτυο και μετά ανοίξτε ξανά τον σύνδεσμο πρόσκλησης."
 
 #, rust-format
-msgid ""
-"This invite is for another network ({host}). Sign out first to join it."
+msgid "This invite is for another network ({host}). Sign out first to join it."
 msgstr ""
 "Αυτή η πρόσκληση είναι για άλλο δίκτυο ({host}). Αποσυνδεθείτε πρώτα για να "
 "συμμετάσχετε σε αυτό."
@@ -237,8 +236,8 @@ msgid "Could not open the browser: {error}"
 msgstr "Δεν ήταν δυνατό το άνοιγμα του προγράμματος περιήγησης: {error}"
 
 msgid ""
-"You can't open the admin panel: you're not an administrator of this network,"
-" or the panel can't be reached."
+"You can't open the admin panel: you're not an administrator of this network, "
+"or the panel can't be reached."
 msgstr ""
 "Δεν μπορείτε να ανοίξετε τον πίνακα διαχείρισης: δεν είστε διαχειριστής "
 "αυτού του δικτύου ή ο πίνακας δεν είναι προσβάσιμος."
@@ -339,131 +338,185 @@ msgstr "{count} συσκευές αποσυνδέθηκαν"
 msgid "{on_count} online · {off_count} offline"
 msgstr "{on_count} συνδεδεμένες · {off_count} αποσυνδεδεμένες"
 
-msgid "Connected · 1 peer"
-msgstr "Συνδεδεμένο · 1 peer"
+msgid ""
+"Invites from BigLace need a BigScale server that supports them. Ask your "
+"administrator to update the server, or to create the invite in the panel."
+msgstr ""
+"Οι προσκλήσεις από το BigLace χρειάζονται διακομιστή BigScale που τις "
+"υποστηρίζει. Ζητήστε από τον διαχειριστή σας να ενημερώσει τον διακομιστή ή "
+"να δημιουργήσει την πρόσκληση στον πίνακα."
+
+msgid "This device can't send invites (it isn't linked to a person's account)."
+msgstr ""
+"Αυτή η συσκευή δεν μπορεί να στείλει προσκλήσεις (δεν είναι συνδεδεμένη με "
+"λογαριασμό ατόμου)."
+
+msgid ""
+"The panel knows this device by a different key (BigLace was reinstalled?). "
+"Leave the network and join again to fix it."
+msgstr ""
+"Ο πίνακας γνωρίζει αυτή τη συσκευή με διαφορετικό κλειδί (επανεγκαταστάθηκε "
+"το BigLace;). Αποχωρήστε από το δίκτυο και συμμετάσχετε ξανά για να το "
+"διορθώσετε."
+
+msgid ""
+"The panel couldn't confirm this device. Make sure BigLace is up to date and "
+"stays open while connected, then try again."
+msgstr ""
+"Ο πίνακας δεν μπόρεσε να επιβεβαιώσει αυτή τη συσκευή. Βεβαιωθείτε ότι το "
+"BigLace είναι ενημερωμένο και μένει ανοιχτό όσο είστε συνδεδεμένοι και "
+"δοκιμάστε ξανά."
+
+msgid "You are no longer in that group."
+msgstr "Δεν είστε πλέον σε αυτή την ομάδα."
+
+msgid ""
+"On this network everyone can reach everyone, so only the administrator can "
+"invite people."
+msgstr ""
+"Σε αυτό το δίκτυο όλοι μπορούν να προσεγγίσουν όλους, οπότε μόνο ο "
+"διαχειριστής μπορεί να προσκαλεί άτομα."
+
+msgid "You have too many pending invites. Cancel some or try again tomorrow."
+msgstr ""
+"Έχετε πάρα πολλές εκκρεμείς προσκλήσεις. Ακυρώστε μερικές ή δοκιμάστε ξανά "
+"αύριο."
+
+msgid ""
+"On this network only administrators invite new people. You can still invite "
+"people already on the network into your groups."
+msgstr ""
+"Σε αυτό το δίκτυο μόνο οι διαχειριστές προσκαλούν νέα άτομα. Μπορείτε ακόμα "
+"να προσκαλείτε στις ομάδες σας άτομα που είναι ήδη στο δίκτυο."
 
 #, rust-format
-msgid "Connected · {n} peers"
-msgstr "Συνδεδεμένο · {n} peers"
+msgid "Could not reach the panel: {error}"
+msgstr "Δεν ήταν δυνατή η επικοινωνία με τον πίνακα: {error}"
 
-#, rust-format
-msgid "In the room {group} · muted"
-msgstr "Στο δωμάτιο {group} · σίγαση"
+msgid "Waiting to be used"
+msgstr "Αναμονή χρήσης"
 
-#, rust-format
-msgid "In the room {group}"
-msgstr "Στο δωμάτιο {group}"
+msgid "Used"
+msgstr "Χρησιμοποιήθηκε"
 
-msgid "Show BigLace"
-msgstr "Εμφάνιση BigLace"
+msgid "Expired"
+msgstr "Έληξε"
 
-#, rust-format
-msgid "Room {group}"
-msgstr "Δωμάτιο {group}"
+msgid "Cancelled"
+msgstr "Ακυρώθηκε"
 
-msgid "Unmute (Ctrl+Alt+M)"
-msgstr "Κατάργηση σίγασης (Ctrl+Alt+M)"
-
-msgid "Mute (Ctrl+Alt+M)"
-msgstr "Σίγαση (Ctrl+Alt+M)"
-
-msgid "Leave the room"
-msgstr "Αποχώρηση από το δωμάτιο"
-
-msgid "Quit"
-msgstr "Έξοδος"
-
-msgid "Main menu"
-msgstr "Κύριο μενού"
-
-msgid "Search devices"
-msgstr "Αναζήτηση συσκευών"
+msgid "Waiting for an administrator's approval"
+msgstr "Αναμονή έγκρισης διαχειριστή"
 
 msgid "Refresh"
 msgstr "Ανανέωση"
 
+msgid "Main menu"
+msgstr "Κύριο μενού"
+
+msgid "Bring someone to your network"
+msgstr "Φέρτε κάποιον στο δίκτυό σας"
+
+msgid ""
+"Create a link or QR code and send it to the person. When they join, you two "
+"can reach each other's devices — no administrator needed. The link works "
+"once and stays valid until it's used or you cancel it."
+msgstr ""
+"Δημιουργήστε έναν σύνδεσμο ή κωδικό QR και στείλτε τον στο άτομο. Όταν "
+"συμμετάσχει, οι δυο σας μπορείτε να προσεγγίζετε τις συσκευές ο ένας του "
+"άλλου — χωρίς να χρειάζεται διαχειριστής. Ο σύνδεσμος λειτουργεί μία φορά "
+"και παραμένει έγκυρος μέχρι να χρησιμοποιηθεί ή να τον ακυρώσετε."
+
+msgid "No invites yet"
+msgstr "Καμία πρόσκληση ακόμα"
+
+msgid "Invites unavailable"
+msgstr "Οι προσκλήσεις δεν είναι διαθέσιμες"
+
+#, rust-format
+msgid "{user} joined"
+msgstr "Ο/Η {user} συμμετέχει"
+
 msgid "Invite"
 msgstr "Πρόσκληση"
 
-msgid "Invite someone to your network"
-msgstr "Προσκαλέστε κάποιον στο δίκτυό σας"
+#, rust-format
+msgid "group {group}"
+msgstr "ομάδα {group}"
+
+msgid "Cancel this invite: the link stops working"
+msgstr "Ακύρωση αυτής της πρόσκλησης: ο σύνδεσμος σταματά να λειτουργεί"
+
+msgid "The person you invite will reach your devices, and you theirs."
+msgstr ""
+"Το άτομο που προσκαλείτε θα προσεγγίζει τις συσκευές σας, και εσείς τις "
+"δικές του."
+
+msgid "Who is it for? (optional)"
+msgstr "Για ποιον είναι; (προαιρετικό)"
+
+msgid "Access"
+msgstr "Πρόσβαση"
+
+msgid "Just the two of us"
+msgstr "Μόνο οι δυο μας"
+
+msgid "You see each other's devices, nobody else"
+msgstr "Βλέπετε ο ένας τις συσκευές του άλλου, κανείς άλλος"
+
+#, rust-format
+msgid "Also the group {group}"
+msgstr "Επίσης η ομάδα {group}"
+
+msgid "They join the group and see everyone in it"
+msgstr "Συμμετέχει στην ομάδα και βλέπει όλους σε αυτήν"
+
+msgid "A network of their own"
+msgstr "Ένα δικό του δίκτυο"
 
 msgid ""
-"Tailscale cannot write this device's DNS settings, so it can no longer keep "
-"peer names working. They may still resolve for now, from the configuration "
-"left over from before the failure, but that will break the next time the "
-"network changes — and BigLace will fall back to IP addresses. On most "
-"distributions `sudo resolvconf -u` repairs it."
+"No link to you: they see only their own devices and whoever they invite "
+"(you're the administrator)"
 msgstr ""
-"Το Tailscale δεν μπορεί να γράψει τις ρυθμίσεις DNS αυτής της συσκευής, "
-"οπότε δεν μπορεί πλέον να διατηρεί λειτουργικά τα ονόματα των ομότιμων. Ίσως"
-" να επιλύονται ακόμα προς το παρόν, από τη διαμόρφωση που απέμεινε πριν από "
-"την αποτυχία, αλλά αυτό θα χαλάσει την επόμενη φορά που θα αλλάξει το δίκτυο"
-" — και το BigLace θα επιστρέψει σε διευθύνσεις IP. Στις περισσότερες "
-"διανομές το `sudo resolvconf -u` το διορθώνει."
+"Καμία σύνδεση με εσάς: βλέπει μόνο τις δικές του συσκευές και όποιον "
+"προσκαλεί (εσείς είστε ο διαχειριστής)"
 
-msgid "Not connected"
-msgstr "Δεν είστε συνδεδεμένος"
+msgid "Create invite"
+msgstr "Δημιουργία πρόσκλησης"
 
-msgid "Press Connect on the left to join the network."
-msgstr "Πατήστε Σύνδεση στα αριστερά για να συμμετάσχετε στο δίκτυο."
+msgid "QR code of the invite link"
+msgstr "Κωδικός QR του συνδέσμου πρόσκλησης"
 
-msgid "The tailscale service is not running"
-msgstr "Η υπηρεσία tailscale δεν εκτελείται"
-
-msgid "BigLace needs the tailscaled background service to manage the network."
+msgid ""
+"Send the link or let the person scan the code with their phone. It works "
+"once and stays valid until used or cancelled."
 msgstr ""
-"Το BigLace χρειάζεται την υπηρεσία παρασκηνίου tailscaled για τη διαχείριση "
-"του δικτύου."
+"Στείλτε τον σύνδεσμο ή αφήστε το άτομο να σαρώσει τον κωδικό με το τηλέφωνό "
+"του. Λειτουργεί μία φορά και παραμένει έγκυρος μέχρι να χρησιμοποιηθεί ή να "
+"ακυρωθεί."
 
-msgid "Start service"
-msgstr "Εκκίνηση υπηρεσίας"
+msgid "Copy link"
+msgstr "Αντιγραφή συνδέσμου"
 
-msgid "Join the network"
-msgstr "Συμμετοχή στο δίκτυο"
+msgid "Done"
+msgstr "Τέλος"
 
-msgid "Choose how you're going to sign in."
-msgstr "Επιλέξτε πώς θα συνδεθείτε."
+msgid "Copied!"
+msgstr "Αντιγράφηκε!"
 
-msgid "Ways to sign in"
-msgstr "Τρόποι σύνδεσης"
-
-msgid "Your account was kept on this computer. No invite needed."
+msgid ""
+"This network asks an administrator to approve each invite: the link starts "
+"working once they do. Its status shows in Invites."
 msgstr ""
-"Ο λογαριασμός σας διατηρήθηκε σε αυτόν τον υπολογιστή. Δεν χρειάζεται "
-"πρόσκληση."
+"Αυτό το δίκτυο απαιτεί από έναν διαχειριστή να εγκρίνει κάθε πρόσκληση: ο "
+"σύνδεσμος αρχίζει να λειτουργεί μόλις το κάνει. Η κατάστασή της εμφανίζεται "
+"στις Προσκλήσεις."
 
-msgid "I have an invite"
-msgstr "Έχω πρόσκληση"
+msgid "Show the full sidebar"
+msgstr "Εμφάνιση ολόκληρης της πλαϊνής στήλης"
 
-msgid "Someone on the network sent you a link or a QR code."
-msgstr "Κάποιος στο δίκτυο σας έστειλε έναν σύνδεσμο ή έναν κωδικό QR."
-
-msgid "I have an access key"
-msgstr "Έχω κλειδί πρόσβασης"
-
-msgid "A key the administrator created for you (starts with hskey-auth-)."
-msgstr ""
-"Ένα κλειδί που δημιούργησε ο διαχειριστής για εσάς (ξεκινά με hskey-auth-)."
-
-msgid "I'm the administrator"
-msgstr "Είμαι ο διαχειριστής"
-
-msgid "Sign in with the BigScale panel's admin username and password."
-msgstr ""
-"Σύνδεση με το όνομα χρήστη και τον κωδικό διαχειριστή του πίνακα BigScale."
-
-msgid "This device"
-msgstr "Αυτή η συσκευή"
-
-msgid "Copy IP address"
-msgstr "Αντιγραφή διεύθυνσης IP"
-
-msgid "Devices on the network"
-msgstr "Συσκευές στο δίκτυο"
-
-msgid "No other devices on the network yet."
-msgstr "Δεν υπάρχουν ακόμα άλλες συσκευές στο δίκτυο."
+msgid "Show only icons in the sidebar"
+msgstr "Μόνο εικονίδια στην πλαϊνή στήλη"
 
 msgid "Sections"
 msgstr "Ενότητες"
@@ -500,8 +553,8 @@ msgid ""
 msgstr ""
 "Μη αυτόματη ρύθμιση — αναπτύξτε για να επικολλήσετε μια διεύθυνση URL "
 "διακομιστή και ένα προ-εξουσιοδοτημένο κλειδί όταν τα έχετε ήδη λάβει από "
-"τον διαχειριστή σας. Οι περισσότεροι χρήστες θα πρέπει να συνδεθούν μέσω του"
-" κουμπιού του πίνακα παραπάνω."
+"τον διαχειριστή σας. Οι περισσότεροι χρήστες θα πρέπει να συνδεθούν μέσω του "
+"κουμπιού του πίνακα παραπάνω."
 
 msgid ""
 "Address of the coordination server (e.g. vpn.example.org). The https:// "
@@ -522,14 +575,14 @@ msgstr ""
 "της συσκευής χωρίς άνοιγμα προγράμματος περιήγησης."
 
 msgid ""
-"The name this device shows to other peers on the VPN — this is the Tailscale"
-" hostname, NOT your computer's name and NOT your user. Lowercase letters, "
+"The name this device shows to other peers on the VPN — this is the Tailscale "
+"hostname, NOT your computer's name and NOT your user. Lowercase letters, "
 "digits and hyphens. Example: 'tales-laptop', 'francois', 'office-pc'."
 msgstr ""
 "Το όνομα με το οποίο εμφανίζεται αυτή η συσκευή σε άλλους κόμβους στο VPN — "
 "αυτό είναι το όνομα κεντρικού υπολογιστή του Tailscale, ΟΧΙ το όνομα του "
-"υπολογιστή σας και ΟΧΙ το όνομα χρήστη σας. Πεζά γράμματα, ψηφία και παύλες."
-" Παράδειγμα: 'tales-laptop', 'francois', 'office-pc'."
+"υπολογιστή σας και ΟΧΙ το όνομα χρήστη σας. Πεζά γράμματα, ψηφία και παύλες. "
+"Παράδειγμα: 'tales-laptop', 'francois', 'office-pc'."
 
 msgid "Apply manual setup"
 msgstr "Εφαρμογή μη αυτόματης ρύθμισης"
@@ -538,8 +591,8 @@ msgid "Save"
 msgstr "Αποθήκευση"
 
 msgid ""
-"Persist the server, key and device name above. Won't connect — press Connect"
-" afterwards."
+"Persist the server, key and device name above. Won't connect — press Connect "
+"afterwards."
 msgstr ""
 "Αποθήκευση του διακομιστή, του κλειδιού και του ονόματος συσκευής παραπάνω. "
 "Δεν θα γίνει σύνδεση — πατήστε Σύνδεση στη συνέχεια."
@@ -551,8 +604,8 @@ msgid "Join the network when BigLace starts"
 msgstr "Σύνδεση στο δίκτυο κατά την εκκίνηση του BigLace"
 
 msgid ""
-"When on, BigLace runs 'tailscale up' as soon as it launches, so you join the"
-" mesh without clicking Connect every time."
+"When on, BigLace runs 'tailscale up' as soon as it launches, so you join the "
+"mesh without clicking Connect every time."
 msgstr ""
 "Όταν είναι ενεργό, το BigLace εκτελεί 'tailscale up' μόλις ξεκινήσει, ώστε "
 "να συμμετέχετε στο πλέγμα χωρίς να κάνετε κλικ στο Σύνδεση κάθε φορά."
@@ -584,9 +637,8 @@ msgid "Retry with backoff when the connection is lost"
 msgstr "Επανάληψη με καθυστέρηση όταν χαθεί η σύνδεση"
 
 msgid ""
-"If the tunnel drops (network change, sleep, server hiccup), BigLace silently"
-" retries with growing delays instead of leaving you offline until you "
-"notice."
+"If the tunnel drops (network change, sleep, server hiccup), BigLace silently "
+"retries with growing delays instead of leaving you offline until you notice."
 msgstr ""
 "Εάν η σήραγγα διακοπεί (αλλαγή δικτύου, αναστολή λειτουργίας, πρόβλημα "
 "διακομιστή), το BigLace επαναλαμβάνει σιωπηλά με αυξανόμενες καθυστερήσεις "
@@ -600,8 +652,8 @@ msgstr "Ειδοποίηση για αλλαγές σε peers"
 
 msgid "Show a desktop notification when peers go online/offline"
 msgstr ""
-"Εμφάνιση ειδοποίησης στην επιφάνεια εργασίας όταν peers γίνονται "
-"online/offline"
+"Εμφάνιση ειδοποίησης στην επιφάνεια εργασίας όταν peers γίνονται online/"
+"offline"
 
 msgid ""
 "Send a desktop toast when another device on your network goes online or "
@@ -620,309 +672,11 @@ msgid ""
 "Join or leave the mesh network. When connected, this device becomes "
 "reachable by the other peers in your account."
 msgstr ""
-"Συνδεθείτε ή αποσυνδεθείτε από το δίκτυο mesh. Όταν είστε συνδεδεμένοι, αυτή"
-" η συσκευή γίνεται προσβάσιμη από τα άλλα μέλη του λογαριασμού σας."
+"Συνδεθείτε ή αποσυνδεθείτε από το δίκτυο mesh. Όταν είστε συνδεδεμένοι, αυτή "
+"η συσκευή γίνεται προσβάσιμη από τα άλλα μέλη του λογαριασμού σας."
 
 msgid "Your photo"
 msgstr "Η φωτογραφία σας"
-
-msgid ""
-"Each of your groups has a voice room. Join it and talk with whoever is there"
-" — the sound goes straight between you, through the network."
-msgstr ""
-"Κάθε ομάδα σας έχει ένα φωνητικό δωμάτιο. Μπείτε και μιλήστε με όποιον είναι"
-" εκεί — ο ήχος πηγαίνει απευθείας μεταξύ σας, μέσω του δικτύου."
-
-msgid "You're not in any group yet. Create one in Groups."
-msgstr "Δεν είστε ακόμα σε καμία ομάδα. Δημιουργήστε μία στις Ομάδες."
-
-msgid "People in the room"
-msgstr "Άτομα στο δωμάτιο"
-
-msgid "Everyone"
-msgstr "Όλοι"
-
-msgid "Who's speaking"
-msgstr "Ποιος μιλάει"
-
-msgid "Mute"
-msgstr "Σίγαση"
-
-msgid "Mute your microphone for everyone"
-msgstr "Σίγαση του μικροφώνου σας για όλους"
-
-msgid "Leave"
-msgstr "Αποχώρηση"
-
-msgid "Which camera"
-msgstr "Ποια κάμερα"
-
-msgid "Include the computer's sound when sharing the screen"
-msgstr "Συμπερίληψη του ήχου του υπολογιστή κατά την κοινή χρήση οθόνης"
-
-msgid ""
-"Videos and music playing here go to the room too; the room's voices don't "
-"(no echo)"
-msgstr ""
-"Τα βίντεο και η μουσική που παίζουν εδώ πηγαίνουν και στο δωμάτιο· οι φωνές "
-"του δωματίου όχι (χωρίς ηχώ)"
-
-msgid "Rooms unavailable"
-msgstr "Τα δωμάτια δεν είναι διαθέσιμα"
-
-#, rust-format
-msgid "Could not turn on the camera: {error}"
-msgstr "Δεν ήταν δυνατή η ενεργοποίηση της κάμερας: {error}"
-
-#, rust-format
-msgid "Could not share the screen: {error}"
-msgstr "Δεν ήταν δυνατή η κοινή χρήση της οθόνης: {error}"
-
-#, rust-format
-msgid "Could not reach the panel: {error}"
-msgstr "Δεν ήταν δυνατή η επικοινωνία με τον πίνακα: {error}"
-
-msgid "Nobody here right now"
-msgstr "Κανείς εδώ αυτή τη στιγμή"
-
-#, rust-format
-msgid "In the room: {people}"
-msgstr "Στο δωμάτιο: {people}"
-
-msgid "Join"
-msgstr "Συμμετοχή"
-
-#, rust-format
-msgid "Join the room {group}"
-msgstr "Μπείτε στο δωμάτιο {group}"
-
-#, rust-format
-msgid "Could not join {group}: {error}"
-msgstr "Δεν ήταν δυνατή η είσοδος στο {group}: {error}"
-
-msgid "📺 You're showing your screen to the room"
-msgstr "📺 Δείχνετε την οθόνη σας στο δωμάτιο"
-
-msgid "📺 You're showing your screen · 1 person watching"
-msgstr "📺 Δείχνετε την οθόνη σας · 1 άτομο παρακολουθεί"
-
-#, rust-format
-msgid "📺 You're showing your screen · {count} people watching"
-msgstr "📺 Δείχνετε την οθόνη σας · {count} άτομα παρακολουθούν"
-
-msgid "1 person"
-msgstr "1 άτομο"
-
-#, rust-format
-msgid "{count} people"
-msgstr "{count} άτομα"
-
-#, rust-format
-msgid "{people} · {talking} talking"
-msgstr "{people} · {talking} μιλούν"
-
-msgid "you"
-msgstr "εσείς"
-
-msgid "connecting…"
-msgstr "σύνδεση…"
-
-msgid "muted"
-msgstr "σίγαση"
-
-msgid "talking"
-msgstr "μιλά"
-
-msgid "quiet"
-msgstr "σιωπηλός"
-
-msgid "Sharing screen"
-msgstr "Κοινή χρήση οθόνης"
-
-msgid "In control"
-msgstr "Έχει τον έλεγχο"
-
-msgid "Controls your screen now"
-msgstr "Ελέγχει τώρα την οθόνη σας"
-
-msgid "Watching"
-msgstr "Παρακολουθεί"
-
-msgid "Watching your screen"
-msgstr "Παρακολουθεί την οθόνη σας"
-
-#, rust-format
-msgid "{user} is showing their screen"
-msgstr "Ο/Η {user} δείχνει την οθόνη του/της"
-
-msgid "Watch"
-msgstr "Παρακολούθηση"
-
-#, rust-format
-msgid "{user} asks to control your screen"
-msgstr "Ο/Η {user} ζητά να ελέγξει την οθόνη σας"
-
-msgid ""
-"They'll be able to use your mouse and keyboard. You can take control back at"
-" any time."
-msgstr ""
-"Θα μπορεί να χρησιμοποιεί το ποντίκι και το πληκτρολόγιό σας. Μπορείτε να "
-"πάρετε πίσω τον έλεγχο οποιαδήποτε στιγμή."
-
-msgid "Deny"
-msgstr "Άρνηση"
-
-msgid "Allow"
-msgstr "Να επιτραπεί"
-
-msgid "Turn off camera"
-msgstr "Απενεργοποίηση κάμερας"
-
-msgid "Turn on camera"
-msgstr "Ενεργοποίηση κάμερας"
-
-msgid "No camera found on this computer"
-msgstr "Δεν βρέθηκε κάμερα σε αυτόν τον υπολογιστή"
-
-msgid "Stop sharing"
-msgstr "Διακοπή κοινής χρήσης"
-
-msgid "Share screen"
-msgstr "Κοινή χρήση οθόνης"
-
-msgid "Stop showing your screen to the room"
-msgstr "Σταματήστε να δείχνετε την οθόνη σας στο δωμάτιο"
-
-msgid "Show your screen to everyone in the room"
-msgstr "Δείξτε την οθόνη σας σε όλους στο δωμάτιο"
-
-msgid "Take back control"
-msgstr "Ανάκτηση ελέγχου"
-
-msgid "Give control"
-msgstr "Παραχώρηση ελέγχου"
-
-msgid "Stop them from using your mouse and keyboard"
-msgstr ""
-"Σταματήστε τους από το να χρησιμοποιούν το ποντίκι και το πληκτρολόγιό σας"
-
-msgid "Let them use your mouse and keyboard"
-msgstr "Αφήστε τους να χρησιμοποιούν το ποντίκι και το πληκτρολόγιό σας"
-
-msgid "Sound level"
-msgstr "Επίπεδο ήχου"
-
-msgid "Unmute"
-msgstr "Κατάργηση σίγασης"
-
-msgid "This computer"
-msgstr "Αυτός ο υπολογιστής"
-
-msgid "Who may use this computer remotely"
-msgstr "Ποιος μπορεί να χρησιμοποιεί αυτόν τον υπολογιστή απομακρυσμένα"
-
-msgid ""
-"Anyone you're connected to can ask to see and control this screen. Choose "
-"who is let in without asking, and who is never let in."
-msgstr ""
-"Όποιος είναι συνδεδεμένος μαζί σας μπορεί να ζητήσει να δει και να ελέγξει "
-"αυτή την οθόνη. Επιλέξτε ποιος γίνεται δεκτός χωρίς ερώτηση και ποιος δεν "
-"γίνεται ποτέ δεκτός."
-
-msgid "History of accesses"
-msgstr "Ιστορικό προσβάσεων"
-
-msgid "Kept on this computer only."
-msgstr "Διατηρείται μόνο σε αυτόν τον υπολογιστή."
-
-msgid "Clear"
-msgstr "Εκκαθάριση"
-
-msgid "Nobody has asked yet."
-msgstr "Κανείς δεν έχει ζητήσει ακόμα."
-
-msgid "When someone asks, you can choose to always let them in."
-msgstr "Όταν κάποιος ζητήσει, μπορείτε να επιλέξετε να τον δέχεστε πάντα."
-
-msgid "Ask every time"
-msgstr "Ερώτηση κάθε φορά"
-
-msgid "Always allow"
-msgstr "Να επιτρέπεται πάντα"
-
-msgid "Never allow"
-msgstr "Να μην επιτρέπεται ποτέ"
-
-msgid "No accesses yet."
-msgstr "Καμία πρόσβαση ακόμα."
-
-msgid "Remote access"
-msgstr "Απομακρυσμένη πρόσβαση"
-
-msgid "Watched the screen shared with the room"
-msgstr "Παρακολούθησε την οθόνη που κοινοποιήθηκε στο δωμάτιο"
-
-msgid "Got control of the shared screen"
-msgstr "Πήρε τον έλεγχο της κοινόχρηστης οθόνης"
-
-msgid "Restarted the computer"
-msgstr "Επανεκκίνησε τον υπολογιστή"
-
-msgid "Restarted the session"
-msgstr "Επανεκκίνησε τη συνεδρία"
-
-msgid "Shut down the computer"
-msgstr "Τερμάτισε τον υπολογιστή"
-
-msgid "allowed"
-msgstr "επιτράπηκε"
-
-msgid "allowed (always)"
-msgstr "επιτράπηκε (πάντα)"
-
-msgid "came back after a restart"
-msgstr "επέστρεψε μετά από επανεκκίνηση"
-
-msgid "denied"
-msgstr "απορρίφθηκε"
-
-msgid "blocked (never allowed)"
-msgstr "αποκλείστηκε (δεν επιτρέπεται ποτέ)"
-
-msgid "ended"
-msgstr "έληξε"
-
-#, rust-format
-msgid "{user} ({device})"
-msgstr "{user} ({device})"
-
-#, rust-format
-msgid "{done} of {total}"
-msgstr "{done} από {total}"
-
-msgid "Play"
-msgstr "Αναπαραγωγή"
-
-msgid "Download"
-msgstr "Λήψη"
-
-msgid "Open"
-msgstr "Άνοιγμα"
-
-msgid "Show in folder"
-msgstr "Εμφάνιση στον φάκελο"
-
-msgid "Pause"
-msgstr "Παύση"
-
-msgid "Photo"
-msgstr "Φωτογραφία"
-
-msgid "Video"
-msgstr "Βίντεο"
-
-msgid "Voice message"
-msgstr "Φωνητικό μήνυμα"
 
 msgid "New chat"
 msgstr "Νέα συνομιλία"
@@ -993,6 +747,9 @@ msgid ""
 msgstr ""
 "Επιλέξτε μια συνομιλία ή ξεκινήστε μία. Τα μηνύματα πηγαίνουν απευθείας "
 "μεταξύ των υπολογιστών σας — ο διακομιστής δεν τα βλέπει ποτέ."
+
+msgid "People on the network"
+msgstr "Άτομα στο δίκτυο"
 
 msgid "Group"
 msgstr "Ομάδα"
@@ -1172,22 +929,6 @@ msgstr ""
 "ομάδες."
 
 msgid ""
-"The panel knows this device by a different key (BigLace was reinstalled?). "
-"Leave the network and join again to fix it."
-msgstr ""
-"Ο πίνακας γνωρίζει αυτή τη συσκευή με διαφορετικό κλειδί (επανεγκαταστάθηκε "
-"το BigLace;). Αποχωρήστε από το δίκτυο και συμμετάσχετε ξανά για να το "
-"διορθώσετε."
-
-msgid ""
-"The panel couldn't confirm this device. Make sure BigLace is up to date and "
-"stays open while connected, then try again."
-msgstr ""
-"Ο πίνακας δεν μπόρεσε να επιβεβαιώσει αυτή τη συσκευή. Βεβαιωθείτε ότι το "
-"BigLace είναι ενημερωμένο και μένει ανοιχτό όσο είστε συνδεδεμένοι και "
-"δοκιμάστε ξανά."
-
-msgid ""
 "On this network everyone already reaches everyone, so groups aren't needed. "
 "The administrator can set access rules first."
 msgstr ""
@@ -1197,17 +938,13 @@ msgstr ""
 msgid "You already created the maximum number of groups."
 msgstr "Έχετε ήδη δημιουργήσει τον μέγιστο αριθμό ομάδων."
 
-msgid "You are no longer in that group."
-msgstr "Δεν είστε πλέον σε αυτή την ομάδα."
-
 msgid "A group with that name already exists. Choose another name."
 msgstr "Υπάρχει ήδη ομάδα με αυτό το όνομα. Επιλέξτε άλλο όνομα."
 
 msgid ""
 "Use lowercase letters, digits and hyphens, starting with a letter or digit."
 msgstr ""
-"Χρησιμοποιήστε πεζά γράμματα, ψηφία και παύλες, ξεκινώντας με γράμμα ή "
-"ψηφίο."
+"Χρησιμοποιήστε πεζά γράμματα, ψηφία και παύλες, ξεκινώντας με γράμμα ή ψηφίο."
 
 msgid ""
 "The administrator uses this group in the network's rules, so it can't be "
@@ -1220,8 +957,7 @@ msgid "Only the person who created the group can do that."
 msgstr "Μόνο το άτομο που δημιούργησε την ομάδα μπορεί να το κάνει αυτό."
 
 msgid "You created this group: delete it instead of leaving."
-msgstr ""
-"Εσείς δημιουργήσατε αυτή την ομάδα: διαγράψτε την αντί να αποχωρήσετε."
+msgstr "Εσείς δημιουργήσατε αυτή την ομάδα: διαγράψτε την αντί να αποχωρήσετε."
 
 msgid "This group belongs to the administrator; only they can change it."
 msgstr ""
@@ -1327,6 +1063,13 @@ msgstr "Μπήκατε στο {group}."
 msgid "Invitation declined."
 msgstr "Η πρόσκληση απορρίφθηκε."
 
+msgid "1 person"
+msgstr "1 άτομο"
+
+#, rust-format
+msgid "{count} people"
+msgstr "{count} άτομα"
+
 msgid "Created by you"
 msgstr "Δημιουργήθηκε από εσάς"
 
@@ -1336,6 +1079,9 @@ msgstr "Δημιουργήθηκε από {user}"
 
 msgid "Network group (administrator)"
 msgstr "Ομάδα δικτύου (διαχειριστής)"
+
+msgid "you"
+msgstr "εσείς"
 
 msgid "owner"
 msgstr "κάτοχος"
@@ -1359,8 +1105,7 @@ msgstr "Αφαίρεση του {user};"
 
 #, rust-format
 msgid ""
-"{user} leaves the group {group} and no longer reaches its members through "
-"it."
+"{user} leaves the group {group} and no longer reaches its members through it."
 msgstr ""
 "Ο/Η {user} αποχωρεί από την ομάδα {group} και δεν προσεγγίζει πλέον τα μέλη "
 "της μέσω αυτής."
@@ -1380,8 +1125,11 @@ msgid ""
 "You stop reaching the group's members through it. To come back, someone has "
 "to invite you again."
 msgstr ""
-"Σταματάτε να προσεγγίζετε τα μέλη της ομάδας μέσω αυτής. Για να επιστρέψετε,"
-" κάποιος πρέπει να σας προσκαλέσει ξανά."
+"Σταματάτε να προσεγγίζετε τα μέλη της ομάδας μέσω αυτής. Για να επιστρέψετε, "
+"κάποιος πρέπει να σας προσκαλέσει ξανά."
+
+msgid "Leave"
+msgstr "Αποχώρηση"
 
 msgid "You left the group."
 msgstr "Αποχωρήσατε από την ομάδα."
@@ -1424,6 +1172,9 @@ msgstr "Σύνδεση με {user};"
 msgid "You and {user} will reach each other's devices."
 msgstr "Εσείς και ο/η {user} θα προσεγγίζετε τις συσκευές ο ένας του άλλου."
 
+msgid "Join"
+msgstr "Συμμετοχή"
+
 msgid "Done. You can now reach each other's devices."
 msgstr "Έγινε. Τώρα μπορείτε να προσεγγίζετε τις συσκευές ο ένας του άλλου."
 
@@ -1445,9 +1196,6 @@ msgid ""
 "If someone on the network has exactly this name, they get the invitation."
 msgstr ""
 "Αν κάποιος στο δίκτυο έχει ακριβώς αυτό το όνομα, λαμβάνει την πρόσκληση."
-
-msgid "People on the network"
-msgstr "Άτομα στο δίκτυο"
 
 #, rust-format
 msgid "Invite \"{name}\""
@@ -1471,9 +1219,9 @@ msgstr ""
 "αποδέχονται."
 
 msgid ""
-"Listed are the people you're already connected to. To invite someone else on"
-" the network, type their exact name. Each one gets the invitation in BigLace"
-" and decides whether to join."
+"Listed are the people you're already connected to. To invite someone else on "
+"the network, type their exact name. Each one gets the invitation in BigLace "
+"and decides whether to join."
 msgstr ""
 "Εμφανίζονται τα άτομα με τα οποία είστε ήδη συνδεδεμένοι. Για να "
 "προσκαλέσετε κάποιον άλλον στο δίκτυο, πληκτρολογήστε το ακριβές όνομά του. "
@@ -1493,8 +1241,8 @@ msgid ""
 "You'll be the group's owner: you invite people into it and can remove them. "
 "Everyone in the group reaches each other's devices."
 msgstr ""
-"Θα είστε ο κάτοχος της ομάδας: προσκαλείτε άτομα σε αυτήν και μπορείτε να τα"
-" αφαιρέσετε. Όλοι στην ομάδα προσεγγίζουν τις συσκευές ο ένας του άλλου."
+"Θα είστε ο κάτοχος της ομάδας: προσκαλείτε άτομα σε αυτήν και μπορείτε να τα "
+"αφαιρέσετε. Όλοι στην ομάδα προσεγγίζουν τις συσκευές ο ένας του άλλου."
 
 msgid "Group name"
 msgstr "Όνομα ομάδας"
@@ -1527,147 +1275,177 @@ msgid "Invite {user}"
 msgstr "Πρόσκληση του {user}"
 
 msgid ""
-"Invites from BigLace need a BigScale server that supports them. Ask your "
-"administrator to update the server, or to create the invite in the panel."
+"Each of your groups has a voice room. Join it and talk with whoever is there "
+"— the sound goes straight between you, through the network."
 msgstr ""
-"Οι προσκλήσεις από το BigLace χρειάζονται διακομιστή BigScale που τις "
-"υποστηρίζει. Ζητήστε από τον διαχειριστή σας να ενημερώσει τον διακομιστή ή "
-"να δημιουργήσει την πρόσκληση στον πίνακα."
+"Κάθε ομάδα σας έχει ένα φωνητικό δωμάτιο. Μπείτε και μιλήστε με όποιον είναι "
+"εκεί — ο ήχος πηγαίνει απευθείας μεταξύ σας, μέσω του δικτύου."
+
+msgid "You're not in any group yet. Create one in Groups."
+msgstr "Δεν είστε ακόμα σε καμία ομάδα. Δημιουργήστε μία στις Ομάδες."
+
+msgid "People in the room"
+msgstr "Άτομα στο δωμάτιο"
+
+msgid "Everyone"
+msgstr "Όλοι"
+
+msgid "Who's speaking"
+msgstr "Ποιος μιλάει"
+
+msgid "Mute"
+msgstr "Σίγαση"
+
+msgid "Mute your microphone for everyone"
+msgstr "Σίγαση του μικροφώνου σας για όλους"
+
+msgid "Which camera"
+msgstr "Ποια κάμερα"
+
+msgid "Include the computer's sound when sharing the screen"
+msgstr "Συμπερίληψη του ήχου του υπολογιστή κατά την κοινή χρήση οθόνης"
 
 msgid ""
-"This device can't send invites (it isn't linked to a person's account)."
+"Videos and music playing here go to the room too; the room's voices don't "
+"(no echo)"
 msgstr ""
-"Αυτή η συσκευή δεν μπορεί να στείλει προσκλήσεις (δεν είναι συνδεδεμένη με "
-"λογαριασμό ατόμου)."
+"Τα βίντεο και η μουσική που παίζουν εδώ πηγαίνουν και στο δωμάτιο· οι φωνές "
+"του δωματίου όχι (χωρίς ηχώ)"
 
-msgid ""
-"On this network everyone can reach everyone, so only the administrator can "
-"invite people."
-msgstr ""
-"Σε αυτό το δίκτυο όλοι μπορούν να προσεγγίσουν όλους, οπότε μόνο ο "
-"διαχειριστής μπορεί να προσκαλεί άτομα."
-
-msgid "You have too many pending invites. Cancel some or try again tomorrow."
-msgstr ""
-"Έχετε πάρα πολλές εκκρεμείς προσκλήσεις. Ακυρώστε μερικές ή δοκιμάστε ξανά "
-"αύριο."
-
-msgid ""
-"On this network only administrators invite new people. You can still invite "
-"people already on the network into your groups."
-msgstr ""
-"Σε αυτό το δίκτυο μόνο οι διαχειριστές προσκαλούν νέα άτομα. Μπορείτε ακόμα "
-"να προσκαλείτε στις ομάδες σας άτομα που είναι ήδη στο δίκτυο."
-
-msgid "Waiting to be used"
-msgstr "Αναμονή χρήσης"
-
-msgid "Used"
-msgstr "Χρησιμοποιήθηκε"
-
-msgid "Expired"
-msgstr "Έληξε"
-
-msgid "Cancelled"
-msgstr "Ακυρώθηκε"
-
-msgid "Waiting for an administrator's approval"
-msgstr "Αναμονή έγκρισης διαχειριστή"
-
-msgid "Bring someone to your network"
-msgstr "Φέρτε κάποιον στο δίκτυό σας"
-
-msgid ""
-"Create a link or QR code and send it to the person. When they join, you two "
-"can reach each other's devices — no administrator needed. The link works "
-"once and stays valid until it's used or you cancel it."
-msgstr ""
-"Δημιουργήστε έναν σύνδεσμο ή κωδικό QR και στείλτε τον στο άτομο. Όταν "
-"συμμετάσχει, οι δυο σας μπορείτε να προσεγγίζετε τις συσκευές ο ένας του "
-"άλλου — χωρίς να χρειάζεται διαχειριστής. Ο σύνδεσμος λειτουργεί μία φορά "
-"και παραμένει έγκυρος μέχρι να χρησιμοποιηθεί ή να τον ακυρώσετε."
-
-msgid "No invites yet"
-msgstr "Καμία πρόσκληση ακόμα"
-
-msgid "Invites unavailable"
-msgstr "Οι προσκλήσεις δεν είναι διαθέσιμες"
+msgid "Rooms unavailable"
+msgstr "Τα δωμάτια δεν είναι διαθέσιμα"
 
 #, rust-format
-msgid "{user} joined"
-msgstr "Ο/Η {user} συμμετέχει"
+msgid "Could not turn on the camera: {error}"
+msgstr "Δεν ήταν δυνατή η ενεργοποίηση της κάμερας: {error}"
 
 #, rust-format
-msgid "group {group}"
-msgstr "ομάδα {group}"
+msgid "Could not share the screen: {error}"
+msgstr "Δεν ήταν δυνατή η κοινή χρήση της οθόνης: {error}"
 
-msgid "Cancel this invite: the link stops working"
-msgstr "Ακύρωση αυτής της πρόσκλησης: ο σύνδεσμος σταματά να λειτουργεί"
-
-msgid "The person you invite will reach your devices, and you theirs."
-msgstr ""
-"Το άτομο που προσκαλείτε θα προσεγγίζει τις συσκευές σας, και εσείς τις "
-"δικές του."
-
-msgid "Who is it for? (optional)"
-msgstr "Για ποιον είναι; (προαιρετικό)"
-
-msgid "Access"
-msgstr "Πρόσβαση"
-
-msgid "Just the two of us"
-msgstr "Μόνο οι δυο μας"
-
-msgid "You see each other's devices, nobody else"
-msgstr "Βλέπετε ο ένας τις συσκευές του άλλου, κανείς άλλος"
+msgid "Nobody here right now"
+msgstr "Κανείς εδώ αυτή τη στιγμή"
 
 #, rust-format
-msgid "Also the group {group}"
-msgstr "Επίσης η ομάδα {group}"
+msgid "In the room: {people}"
+msgstr "Στο δωμάτιο: {people}"
 
-msgid "They join the group and see everyone in it"
-msgstr "Συμμετέχει στην ομάδα και βλέπει όλους σε αυτήν"
+#, rust-format
+msgid "Join the room {group}"
+msgstr "Μπείτε στο δωμάτιο {group}"
 
-msgid "A network of their own"
-msgstr "Ένα δικό του δίκτυο"
+#, rust-format
+msgid "Could not join {group}: {error}"
+msgstr "Δεν ήταν δυνατή η είσοδος στο {group}: {error}"
+
+msgid "📺 You're showing your screen to the room"
+msgstr "📺 Δείχνετε την οθόνη σας στο δωμάτιο"
+
+msgid "📺 You're showing your screen · 1 person watching"
+msgstr "📺 Δείχνετε την οθόνη σας · 1 άτομο παρακολουθεί"
+
+#, rust-format
+msgid "📺 You're showing your screen · {count} people watching"
+msgstr "📺 Δείχνετε την οθόνη σας · {count} άτομα παρακολουθούν"
+
+#, rust-format
+msgid "Room {group}"
+msgstr "Δωμάτιο {group}"
+
+#, rust-format
+msgid "{people} · {talking} talking"
+msgstr "{people} · {talking} μιλούν"
+
+msgid "connecting…"
+msgstr "σύνδεση…"
+
+msgid "muted"
+msgstr "σίγαση"
+
+msgid "talking"
+msgstr "μιλά"
+
+msgid "quiet"
+msgstr "σιωπηλός"
+
+msgid "Sharing screen"
+msgstr "Κοινή χρήση οθόνης"
+
+msgid "In control"
+msgstr "Έχει τον έλεγχο"
+
+msgid "Controls your screen now"
+msgstr "Ελέγχει τώρα την οθόνη σας"
+
+msgid "Watching"
+msgstr "Παρακολουθεί"
+
+msgid "Watching your screen"
+msgstr "Παρακολουθεί την οθόνη σας"
+
+#, rust-format
+msgid "{user} is showing their screen"
+msgstr "Ο/Η {user} δείχνει την οθόνη του/της"
+
+msgid "Watch"
+msgstr "Παρακολούθηση"
+
+#, rust-format
+msgid "{user} asks to control your screen"
+msgstr "Ο/Η {user} ζητά να ελέγξει την οθόνη σας"
 
 msgid ""
-"No link to you: they see only their own devices and whoever they invite "
-"(you're the administrator)"
+"They'll be able to use your mouse and keyboard. You can take control back at "
+"any time."
 msgstr ""
-"Καμία σύνδεση με εσάς: βλέπει μόνο τις δικές του συσκευές και όποιον "
-"προσκαλεί (εσείς είστε ο διαχειριστής)"
+"Θα μπορεί να χρησιμοποιεί το ποντίκι και το πληκτρολόγιό σας. Μπορείτε να "
+"πάρετε πίσω τον έλεγχο οποιαδήποτε στιγμή."
 
-msgid "Create invite"
-msgstr "Δημιουργία πρόσκλησης"
+msgid "Deny"
+msgstr "Άρνηση"
 
-msgid "QR code of the invite link"
-msgstr "Κωδικός QR του συνδέσμου πρόσκλησης"
+msgid "Allow"
+msgstr "Να επιτραπεί"
 
-msgid ""
-"Send the link or let the person scan the code with their phone. It works "
-"once and stays valid until used or cancelled."
+msgid "Turn off camera"
+msgstr "Απενεργοποίηση κάμερας"
+
+msgid "Turn on camera"
+msgstr "Ενεργοποίηση κάμερας"
+
+msgid "No camera found on this computer"
+msgstr "Δεν βρέθηκε κάμερα σε αυτόν τον υπολογιστή"
+
+msgid "Stop sharing"
+msgstr "Διακοπή κοινής χρήσης"
+
+msgid "Share screen"
+msgstr "Κοινή χρήση οθόνης"
+
+msgid "Stop showing your screen to the room"
+msgstr "Σταματήστε να δείχνετε την οθόνη σας στο δωμάτιο"
+
+msgid "Show your screen to everyone in the room"
+msgstr "Δείξτε την οθόνη σας σε όλους στο δωμάτιο"
+
+msgid "Take back control"
+msgstr "Ανάκτηση ελέγχου"
+
+msgid "Give control"
+msgstr "Παραχώρηση ελέγχου"
+
+msgid "Stop them from using your mouse and keyboard"
 msgstr ""
-"Στείλτε τον σύνδεσμο ή αφήστε το άτομο να σαρώσει τον κωδικό με το τηλέφωνό "
-"του. Λειτουργεί μία φορά και παραμένει έγκυρος μέχρι να χρησιμοποιηθεί ή να "
-"ακυρωθεί."
+"Σταματήστε τους από το να χρησιμοποιούν το ποντίκι και το πληκτρολόγιό σας"
 
-msgid "Copy link"
-msgstr "Αντιγραφή συνδέσμου"
+msgid "Let them use your mouse and keyboard"
+msgstr "Αφήστε τους να χρησιμοποιούν το ποντίκι και το πληκτρολόγιό σας"
 
-msgid "Done"
-msgstr "Τέλος"
+msgid "Sound level"
+msgstr "Επίπεδο ήχου"
 
-msgid "Copied!"
-msgstr "Αντιγράφηκε!"
-
-msgid ""
-"This network asks an administrator to approve each invite: the link starts "
-"working once they do. Its status shows in Invites."
-msgstr ""
-"Αυτό το δίκτυο απαιτεί από έναν διαχειριστή να εγκρίνει κάθε πρόσκληση: ο "
-"σύνδεσμος αρχίζει να λειτουργεί μόλις το κάνει. Η κατάστασή της εμφανίζεται "
-"στις Προσκλήσεις."
+msgid "Unmute"
+msgstr "Κατάργηση σίγασης"
 
 msgid "System accent"
 msgstr "Χρώμα έμφασης συστήματος"
@@ -1747,36 +1525,6 @@ msgstr "Εικόνα…"
 msgid "Choose a background picture"
 msgstr "Επιλέξτε εικόνα φόντου"
 
-msgid "Message"
-msgstr "Μήνυμα"
-
-msgid "Bold"
-msgstr "Έντονα"
-
-msgid "Italic"
-msgstr "Πλάγια"
-
-msgid "Underline"
-msgstr "Υπογράμμιση"
-
-msgid "Strikethrough"
-msgstr "Διακριτή διαγραφή"
-
-msgid "Monospace"
-msgstr "Σταθερό πλάτος"
-
-msgid "Create link"
-msgstr "Δημιουργία συνδέσμου"
-
-msgid "Plain text"
-msgstr "Απλό κείμενο"
-
-msgid "Formatting"
-msgstr "Μορφοποίηση"
-
-msgid "Create"
-msgstr "Δημιουργία"
-
 msgid "Mesh VPN client for BigScale/Headscale."
 msgstr "Πρόγραμμα-πελάτης Mesh VPN για BigScale/Headscale."
 
@@ -1813,13 +1561,19 @@ msgstr "Αποχώρηση από το δίκτυο;"
 
 #, rust-format
 msgid ""
-"This device leaves the network and its name becomes free. Your account {user} is kept: you can come back later from this computer, without an invite.\n"
+"This device leaves the network and its name becomes free. Your account "
+"{user} is kept: you can come back later from this computer, without an "
+"invite.\n"
 "\n"
-"If you won't come back, delete the account and the name {user} becomes free too."
+"If you won't come back, delete the account and the name {user} becomes free "
+"too."
 msgstr ""
-"Αυτή η συσκευή αποχωρεί από το δίκτυο και το όνομά της γίνεται ελεύθερο. Ο λογαριασμός σας {user} διατηρείται: μπορείτε να επιστρέψετε αργότερα από αυτόν τον υπολογιστή, χωρίς πρόσκληση.\n"
+"Αυτή η συσκευή αποχωρεί από το δίκτυο και το όνομά της γίνεται ελεύθερο. Ο "
+"λογαριασμός σας {user} διατηρείται: μπορείτε να επιστρέψετε αργότερα από "
+"αυτόν τον υπολογιστή, χωρίς πρόσκληση.\n"
 "\n"
-"Αν δεν θα επιστρέψετε, διαγράψτε τον λογαριασμό και το όνομα {user} θα γίνει επίσης ελεύθερο."
+"Αν δεν θα επιστρέψετε, διαγράψτε τον λογαριασμό και το όνομα {user} θα γίνει "
+"επίσης ελεύθερο."
 
 msgid "Leave and delete account"
 msgstr "Αποχώρηση και διαγραφή λογαριασμού"
@@ -1834,15 +1588,15 @@ msgstr "Αποσύνδεση…"
 msgid ""
 "Signed out. Your account was kept: {count} other device(s) still use it."
 msgstr ""
-"Αποσυνδεθήκατε. Ο λογαριασμός σας διατηρήθηκε: {count} άλλη(-ες) "
-"συσκευή(-ές) τον χρησιμοποιούν ακόμα."
+"Αποσυνδεθήκατε. Ο λογαριασμός σας διατηρήθηκε: {count} άλλη(-ες) συσκευή(-"
+"ές) τον χρησιμοποιούν ακόμα."
 
 msgid ""
 "Couldn't delete the account: the panel can't be reached. Connect and try "
 "again."
 msgstr ""
-"Δεν ήταν δυνατή η διαγραφή του λογαριασμού: ο πίνακας δεν είναι προσβάσιμος."
-" Συνδεθείτε και δοκιμάστε ξανά."
+"Δεν ήταν δυνατή η διαγραφή του λογαριασμού: ο πίνακας δεν είναι προσβάσιμος. "
+"Συνδεθείτε και δοκιμάστε ξανά."
 
 msgid "Signed out and account deleted."
 msgstr "Αποσυνδεθήκατε και ο λογαριασμός διαγράφηκε."
@@ -1857,11 +1611,16 @@ msgstr "Δεν ήταν δυνατή η επικοινωνία με τον δι�
 msgid ""
 "The control server didn't confirm the sign-out: {error}\n"
 "\n"
-"You can still sign out on this computer: BigLace forgets the saved key and account and disconnects. The server keeps listing this device until an administrator removes it."
+"You can still sign out on this computer: BigLace forgets the saved key and "
+"account and disconnects. The server keeps listing this device until an "
+"administrator removes it."
 msgstr ""
 "Ο διακομιστής ελέγχου δεν επιβεβαίωσε την αποσύνδεση: {error}\n"
 "\n"
-"Μπορείτε ακόμα να αποσυνδεθείτε σε αυτόν τον υπολογιστή: το BigLace ξεχνά το αποθηκευμένο κλειδί και τον λογαριασμό και αποσυνδέεται. Ο διακομιστής συνεχίζει να εμφανίζει αυτή τη συσκευή μέχρι να την αφαιρέσει ένας διαχειριστής."
+"Μπορείτε ακόμα να αποσυνδεθείτε σε αυτόν τον υπολογιστή: το BigLace ξεχνά το "
+"αποθηκευμένο κλειδί και τον λογαριασμό και αποσυνδέεται. Ο διακομιστής "
+"συνεχίζει να εμφανίζει αυτή τη συσκευή μέχρι να την αφαιρέσει ένας "
+"διαχειριστής."
 
 msgid "Sign out on this computer"
 msgstr "Αποσύνδεση σε αυτόν τον υπολογιστή"
@@ -1879,15 +1638,15 @@ msgid ""
 msgstr ""
 "Μόνο για όποιον διαχειρίζεται τον πίνακα BigScale: χρησιμοποιήστε το όνομα "
 "χρήστη και τον κωδικό διαχειριστή του πίνακα. Αυτή η συσκευή συμμετέχει στο "
-"δίκτυο με το παρακάτω όνομα. Όλοι οι άλλοι συμμετέχουν με πρόσκληση ή κλειδί"
-" πρόσβασης."
+"δίκτυο με το παρακάτω όνομα. Όλοι οι άλλοι συμμετέχουν με πρόσκληση ή κλειδί "
+"πρόσβασης."
 
 msgid "Panel URL"
 msgstr "URL πίνακα ελέγχου"
 
 msgid ""
-"Address of your BigScale panel (e.g. panel.example.org). The https:// scheme"
-" is added automatically if you omit it."
+"Address of your BigScale panel (e.g. panel.example.org). The https:// scheme "
+"is added automatically if you omit it."
 msgstr ""
 "Διεύθυνση του πίνακα BigScale (π.χ. panel.example.org). Το σχήμα https:// "
 "προστίθεται αυτόματα αν το παραλείψετε."
@@ -1912,16 +1671,16 @@ msgstr ""
 "Manager σε Windows)."
 
 msgid ""
-"The name this device shows to other peers on the VPN — this is the Tailscale"
-" hostname, NOT your computer's name and NOT your user. Lowercase letters, "
+"The name this device shows to other peers on the VPN — this is the Tailscale "
+"hostname, NOT your computer's name and NOT your user. Lowercase letters, "
 "digits and hyphens. Example: 'tales-laptop', 'francois', 'office-pc'. Pick "
 "something other peers will recognise."
 msgstr ""
-"Το όνομα με το οποίο εμφανίζεται αυτή η συσκευή στα άλλα μέλη του VPN — αυτό"
-" είναι το όνομα υπολογιστή του Tailscale, ΟΧΙ το όνομα του υπολογιστή σας "
-"και ΟΧΙ το όνομα χρήστη σας. Πεζά γράμματα, ψηφία και παύλες. Παράδειγμα: "
-"'tales-laptop', 'francois', 'office-pc'. Επιλέξτε κάτι που θα αναγνωρίζουν "
-"τα άλλα μέλη."
+"Το όνομα με το οποίο εμφανίζεται αυτή η συσκευή στα άλλα μέλη του VPN — αυτό "
+"είναι το όνομα υπολογιστή του Tailscale, ΟΧΙ το όνομα του υπολογιστή σας και "
+"ΟΧΙ το όνομα χρήστη σας. Πεζά γράμματα, ψηφία και παύλες. Παράδειγμα: 'tales-"
+"laptop', 'francois', 'office-pc'. Επιλέξτε κάτι που θα αναγνωρίζουν τα άλλα "
+"μέλη."
 
 msgid "Sign in"
 msgstr "Σύνδεση"
@@ -1981,8 +1740,8 @@ msgstr ""
 "ελευθερώσει το όνομα."
 
 msgid ""
-"That name already belongs to an account on this network. Try another one, or"
-" ask the administrator to free it."
+"That name already belongs to an account on this network. Try another one, or "
+"ask the administrator to free it."
 msgstr ""
 "Αυτό το όνομα ανήκει ήδη σε λογαριασμό σε αυτό το δίκτυο. Δοκιμάστε άλλο ή "
 "ζητήστε από τον διαχειριστή να το ελευθερώσει."
@@ -2004,8 +1763,7 @@ msgstr ""
 "Δοκιμάστε ξανά μόλις το άτομο που σας προσκάλεσε σας πει ότι εγκρίθηκε."
 
 msgid "This invite is not valid. Check the link or ask for a new one."
-msgstr ""
-"Αυτή η πρόσκληση δεν είναι έγκυρη. Ελέγξτε τον σύνδεσμο ή ζητήστε νέα."
+msgstr "Αυτή η πρόσκληση δεν είναι έγκυρη. Ελέγξτε τον σύνδεσμο ή ζητήστε νέα."
 
 msgid ""
 "This server doesn't support invites yet. Sign in with a panel account "
@@ -2037,8 +1795,8 @@ msgid ""
 "The name this device shows to other peers. Lowercase letters, digits and "
 "hyphens. Example: 'maria-laptop'."
 msgstr ""
-"Το όνομα που εμφανίζει αυτή η συσκευή στους άλλους ομότιμους. Πεζά γράμματα,"
-" ψηφία και παύλες. Παράδειγμα: 'maria-laptop'."
+"Το όνομα που εμφανίζει αυτή η συσκευή στους άλλους ομότιμους. Πεζά γράμματα, "
+"ψηφία και παύλες. Παράδειγμα: 'maria-laptop'."
 
 msgid "Network"
 msgstr "Δίκτυο"
@@ -2047,11 +1805,11 @@ msgid "Joining…"
 msgstr "Συμμετοχή…"
 
 msgid ""
-"That doesn't look like an invite link. It starts with https:// and contains "
-"/join#."
+"That doesn't look like an invite link. It starts with https:// and contains /"
+"join#."
 msgstr ""
-"Αυτό δεν μοιάζει με σύνδεσμο πρόσκλησης. Ξεκινά με https:// και περιέχει "
-"/join#."
+"Αυτό δεν μοιάζει με σύνδεσμο πρόσκλησης. Ξεκινά με https:// και περιέχει /"
+"join#."
 
 msgid "Type your name."
 msgstr "Πληκτρολογήστε το όνομά σας."
@@ -2063,6 +1821,36 @@ msgstr "Καλώς ήρθατε, {name}! Μπήκατε στην ομάδα {gro
 #, rust-format
 msgid "Welcome, {name}! Connecting…"
 msgstr "Καλώς ήρθατε, {name}! Σύνδεση…"
+
+msgid "Message"
+msgstr "Μήνυμα"
+
+msgid "Bold"
+msgstr "Έντονα"
+
+msgid "Italic"
+msgstr "Πλάγια"
+
+msgid "Underline"
+msgstr "Υπογράμμιση"
+
+msgid "Strikethrough"
+msgstr "Διακριτή διαγραφή"
+
+msgid "Monospace"
+msgstr "Σταθερό πλάτος"
+
+msgid "Create link"
+msgstr "Δημιουργία συνδέσμου"
+
+msgid "Plain text"
+msgstr "Απλό κείμενο"
+
+msgid "Formatting"
+msgstr "Μορφοποίηση"
+
+msgid "Create"
+msgstr "Δημιουργία"
 
 msgid "End access"
 msgstr "Τερματισμός πρόσβασης"
@@ -2076,8 +1864,8 @@ msgstr "Η απομακρυσμένη πρόσβαση ξεκίνησε"
 
 #, rust-format
 msgid ""
-"{user} ({device}) is seeing and controlling this screen. Open BigLace to end"
-" the access."
+"{user} ({device}) is seeing and controlling this screen. Open BigLace to end "
+"the access."
 msgstr ""
 "Ο/Η {user} ({device}) βλέπει και ελέγχει αυτή την οθόνη. Ανοίξτε το BigLace "
 "για να τερματίσετε την πρόσβαση."
@@ -2127,11 +1915,11 @@ msgid "Restart {name}'s computer?"
 msgstr "Επανεκκίνηση του υπολογιστή του/της {name};"
 
 msgid ""
-"It restarts, signs in by itself and locks the screen right away; this window"
-" connects again when it's back. Unsaved work there is lost."
+"It restarts, signs in by itself and locks the screen right away; this window "
+"connects again when it's back. Unsaved work there is lost."
 msgstr ""
-"Κάνει επανεκκίνηση, συνδέεται μόνος του και κλειδώνει αμέσως την οθόνη· αυτό"
-" το παράθυρο συνδέεται ξανά όταν επιστρέψει. Η μη αποθηκευμένη εργασία εκεί "
+"Κάνει επανεκκίνηση, συνδέεται μόνος του και κλειδώνει αμέσως την οθόνη· αυτό "
+"το παράθυρο συνδέεται ξανά όταν επιστρέψει. Η μη αποθηκευμένη εργασία εκεί "
 "χάνεται."
 
 msgid "Restart"
@@ -2161,8 +1949,8 @@ msgid ""
 "You won't be able to reach it again until someone turns it on. Unsaved work "
 "there is lost."
 msgstr ""
-"Δεν θα μπορείτε να τον προσεγγίσετε ξανά μέχρι κάποιος να τον ενεργοποιήσει."
-" Η μη αποθηκευμένη εργασία εκεί χάνεται."
+"Δεν θα μπορείτε να τον προσεγγίσετε ξανά μέχρι κάποιος να τον ενεργοποιήσει. "
+"Η μη αποθηκευμένη εργασία εκεί χάνεται."
 
 msgid "Shut Down"
 msgstr "Τερματισμός"
@@ -2236,8 +2024,8 @@ msgid "{name} didn't allow the access."
 msgstr "Ο/Η {name} δεν επέτρεψε την πρόσβαση."
 
 msgid ""
-"That computer couldn't confirm this device. Make sure both run an up-to-date"
-" BigLace."
+"That computer couldn't confirm this device. Make sure both run an up-to-date "
+"BigLace."
 msgstr ""
 "Εκείνος ο υπολογιστής δεν μπόρεσε να επιβεβαιώσει αυτή τη συσκευή. "
 "Βεβαιωθείτε ότι και οι δύο εκτελούν ενημερωμένο BigLace."
@@ -2311,6 +2099,36 @@ msgstr "Η πρόσβαση στην οθόνη του/της {name} τερμα�
 msgid "Give back control"
 msgstr "Επιστροφή ελέγχου"
 
+msgid "Connected · 1 peer"
+msgstr "Συνδεδεμένο · 1 peer"
+
+#, rust-format
+msgid "Connected · {n} peers"
+msgstr "Συνδεδεμένο · {n} peers"
+
+#, rust-format
+msgid "In the room {group} · muted"
+msgstr "Στο δωμάτιο {group} · σίγαση"
+
+#, rust-format
+msgid "In the room {group}"
+msgstr "Στο δωμάτιο {group}"
+
+msgid "Show BigLace"
+msgstr "Εμφάνιση BigLace"
+
+msgid "Unmute (Ctrl+Alt+M)"
+msgstr "Κατάργηση σίγασης (Ctrl+Alt+M)"
+
+msgid "Mute (Ctrl+Alt+M)"
+msgstr "Σίγαση (Ctrl+Alt+M)"
+
+msgid "Leave the room"
+msgstr "Αποχώρηση από το δωμάτιο"
+
+msgid "Quit"
+msgstr "Έξοδος"
+
 msgid "direct"
 msgstr "άμεση"
 
@@ -2346,6 +2164,9 @@ msgstr "Καρφιτσωμένο στην κορυφή"
 
 msgid "Unpinned"
 msgstr "Αποκαρφιτσώθηκε"
+
+msgid "Copy IP address"
+msgstr "Αντιγραφή διεύθυνσης IP"
 
 msgid "Open files (SFTP)"
 msgstr "Άνοιγμα αρχείων (SFTP)"
@@ -2394,6 +2215,209 @@ msgstr "Αποτυχία ενημέρωσης κόμβου εξόδου"
 
 msgid "Copy"
 msgstr "Αντιγραφή"
+
+msgid "Search devices"
+msgstr "Αναζήτηση συσκευών"
+
+msgid "Invite someone to your network"
+msgstr "Προσκαλέστε κάποιον στο δίκτυό σας"
+
+msgid ""
+"Tailscale cannot write this device's DNS settings, so it can no longer keep "
+"peer names working. They may still resolve for now, from the configuration "
+"left over from before the failure, but that will break the next time the "
+"network changes — and BigLace will fall back to IP addresses. On most "
+"distributions `sudo resolvconf -u` repairs it."
+msgstr ""
+"Το Tailscale δεν μπορεί να γράψει τις ρυθμίσεις DNS αυτής της συσκευής, "
+"οπότε δεν μπορεί πλέον να διατηρεί λειτουργικά τα ονόματα των ομότιμων. Ίσως "
+"να επιλύονται ακόμα προς το παρόν, από τη διαμόρφωση που απέμεινε πριν από "
+"την αποτυχία, αλλά αυτό θα χαλάσει την επόμενη φορά που θα αλλάξει το δίκτυο "
+"— και το BigLace θα επιστρέψει σε διευθύνσεις IP. Στις περισσότερες διανομές "
+"το `sudo resolvconf -u` το διορθώνει."
+
+msgid "Not connected"
+msgstr "Δεν είστε συνδεδεμένος"
+
+msgid "Press Connect on the left to join the network."
+msgstr "Πατήστε Σύνδεση στα αριστερά για να συμμετάσχετε στο δίκτυο."
+
+msgid "The tailscale service is not running"
+msgstr "Η υπηρεσία tailscale δεν εκτελείται"
+
+msgid "BigLace needs the tailscaled background service to manage the network."
+msgstr ""
+"Το BigLace χρειάζεται την υπηρεσία παρασκηνίου tailscaled για τη διαχείριση "
+"του δικτύου."
+
+msgid "Start service"
+msgstr "Εκκίνηση υπηρεσίας"
+
+msgid "Join the network"
+msgstr "Συμμετοχή στο δίκτυο"
+
+msgid "Choose how you're going to sign in."
+msgstr "Επιλέξτε πώς θα συνδεθείτε."
+
+msgid "Ways to sign in"
+msgstr "Τρόποι σύνδεσης"
+
+msgid "Your account was kept on this computer. No invite needed."
+msgstr ""
+"Ο λογαριασμός σας διατηρήθηκε σε αυτόν τον υπολογιστή. Δεν χρειάζεται "
+"πρόσκληση."
+
+msgid "I have an invite"
+msgstr "Έχω πρόσκληση"
+
+msgid "Someone on the network sent you a link or a QR code."
+msgstr "Κάποιος στο δίκτυο σας έστειλε έναν σύνδεσμο ή έναν κωδικό QR."
+
+msgid "I have an access key"
+msgstr "Έχω κλειδί πρόσβασης"
+
+msgid "A key the administrator created for you (starts with hskey-auth-)."
+msgstr ""
+"Ένα κλειδί που δημιούργησε ο διαχειριστής για εσάς (ξεκινά με hskey-auth-)."
+
+msgid "I'm the administrator"
+msgstr "Είμαι ο διαχειριστής"
+
+msgid "Sign in with the BigScale panel's admin username and password."
+msgstr ""
+"Σύνδεση με το όνομα χρήστη και τον κωδικό διαχειριστή του πίνακα BigScale."
+
+msgid "This device"
+msgstr "Αυτή η συσκευή"
+
+msgid "Devices on the network"
+msgstr "Συσκευές στο δίκτυο"
+
+msgid "No other devices on the network yet."
+msgstr "Δεν υπάρχουν ακόμα άλλες συσκευές στο δίκτυο."
+
+msgid "you are not in a room"
+msgstr "δεν είστε σε δωμάτιο"
+
+msgid "screen sharing isn't available on this computer"
+msgstr "η κοινή χρήση οθόνης δεν είναι διαθέσιμη σε αυτόν τον υπολογιστή"
+
+#, rust-format
+msgid "The computer's sound can't be shared: {error}"
+msgstr "Ο ήχος του υπολογιστή δεν μπορεί να κοινοποιηθεί: {error}"
+
+#, rust-format
+msgid "The screen share stopped: {error}"
+msgstr "Η κοινή χρήση οθόνης σταμάτησε: {error}"
+
+msgid "This computer"
+msgstr "Αυτός ο υπολογιστής"
+
+msgid "Who may use this computer remotely"
+msgstr "Ποιος μπορεί να χρησιμοποιεί αυτόν τον υπολογιστή απομακρυσμένα"
+
+msgid ""
+"Anyone you're connected to can ask to see and control this screen. Choose "
+"who is let in without asking, and who is never let in."
+msgstr ""
+"Όποιος είναι συνδεδεμένος μαζί σας μπορεί να ζητήσει να δει και να ελέγξει "
+"αυτή την οθόνη. Επιλέξτε ποιος γίνεται δεκτός χωρίς ερώτηση και ποιος δεν "
+"γίνεται ποτέ δεκτός."
+
+msgid "History of accesses"
+msgstr "Ιστορικό προσβάσεων"
+
+msgid "Kept on this computer only."
+msgstr "Διατηρείται μόνο σε αυτόν τον υπολογιστή."
+
+msgid "Clear"
+msgstr "Εκκαθάριση"
+
+msgid "Nobody has asked yet."
+msgstr "Κανείς δεν έχει ζητήσει ακόμα."
+
+msgid "When someone asks, you can choose to always let them in."
+msgstr "Όταν κάποιος ζητήσει, μπορείτε να επιλέξετε να τον δέχεστε πάντα."
+
+msgid "Ask every time"
+msgstr "Ερώτηση κάθε φορά"
+
+msgid "Always allow"
+msgstr "Να επιτρέπεται πάντα"
+
+msgid "Never allow"
+msgstr "Να μην επιτρέπεται ποτέ"
+
+msgid "No accesses yet."
+msgstr "Καμία πρόσβαση ακόμα."
+
+msgid "Remote access"
+msgstr "Απομακρυσμένη πρόσβαση"
+
+msgid "Watched the screen shared with the room"
+msgstr "Παρακολούθησε την οθόνη που κοινοποιήθηκε στο δωμάτιο"
+
+msgid "Got control of the shared screen"
+msgstr "Πήρε τον έλεγχο της κοινόχρηστης οθόνης"
+
+msgid "Restarted the computer"
+msgstr "Επανεκκίνησε τον υπολογιστή"
+
+msgid "Restarted the session"
+msgstr "Επανεκκίνησε τη συνεδρία"
+
+msgid "Shut down the computer"
+msgstr "Τερμάτισε τον υπολογιστή"
+
+msgid "allowed"
+msgstr "επιτράπηκε"
+
+msgid "allowed (always)"
+msgstr "επιτράπηκε (πάντα)"
+
+msgid "came back after a restart"
+msgstr "επέστρεψε μετά από επανεκκίνηση"
+
+msgid "denied"
+msgstr "απορρίφθηκε"
+
+msgid "blocked (never allowed)"
+msgstr "αποκλείστηκε (δεν επιτρέπεται ποτέ)"
+
+msgid "ended"
+msgstr "έληξε"
+
+#, rust-format
+msgid "{user} ({device})"
+msgstr "{user} ({device})"
+
+#, rust-format
+msgid "{done} of {total}"
+msgstr "{done} από {total}"
+
+msgid "Play"
+msgstr "Αναπαραγωγή"
+
+msgid "Download"
+msgstr "Λήψη"
+
+msgid "Open"
+msgstr "Άνοιγμα"
+
+msgid "Show in folder"
+msgstr "Εμφάνιση στον φάκελο"
+
+msgid "Pause"
+msgstr "Παύση"
+
+msgid "Photo"
+msgstr "Φωτογραφία"
+
+msgid "Video"
+msgstr "Βίντεο"
+
+msgid "Voice message"
+msgstr "Φωνητικό μήνυμα"
 
 msgid "Smileys & people"
 msgstr "Φατσούλες και άνθρωποι"
@@ -2453,8 +2477,8 @@ msgstr ""
 "ξανά όταν επιστρέψει"
 
 msgid ""
-"the file arrived different from the original (damaged on the way) — download"
-" it again"
+"the file arrived different from the original (damaged on the way) — download "
+"it again"
 msgstr ""
 "το αρχείο έφτασε διαφορετικό από το πρωτότυπο (καταστράφηκε στη διαδρομή) — "
 "κατεβάστε το ξανά"
@@ -2500,8 +2524,7 @@ msgstr "📌 (ξεκαρφίτσωσε το μήνυμα)"
 msgid "nothing was recorded — is a microphone connected?"
 msgstr "δεν ηχογραφήθηκε τίποτα — είναι συνδεδεμένο μικρόφωνο;"
 
-msgid ""
-"this computer can't restart remotely (BigLace's helper isn't installed)"
+msgid "this computer can't restart remotely (BigLace's helper isn't installed)"
 msgstr ""
 "αυτός ο υπολογιστής δεν μπορεί να επανεκκινηθεί απομακρυσμένα (ο βοηθός του "
 "BigLace δεν είναι εγκατεστημένος)"
@@ -2535,22 +2558,8 @@ msgstr ""
 msgid "access to the camera was refused"
 msgstr "η πρόσβαση στην κάμερα απορρίφθηκε"
 
-msgid "you are not in a room"
-msgstr "δεν είστε σε δωμάτιο"
-
 msgid "Mute or unmute the microphone in a BigLace room"
 msgstr "Σίγαση ή άρση σίγασης του μικροφώνου σε δωμάτιο του BigLace"
-
-msgid "screen sharing isn't available on this computer"
-msgstr "η κοινή χρήση οθόνης δεν είναι διαθέσιμη σε αυτόν τον υπολογιστή"
-
-#, rust-format
-msgid "The computer's sound can't be shared: {error}"
-msgstr "Ο ήχος του υπολογιστή δεν μπορεί να κοινοποιηθεί: {error}"
-
-#, rust-format
-msgid "The screen share stopped: {error}"
-msgstr "Η κοινή χρήση οθόνης σταμάτησε: {error}"
 
 msgid "BigLace doesn't know that computer's network card yet"
 msgstr "Το BigLace δεν γνωρίζει ακόμα την κάρτα δικτύου αυτού του υπολογιστή"
@@ -2560,8 +2569,13 @@ msgstr "αυτός ο υπολογιστής"
 
 msgid "no computer on its network is on to send the signal"
 msgstr ""
-"κανένας υπολογιστής στο δίκτυό του δεν είναι αναμμένος για να στείλει το "
-"σήμα"
+"κανένας υπολογιστής στο δίκτυό του δεν είναι αναμμένος για να στείλει το σήμα"
+
+msgid "Open with another app"
+msgstr "Άνοιγμα με άλλη εφαρμογή"
+
+msgid "Close"
+msgstr "Κλείσιμο"
 
 #~ msgid "Panel credentials"
 #~ msgstr "Διαπιστευτήρια πίνακα ελέγχου"
@@ -2574,8 +2588,8 @@ msgstr ""
 
 #~ msgid "Use the panel on the left to sign in or paste a pre-auth key."
 #~ msgstr ""
-#~ "Χρησιμοποιήστε τον πίνακα στα αριστερά για να συνδεθείτε ή να επικολλήσετε "
-#~ "ένα προ-εξουσιοδοτημένο κλειδί."
+#~ "Χρησιμοποιήστε τον πίνακα στα αριστερά για να συνδεθείτε ή να "
+#~ "επικολλήσετε ένα προ-εξουσιοδοτημένο κλειδί."
 
 #~ msgid "Connect via panel account"
 #~ msgstr "Σύνδεση μέσω λογαριασμού πίνακα"
@@ -2584,9 +2598,9 @@ msgstr ""
 #~ "Sign in with your BigScale panel username and password. A device identity "
 #~ "will be created on the network automatically — no manual key needed."
 #~ msgstr ""
-#~ "Συνδεθείτε με το όνομα χρήστη και τον κωδικό πρόσβασης του πίνακα BigScale. "
-#~ "Μια ταυτότητα συσκευής θα δημιουργηθεί αυτόματα στο δίκτυο — δεν απαιτείται "
-#~ "χειροκίνητο κλειδί."
+#~ "Συνδεθείτε με το όνομα χρήστη και τον κωδικό πρόσβασης του πίνακα "
+#~ "BigScale. Μια ταυτότητα συσκευής θα δημιουργηθεί αυτόματα στο δίκτυο — "
+#~ "δεν απαιτείται χειροκίνητο κλειδί."
 
 #~ msgid "Connected ·"
 #~ msgstr "Συνδεδεμένο ·"
@@ -2604,8 +2618,8 @@ msgstr ""
 #~ "Use your BigScale panel username and password to generate a key "
 #~ "automatically."
 #~ msgstr ""
-#~ "Χρησιμοποιήστε το όνομα χρήστη και τον κωδικό πρόσβασης του πίνακα ελέγχου "
-#~ "BigScale για να δημιουργήσετε αυτόματα ένα κλειδί."
+#~ "Χρησιμοποιήστε το όνομα χρήστη και τον κωδικό πρόσβασης του πίνακα "
+#~ "ελέγχου BigScale για να δημιουργήσετε αυτόματα ένα κλειδί."
 
 #~ msgid "Network user identifier"
 #~ msgstr "Αναγνωριστικό χρήστη δικτύου"
@@ -2654,8 +2668,8 @@ msgstr ""
 #~ msgstr "Η ταυτότητά σας στο δίκτυο"
 
 #~ msgid ""
-#~ "Personal key generated for you in the BigScale panel (\"New key\" in Users)."
-#~ " Each person uses their own — this is not the server's key."
+#~ "Personal key generated for you in the BigScale panel (\"New key\" in "
+#~ "Users). Each person uses their own — this is not the server's key."
 #~ msgstr ""
 #~ "Προσωπικό κλειδί που δημιουργήθηκε για εσάς στον πίνακα BigScale (\"Νέο "
 #~ "κλειδί\" στους Χρήστες). Κάθε άτομο χρησιμοποιεί το δικό του — αυτό δεν "

@@ -25,8 +25,8 @@ msgstr ""
 msgid ""
 "No file manager could open the SFTP location. Install WinSCP and try again."
 msgstr ""
-"Enginn skráastjóri gat opnað SFTP-staðsetninguna. Settu upp WinSCP og reyndu"
-" aftur."
+"Enginn skráastjóri gat opnað SFTP-staðsetninguna. Settu upp WinSCP og reyndu "
+"aftur."
 
 msgid ""
 "No terminal emulator found. Install one (Konsole, GNOME Terminal, xterm…) "
@@ -51,8 +51,8 @@ msgid ""
 "The pre-auth key was rejected by the server. Generate a new key in the "
 "BigScale panel and try again."
 msgstr ""
-"Forauðkenningarlykli var hafnað af þjóninum. Búðu til nýjan lykil í "
-"BigScale-stjórnborðinu og reyndu aftur."
+"Forauðkenningarlykli var hafnað af þjóninum. Búðu til nýjan lykil í BigScale-"
+"stjórnborðinu og reyndu aftur."
 
 msgid "Sign in or paste a pre-auth key first."
 msgstr "Skráðu þig fyrst inn eða límdu forvottaðan lykil."
@@ -176,8 +176,8 @@ msgid "Account"
 msgstr "Aðgangur"
 
 msgid ""
-"Signing out removes this device's identity from BigLace. You will need a new"
-" invite or key to join again."
+"Signing out removes this device's identity from BigLace. You will need a new "
+"invite or key to join again."
 msgstr ""
 "Útskráning fjarlægir auðkenni þessa tækis úr BigLace. Þú þarft nýtt boð eða "
 "lykil til að ganga aftur í netið."
@@ -210,8 +210,7 @@ msgid "Connect to the network first, then open the invite link again."
 msgstr "Tengstu fyrst netinu og opnaðu svo boðstengilinn aftur."
 
 #, rust-format
-msgid ""
-"This invite is for another network ({host}). Sign out first to join it."
+msgid "This invite is for another network ({host}). Sign out first to join it."
 msgstr ""
 "Þetta boð er fyrir annað net ({host}). Skráðu þig fyrst út til að ganga í "
 "það."
@@ -234,8 +233,8 @@ msgid "Could not open the browser: {error}"
 msgstr "Ekki tókst að opna vafrann: {error}"
 
 msgid ""
-"You can't open the admin panel: you're not an administrator of this network,"
-" or the panel can't be reached."
+"You can't open the admin panel: you're not an administrator of this network, "
+"or the panel can't be reached."
 msgstr ""
 "Þú getur ekki opnað stjórnborðið: þú ert ekki kerfisstjóri þessa nets, eða "
 "ekki næst í stjórnborðið."
@@ -335,126 +334,174 @@ msgstr "{count} tæki fóru af netinu"
 msgid "{on_count} online · {off_count} offline"
 msgstr "{on_count} á netinu · {off_count} af netinu"
 
-msgid "Connected · 1 peer"
-msgstr "Tengt · 1 jafningi"
+msgid ""
+"Invites from BigLace need a BigScale server that supports them. Ask your "
+"administrator to update the server, or to create the invite in the panel."
+msgstr ""
+"Boð frá BigLace þurfa BigScale-þjón sem styður þau. Biddu kerfisstjórann að "
+"uppfæra þjóninn eða búa til boðið í stjórnborðinu."
+
+msgid "This device can't send invites (it isn't linked to a person's account)."
+msgstr ""
+"Þetta tæki getur ekki sent boð (það er ekki tengt aðgangi einstaklings)."
+
+msgid ""
+"The panel knows this device by a different key (BigLace was reinstalled?). "
+"Leave the network and join again to fix it."
+msgstr ""
+"Stjórnborðið þekkir þetta tæki undir öðrum lykli (var BigLace sett upp "
+"aftur?). Yfirgefðu netið og gakktu aftur í það til að laga þetta."
+
+msgid ""
+"The panel couldn't confirm this device. Make sure BigLace is up to date and "
+"stays open while connected, then try again."
+msgstr ""
+"Stjórnborðið gat ekki staðfest þetta tæki. Gakktu úr skugga um að BigLace sé "
+"uppfært og sé opið á meðan tengt er, reyndu svo aftur."
+
+msgid "You are no longer in that group."
+msgstr "Þú ert ekki lengur í þessum hópi."
+
+msgid ""
+"On this network everyone can reach everyone, so only the administrator can "
+"invite people."
+msgstr ""
+"Á þessu neti ná allir í alla, svo aðeins kerfisstjórinn getur boðið fólki."
+
+msgid "You have too many pending invites. Cancel some or try again tomorrow."
+msgstr ""
+"Þú ert með of mörg boð í bið. Afturkallaðu einhver eða reyndu aftur á morgun."
+
+msgid ""
+"On this network only administrators invite new people. You can still invite "
+"people already on the network into your groups."
+msgstr ""
+"Á þessu neti bjóða aðeins kerfisstjórar nýju fólki. Þú getur samt boðið "
+"fólki sem er þegar á netinu í hópana þína."
 
 #, rust-format
-msgid "Connected · {n} peers"
-msgstr "Tengt · {n} jafningar"
+msgid "Could not reach the panel: {error}"
+msgstr "Ekki náðist í stjórnborðið: {error}"
 
-#, rust-format
-msgid "In the room {group} · muted"
-msgstr "Í herberginu {group} · þaggað"
+msgid "Waiting to be used"
+msgstr "Bíður notkunar"
 
-#, rust-format
-msgid "In the room {group}"
-msgstr "Í herberginu {group}"
+msgid "Used"
+msgstr "Notað"
 
-msgid "Show BigLace"
-msgstr "Sýna BigLace"
+msgid "Expired"
+msgstr "Útrunnið"
 
-#, rust-format
-msgid "Room {group}"
-msgstr "Herbergi {group}"
+msgid "Cancelled"
+msgstr "Afturkallað"
 
-msgid "Unmute (Ctrl+Alt+M)"
-msgstr "Kveikja á hljóði (Ctrl+Alt+M)"
-
-msgid "Mute (Ctrl+Alt+M)"
-msgstr "Þagga (Ctrl+Alt+M)"
-
-msgid "Leave the room"
-msgstr "Fara úr herberginu"
-
-msgid "Quit"
-msgstr "Hætta"
-
-msgid "Main menu"
-msgstr "Aðalvalmynd"
-
-msgid "Search devices"
-msgstr "Leita að tækjum"
+msgid "Waiting for an administrator's approval"
+msgstr "Bíður samþykkis kerfisstjóra"
 
 msgid "Refresh"
 msgstr "Endurlesa"
 
+msgid "Main menu"
+msgstr "Aðalvalmynd"
+
+msgid "Bring someone to your network"
+msgstr "Fáðu einhvern á netið þitt"
+
+msgid ""
+"Create a link or QR code and send it to the person. When they join, you two "
+"can reach each other's devices — no administrator needed. The link works "
+"once and stays valid until it's used or you cancel it."
+msgstr ""
+"Búðu til tengil eða QR-kóða og sendu viðkomandi. Þegar hann gengur í netið "
+"náið þið í tæki hvors annars — enginn kerfisstjóri þarf. Tengillinn virkar "
+"einu sinni og gildir þar til hann er notaður eða þú afturkallar hann."
+
+msgid "No invites yet"
+msgstr "Engin boð enn"
+
+msgid "Invites unavailable"
+msgstr "Boð ekki tiltæk"
+
+#, rust-format
+msgid "{user} joined"
+msgstr "{user} gekk í netið"
+
 msgid "Invite"
 msgstr "Bjóða"
 
-msgid "Invite someone to your network"
-msgstr "Bjóða einhverjum á netið þitt"
+#, rust-format
+msgid "group {group}"
+msgstr "hópur {group}"
+
+msgid "Cancel this invite: the link stops working"
+msgstr "Afturkalla þetta boð: tengillinn hættir að virka"
+
+msgid "The person you invite will reach your devices, and you theirs."
+msgstr "Sá sem þú býður nær í tækin þín og þú í hans."
+
+msgid "Who is it for? (optional)"
+msgstr "Fyrir hvern er það? (valfrjálst)"
+
+msgid "Access"
+msgstr "Aðgangur"
+
+msgid "Just the two of us"
+msgstr "Bara við tvö"
+
+msgid "You see each other's devices, nobody else"
+msgstr "Þið sjáið tæki hvors annars, enginn annar"
+
+#, rust-format
+msgid "Also the group {group}"
+msgstr "Líka hópurinn {group}"
+
+msgid "They join the group and see everyone in it"
+msgstr "Viðkomandi gengur í hópinn og sér alla í honum"
+
+msgid "A network of their own"
+msgstr "Eigið net"
 
 msgid ""
-"Tailscale cannot write this device's DNS settings, so it can no longer keep "
-"peer names working. They may still resolve for now, from the configuration "
-"left over from before the failure, but that will break the next time the "
-"network changes — and BigLace will fall back to IP addresses. On most "
-"distributions `sudo resolvconf -u` repairs it."
+"No link to you: they see only their own devices and whoever they invite "
+"(you're the administrator)"
 msgstr ""
-"Tailscale getur ekki skrifað DNS-stillingar þessa tækis og getur því ekki "
-"lengur haldið nöfnum jafningja virkum. Þau gætu enn virkað í bili, út frá "
-"stillingum sem eftir eru frá því fyrir bilunina, en það hættir að virka næst"
-" þegar netið breytist — og BigLace notar þá IP-tölur í staðinn. Á flestum "
-"dreifingum lagar `sudo resolvconf -u` þetta."
+"Engin tenging við þig: viðkomandi sér aðeins eigin tæki og þá sem hann býður "
+"(þú ert kerfisstjórinn)"
 
-msgid "Not connected"
-msgstr "Ekki tengt"
+msgid "Create invite"
+msgstr "Búa til boð"
 
-msgid "Press Connect on the left to join the network."
-msgstr "Ýttu á Tengja vinstra megin til að tengjast netinu."
+msgid "QR code of the invite link"
+msgstr "QR-kóði boðstengilsins"
 
-msgid "The tailscale service is not running"
-msgstr "Tailscale-þjónustan er ekki í gangi"
-
-msgid "BigLace needs the tailscaled background service to manage the network."
-msgstr "BigLace þarf bakgrunnsþjónustuna tailscaled til að stjórna netinu."
-
-msgid "Start service"
-msgstr "Ræsa þjónustu"
-
-msgid "Join the network"
-msgstr "Ganga í netið"
-
-msgid "Choose how you're going to sign in."
-msgstr "Veldu hvernig þú ætlar að skrá þig inn."
-
-msgid "Ways to sign in"
-msgstr "Innskráningarleiðir"
-
-msgid "Your account was kept on this computer. No invite needed."
-msgstr "Aðgangurinn þinn var geymdur á þessari tölvu. Ekkert boð þarf."
-
-msgid "I have an invite"
-msgstr "Ég er með boð"
-
-msgid "Someone on the network sent you a link or a QR code."
-msgstr "Einhver á netinu sendi þér tengil eða QR-kóða."
-
-msgid "I have an access key"
-msgstr "Ég er með aðgangslykil"
-
-msgid "A key the administrator created for you (starts with hskey-auth-)."
-msgstr "Lykill sem kerfisstjórinn bjó til fyrir þig (byrjar á hskey-auth-)."
-
-msgid "I'm the administrator"
-msgstr "Ég er kerfisstjórinn"
-
-msgid "Sign in with the BigScale panel's admin username and password."
+msgid ""
+"Send the link or let the person scan the code with their phone. It works "
+"once and stays valid until used or cancelled."
 msgstr ""
-"Skráðu þig inn með notandanafni og lykilorði kerfisstjóra BigScale-"
-"stjórnborðsins."
+"Sendu tengilinn eða leyfðu viðkomandi að skanna kóðann með símanum. Hann "
+"virkar einu sinni og gildir þar til hann er notaður eða afturkallaður."
 
-msgid "This device"
-msgstr "Þetta tæki"
+msgid "Copy link"
+msgstr "Afrita tengil"
 
-msgid "Copy IP address"
-msgstr "Afrita IP-tölu"
+msgid "Done"
+msgstr "Lokið"
 
-msgid "Devices on the network"
-msgstr "Tæki á netinu"
+msgid "Copied!"
+msgstr "Afritað!"
 
-msgid "No other devices on the network yet."
-msgstr "Engin önnur tæki á netinu ennþá."
+msgid ""
+"This network asks an administrator to approve each invite: the link starts "
+"working once they do. Its status shows in Invites."
+msgstr ""
+"Þetta net krefst þess að kerfisstjóri samþykki hvert boð: tengillinn virkar "
+"þegar hann hefur gert það. Staðan birtist undir Boð."
+
+msgid "Show the full sidebar"
+msgstr "Sýna allt hliðarspjaldið"
+
+msgid "Show only icons in the sidebar"
+msgstr "Aðeins tákn í hliðarspjaldinu"
 
 msgid "Sections"
 msgstr "Hlutar"
@@ -507,17 +554,16 @@ msgid ""
 "One-time or reusable key created on the server (starts with 'hskey-auth-'). "
 "Used to register this device automatically without opening a browser."
 msgstr ""
-"Einskiptis- eða endurnýtanlegur lykill búinn til á þjóninum (byrjar á "
-"'hskey-auth-'). Notaður til að skrá þetta tæki sjálfkrafa án þess að opna "
-"vafra."
+"Einskiptis- eða endurnýtanlegur lykill búinn til á þjóninum (byrjar á 'hskey-"
+"auth-'). Notaður til að skrá þetta tæki sjálfkrafa án þess að opna vafra."
 
 msgid ""
-"The name this device shows to other peers on the VPN — this is the Tailscale"
-" hostname, NOT your computer's name and NOT your user. Lowercase letters, "
+"The name this device shows to other peers on the VPN — this is the Tailscale "
+"hostname, NOT your computer's name and NOT your user. Lowercase letters, "
 "digits and hyphens. Example: 'tales-laptop', 'francois', 'office-pc'."
 msgstr ""
-"Heitið sem þetta tæki birtir öðrum jafningjum á VPN-inu — þetta er Tailscale"
-" vélarheitið, EKKI nafn tölvunnar þinnar og EKKI notandanafnið þitt. "
+"Heitið sem þetta tæki birtir öðrum jafningjum á VPN-inu — þetta er Tailscale "
+"vélarheitið, EKKI nafn tölvunnar þinnar og EKKI notandanafnið þitt. "
 "Lágstafir, tölustafir og bandstrik. Dæmi: 'tales-laptop', 'francois', "
 "'office-pc'."
 
@@ -528,8 +574,8 @@ msgid "Save"
 msgstr "Vista"
 
 msgid ""
-"Persist the server, key and device name above. Won't connect — press Connect"
-" afterwards."
+"Persist the server, key and device name above. Won't connect — press Connect "
+"afterwards."
 msgstr ""
 "Vistar þjóninn, lykilinn og tækjaheitið hér að ofan. Tengist ekki — ýttu á "
 "Tengjast eftir á."
@@ -541,8 +587,8 @@ msgid "Join the network when BigLace starts"
 msgstr "Tengjast netinu þegar BigLace ræsist"
 
 msgid ""
-"When on, BigLace runs 'tailscale up' as soon as it launches, so you join the"
-" mesh without clicking Connect every time."
+"When on, BigLace runs 'tailscale up' as soon as it launches, so you join the "
+"mesh without clicking Connect every time."
 msgstr ""
 "Þegar kveikt er á því keyrir BigLace 'tailscale up' um leið og það ræsist, "
 "svo þú tengist möskvanetinu án þess að smella á Tengjast í hvert skipti."
@@ -560,8 +606,8 @@ msgid ""
 "Turn this on to add BigLace to your desktop session startup. Turn it off to "
 "remove it."
 msgstr ""
-"Kveiktu á þessu til að bæta BigLace við ræsingu skjáborðssetunnar. Slökktu á"
-" því til að fjarlægja það."
+"Kveiktu á þessu til að bæta BigLace við ræsingu skjáborðssetunnar. Slökktu á "
+"því til að fjarlægja það."
 
 msgid "Toggle start with session"
 msgstr "Skipta um ræsingu með setu"
@@ -573,9 +619,8 @@ msgid "Retry with backoff when the connection is lost"
 msgstr "Reyndu aftur með bið þegar tenging rofnar"
 
 msgid ""
-"If the tunnel drops (network change, sleep, server hiccup), BigLace silently"
-" retries with growing delays instead of leaving you offline until you "
-"notice."
+"If the tunnel drops (network change, sleep, server hiccup), BigLace silently "
+"retries with growing delays instead of leaving you offline until you notice."
 msgstr ""
 "Ef genginu fellur (netbreyting, svefn, þjónshik) reynir BigLace aftur "
 "hljóðlega með vaxandi bið í stað þess að skilja þig eftir ótengdan þar til "
@@ -595,8 +640,8 @@ msgid ""
 "offline. Rapid bursts are coalesced into a single notification so you don't "
 "get spammed during reconnects."
 msgstr ""
-"Senda skjáborðstilkynningu þegar annað tæki á netinu þínu fer á netið eða af"
-" því. Snöggar bylgjur eru sameinaðar í eina tilkynningu svo þú fáir ekki "
+"Senda skjáborðstilkynningu þegar annað tæki á netinu þínu fer á netið eða af "
+"því. Snöggar bylgjur eru sameinaðar í eina tilkynningu svo þú fáir ekki "
 "ruslpóst við endurtengingar."
 
 msgid "Toggle peer-change notifications"
@@ -611,303 +656,6 @@ msgstr ""
 
 msgid "Your photo"
 msgstr "Myndin þín"
-
-msgid ""
-"Each of your groups has a voice room. Join it and talk with whoever is there"
-" — the sound goes straight between you, through the network."
-msgstr ""
-"Hver hópur þinn hefur talherbergi. Gakktu í það og talaðu við þá sem eru þar"
-" — hljóðið fer beint á milli ykkar, um netið."
-
-msgid "You're not in any group yet. Create one in Groups."
-msgstr "Þú ert ekki enn í neinum hópi. Búðu til einn undir Hópar."
-
-msgid "People in the room"
-msgstr "Fólk í herberginu"
-
-msgid "Everyone"
-msgstr "Allir"
-
-msgid "Who's speaking"
-msgstr "Hver talar"
-
-msgid "Mute"
-msgstr "Þagga"
-
-msgid "Mute your microphone for everyone"
-msgstr "Þagga hljóðnemann þinn fyrir alla"
-
-msgid "Leave"
-msgstr "Yfirgefa"
-
-msgid "Which camera"
-msgstr "Hvaða myndavél"
-
-msgid "Include the computer's sound when sharing the screen"
-msgstr "Taka hljóð tölvunnar með þegar skjánum er deilt"
-
-msgid ""
-"Videos and music playing here go to the room too; the room's voices don't "
-"(no echo)"
-msgstr ""
-"Myndskeið og tónlist sem spilast hér fara líka í herbergið; raddir "
-"herbergisins gera það ekki (ekkert bergmál)"
-
-msgid "Rooms unavailable"
-msgstr "Herbergi ekki tiltæk"
-
-#, rust-format
-msgid "Could not turn on the camera: {error}"
-msgstr "Ekki tókst að kveikja á myndavélinni: {error}"
-
-#, rust-format
-msgid "Could not share the screen: {error}"
-msgstr "Ekki tókst að deila skjánum: {error}"
-
-#, rust-format
-msgid "Could not reach the panel: {error}"
-msgstr "Ekki náðist í stjórnborðið: {error}"
-
-msgid "Nobody here right now"
-msgstr "Enginn hér núna"
-
-#, rust-format
-msgid "In the room: {people}"
-msgstr "Í herberginu: {people}"
-
-msgid "Join"
-msgstr "Ganga í"
-
-#, rust-format
-msgid "Join the room {group}"
-msgstr "Ganga í herbergið {group}"
-
-#, rust-format
-msgid "Could not join {group}: {error}"
-msgstr "Ekki tókst að ganga í {group}: {error}"
-
-msgid "📺 You're showing your screen to the room"
-msgstr "📺 Þú sýnir herberginu skjáinn þinn"
-
-msgid "📺 You're showing your screen · 1 person watching"
-msgstr "📺 Þú sýnir skjáinn þinn · 1 horfir"
-
-#, rust-format
-msgid "📺 You're showing your screen · {count} people watching"
-msgstr "📺 Þú sýnir skjáinn þinn · {count} horfa"
-
-msgid "1 person"
-msgstr "1 einstaklingur"
-
-#, rust-format
-msgid "{count} people"
-msgstr "{count} einstaklingar"
-
-#, rust-format
-msgid "{people} · {talking} talking"
-msgstr "{people} · {talking} tala"
-
-msgid "you"
-msgstr "þú"
-
-msgid "connecting…"
-msgstr "tengist…"
-
-msgid "muted"
-msgstr "þaggað"
-
-msgid "talking"
-msgstr "talar"
-
-msgid "quiet"
-msgstr "hljóð"
-
-msgid "Sharing screen"
-msgstr "Deilir skjá"
-
-msgid "In control"
-msgstr "Með stjórn"
-
-msgid "Controls your screen now"
-msgstr "Stjórnar skjánum þínum núna"
-
-msgid "Watching"
-msgstr "Horfir"
-
-msgid "Watching your screen"
-msgstr "Horfir á skjáinn þinn"
-
-#, rust-format
-msgid "{user} is showing their screen"
-msgstr "{user} sýnir skjáinn sinn"
-
-msgid "Watch"
-msgstr "Horfa"
-
-#, rust-format
-msgid "{user} asks to control your screen"
-msgstr "{user} biður um að stjórna skjánum þínum"
-
-msgid ""
-"They'll be able to use your mouse and keyboard. You can take control back at"
-" any time."
-msgstr ""
-"Viðkomandi getur notað músina og lyklaborðið þitt. Þú getur tekið stjórnina "
-"aftur hvenær sem er."
-
-msgid "Deny"
-msgstr "Hafna"
-
-msgid "Allow"
-msgstr "Leyfa"
-
-msgid "Turn off camera"
-msgstr "Slökkva á myndavél"
-
-msgid "Turn on camera"
-msgstr "Kveikja á myndavél"
-
-msgid "No camera found on this computer"
-msgstr "Engin myndavél fannst í þessari tölvu"
-
-msgid "Stop sharing"
-msgstr "Hætta að deila"
-
-msgid "Share screen"
-msgstr "Deila skjá"
-
-msgid "Stop showing your screen to the room"
-msgstr "Hætta að sýna herberginu skjáinn þinn"
-
-msgid "Show your screen to everyone in the room"
-msgstr "Sýna öllum í herberginu skjáinn þinn"
-
-msgid "Take back control"
-msgstr "Taka stjórnina aftur"
-
-msgid "Give control"
-msgstr "Gefa stjórn"
-
-msgid "Stop them from using your mouse and keyboard"
-msgstr "Stöðva notkun viðkomandi á músinni og lyklaborðinu þínu"
-
-msgid "Let them use your mouse and keyboard"
-msgstr "Leyfa viðkomandi að nota músina og lyklaborðið þitt"
-
-msgid "Sound level"
-msgstr "Hljóðstyrkur"
-
-msgid "Unmute"
-msgstr "Kveikja á hljóði"
-
-msgid "This computer"
-msgstr "Þessi tölva"
-
-msgid "Who may use this computer remotely"
-msgstr "Hverjir mega nota þessa tölvu í fjarvinnslu"
-
-msgid ""
-"Anyone you're connected to can ask to see and control this screen. Choose "
-"who is let in without asking, and who is never let in."
-msgstr ""
-"Allir sem þú ert tengd(ur) við geta beðið um að sjá og stjórna þessum skjá. "
-"Veldu hverjum er hleypt inn án þess að spyrja og hverjum aldrei."
-
-msgid "History of accesses"
-msgstr "Aðgangsferill"
-
-msgid "Kept on this computer only."
-msgstr "Aðeins geymt á þessari tölvu."
-
-msgid "Clear"
-msgstr "Hreinsa"
-
-msgid "Nobody has asked yet."
-msgstr "Enginn hefur beðið enn."
-
-msgid "When someone asks, you can choose to always let them in."
-msgstr ""
-"Þegar einhver biður um aðgang geturðu valið að hleypa viðkomandi alltaf inn."
-
-msgid "Ask every time"
-msgstr "Spyrja í hvert sinn"
-
-msgid "Always allow"
-msgstr "Leyfa alltaf"
-
-msgid "Never allow"
-msgstr "Leyfa aldrei"
-
-msgid "No accesses yet."
-msgstr "Enginn aðgangur enn."
-
-msgid "Remote access"
-msgstr "Fjaraðgangur"
-
-msgid "Watched the screen shared with the room"
-msgstr "Horfði á skjáinn sem deilt var með herberginu"
-
-msgid "Got control of the shared screen"
-msgstr "Fékk stjórn á deilda skjánum"
-
-msgid "Restarted the computer"
-msgstr "Endurræsti tölvuna"
-
-msgid "Restarted the session"
-msgstr "Endurræsti setuna"
-
-msgid "Shut down the computer"
-msgstr "Slökkti á tölvunni"
-
-msgid "allowed"
-msgstr "leyft"
-
-msgid "allowed (always)"
-msgstr "leyft (alltaf)"
-
-msgid "came back after a restart"
-msgstr "kom aftur eftir endurræsingu"
-
-msgid "denied"
-msgstr "hafnað"
-
-msgid "blocked (never allowed)"
-msgstr "lokað á (aldrei leyft)"
-
-msgid "ended"
-msgstr "lokið"
-
-#, rust-format
-msgid "{user} ({device})"
-msgstr "{user} ({device})"
-
-#, rust-format
-msgid "{done} of {total}"
-msgstr "{done} af {total}"
-
-msgid "Play"
-msgstr "Spila"
-
-msgid "Download"
-msgstr "Sækja"
-
-msgid "Open"
-msgstr "Opna"
-
-msgid "Show in folder"
-msgstr "Sýna í möppu"
-
-msgid "Pause"
-msgstr "Hlé"
-
-msgid "Photo"
-msgstr "Mynd"
-
-msgid "Video"
-msgstr "Myndskeið"
-
-msgid "Voice message"
-msgstr "Talskilaboð"
 
 msgid "New chat"
 msgstr "Nýtt spjall"
@@ -978,6 +726,9 @@ msgid ""
 msgstr ""
 "Veldu samtal eða hefðu nýtt. Skilaboð fara beint á milli tölvanna ykkar — "
 "þjónninn sér þau aldrei."
+
+msgid "People on the network"
+msgstr "Fólk á netinu"
 
 msgid "Group"
 msgstr "Hópur"
@@ -1148,25 +899,11 @@ msgid ""
 "Groups from BigLace need a newer BigScale server. Ask your administrator to "
 "update it."
 msgstr ""
-"Hópar frá BigLace þurfa nýrri BigScale-þjón. Biddu kerfisstjórann að uppfæra"
-" hann."
+"Hópar frá BigLace þurfa nýrri BigScale-þjón. Biddu kerfisstjórann að uppfæra "
+"hann."
 
 msgid "This device isn't linked to a person's account, so it has no groups."
 msgstr "Þetta tæki er ekki tengt aðgangi einstaklings og hefur því enga hópa."
-
-msgid ""
-"The panel knows this device by a different key (BigLace was reinstalled?). "
-"Leave the network and join again to fix it."
-msgstr ""
-"Stjórnborðið þekkir þetta tæki undir öðrum lykli (var BigLace sett upp "
-"aftur?). Yfirgefðu netið og gakktu aftur í það til að laga þetta."
-
-msgid ""
-"The panel couldn't confirm this device. Make sure BigLace is up to date and "
-"stays open while connected, then try again."
-msgstr ""
-"Stjórnborðið gat ekki staðfest þetta tæki. Gakktu úr skugga um að BigLace sé"
-" uppfært og sé opið á meðan tengt er, reyndu svo aftur."
 
 msgid ""
 "On this network everyone already reaches everyone, so groups aren't needed. "
@@ -1177,9 +914,6 @@ msgstr ""
 
 msgid "You already created the maximum number of groups."
 msgstr "Þú hefur þegar búið til hámarksfjölda hópa."
-
-msgid "You are no longer in that group."
-msgstr "Þú ert ekki lengur í þessum hópi."
 
 msgid "A group with that name already exists. Choose another name."
 msgstr "Hópur með þessu nafni er þegar til. Veldu annað nafn."
@@ -1203,8 +937,7 @@ msgid "You created this group: delete it instead of leaving."
 msgstr "Þú bjóst til þennan hóp: eyddu honum í stað þess að yfirgefa hann."
 
 msgid "This group belongs to the administrator; only they can change it."
-msgstr ""
-"Þessi hópur tilheyrir kerfisstjóranum; aðeins hann getur breytt honum."
+msgstr "Þessi hópur tilheyrir kerfisstjóranum; aðeins hann getur breytt honum."
 
 msgid "That person is no longer in the group."
 msgstr "Þessi einstaklingur er ekki lengur í hópnum."
@@ -1277,16 +1010,14 @@ msgstr "Boð í hóp"
 msgid ""
 "{user} invites you to the group {group}. Open BigLace to accept or decline."
 msgstr ""
-"{user} býður þér í hópinn {group}. Opnaðu BigLace til að samþykkja eða "
-"hafna."
+"{user} býður þér í hópinn {group}. Opnaðu BigLace til að samþykkja eða hafna."
 
 #, rust-format
 msgid "{user} invites you to {group}"
 msgstr "{user} býður þér í {group}"
 
 msgid "Joining lets you and the group's members reach each other's devices."
-msgstr ""
-"Ef þú gengur í hópinn náið þú og meðlimir hópsins í tæki hvers annars."
+msgstr "Ef þú gengur í hópinn náið þú og meðlimir hópsins í tæki hvers annars."
 
 msgid "Decline"
 msgstr "Hafna"
@@ -1301,6 +1032,13 @@ msgstr "Þú gekkst í {group}."
 msgid "Invitation declined."
 msgstr "Boði hafnað."
 
+msgid "1 person"
+msgstr "1 einstaklingur"
+
+#, rust-format
+msgid "{count} people"
+msgstr "{count} einstaklingar"
+
 msgid "Created by you"
 msgstr "Búinn til af þér"
 
@@ -1310,6 +1048,9 @@ msgstr "Búinn til af {user}"
 
 msgid "Network group (administrator)"
 msgstr "Netkerfishópur (kerfisstjóri)"
+
+msgid "you"
+msgstr "þú"
 
 msgid "owner"
 msgstr "eigandi"
@@ -1333,8 +1074,7 @@ msgstr "Fjarlægja {user}?"
 
 #, rust-format
 msgid ""
-"{user} leaves the group {group} and no longer reaches its members through "
-"it."
+"{user} leaves the group {group} and no longer reaches its members through it."
 msgstr ""
 "{user} yfirgefur hópinn {group} og nær ekki lengur í meðlimi hans í gegnum "
 "hann."
@@ -1356,6 +1096,9 @@ msgid ""
 msgstr ""
 "Þú hættir að ná í meðlimi hópsins í gegnum hann. Til að koma aftur þarf "
 "einhver að bjóða þér á ný."
+
+msgid "Leave"
+msgstr "Yfirgefa"
 
 msgid "You left the group."
 msgstr "Þú yfirgafst hópinn."
@@ -1395,6 +1138,9 @@ msgstr "Tengjast {user}?"
 msgid "You and {user} will reach each other's devices."
 msgstr "Þú og {user} munuð ná í tæki hvors annars."
 
+msgid "Join"
+msgstr "Ganga í"
+
 msgid "Done. You can now reach each other's devices."
 msgstr "Lokið. Þið náið nú í tæki hvors annars."
 
@@ -1416,9 +1162,6 @@ msgid ""
 "If someone on the network has exactly this name, they get the invitation."
 msgstr "Ef einhver á netinu ber nákvæmlega þetta nafn fær hann boðið."
 
-msgid "People on the network"
-msgstr "Fólk á netinu"
-
 #, rust-format
 msgid "Invite \"{name}\""
 msgstr "Bjóða „{name}“"
@@ -1437,9 +1180,9 @@ msgid "{count} invitations sent. People show up in the group as they accept."
 msgstr "{count} boð send. Fólk birtist í hópnum þegar það samþykkir."
 
 msgid ""
-"Listed are the people you're already connected to. To invite someone else on"
-" the network, type their exact name. Each one gets the invitation in BigLace"
-" and decides whether to join."
+"Listed are the people you're already connected to. To invite someone else on "
+"the network, type their exact name. Each one gets the invitation in BigLace "
+"and decides whether to join."
 msgstr ""
 "Hér er fólk sem þú ert þegar tengd(ur) við. Til að bjóða öðrum á netinu "
 "skaltu slá inn nákvæmt nafn viðkomandi. Hver og einn fær boðið í BigLace og "
@@ -1492,139 +1235,176 @@ msgid "Invite {user}"
 msgstr "Bjóða {user}"
 
 msgid ""
-"Invites from BigLace need a BigScale server that supports them. Ask your "
-"administrator to update the server, or to create the invite in the panel."
+"Each of your groups has a voice room. Join it and talk with whoever is there "
+"— the sound goes straight between you, through the network."
 msgstr ""
-"Boð frá BigLace þurfa BigScale-þjón sem styður þau. Biddu kerfisstjórann að "
-"uppfæra þjóninn eða búa til boðið í stjórnborðinu."
+"Hver hópur þinn hefur talherbergi. Gakktu í það og talaðu við þá sem eru þar "
+"— hljóðið fer beint á milli ykkar, um netið."
+
+msgid "You're not in any group yet. Create one in Groups."
+msgstr "Þú ert ekki enn í neinum hópi. Búðu til einn undir Hópar."
+
+msgid "People in the room"
+msgstr "Fólk í herberginu"
+
+msgid "Everyone"
+msgstr "Allir"
+
+msgid "Who's speaking"
+msgstr "Hver talar"
+
+msgid "Mute"
+msgstr "Þagga"
+
+msgid "Mute your microphone for everyone"
+msgstr "Þagga hljóðnemann þinn fyrir alla"
+
+msgid "Which camera"
+msgstr "Hvaða myndavél"
+
+msgid "Include the computer's sound when sharing the screen"
+msgstr "Taka hljóð tölvunnar með þegar skjánum er deilt"
 
 msgid ""
-"This device can't send invites (it isn't linked to a person's account)."
+"Videos and music playing here go to the room too; the room's voices don't "
+"(no echo)"
 msgstr ""
-"Þetta tæki getur ekki sent boð (það er ekki tengt aðgangi einstaklings)."
+"Myndskeið og tónlist sem spilast hér fara líka í herbergið; raddir "
+"herbergisins gera það ekki (ekkert bergmál)"
 
-msgid ""
-"On this network everyone can reach everyone, so only the administrator can "
-"invite people."
-msgstr ""
-"Á þessu neti ná allir í alla, svo aðeins kerfisstjórinn getur boðið fólki."
-
-msgid "You have too many pending invites. Cancel some or try again tomorrow."
-msgstr ""
-"Þú ert með of mörg boð í bið. Afturkallaðu einhver eða reyndu aftur á "
-"morgun."
-
-msgid ""
-"On this network only administrators invite new people. You can still invite "
-"people already on the network into your groups."
-msgstr ""
-"Á þessu neti bjóða aðeins kerfisstjórar nýju fólki. Þú getur samt boðið "
-"fólki sem er þegar á netinu í hópana þína."
-
-msgid "Waiting to be used"
-msgstr "Bíður notkunar"
-
-msgid "Used"
-msgstr "Notað"
-
-msgid "Expired"
-msgstr "Útrunnið"
-
-msgid "Cancelled"
-msgstr "Afturkallað"
-
-msgid "Waiting for an administrator's approval"
-msgstr "Bíður samþykkis kerfisstjóra"
-
-msgid "Bring someone to your network"
-msgstr "Fáðu einhvern á netið þitt"
-
-msgid ""
-"Create a link or QR code and send it to the person. When they join, you two "
-"can reach each other's devices — no administrator needed. The link works "
-"once and stays valid until it's used or you cancel it."
-msgstr ""
-"Búðu til tengil eða QR-kóða og sendu viðkomandi. Þegar hann gengur í netið "
-"náið þið í tæki hvors annars — enginn kerfisstjóri þarf. Tengillinn virkar "
-"einu sinni og gildir þar til hann er notaður eða þú afturkallar hann."
-
-msgid "No invites yet"
-msgstr "Engin boð enn"
-
-msgid "Invites unavailable"
-msgstr "Boð ekki tiltæk"
+msgid "Rooms unavailable"
+msgstr "Herbergi ekki tiltæk"
 
 #, rust-format
-msgid "{user} joined"
-msgstr "{user} gekk í netið"
+msgid "Could not turn on the camera: {error}"
+msgstr "Ekki tókst að kveikja á myndavélinni: {error}"
 
 #, rust-format
-msgid "group {group}"
-msgstr "hópur {group}"
+msgid "Could not share the screen: {error}"
+msgstr "Ekki tókst að deila skjánum: {error}"
 
-msgid "Cancel this invite: the link stops working"
-msgstr "Afturkalla þetta boð: tengillinn hættir að virka"
-
-msgid "The person you invite will reach your devices, and you theirs."
-msgstr "Sá sem þú býður nær í tækin þín og þú í hans."
-
-msgid "Who is it for? (optional)"
-msgstr "Fyrir hvern er það? (valfrjálst)"
-
-msgid "Access"
-msgstr "Aðgangur"
-
-msgid "Just the two of us"
-msgstr "Bara við tvö"
-
-msgid "You see each other's devices, nobody else"
-msgstr "Þið sjáið tæki hvors annars, enginn annar"
+msgid "Nobody here right now"
+msgstr "Enginn hér núna"
 
 #, rust-format
-msgid "Also the group {group}"
-msgstr "Líka hópurinn {group}"
+msgid "In the room: {people}"
+msgstr "Í herberginu: {people}"
 
-msgid "They join the group and see everyone in it"
-msgstr "Viðkomandi gengur í hópinn og sér alla í honum"
+#, rust-format
+msgid "Join the room {group}"
+msgstr "Ganga í herbergið {group}"
 
-msgid "A network of their own"
-msgstr "Eigið net"
+#, rust-format
+msgid "Could not join {group}: {error}"
+msgstr "Ekki tókst að ganga í {group}: {error}"
+
+msgid "📺 You're showing your screen to the room"
+msgstr "📺 Þú sýnir herberginu skjáinn þinn"
+
+msgid "📺 You're showing your screen · 1 person watching"
+msgstr "📺 Þú sýnir skjáinn þinn · 1 horfir"
+
+#, rust-format
+msgid "📺 You're showing your screen · {count} people watching"
+msgstr "📺 Þú sýnir skjáinn þinn · {count} horfa"
+
+#, rust-format
+msgid "Room {group}"
+msgstr "Herbergi {group}"
+
+#, rust-format
+msgid "{people} · {talking} talking"
+msgstr "{people} · {talking} tala"
+
+msgid "connecting…"
+msgstr "tengist…"
+
+msgid "muted"
+msgstr "þaggað"
+
+msgid "talking"
+msgstr "talar"
+
+msgid "quiet"
+msgstr "hljóð"
+
+msgid "Sharing screen"
+msgstr "Deilir skjá"
+
+msgid "In control"
+msgstr "Með stjórn"
+
+msgid "Controls your screen now"
+msgstr "Stjórnar skjánum þínum núna"
+
+msgid "Watching"
+msgstr "Horfir"
+
+msgid "Watching your screen"
+msgstr "Horfir á skjáinn þinn"
+
+#, rust-format
+msgid "{user} is showing their screen"
+msgstr "{user} sýnir skjáinn sinn"
+
+msgid "Watch"
+msgstr "Horfa"
+
+#, rust-format
+msgid "{user} asks to control your screen"
+msgstr "{user} biður um að stjórna skjánum þínum"
 
 msgid ""
-"No link to you: they see only their own devices and whoever they invite "
-"(you're the administrator)"
+"They'll be able to use your mouse and keyboard. You can take control back at "
+"any time."
 msgstr ""
-"Engin tenging við þig: viðkomandi sér aðeins eigin tæki og þá sem hann býður"
-" (þú ert kerfisstjórinn)"
+"Viðkomandi getur notað músina og lyklaborðið þitt. Þú getur tekið stjórnina "
+"aftur hvenær sem er."
 
-msgid "Create invite"
-msgstr "Búa til boð"
+msgid "Deny"
+msgstr "Hafna"
 
-msgid "QR code of the invite link"
-msgstr "QR-kóði boðstengilsins"
+msgid "Allow"
+msgstr "Leyfa"
 
-msgid ""
-"Send the link or let the person scan the code with their phone. It works "
-"once and stays valid until used or cancelled."
-msgstr ""
-"Sendu tengilinn eða leyfðu viðkomandi að skanna kóðann með símanum. Hann "
-"virkar einu sinni og gildir þar til hann er notaður eða afturkallaður."
+msgid "Turn off camera"
+msgstr "Slökkva á myndavél"
 
-msgid "Copy link"
-msgstr "Afrita tengil"
+msgid "Turn on camera"
+msgstr "Kveikja á myndavél"
 
-msgid "Done"
-msgstr "Lokið"
+msgid "No camera found on this computer"
+msgstr "Engin myndavél fannst í þessari tölvu"
 
-msgid "Copied!"
-msgstr "Afritað!"
+msgid "Stop sharing"
+msgstr "Hætta að deila"
 
-msgid ""
-"This network asks an administrator to approve each invite: the link starts "
-"working once they do. Its status shows in Invites."
-msgstr ""
-"Þetta net krefst þess að kerfisstjóri samþykki hvert boð: tengillinn virkar "
-"þegar hann hefur gert það. Staðan birtist undir Boð."
+msgid "Share screen"
+msgstr "Deila skjá"
+
+msgid "Stop showing your screen to the room"
+msgstr "Hætta að sýna herberginu skjáinn þinn"
+
+msgid "Show your screen to everyone in the room"
+msgstr "Sýna öllum í herberginu skjáinn þinn"
+
+msgid "Take back control"
+msgstr "Taka stjórnina aftur"
+
+msgid "Give control"
+msgstr "Gefa stjórn"
+
+msgid "Stop them from using your mouse and keyboard"
+msgstr "Stöðva notkun viðkomandi á músinni og lyklaborðinu þínu"
+
+msgid "Let them use your mouse and keyboard"
+msgstr "Leyfa viðkomandi að nota músina og lyklaborðið þitt"
+
+msgid "Sound level"
+msgstr "Hljóðstyrkur"
+
+msgid "Unmute"
+msgstr "Kveikja á hljóði"
 
 msgid "System accent"
 msgstr "Áherslulitur kerfis"
@@ -1704,36 +1484,6 @@ msgstr "Mynd…"
 msgid "Choose a background picture"
 msgstr "Veldu bakgrunnsmynd"
 
-msgid "Message"
-msgstr "Skilaboð"
-
-msgid "Bold"
-msgstr "Feitletrað"
-
-msgid "Italic"
-msgstr "Skáletrað"
-
-msgid "Underline"
-msgstr "Undirstrikað"
-
-msgid "Strikethrough"
-msgstr "Yfirstrikað"
-
-msgid "Monospace"
-msgstr "Jafnbreitt letur"
-
-msgid "Create link"
-msgstr "Búa til tengil"
-
-msgid "Plain text"
-msgstr "Hreinn texti"
-
-msgid "Formatting"
-msgstr "Snið"
-
-msgid "Create"
-msgstr "Búa til"
-
 msgid "Mesh VPN client for BigScale/Headscale."
 msgstr "Mesh VPN-biðlari fyrir BigScale/Headscale."
 
@@ -1767,11 +1517,15 @@ msgstr "Yfirgefa netið?"
 
 #, rust-format
 msgid ""
-"This device leaves the network and its name becomes free. Your account {user} is kept: you can come back later from this computer, without an invite.\n"
+"This device leaves the network and its name becomes free. Your account "
+"{user} is kept: you can come back later from this computer, without an "
+"invite.\n"
 "\n"
-"If you won't come back, delete the account and the name {user} becomes free too."
+"If you won't come back, delete the account and the name {user} becomes free "
+"too."
 msgstr ""
-"Þetta tæki yfirgefur netið og nafn þess losnar. Aðgangurinn þinn {user} er geymdur: þú getur komið aftur síðar frá þessari tölvu, án boðs.\n"
+"Þetta tæki yfirgefur netið og nafn þess losnar. Aðgangurinn þinn {user} er "
+"geymdur: þú getur komið aftur síðar frá þessari tölvu, án boðs.\n"
 "\n"
 "Ef þú kemur ekki aftur skaltu eyða aðganginum, þá losnar nafnið {user} líka."
 
@@ -1810,11 +1564,15 @@ msgstr "Ekki náðist í þjóninn"
 msgid ""
 "The control server didn't confirm the sign-out: {error}\n"
 "\n"
-"You can still sign out on this computer: BigLace forgets the saved key and account and disconnects. The server keeps listing this device until an administrator removes it."
+"You can still sign out on this computer: BigLace forgets the saved key and "
+"account and disconnects. The server keeps listing this device until an "
+"administrator removes it."
 msgstr ""
 "Stjórnþjónninn staðfesti ekki útskráninguna: {error}\n"
 "\n"
-"Þú getur samt skráð þig út á þessari tölvu: BigLace gleymir vistaða lyklinum og aðganginum og aftengist. Þjónninn heldur áfram að sýna þetta tæki þar til kerfisstjóri fjarlægir það."
+"Þú getur samt skráð þig út á þessari tölvu: BigLace gleymir vistaða lyklinum "
+"og aðganginum og aftengist. Þjónninn heldur áfram að sýna þetta tæki þar til "
+"kerfisstjóri fjarlægir það."
 
 msgid "Sign out on this computer"
 msgstr "Skrá út á þessari tölvu"
@@ -1830,16 +1588,16 @@ msgid ""
 "username and password. This device joins the network under the name below. "
 "Everyone else joins with an invite or an access key."
 msgstr ""
-"Aðeins fyrir þann sem stjórnar BigScale-stjórnborðinu: notaðu notandanafn og"
-" lykilorð kerfisstjóra stjórnborðsins. Þetta tæki gengur í netið undir "
+"Aðeins fyrir þann sem stjórnar BigScale-stjórnborðinu: notaðu notandanafn og "
+"lykilorð kerfisstjóra stjórnborðsins. Þetta tæki gengur í netið undir "
 "nafninu hér að neðan. Allir aðrir ganga í netið með boði eða aðgangslykli."
 
 msgid "Panel URL"
 msgstr "Slóð spjalds"
 
 msgid ""
-"Address of your BigScale panel (e.g. panel.example.org). The https:// scheme"
-" is added automatically if you omit it."
+"Address of your BigScale panel (e.g. panel.example.org). The https:// scheme "
+"is added automatically if you omit it."
 msgstr ""
 "Vistfang BigScale spjaldsins þíns (t.d. panel.example.org). https:// "
 "forskeytið er bætt við sjálfkrafa ef þú sleppir því."
@@ -1863,8 +1621,8 @@ msgstr ""
 "á Linux, Keychain á macOS, Credential Manager á Windows)."
 
 msgid ""
-"The name this device shows to other peers on the VPN — this is the Tailscale"
-" hostname, NOT your computer's name and NOT your user. Lowercase letters, "
+"The name this device shows to other peers on the VPN — this is the Tailscale "
+"hostname, NOT your computer's name and NOT your user. Lowercase letters, "
 "digits and hyphens. Example: 'tales-laptop', 'francois', 'office-pc'. Pick "
 "something other peers will recognise."
 msgstr ""
@@ -1928,8 +1686,8 @@ msgstr ""
 "sem þú notaðir hann, eða biðja kerfisstjórann að losa nafnið."
 
 msgid ""
-"That name already belongs to an account on this network. Try another one, or"
-" ask the administrator to free it."
+"That name already belongs to an account on this network. Try another one, or "
+"ask the administrator to free it."
 msgstr ""
 "Þetta nafn tilheyrir þegar aðgangi á þessu neti. Prófaðu annað eða biddu "
 "kerfisstjórann að losa það."
@@ -1991,8 +1749,8 @@ msgid "Joining…"
 msgstr "Geng í netið…"
 
 msgid ""
-"That doesn't look like an invite link. It starts with https:// and contains "
-"/join#."
+"That doesn't look like an invite link. It starts with https:// and contains /"
+"join#."
 msgstr ""
 "Þetta lítur ekki út eins og boðstengill. Hann byrjar á https:// og "
 "inniheldur /join#."
@@ -2008,6 +1766,36 @@ msgstr "Velkomin(n), {name}! Þú gekkst í hópinn {group}. Tengist…"
 msgid "Welcome, {name}! Connecting…"
 msgstr "Velkomin(n), {name}! Tengist…"
 
+msgid "Message"
+msgstr "Skilaboð"
+
+msgid "Bold"
+msgstr "Feitletrað"
+
+msgid "Italic"
+msgstr "Skáletrað"
+
+msgid "Underline"
+msgstr "Undirstrikað"
+
+msgid "Strikethrough"
+msgstr "Yfirstrikað"
+
+msgid "Monospace"
+msgstr "Jafnbreitt letur"
+
+msgid "Create link"
+msgstr "Búa til tengil"
+
+msgid "Plain text"
+msgstr "Hreinn texti"
+
+msgid "Formatting"
+msgstr "Snið"
+
+msgid "Create"
+msgstr "Búa til"
+
 msgid "End access"
 msgstr "Ljúka aðgangi"
 
@@ -2020,8 +1808,8 @@ msgstr "Fjaraðgangur hafinn"
 
 #, rust-format
 msgid ""
-"{user} ({device}) is seeing and controlling this screen. Open BigLace to end"
-" the access."
+"{user} ({device}) is seeing and controlling this screen. Open BigLace to end "
+"the access."
 msgstr ""
 "{user} ({device}) sér og stjórnar þessum skjá. Opnaðu BigLace til að ljúka "
 "aðganginum."
@@ -2071,8 +1859,8 @@ msgid "Restart {name}'s computer?"
 msgstr "Endurræsa tölvu {name}?"
 
 msgid ""
-"It restarts, signs in by itself and locks the screen right away; this window"
-" connects again when it's back. Unsaved work there is lost."
+"It restarts, signs in by itself and locks the screen right away; this window "
+"connects again when it's back. Unsaved work there is lost."
 msgstr ""
 "Hún endurræsist, skráir sig sjálf inn og læsir skjánum strax; þessi gluggi "
 "tengist aftur þegar hún er komin upp. Óvistuð vinna þar tapast."
@@ -2104,8 +1892,8 @@ msgid ""
 "You won't be able to reach it again until someone turns it on. Unsaved work "
 "there is lost."
 msgstr ""
-"Þú nærð ekki í hana aftur fyrr en einhver kveikir á henni. Óvistuð vinna þar"
-" tapast."
+"Þú nærð ekki í hana aftur fyrr en einhver kveikir á henni. Óvistuð vinna þar "
+"tapast."
 
 msgid "Shut Down"
 msgstr "Slökkva"
@@ -2177,8 +1965,8 @@ msgid "{name} didn't allow the access."
 msgstr "{name} leyfði ekki aðganginn."
 
 msgid ""
-"That computer couldn't confirm this device. Make sure both run an up-to-date"
-" BigLace."
+"That computer couldn't confirm this device. Make sure both run an up-to-date "
+"BigLace."
 msgstr ""
 "Sú tölva gat ekki staðfest þetta tæki. Gakktu úr skugga um að báðar keyri "
 "uppfært BigLace."
@@ -2188,8 +1976,7 @@ msgid ""
 "{name}'s computer can't share its screen (screen sharing isn't available "
 "there)."
 msgstr ""
-"Tölva {name} getur ekki deilt skjánum sínum (skjádeiling er ekki tiltæk "
-"þar)."
+"Tölva {name} getur ekki deilt skjánum sínum (skjádeiling er ekki tiltæk þar)."
 
 #, rust-format
 msgid "Could not connect: {error}"
@@ -2252,6 +2039,36 @@ msgstr "Aðgangi að skjá {name} lauk: {error}"
 msgid "Give back control"
 msgstr "Skila stjórn"
 
+msgid "Connected · 1 peer"
+msgstr "Tengt · 1 jafningi"
+
+#, rust-format
+msgid "Connected · {n} peers"
+msgstr "Tengt · {n} jafningar"
+
+#, rust-format
+msgid "In the room {group} · muted"
+msgstr "Í herberginu {group} · þaggað"
+
+#, rust-format
+msgid "In the room {group}"
+msgstr "Í herberginu {group}"
+
+msgid "Show BigLace"
+msgstr "Sýna BigLace"
+
+msgid "Unmute (Ctrl+Alt+M)"
+msgstr "Kveikja á hljóði (Ctrl+Alt+M)"
+
+msgid "Mute (Ctrl+Alt+M)"
+msgstr "Þagga (Ctrl+Alt+M)"
+
+msgid "Leave the room"
+msgstr "Fara úr herberginu"
+
+msgid "Quit"
+msgstr "Hætta"
+
 msgid "direct"
 msgstr "beint"
 
@@ -2269,8 +2086,8 @@ msgid ""
 "Signal sent to {name} (by {via}). If it's set to turn on over the network, "
 "it shows up in a minute or two."
 msgstr ""
-"Merki sent til {name} (um {via}). Ef það er stillt til að kveikja á sér yfir"
-" netið birtist það eftir eina eða tvær mínútur."
+"Merki sent til {name} (um {via}). Ef það er stillt til að kveikja á sér yfir "
+"netið birtist það eftir eina eða tvær mínútur."
 
 #, rust-format
 msgid "Could not turn on {name}: {error}"
@@ -2287,6 +2104,9 @@ msgstr "Fest efst"
 
 msgid "Unpinned"
 msgstr "Losað"
+
+msgid "Copy IP address"
+msgstr "Afrita IP-tölu"
 
 msgid "Open files (SFTP)"
 msgstr "Opna skrár (SFTP)"
@@ -2335,6 +2155,204 @@ msgstr "Mistókst að uppfæra útgöngutengi"
 
 msgid "Copy"
 msgstr "Afrita"
+
+msgid "Search devices"
+msgstr "Leita að tækjum"
+
+msgid "Invite someone to your network"
+msgstr "Bjóða einhverjum á netið þitt"
+
+msgid ""
+"Tailscale cannot write this device's DNS settings, so it can no longer keep "
+"peer names working. They may still resolve for now, from the configuration "
+"left over from before the failure, but that will break the next time the "
+"network changes — and BigLace will fall back to IP addresses. On most "
+"distributions `sudo resolvconf -u` repairs it."
+msgstr ""
+"Tailscale getur ekki skrifað DNS-stillingar þessa tækis og getur því ekki "
+"lengur haldið nöfnum jafningja virkum. Þau gætu enn virkað í bili, út frá "
+"stillingum sem eftir eru frá því fyrir bilunina, en það hættir að virka næst "
+"þegar netið breytist — og BigLace notar þá IP-tölur í staðinn. Á flestum "
+"dreifingum lagar `sudo resolvconf -u` þetta."
+
+msgid "Not connected"
+msgstr "Ekki tengt"
+
+msgid "Press Connect on the left to join the network."
+msgstr "Ýttu á Tengja vinstra megin til að tengjast netinu."
+
+msgid "The tailscale service is not running"
+msgstr "Tailscale-þjónustan er ekki í gangi"
+
+msgid "BigLace needs the tailscaled background service to manage the network."
+msgstr "BigLace þarf bakgrunnsþjónustuna tailscaled til að stjórna netinu."
+
+msgid "Start service"
+msgstr "Ræsa þjónustu"
+
+msgid "Join the network"
+msgstr "Ganga í netið"
+
+msgid "Choose how you're going to sign in."
+msgstr "Veldu hvernig þú ætlar að skrá þig inn."
+
+msgid "Ways to sign in"
+msgstr "Innskráningarleiðir"
+
+msgid "Your account was kept on this computer. No invite needed."
+msgstr "Aðgangurinn þinn var geymdur á þessari tölvu. Ekkert boð þarf."
+
+msgid "I have an invite"
+msgstr "Ég er með boð"
+
+msgid "Someone on the network sent you a link or a QR code."
+msgstr "Einhver á netinu sendi þér tengil eða QR-kóða."
+
+msgid "I have an access key"
+msgstr "Ég er með aðgangslykil"
+
+msgid "A key the administrator created for you (starts with hskey-auth-)."
+msgstr "Lykill sem kerfisstjórinn bjó til fyrir þig (byrjar á hskey-auth-)."
+
+msgid "I'm the administrator"
+msgstr "Ég er kerfisstjórinn"
+
+msgid "Sign in with the BigScale panel's admin username and password."
+msgstr ""
+"Skráðu þig inn með notandanafni og lykilorði kerfisstjóra BigScale-"
+"stjórnborðsins."
+
+msgid "This device"
+msgstr "Þetta tæki"
+
+msgid "Devices on the network"
+msgstr "Tæki á netinu"
+
+msgid "No other devices on the network yet."
+msgstr "Engin önnur tæki á netinu ennþá."
+
+msgid "you are not in a room"
+msgstr "þú ert ekki í herbergi"
+
+msgid "screen sharing isn't available on this computer"
+msgstr "skjádeiling er ekki tiltæk á þessari tölvu"
+
+#, rust-format
+msgid "The computer's sound can't be shared: {error}"
+msgstr "Ekki er hægt að deila hljóði tölvunnar: {error}"
+
+#, rust-format
+msgid "The screen share stopped: {error}"
+msgstr "Skjádeilingin stöðvaðist: {error}"
+
+msgid "This computer"
+msgstr "Þessi tölva"
+
+msgid "Who may use this computer remotely"
+msgstr "Hverjir mega nota þessa tölvu í fjarvinnslu"
+
+msgid ""
+"Anyone you're connected to can ask to see and control this screen. Choose "
+"who is let in without asking, and who is never let in."
+msgstr ""
+"Allir sem þú ert tengd(ur) við geta beðið um að sjá og stjórna þessum skjá. "
+"Veldu hverjum er hleypt inn án þess að spyrja og hverjum aldrei."
+
+msgid "History of accesses"
+msgstr "Aðgangsferill"
+
+msgid "Kept on this computer only."
+msgstr "Aðeins geymt á þessari tölvu."
+
+msgid "Clear"
+msgstr "Hreinsa"
+
+msgid "Nobody has asked yet."
+msgstr "Enginn hefur beðið enn."
+
+msgid "When someone asks, you can choose to always let them in."
+msgstr ""
+"Þegar einhver biður um aðgang geturðu valið að hleypa viðkomandi alltaf inn."
+
+msgid "Ask every time"
+msgstr "Spyrja í hvert sinn"
+
+msgid "Always allow"
+msgstr "Leyfa alltaf"
+
+msgid "Never allow"
+msgstr "Leyfa aldrei"
+
+msgid "No accesses yet."
+msgstr "Enginn aðgangur enn."
+
+msgid "Remote access"
+msgstr "Fjaraðgangur"
+
+msgid "Watched the screen shared with the room"
+msgstr "Horfði á skjáinn sem deilt var með herberginu"
+
+msgid "Got control of the shared screen"
+msgstr "Fékk stjórn á deilda skjánum"
+
+msgid "Restarted the computer"
+msgstr "Endurræsti tölvuna"
+
+msgid "Restarted the session"
+msgstr "Endurræsti setuna"
+
+msgid "Shut down the computer"
+msgstr "Slökkti á tölvunni"
+
+msgid "allowed"
+msgstr "leyft"
+
+msgid "allowed (always)"
+msgstr "leyft (alltaf)"
+
+msgid "came back after a restart"
+msgstr "kom aftur eftir endurræsingu"
+
+msgid "denied"
+msgstr "hafnað"
+
+msgid "blocked (never allowed)"
+msgstr "lokað á (aldrei leyft)"
+
+msgid "ended"
+msgstr "lokið"
+
+#, rust-format
+msgid "{user} ({device})"
+msgstr "{user} ({device})"
+
+#, rust-format
+msgid "{done} of {total}"
+msgstr "{done} af {total}"
+
+msgid "Play"
+msgstr "Spila"
+
+msgid "Download"
+msgstr "Sækja"
+
+msgid "Open"
+msgstr "Opna"
+
+msgid "Show in folder"
+msgstr "Sýna í möppu"
+
+msgid "Pause"
+msgstr "Hlé"
+
+msgid "Photo"
+msgstr "Mynd"
+
+msgid "Video"
+msgstr "Myndskeið"
+
+msgid "Voice message"
+msgstr "Talskilaboð"
 
 msgid "Smileys & people"
 msgstr "Broskarlar og fólk"
@@ -2389,12 +2407,11 @@ msgstr "ekki er hægt að senda þetta skráarheiti"
 
 #, rust-format
 msgid "{user}'s computer is off or offline — try again when it's back"
-msgstr ""
-"tölva {user} er slökkt eða ótengd — reyndu aftur þegar hún kemur aftur"
+msgstr "tölva {user} er slökkt eða ótengd — reyndu aftur þegar hún kemur aftur"
 
 msgid ""
-"the file arrived different from the original (damaged on the way) — download"
-" it again"
+"the file arrived different from the original (damaged on the way) — download "
+"it again"
 msgstr ""
 "skráin barst öðruvísi en upprunalega skráin (skemmdist á leiðinni) — sæktu "
 "hana aftur"
@@ -2438,8 +2455,7 @@ msgstr "📌 (losaði skilaboðin)"
 msgid "nothing was recorded — is a microphone connected?"
 msgstr "ekkert var tekið upp — er hljóðnemi tengdur?"
 
-msgid ""
-"this computer can't restart remotely (BigLace's helper isn't installed)"
+msgid "this computer can't restart remotely (BigLace's helper isn't installed)"
 msgstr ""
 "ekki er hægt að endurræsa þessa tölvu fjartengt (hjálparforrit BigLace er "
 "ekki uppsett)"
@@ -2473,22 +2489,8 @@ msgstr ""
 msgid "access to the camera was refused"
 msgstr "aðgangi að myndavélinni var hafnað"
 
-msgid "you are not in a room"
-msgstr "þú ert ekki í herbergi"
-
 msgid "Mute or unmute the microphone in a BigLace room"
 msgstr "Þagga eða kveikja á hljóðnemanum í BigLace-herbergi"
-
-msgid "screen sharing isn't available on this computer"
-msgstr "skjádeiling er ekki tiltæk á þessari tölvu"
-
-#, rust-format
-msgid "The computer's sound can't be shared: {error}"
-msgstr "Ekki er hægt að deila hljóði tölvunnar: {error}"
-
-#, rust-format
-msgid "The screen share stopped: {error}"
-msgstr "Skjádeilingin stöðvaðist: {error}"
 
 msgid "BigLace doesn't know that computer's network card yet"
 msgstr "BigLace þekkir ekki enn netkort þeirrar tölvu"
@@ -2498,6 +2500,12 @@ msgstr "þessi tölva"
 
 msgid "no computer on its network is on to send the signal"
 msgstr "engin tölva á neti hennar er í gangi til að senda merkið"
+
+msgid "Open with another app"
+msgstr "Opna með öðru forriti"
+
+msgid "Close"
+msgstr "Loka"
 
 #~ msgid "Panel credentials"
 #~ msgstr "Innskráningarupplýsingar spjalds"
@@ -2510,7 +2518,8 @@ msgstr "engin tölva á neti hennar er í gangi til að senda merkið"
 
 #~ msgid "Use the panel on the left to sign in or paste a pre-auth key."
 #~ msgstr ""
-#~ "Notaðu spjaldið til vinstri til að skrá þig inn eða límdu forvottaðan lykil."
+#~ "Notaðu spjaldið til vinstri til að skrá þig inn eða límdu forvottaðan "
+#~ "lykil."
 
 #~ msgid "Connect via panel account"
 #~ msgstr "Tengjast í gegnum reikning á spjaldi"
@@ -2520,8 +2529,8 @@ msgstr "engin tölva á neti hennar er í gangi til að senda merkið"
 #~ "will be created on the network automatically — no manual key needed."
 #~ msgstr ""
 #~ "Skráðu þig inn með notandanafni og lykilorði frá BigScale spjaldinu þínu. "
-#~ "Tækjaauðkenni verður sjálfkrafa búið til á netinu — enginn handvirkur lykill"
-#~ " nauðsynlegur."
+#~ "Tækjaauðkenni verður sjálfkrafa búið til á netinu — enginn handvirkur "
+#~ "lykill nauðsynlegur."
 
 #~ msgid "Connected ·"
 #~ msgstr "Tengdur ·"
@@ -2589,12 +2598,12 @@ msgstr "engin tölva á neti hennar er í gangi til að senda merkið"
 #~ msgstr "Auðkenni þitt á netinu"
 
 #~ msgid ""
-#~ "Personal key generated for you in the BigScale panel (\"New key\" in Users)."
-#~ " Each person uses their own — this is not the server's key."
+#~ "Personal key generated for you in the BigScale panel (\"New key\" in "
+#~ "Users). Each person uses their own — this is not the server's key."
 #~ msgstr ""
-#~ "Persónulegur lykill sem var búinn til fyrir þig í BigScale spjaldinu (\"Nýr "
-#~ "lykill\" í Notendur). Hver einstaklingur notar sinn eigin — þetta er ekki "
-#~ "lykill þjónsins."
+#~ "Persónulegur lykill sem var búinn til fyrir þig í BigScale spjaldinu "
+#~ "(\"Nýr lykill\" í Notendur). Hver einstaklingur notar sinn eigin — þetta "
+#~ "er ekki lykill þjónsins."
 
 #~ msgid "Pre-auth key (yours)"
 #~ msgstr "For-auðkenningarlykill (þinn)"

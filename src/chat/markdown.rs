@@ -53,6 +53,8 @@ fn render(text: &str, underline: bool) -> String {
     let mut lists: Vec<Option<u64>> = Vec::new();
     let mut pending_break = false;
     let mut quote_depth = 0usize;
+    // Inside a link nothing else becomes one (no @mentions there).
+    let mut in_link = 0usize;
 
     let paragraph_break = |out: &mut String| {
         if !out.is_empty() && !out.ends_with("\n\n") {
@@ -120,6 +122,7 @@ fn render(text: &str, underline: bool) -> String {
                 Tag::Strong => out.push_str("<b>"),
                 Tag::Strikethrough => out.push_str("<s>"),
                 Tag::Link { dest_url, .. } => {
+                    in_link += 1;
                     // Only web and mail links become clickable.
                     let url = dest_url.trim();
                     if url.starts_with("https://") || url.starts_with("http://") || url.starts_with("mailto:") {
@@ -160,6 +163,7 @@ fn render(text: &str, underline: bool) -> String {
                 TagEnd::Strong => out.push_str("</b>"),
                 TagEnd::Strikethrough => out.push_str("</s>"),
                 TagEnd::Link => {
+                    in_link = in_link.saturating_sub(1);
                     // Close what Start opened (a or u): find the last opener.
                     let a = out.rfind("<a href=");
                     let u = out.rfind("<u>");
@@ -171,6 +175,7 @@ fn render(text: &str, underline: bool) -> String {
                 }
                 _ => {}
             },
+            Event::Text(t) if in_link == 0 => out.push_str(&with_mentions(&t)),
             Event::Text(t) => out.push_str(&escape(&t)),
             Event::Code(t) => {
                 out.push_str(CODE_OPEN);
@@ -197,6 +202,61 @@ fn render(text: &str, underline: bool) -> String {
 /// bubbles alike.
 const CODE_OPEN: &str = "<span font_family=\"monospace\" bgcolor=\"#808080\" bgalpha=\"22%\">";
 const CODE_CLOSE: &str = "</span>";
+
+/// A character that can be part of a name after "@" (the panel's user
+/// names: letters, digits, "-", "_").
+fn name_char(c: char) -> bool {
+    c.is_ascii_alphanumeric() || c == '-' || c == '_'
+}
+
+/// The "@name"s in `text`: (byte range of "@name", name). Not in the
+/// middle of a word (an e-mail address isn't a mention).
+pub fn mentions(text: &str) -> Vec<(std::ops::Range<usize>, String)> {
+    let mut out = Vec::new();
+    let mut prev: Option<char> = None;
+    let mut iter = text.char_indices().peekable();
+    while let Some((i, c)) = iter.next() {
+        if c == '@' && !prev.is_some_and(|p| p.is_alphanumeric() || p == '_' || p == '-' || p == '.') {
+            let start = i + 1;
+            let mut end = start;
+            while let Some(&(j, d)) = iter.peek() {
+                if !name_char(d) {
+                    break;
+                }
+                end = j + d.len_utf8();
+                iter.next();
+            }
+            // Trailing "-"/"_" are punctuation, not the name's.
+            let name = text[start..end].trim_end_matches(['-', '_']);
+            if !name.is_empty() && name.len() <= 64 {
+                out.push((i..start + name.len(), name.to_string()));
+            }
+            prev = text[..end].chars().last();
+            continue;
+        }
+        prev = Some(c);
+    }
+    out
+}
+
+/// Does `text` mention `user`?
+pub fn mentions_user(text: &str, user: &str) -> bool {
+    mentions(text).iter().any(|(_, n)| n.eq_ignore_ascii_case(user))
+}
+
+/// Escaped text with each "@name" as a link (`mention:name`): shown like
+/// a link, a click opens the conversation with that person.
+fn with_mentions(t: &str) -> String {
+    let mut out = String::with_capacity(t.len());
+    let mut at = 0;
+    for (range, name) in mentions(t) {
+        out.push_str(&escape(&t[at..range.start]));
+        out.push_str(&format!("<a href=\"mention:{}\"><b>@{}</b></a>", escape(&name), escape(&name)));
+        at = range.end;
+    }
+    out.push_str(&escape(&t[at..]));
+    out
+}
 
 fn escape(s: &str) -> String {
     let mut out = String::with_capacity(s.len());
@@ -298,5 +358,20 @@ mod tests {
         assert!(!is_jumbo_emoji("oi 😀"));
         assert!(!is_jumbo_emoji("😀😀😀😀"));
         assert!(!is_jumbo_emoji(""));
+    }
+
+    #[test]
+    fn mentions_are_found_and_linked() {
+        let m = mentions("oi @bruno e @tales-2, veja (@ana). mail a@b.com @ x @-");
+        let names: Vec<_> = m.iter().map(|(_, n)| n.as_str()).collect();
+        assert_eq!(names, ["bruno", "tales-2", "ana"]);
+        assert!(mentions_user("valeu @Bruno!", "bruno"));
+        assert!(!mentions_user("bruno@casa", "casa"));
+        let p = to_pango("fala @bruno, **ok**");
+        assert!(p.contains("<a href=\"mention:bruno\"><b>@bruno</b></a>"), "{p}");
+        assert!(markup_ok(&p));
+        // Not inside links or code.
+        assert!(!to_pango("[@bruno](https://x.y)").contains("mention:"));
+        assert!(!to_pango("`@bruno`").contains("mention:"));
     }
 }

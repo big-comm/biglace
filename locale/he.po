@@ -165,8 +165,8 @@ msgid "Account"
 msgstr "חשבון"
 
 msgid ""
-"Signing out removes this device's identity from BigLace. You will need a new"
-" invite or key to join again."
+"Signing out removes this device's identity from BigLace. You will need a new "
+"invite or key to join again."
 msgstr ""
 "התנתקות מסירה את זהות המכשיר הזה מ־BigLace. תצטרך הזמנה או מפתח חדשים כדי "
 "להצטרף שוב."
@@ -199,8 +199,7 @@ msgid "Connect to the network first, then open the invite link again."
 msgstr "התחבר תחילה לרשת, ואז פתח שוב את קישור ההזמנה."
 
 #, rust-format
-msgid ""
-"This invite is for another network ({host}). Sign out first to join it."
+msgid "This invite is for another network ({host}). Sign out first to join it."
 msgstr "הזמנה זו מיועדת לרשת אחרת ({host}). התנתק תחילה כדי להצטרף אליה."
 
 msgid ""
@@ -219,8 +218,8 @@ msgid "Could not open the browser: {error}"
 msgstr "לא ניתן לפתוח את הדפדפן: {error}"
 
 msgid ""
-"You can't open the admin panel: you're not an administrator of this network,"
-" or the panel can't be reached."
+"You can't open the admin panel: you're not an administrator of this network, "
+"or the panel can't be reached."
 msgstr "לא ניתן לפתוח את לוח הניהול: אינך מנהל של רשת זו, או שאין גישה ללוח."
 
 msgid "Enter the server URL before saving."
@@ -245,8 +244,8 @@ msgid ""
 "register it anew."
 msgstr ""
 "נשמר, אך לא ניתן היה לאחסן את מפתח האימות המוקדם במחזיק המפתחות של המערכת "
-"({error}). מכשיר זה עדיין יכול להתחבר מחדש; המפתח נדרש שוב רק כדי לרשום אותו"
-" מחדש."
+"({error}). מכשיר זה עדיין יכול להתחבר מחדש; המפתח נדרש שוב רק כדי לרשום אותו "
+"מחדש."
 
 msgid "Connected"
 msgstr "מחובר"
@@ -318,123 +317,169 @@ msgstr "{count} התקנים התנתקו"
 msgid "{on_count} online · {off_count} offline"
 msgstr "{on_count} מחוברים · {off_count} מנותקים"
 
-msgid "Connected · 1 peer"
-msgstr "מחובר · 1 עמית"
+msgid ""
+"Invites from BigLace need a BigScale server that supports them. Ask your "
+"administrator to update the server, or to create the invite in the panel."
+msgstr ""
+"הזמנות מ־BigLace דורשות שרת BigScale שתומך בהן. בקש מהמנהל לעדכן את השרת, או "
+"ליצור את ההזמנה בלוח הבקרה."
+
+msgid "This device can't send invites (it isn't linked to a person's account)."
+msgstr "מכשיר זה אינו יכול לשלוח הזמנות (הוא אינו מקושר לחשבון של אדם)."
+
+msgid ""
+"The panel knows this device by a different key (BigLace was reinstalled?). "
+"Leave the network and join again to fix it."
+msgstr ""
+"לוח הבקרה מכיר את המכשיר הזה במפתח אחר (BigLace הותקן מחדש?). עזוב את הרשת "
+"והצטרף שוב כדי לתקן זאת."
+
+msgid ""
+"The panel couldn't confirm this device. Make sure BigLace is up to date and "
+"stays open while connected, then try again."
+msgstr ""
+"לוח הבקרה לא הצליח לאמת את המכשיר הזה. ודא ש־BigLace מעודכן ונשאר פתוח בזמן "
+"החיבור, ונסה שוב."
+
+msgid "You are no longer in that group."
+msgstr "אינך עוד בקבוצה הזו."
+
+msgid ""
+"On this network everyone can reach everyone, so only the administrator can "
+"invite people."
+msgstr "ברשת זו כולם יכולים להגיע לכולם, ולכן רק המנהל יכול להזמין אנשים."
+
+msgid "You have too many pending invites. Cancel some or try again tomorrow."
+msgstr "יש לך יותר מדי הזמנות ממתינות. בטל חלק מהן או נסה שוב מחר."
+
+msgid ""
+"On this network only administrators invite new people. You can still invite "
+"people already on the network into your groups."
+msgstr ""
+"ברשת זו רק מנהלים מזמינים אנשים חדשים. עדיין ניתן להזמין לקבוצות שלך אנשים "
+"שכבר ברשת."
 
 #, rust-format
-msgid "Connected · {n} peers"
-msgstr "מחובר · {n} עמיתים"
+msgid "Could not reach the panel: {error}"
+msgstr "לא ניתן היה להגיע ללוח הבקרה: {error}"
 
-#, rust-format
-msgid "In the room {group} · muted"
-msgstr "בחדר {group} · מושתק"
+msgid "Waiting to be used"
+msgstr "ממתינה לשימוש"
 
-#, rust-format
-msgid "In the room {group}"
-msgstr "בחדר {group}"
+msgid "Used"
+msgstr "נוצלה"
 
-msgid "Show BigLace"
-msgstr "הצג את BigLace"
+msgid "Expired"
+msgstr "פג תוקף"
 
-#, rust-format
-msgid "Room {group}"
-msgstr "חדר {group}"
+msgid "Cancelled"
+msgstr "בוטלה"
 
-msgid "Unmute (Ctrl+Alt+M)"
-msgstr "ביטול השתקה (Ctrl+Alt+M)"
-
-msgid "Mute (Ctrl+Alt+M)"
-msgstr "השתקה (Ctrl+Alt+M)"
-
-msgid "Leave the room"
-msgstr "יציאה מהחדר"
-
-msgid "Quit"
-msgstr "צא"
-
-msgid "Main menu"
-msgstr "תפריט ראשי"
-
-msgid "Search devices"
-msgstr "חיפוש מכשירים"
+msgid "Waiting for an administrator's approval"
+msgstr "ממתינה לאישור מנהל"
 
 msgid "Refresh"
 msgstr "רענן"
 
+msgid "Main menu"
+msgstr "תפריט ראשי"
+
+msgid "Bring someone to your network"
+msgstr "הבא מישהו לרשת שלך"
+
+msgid ""
+"Create a link or QR code and send it to the person. When they join, you two "
+"can reach each other's devices — no administrator needed. The link works "
+"once and stays valid until it's used or you cancel it."
+msgstr ""
+"צור קישור או קוד QR ושלח אותו לאדם. כשהוא יצטרף, תוכלו להגיע זה למכשירים של "
+"זה — ללא צורך במנהל. הקישור עובד פעם אחת ונשאר בתוקף עד שינוצל או שתבטל אותו."
+
+msgid "No invites yet"
+msgstr "אין הזמנות עדיין"
+
+msgid "Invites unavailable"
+msgstr "הזמנות אינן זמינות"
+
+#, rust-format
+msgid "{user} joined"
+msgstr "{user} הצטרף"
+
 msgid "Invite"
 msgstr "הזמנה"
 
-msgid "Invite someone to your network"
-msgstr "הזמן מישהו לרשת שלך"
+#, rust-format
+msgid "group {group}"
+msgstr "קבוצה {group}"
+
+msgid "Cancel this invite: the link stops working"
+msgstr "ביטול הזמנה זו: הקישור יפסיק לעבוד"
+
+msgid "The person you invite will reach your devices, and you theirs."
+msgstr "האדם שתזמין יגיע למכשירים שלך, ואתה לשלו."
+
+msgid "Who is it for? (optional)"
+msgstr "למי היא מיועדת? (אופציונלי)"
+
+msgid "Access"
+msgstr "גישה"
+
+msgid "Just the two of us"
+msgstr "רק שנינו"
+
+msgid "You see each other's devices, nobody else"
+msgstr "אתם רואים את המכשירים זה של זה, אף אחד אחר לא"
+
+#, rust-format
+msgid "Also the group {group}"
+msgstr "גם הקבוצה {group}"
+
+msgid "They join the group and see everyone in it"
+msgstr "הוא מצטרף לקבוצה ורואה את כל מי שבה"
+
+msgid "A network of their own"
+msgstr "רשת משלו"
 
 msgid ""
-"Tailscale cannot write this device's DNS settings, so it can no longer keep "
-"peer names working. They may still resolve for now, from the configuration "
-"left over from before the failure, but that will break the next time the "
-"network changes — and BigLace will fall back to IP addresses. On most "
-"distributions `sudo resolvconf -u` repairs it."
+"No link to you: they see only their own devices and whoever they invite "
+"(you're the administrator)"
 msgstr ""
-"Tailscale לא יכול לכתוב את הגדרות ה־DNS של מכשיר זה, ולכן לא יוכל עוד לשמור "
-"על פעולת שמות העמיתים. ייתכן שהם עדיין ייפתרו כרגע, מההגדרות שנותרו מלפני "
-"התקלה, אבל זה יישבר בפעם הבאה שהרשת תשתנה — ו־BigLace יחזור לכתובות IP. ברוב"
-" ההפצות `sudo resolvconf -u` מתקן זאת."
+"ללא קשר אליך: הוא רואה רק את המכשירים שלו ואת מי שהוא מזמין (אתה המנהל)"
 
-msgid "Not connected"
-msgstr "לא מחובר"
+msgid "Create invite"
+msgstr "יצירת הזמנה"
 
-msgid "Press Connect on the left to join the network."
-msgstr "לחץ על \"התחבר\" בצד שמאל כדי להצטרף לרשת."
+msgid "QR code of the invite link"
+msgstr "קוד QR של קישור ההזמנה"
 
-msgid "The tailscale service is not running"
-msgstr "שירות tailscale אינו פועל"
+msgid ""
+"Send the link or let the person scan the code with their phone. It works "
+"once and stays valid until used or cancelled."
+msgstr ""
+"שלח את הקישור או תן לאדם לסרוק את הקוד בטלפון. הוא עובד פעם אחת ונשאר בתוקף "
+"עד שינוצל או יבוטל."
 
-msgid "BigLace needs the tailscaled background service to manage the network."
-msgstr "BigLace זקוק לשירות הרקע tailscaled כדי לנהל את הרשת."
+msgid "Copy link"
+msgstr "העתקת קישור"
 
-msgid "Start service"
-msgstr "הפעל שירות"
+msgid "Done"
+msgstr "סיום"
 
-msgid "Join the network"
-msgstr "הצטרפות לרשת"
+msgid "Copied!"
+msgstr "הועתק!"
 
-msgid "Choose how you're going to sign in."
-msgstr "בחר כיצד להתחבר."
+msgid ""
+"This network asks an administrator to approve each invite: the link starts "
+"working once they do. Its status shows in Invites."
+msgstr ""
+"רשת זו דורשת שמנהל יאשר כל הזמנה: הקישור יתחיל לעבוד לאחר האישור. מצבה מוצג "
+"בהזמנות."
 
-msgid "Ways to sign in"
-msgstr "דרכי התחברות"
+msgid "Show the full sidebar"
+msgstr "הצגת סרגל הצד המלא"
 
-msgid "Your account was kept on this computer. No invite needed."
-msgstr "החשבון שלך נשמר במחשב זה. אין צורך בהזמנה."
-
-msgid "I have an invite"
-msgstr "יש לי הזמנה"
-
-msgid "Someone on the network sent you a link or a QR code."
-msgstr "מישהו ברשת שלח לך קישור או קוד QR."
-
-msgid "I have an access key"
-msgstr "יש לי מפתח גישה"
-
-msgid "A key the administrator created for you (starts with hskey-auth-)."
-msgstr "מפתח שהמנהל יצר עבורך (מתחיל ב־hskey-auth-)."
-
-msgid "I'm the administrator"
-msgstr "אני המנהל"
-
-msgid "Sign in with the BigScale panel's admin username and password."
-msgstr "התחבר עם שם המשתמש והסיסמה של מנהל לוח הבקרה של BigScale."
-
-msgid "This device"
-msgstr "מכשיר זה"
-
-msgid "Copy IP address"
-msgstr "העתק כתובת IP"
-
-msgid "Devices on the network"
-msgstr "מכשירים ברשת"
-
-msgid "No other devices on the network yet."
-msgstr "עדיין אין מכשירים אחרים ברשת."
+msgid "Show only icons in the sidebar"
+msgstr "רק סמלים בסרגל הצד"
 
 msgid "Sections"
 msgstr "מקטעים"
@@ -490,8 +535,8 @@ msgstr ""
 "אוטומטי של מכשיר זה ללא פתיחת דפדפן."
 
 msgid ""
-"The name this device shows to other peers on the VPN — this is the Tailscale"
-" hostname, NOT your computer's name and NOT your user. Lowercase letters, "
+"The name this device shows to other peers on the VPN — this is the Tailscale "
+"hostname, NOT your computer's name and NOT your user. Lowercase letters, "
 "digits and hyphens. Example: 'tales-laptop', 'francois', 'office-pc'."
 msgstr ""
 "השם שמכשיר זה מציג לעמיתים אחרים ב-VPN — זהו שם המארח של Tailscale, לא שם "
@@ -505,8 +550,8 @@ msgid "Save"
 msgstr "שמור"
 
 msgid ""
-"Persist the server, key and device name above. Won't connect — press Connect"
-" afterwards."
+"Persist the server, key and device name above. Won't connect — press Connect "
+"afterwards."
 msgstr ""
 "שמור את השרת, המפתח ושם המכשיר שלמעלה. לא יתחבר — לחץ על 'התחבר' לאחר מכן."
 
@@ -517,8 +562,8 @@ msgid "Join the network when BigLace starts"
 msgstr "הצטרף לרשת כאשר BigLace מתחיל"
 
 msgid ""
-"When on, BigLace runs 'tailscale up' as soon as it launches, so you join the"
-" mesh without clicking Connect every time."
+"When on, BigLace runs 'tailscale up' as soon as it launches, so you join the "
+"mesh without clicking Connect every time."
 msgstr ""
 "כשמופעל, BigLace מריץ את 'tailscale up' מיד עם ההפעלה, כך שאתה מצטרף לרשת "
 "המשולבת מבלי ללחוץ על 'התחבר' בכל פעם."
@@ -549,9 +594,8 @@ msgid "Retry with backoff when the connection is lost"
 msgstr "נסה שוב עם השהייה כאשר החיבור אבד"
 
 msgid ""
-"If the tunnel drops (network change, sleep, server hiccup), BigLace silently"
-" retries with growing delays instead of leaving you offline until you "
-"notice."
+"If the tunnel drops (network change, sleep, server hiccup), BigLace silently "
+"retries with growing delays instead of leaving you offline until you notice."
 msgstr ""
 "אם המנהרה נופלת (שינוי רשת, שינה, תקלה בשרת), BigLace מנסה שוב בשקט עם "
 "השהיות הולכות וגדלות במקום להשאיר אותך מנותק עד שתשים לב."
@@ -585,299 +629,6 @@ msgstr ""
 
 msgid "Your photo"
 msgstr "התמונה שלך"
-
-msgid ""
-"Each of your groups has a voice room. Join it and talk with whoever is there"
-" — the sound goes straight between you, through the network."
-msgstr ""
-"לכל אחת מהקבוצות שלך יש חדר קולי. הצטרף אליו ודבר עם מי שנמצא שם — הצליל "
-"עובר ישירות ביניכם, דרך הרשת."
-
-msgid "You're not in any group yet. Create one in Groups."
-msgstr "אינך עדיין באף קבוצה. צור אחת בקבוצות."
-
-msgid "People in the room"
-msgstr "אנשים בחדר"
-
-msgid "Everyone"
-msgstr "כולם"
-
-msgid "Who's speaking"
-msgstr "מי מדבר"
-
-msgid "Mute"
-msgstr "השתקה"
-
-msgid "Mute your microphone for everyone"
-msgstr "השתק את המיקרופון שלך עבור כולם"
-
-msgid "Leave"
-msgstr "עזיבה"
-
-msgid "Which camera"
-msgstr "איזו מצלמה"
-
-msgid "Include the computer's sound when sharing the screen"
-msgstr "לכלול את הצליל של המחשב בעת שיתוף המסך"
-
-msgid ""
-"Videos and music playing here go to the room too; the room's voices don't "
-"(no echo)"
-msgstr ""
-"סרטונים ומוזיקה שמתנגנים כאן יגיעו גם לחדר; הקולות של החדר לא (ללא הד)"
-
-msgid "Rooms unavailable"
-msgstr "חדרים אינם זמינים"
-
-#, rust-format
-msgid "Could not turn on the camera: {error}"
-msgstr "לא ניתן להפעיל את המצלמה: {error}"
-
-#, rust-format
-msgid "Could not share the screen: {error}"
-msgstr "לא ניתן לשתף את המסך: {error}"
-
-#, rust-format
-msgid "Could not reach the panel: {error}"
-msgstr "לא ניתן היה להגיע ללוח הבקרה: {error}"
-
-msgid "Nobody here right now"
-msgstr "אין כאן אף אחד כרגע"
-
-#, rust-format
-msgid "In the room: {people}"
-msgstr "בחדר: {people}"
-
-msgid "Join"
-msgstr "הצטרפות"
-
-#, rust-format
-msgid "Join the room {group}"
-msgstr "הצטרפות לחדר {group}"
-
-#, rust-format
-msgid "Could not join {group}: {error}"
-msgstr "לא ניתן להצטרף ל־{group}: {error}"
-
-msgid "📺 You're showing your screen to the room"
-msgstr "📺 אתה מציג את המסך שלך לחדר"
-
-msgid "📺 You're showing your screen · 1 person watching"
-msgstr "📺 אתה מציג את המסך שלך · אדם אחד צופה"
-
-#, rust-format
-msgid "📺 You're showing your screen · {count} people watching"
-msgstr "📺 אתה מציג את המסך שלך · {count} אנשים צופים"
-
-msgid "1 person"
-msgstr "אדם אחד"
-
-#, rust-format
-msgid "{count} people"
-msgstr "{count} אנשים"
-
-#, rust-format
-msgid "{people} · {talking} talking"
-msgstr "{people} · {talking} מדברים"
-
-msgid "you"
-msgstr "אתה"
-
-msgid "connecting…"
-msgstr "מתחבר…"
-
-msgid "muted"
-msgstr "מושתק"
-
-msgid "talking"
-msgstr "מדבר"
-
-msgid "quiet"
-msgstr "שקט"
-
-msgid "Sharing screen"
-msgstr "משתף מסך"
-
-msgid "In control"
-msgstr "בשליטה"
-
-msgid "Controls your screen now"
-msgstr "שולט במסך שלך כעת"
-
-msgid "Watching"
-msgstr "צופה"
-
-msgid "Watching your screen"
-msgstr "צופה במסך שלך"
-
-#, rust-format
-msgid "{user} is showing their screen"
-msgstr "{user} מציג את המסך שלו"
-
-msgid "Watch"
-msgstr "צפייה"
-
-#, rust-format
-msgid "{user} asks to control your screen"
-msgstr "{user} מבקש לשלוט במסך שלך"
-
-msgid ""
-"They'll be able to use your mouse and keyboard. You can take control back at"
-" any time."
-msgstr "הוא יוכל להשתמש בעכבר ובמקלדת שלך. ניתן לקחת בחזרה את השליטה בכל עת."
-
-msgid "Deny"
-msgstr "דחייה"
-
-msgid "Allow"
-msgstr "אישור"
-
-msgid "Turn off camera"
-msgstr "כיבוי מצלמה"
-
-msgid "Turn on camera"
-msgstr "הפעלת מצלמה"
-
-msgid "No camera found on this computer"
-msgstr "לא נמצאה מצלמה במחשב זה"
-
-msgid "Stop sharing"
-msgstr "הפסקת שיתוף"
-
-msgid "Share screen"
-msgstr "שיתוף מסך"
-
-msgid "Stop showing your screen to the room"
-msgstr "הפסק להציג את המסך שלך לחדר"
-
-msgid "Show your screen to everyone in the room"
-msgstr "הצג את המסך שלך לכל מי שבחדר"
-
-msgid "Take back control"
-msgstr "לקיחת השליטה בחזרה"
-
-msgid "Give control"
-msgstr "מתן שליטה"
-
-msgid "Stop them from using your mouse and keyboard"
-msgstr "מנע מהם להשתמש בעכבר ובמקלדת שלך"
-
-msgid "Let them use your mouse and keyboard"
-msgstr "אפשר להם להשתמש בעכבר ובמקלדת שלך"
-
-msgid "Sound level"
-msgstr "עוצמת צליל"
-
-msgid "Unmute"
-msgstr "ביטול השתקה"
-
-msgid "This computer"
-msgstr "מחשב זה"
-
-msgid "Who may use this computer remotely"
-msgstr "מי רשאי להשתמש במחשב זה מרחוק"
-
-msgid ""
-"Anyone you're connected to can ask to see and control this screen. Choose "
-"who is let in without asking, and who is never let in."
-msgstr ""
-"כל מי שאתה מחובר אליו יכול לבקש לראות ולשלוט במסך זה. בחר את מי להכניס בלי "
-"לשאול, ואת מי לעולם לא להכניס."
-
-msgid "History of accesses"
-msgstr "היסטוריית גישות"
-
-msgid "Kept on this computer only."
-msgstr "נשמרת במחשב זה בלבד."
-
-msgid "Clear"
-msgstr "ניקוי"
-
-msgid "Nobody has asked yet."
-msgstr "איש עדיין לא ביקש."
-
-msgid "When someone asks, you can choose to always let them in."
-msgstr "כשמישהו מבקש, ניתן לבחור לאפשר לו תמיד."
-
-msgid "Ask every time"
-msgstr "לשאול בכל פעם"
-
-msgid "Always allow"
-msgstr "לאפשר תמיד"
-
-msgid "Never allow"
-msgstr "לעולם לא לאפשר"
-
-msgid "No accesses yet."
-msgstr "אין גישות עדיין."
-
-msgid "Remote access"
-msgstr "גישה מרחוק"
-
-msgid "Watched the screen shared with the room"
-msgstr "צפה במסך ששותף עם החדר"
-
-msgid "Got control of the shared screen"
-msgstr "קיבל שליטה על המסך המשותף"
-
-msgid "Restarted the computer"
-msgstr "הפעיל מחדש את המחשב"
-
-msgid "Restarted the session"
-msgstr "הפעיל מחדש את ההפעלה"
-
-msgid "Shut down the computer"
-msgstr "כיבה את המחשב"
-
-msgid "allowed"
-msgstr "אושר"
-
-msgid "allowed (always)"
-msgstr "אושר (תמיד)"
-
-msgid "came back after a restart"
-msgstr "חזר לאחר הפעלה מחדש"
-
-msgid "denied"
-msgstr "נדחה"
-
-msgid "blocked (never allowed)"
-msgstr "נחסם (לעולם לא מאושר)"
-
-msgid "ended"
-msgstr "הסתיים"
-
-#, rust-format
-msgid "{user} ({device})"
-msgstr "{user} ({device})"
-
-#, rust-format
-msgid "{done} of {total}"
-msgstr "{done} מתוך {total}"
-
-msgid "Play"
-msgstr "נגן"
-
-msgid "Download"
-msgstr "הורדה"
-
-msgid "Open"
-msgstr "פתיחה"
-
-msgid "Show in folder"
-msgstr "הצגה בתיקייה"
-
-msgid "Pause"
-msgstr "השהיה"
-
-msgid "Photo"
-msgstr "תמונה"
-
-msgid "Video"
-msgstr "וידאו"
-
-msgid "Voice message"
-msgstr "הודעה קולית"
 
 msgid "New chat"
 msgstr "צ׳אט חדש"
@@ -948,6 +699,9 @@ msgid ""
 msgstr ""
 "בחר שיחה, או התחל אחת. ההודעות עוברות ישירות בין המחשבים שלכם — השרת לעולם "
 "לא רואה אותן."
+
+msgid "People on the network"
+msgstr "אנשים ברשת"
 
 msgid "Group"
 msgstr "קבוצה"
@@ -1123,31 +877,14 @@ msgid "This device isn't linked to a person's account, so it has no groups."
 msgstr "מכשיר זה אינו מקושר לחשבון של אדם, ולכן אין לו קבוצות."
 
 msgid ""
-"The panel knows this device by a different key (BigLace was reinstalled?). "
-"Leave the network and join again to fix it."
-msgstr ""
-"לוח הבקרה מכיר את המכשיר הזה במפתח אחר (BigLace הותקן מחדש?). עזוב את הרשת "
-"והצטרף שוב כדי לתקן זאת."
-
-msgid ""
-"The panel couldn't confirm this device. Make sure BigLace is up to date and "
-"stays open while connected, then try again."
-msgstr ""
-"לוח הבקרה לא הצליח לאמת את המכשיר הזה. ודא ש־BigLace מעודכן ונשאר פתוח בזמן "
-"החיבור, ונסה שוב."
-
-msgid ""
 "On this network everyone already reaches everyone, so groups aren't needed. "
 "The administrator can set access rules first."
 msgstr ""
-"ברשת זו כולם כבר מגיעים לכולם, כך שאין צורך בקבוצות. המנהל יכול להגדיר תחילה"
-" כללי גישה."
+"ברשת זו כולם כבר מגיעים לכולם, כך שאין צורך בקבוצות. המנהל יכול להגדיר תחילה "
+"כללי גישה."
 
 msgid "You already created the maximum number of groups."
 msgstr "כבר יצרת את המספר המרבי של קבוצות."
-
-msgid "You are no longer in that group."
-msgstr "אינך עוד בקבוצה הזו."
 
 msgid "A group with that name already exists. Choose another name."
 msgstr "כבר קיימת קבוצה בשם זה. בחר שם אחר."
@@ -1260,6 +997,13 @@ msgstr "הצטרפת ל־{group}."
 msgid "Invitation declined."
 msgstr "ההזמנה נדחתה."
 
+msgid "1 person"
+msgstr "אדם אחד"
+
+#, rust-format
+msgid "{count} people"
+msgstr "{count} אנשים"
+
 msgid "Created by you"
 msgstr "נוצרה על ידך"
 
@@ -1269,6 +1013,9 @@ msgstr "נוצרה על ידי {user}"
 
 msgid "Network group (administrator)"
 msgstr "קבוצת רשת (מנהל)"
+
+msgid "you"
+msgstr "אתה"
 
 msgid "owner"
 msgstr "בעלים"
@@ -1292,8 +1039,7 @@ msgstr "להסיר את {user}?"
 
 #, rust-format
 msgid ""
-"{user} leaves the group {group} and no longer reaches its members through "
-"it."
+"{user} leaves the group {group} and no longer reaches its members through it."
 msgstr "{user} יעזוב את הקבוצה {group} ולא יגיע עוד לחבריה דרכה."
 
 msgid "Remove"
@@ -1310,8 +1056,10 @@ msgstr "לעזוב את {group}?"
 msgid ""
 "You stop reaching the group's members through it. To come back, someone has "
 "to invite you again."
-msgstr ""
-"לא תגיע עוד לחברי הקבוצה דרכה. כדי לחזור, מישהו יצטרך להזמין אותך שוב."
+msgstr "לא תגיע עוד לחברי הקבוצה דרכה. כדי לחזור, מישהו יצטרך להזמין אותך שוב."
+
+msgid "Leave"
+msgstr "עזיבה"
 
 msgid "You left the group."
 msgstr "עזבת את הקבוצה."
@@ -1349,6 +1097,9 @@ msgstr "להתחבר עם {user}?"
 msgid "You and {user} will reach each other's devices."
 msgstr "אתה ו־{user} תגיעו זה למכשירים של זה."
 
+msgid "Join"
+msgstr "הצטרפות"
+
 msgid "Done. You can now reach each other's devices."
 msgstr "בוצע. כעת תוכלו להגיע זה למכשירים של זה."
 
@@ -1368,9 +1119,6 @@ msgid ""
 "If someone on the network has exactly this name, they get the invitation."
 msgstr "אם יש ברשת מישהו עם השם הזה בדיוק, הוא יקבל את ההזמנה."
 
-msgid "People on the network"
-msgstr "אנשים ברשת"
-
 #, rust-format
 msgid "Invite \"{name}\""
 msgstr "הזמנת \"{name}\""
@@ -1389,9 +1137,9 @@ msgid "{count} invitations sent. People show up in the group as they accept."
 msgstr "{count} הזמנות נשלחו. האנשים יופיעו בקבוצה כשיקבלו."
 
 msgid ""
-"Listed are the people you're already connected to. To invite someone else on"
-" the network, type their exact name. Each one gets the invitation in BigLace"
-" and decides whether to join."
+"Listed are the people you're already connected to. To invite someone else on "
+"the network, type their exact name. Each one gets the invitation in BigLace "
+"and decides whether to join."
 msgstr ""
 "ברשימה מופיעים האנשים שאתה כבר מחובר אליהם. כדי להזמין מישהו אחר ברשת, הקלד "
 "את שמו המדויק. כל אחד יקבל את ההזמנה ב־BigLace ויחליט אם להצטרף."
@@ -1441,134 +1189,172 @@ msgid "Invite {user}"
 msgstr "הזמנת {user}"
 
 msgid ""
-"Invites from BigLace need a BigScale server that supports them. Ask your "
-"administrator to update the server, or to create the invite in the panel."
+"Each of your groups has a voice room. Join it and talk with whoever is there "
+"— the sound goes straight between you, through the network."
 msgstr ""
-"הזמנות מ־BigLace דורשות שרת BigScale שתומך בהן. בקש מהמנהל לעדכן את השרת, או"
-" ליצור את ההזמנה בלוח הבקרה."
+"לכל אחת מהקבוצות שלך יש חדר קולי. הצטרף אליו ודבר עם מי שנמצא שם — הצליל "
+"עובר ישירות ביניכם, דרך הרשת."
+
+msgid "You're not in any group yet. Create one in Groups."
+msgstr "אינך עדיין באף קבוצה. צור אחת בקבוצות."
+
+msgid "People in the room"
+msgstr "אנשים בחדר"
+
+msgid "Everyone"
+msgstr "כולם"
+
+msgid "Who's speaking"
+msgstr "מי מדבר"
+
+msgid "Mute"
+msgstr "השתקה"
+
+msgid "Mute your microphone for everyone"
+msgstr "השתק את המיקרופון שלך עבור כולם"
+
+msgid "Which camera"
+msgstr "איזו מצלמה"
+
+msgid "Include the computer's sound when sharing the screen"
+msgstr "לכלול את הצליל של המחשב בעת שיתוף המסך"
 
 msgid ""
-"This device can't send invites (it isn't linked to a person's account)."
-msgstr "מכשיר זה אינו יכול לשלוח הזמנות (הוא אינו מקושר לחשבון של אדם)."
+"Videos and music playing here go to the room too; the room's voices don't "
+"(no echo)"
+msgstr "סרטונים ומוזיקה שמתנגנים כאן יגיעו גם לחדר; הקולות של החדר לא (ללא הד)"
 
-msgid ""
-"On this network everyone can reach everyone, so only the administrator can "
-"invite people."
-msgstr "ברשת זו כולם יכולים להגיע לכולם, ולכן רק המנהל יכול להזמין אנשים."
-
-msgid "You have too many pending invites. Cancel some or try again tomorrow."
-msgstr "יש לך יותר מדי הזמנות ממתינות. בטל חלק מהן או נסה שוב מחר."
-
-msgid ""
-"On this network only administrators invite new people. You can still invite "
-"people already on the network into your groups."
-msgstr ""
-"ברשת זו רק מנהלים מזמינים אנשים חדשים. עדיין ניתן להזמין לקבוצות שלך אנשים "
-"שכבר ברשת."
-
-msgid "Waiting to be used"
-msgstr "ממתינה לשימוש"
-
-msgid "Used"
-msgstr "נוצלה"
-
-msgid "Expired"
-msgstr "פג תוקף"
-
-msgid "Cancelled"
-msgstr "בוטלה"
-
-msgid "Waiting for an administrator's approval"
-msgstr "ממתינה לאישור מנהל"
-
-msgid "Bring someone to your network"
-msgstr "הבא מישהו לרשת שלך"
-
-msgid ""
-"Create a link or QR code and send it to the person. When they join, you two "
-"can reach each other's devices — no administrator needed. The link works "
-"once and stays valid until it's used or you cancel it."
-msgstr ""
-"צור קישור או קוד QR ושלח אותו לאדם. כשהוא יצטרף, תוכלו להגיע זה למכשירים של "
-"זה — ללא צורך במנהל. הקישור עובד פעם אחת ונשאר בתוקף עד שינוצל או שתבטל "
-"אותו."
-
-msgid "No invites yet"
-msgstr "אין הזמנות עדיין"
-
-msgid "Invites unavailable"
-msgstr "הזמנות אינן זמינות"
+msgid "Rooms unavailable"
+msgstr "חדרים אינם זמינים"
 
 #, rust-format
-msgid "{user} joined"
-msgstr "{user} הצטרף"
+msgid "Could not turn on the camera: {error}"
+msgstr "לא ניתן להפעיל את המצלמה: {error}"
 
 #, rust-format
-msgid "group {group}"
-msgstr "קבוצה {group}"
+msgid "Could not share the screen: {error}"
+msgstr "לא ניתן לשתף את המסך: {error}"
 
-msgid "Cancel this invite: the link stops working"
-msgstr "ביטול הזמנה זו: הקישור יפסיק לעבוד"
-
-msgid "The person you invite will reach your devices, and you theirs."
-msgstr "האדם שתזמין יגיע למכשירים שלך, ואתה לשלו."
-
-msgid "Who is it for? (optional)"
-msgstr "למי היא מיועדת? (אופציונלי)"
-
-msgid "Access"
-msgstr "גישה"
-
-msgid "Just the two of us"
-msgstr "רק שנינו"
-
-msgid "You see each other's devices, nobody else"
-msgstr "אתם רואים את המכשירים זה של זה, אף אחד אחר לא"
+msgid "Nobody here right now"
+msgstr "אין כאן אף אחד כרגע"
 
 #, rust-format
-msgid "Also the group {group}"
-msgstr "גם הקבוצה {group}"
+msgid "In the room: {people}"
+msgstr "בחדר: {people}"
 
-msgid "They join the group and see everyone in it"
-msgstr "הוא מצטרף לקבוצה ורואה את כל מי שבה"
+#, rust-format
+msgid "Join the room {group}"
+msgstr "הצטרפות לחדר {group}"
 
-msgid "A network of their own"
-msgstr "רשת משלו"
+#, rust-format
+msgid "Could not join {group}: {error}"
+msgstr "לא ניתן להצטרף ל־{group}: {error}"
+
+msgid "📺 You're showing your screen to the room"
+msgstr "📺 אתה מציג את המסך שלך לחדר"
+
+msgid "📺 You're showing your screen · 1 person watching"
+msgstr "📺 אתה מציג את המסך שלך · אדם אחד צופה"
+
+#, rust-format
+msgid "📺 You're showing your screen · {count} people watching"
+msgstr "📺 אתה מציג את המסך שלך · {count} אנשים צופים"
+
+#, rust-format
+msgid "Room {group}"
+msgstr "חדר {group}"
+
+#, rust-format
+msgid "{people} · {talking} talking"
+msgstr "{people} · {talking} מדברים"
+
+msgid "connecting…"
+msgstr "מתחבר…"
+
+msgid "muted"
+msgstr "מושתק"
+
+msgid "talking"
+msgstr "מדבר"
+
+msgid "quiet"
+msgstr "שקט"
+
+msgid "Sharing screen"
+msgstr "משתף מסך"
+
+msgid "In control"
+msgstr "בשליטה"
+
+msgid "Controls your screen now"
+msgstr "שולט במסך שלך כעת"
+
+msgid "Watching"
+msgstr "צופה"
+
+msgid "Watching your screen"
+msgstr "צופה במסך שלך"
+
+#, rust-format
+msgid "{user} is showing their screen"
+msgstr "{user} מציג את המסך שלו"
+
+msgid "Watch"
+msgstr "צפייה"
+
+#, rust-format
+msgid "{user} asks to control your screen"
+msgstr "{user} מבקש לשלוט במסך שלך"
 
 msgid ""
-"No link to you: they see only their own devices and whoever they invite "
-"(you're the administrator)"
-msgstr ""
-"ללא קשר אליך: הוא רואה רק את המכשירים שלו ואת מי שהוא מזמין (אתה המנהל)"
+"They'll be able to use your mouse and keyboard. You can take control back at "
+"any time."
+msgstr "הוא יוכל להשתמש בעכבר ובמקלדת שלך. ניתן לקחת בחזרה את השליטה בכל עת."
 
-msgid "Create invite"
-msgstr "יצירת הזמנה"
+msgid "Deny"
+msgstr "דחייה"
 
-msgid "QR code of the invite link"
-msgstr "קוד QR של קישור ההזמנה"
+msgid "Allow"
+msgstr "אישור"
 
-msgid ""
-"Send the link or let the person scan the code with their phone. It works "
-"once and stays valid until used or cancelled."
-msgstr ""
-"שלח את הקישור או תן לאדם לסרוק את הקוד בטלפון. הוא עובד פעם אחת ונשאר בתוקף "
-"עד שינוצל או יבוטל."
+msgid "Turn off camera"
+msgstr "כיבוי מצלמה"
 
-msgid "Copy link"
-msgstr "העתקת קישור"
+msgid "Turn on camera"
+msgstr "הפעלת מצלמה"
 
-msgid "Done"
-msgstr "סיום"
+msgid "No camera found on this computer"
+msgstr "לא נמצאה מצלמה במחשב זה"
 
-msgid "Copied!"
-msgstr "הועתק!"
+msgid "Stop sharing"
+msgstr "הפסקת שיתוף"
 
-msgid ""
-"This network asks an administrator to approve each invite: the link starts "
-"working once they do. Its status shows in Invites."
-msgstr ""
-"רשת זו דורשת שמנהל יאשר כל הזמנה: הקישור יתחיל לעבוד לאחר האישור. מצבה מוצג "
-"בהזמנות."
+msgid "Share screen"
+msgstr "שיתוף מסך"
+
+msgid "Stop showing your screen to the room"
+msgstr "הפסק להציג את המסך שלך לחדר"
+
+msgid "Show your screen to everyone in the room"
+msgstr "הצג את המסך שלך לכל מי שבחדר"
+
+msgid "Take back control"
+msgstr "לקיחת השליטה בחזרה"
+
+msgid "Give control"
+msgstr "מתן שליטה"
+
+msgid "Stop them from using your mouse and keyboard"
+msgstr "מנע מהם להשתמש בעכבר ובמקלדת שלך"
+
+msgid "Let them use your mouse and keyboard"
+msgstr "אפשר להם להשתמש בעכבר ובמקלדת שלך"
+
+msgid "Sound level"
+msgstr "עוצמת צליל"
+
+msgid "Unmute"
+msgstr "ביטול השתקה"
 
 msgid "System accent"
 msgstr "צבע הדגשה של המערכת"
@@ -1648,36 +1434,6 @@ msgstr "תמונה…"
 msgid "Choose a background picture"
 msgstr "בחירת תמונת רקע"
 
-msgid "Message"
-msgstr "הודעה"
-
-msgid "Bold"
-msgstr "מודגש"
-
-msgid "Italic"
-msgstr "נטוי"
-
-msgid "Underline"
-msgstr "קו תחתון"
-
-msgid "Strikethrough"
-msgstr "קו חוצה"
-
-msgid "Monospace"
-msgstr "רוחב קבוע"
-
-msgid "Create link"
-msgstr "יצירת קישור"
-
-msgid "Plain text"
-msgstr "טקסט פשוט"
-
-msgid "Formatting"
-msgstr "עיצוב"
-
-msgid "Create"
-msgstr "יצירה"
-
 msgid "Mesh VPN client for BigScale/Headscale."
 msgstr "לקוח רשת VPN מבוזרת עבור BigScale/Headscale."
 
@@ -1710,11 +1466,15 @@ msgstr "לעזוב את הרשת?"
 
 #, rust-format
 msgid ""
-"This device leaves the network and its name becomes free. Your account {user} is kept: you can come back later from this computer, without an invite.\n"
+"This device leaves the network and its name becomes free. Your account "
+"{user} is kept: you can come back later from this computer, without an "
+"invite.\n"
 "\n"
-"If you won't come back, delete the account and the name {user} becomes free too."
+"If you won't come back, delete the account and the name {user} becomes free "
+"too."
 msgstr ""
-"מכשיר זה יעזוב את הרשת ושמו יתפנה. החשבון שלך {user} נשמר: תוכל לחזור מאוחר יותר ממחשב זה, ללא הזמנה.\n"
+"מכשיר זה יעזוב את הרשת ושמו יתפנה. החשבון שלך {user} נשמר: תוכל לחזור מאוחר "
+"יותר ממחשב זה, ללא הזמנה.\n"
 "\n"
 "אם לא תחזור, מחק את החשבון וגם השם {user} יתפנה."
 
@@ -1751,11 +1511,14 @@ msgstr "לא ניתן היה להגיע לשרת"
 msgid ""
 "The control server didn't confirm the sign-out: {error}\n"
 "\n"
-"You can still sign out on this computer: BigLace forgets the saved key and account and disconnects. The server keeps listing this device until an administrator removes it."
+"You can still sign out on this computer: BigLace forgets the saved key and "
+"account and disconnects. The server keeps listing this device until an "
+"administrator removes it."
 msgstr ""
 "שרת הבקרה לא אישר את ההתנתקות: {error}\n"
 "\n"
-"עדיין ניתן להתנתק במחשב זה: BigLace ישכח את המפתח והחשבון השמורים ויתנתק. השרת ימשיך להציג מכשיר זה עד שמנהל יסיר אותו."
+"עדיין ניתן להתנתק במחשב זה: BigLace ישכח את המפתח והחשבון השמורים ויתנתק. "
+"השרת ימשיך להציג מכשיר זה עד שמנהל יסיר אותו."
 
 msgid "Sign out on this computer"
 msgstr "התנתקות במחשב זה"
@@ -1778,8 +1541,8 @@ msgid "Panel URL"
 msgstr "כתובת הפאנל"
 
 msgid ""
-"Address of your BigScale panel (e.g. panel.example.org). The https:// scheme"
-" is added automatically if you omit it."
+"Address of your BigScale panel (e.g. panel.example.org). The https:// scheme "
+"is added automatically if you omit it."
 msgstr ""
 "כתובת הפאנל של BigScale שלך (לדוגמה panel.example.org). הסכמה https:// "
 "תתווסף אוטומטית אם תשמיט אותה."
@@ -1797,17 +1560,17 @@ msgid ""
 "Your panel password. Stored in the OS keyring (libsecret on Linux, Keychain "
 "on macOS, Credential Manager on Windows)."
 msgstr ""
-"הסיסמה שלך לפאנל. מאוחסנת במנהל הסיסמאות של מערכת ההפעלה (libsecret בלינוקס,"
-" Keychain ב-macOS, Credential Manager ב-Windows)."
+"הסיסמה שלך לפאנל. מאוחסנת במנהל הסיסמאות של מערכת ההפעלה (libsecret בלינוקס, "
+"Keychain ב-macOS, Credential Manager ב-Windows)."
 
 msgid ""
-"The name this device shows to other peers on the VPN — this is the Tailscale"
-" hostname, NOT your computer's name and NOT your user. Lowercase letters, "
+"The name this device shows to other peers on the VPN — this is the Tailscale "
+"hostname, NOT your computer's name and NOT your user. Lowercase letters, "
 "digits and hyphens. Example: 'tales-laptop', 'francois', 'office-pc'. Pick "
 "something other peers will recognise."
 msgstr ""
-"השם שבו מכשיר זה מוצג לעמיתים אחרים ב-VPN — זהו שם המארח של Tailscale, לא שם"
-" המחשב שלך ולא שם המשתמש שלך. אותיות קטנות, ספרות ומקפים. דוגמה: 'tales-"
+"השם שבו מכשיר זה מוצג לעמיתים אחרים ב-VPN — זהו שם המארח של Tailscale, לא שם "
+"המחשב שלך ולא שם המשתמש שלך. אותיות קטנות, ספרות ומקפים. דוגמה: 'tales-"
 "laptop', 'francois', 'office-pc'. בחר שם שעמיתים אחרים יוכלו לזהות."
 
 msgid "Sign in"
@@ -1860,14 +1623,13 @@ msgid ""
 "\"{name}\". If the account is yours, sign in again from the computer where "
 "you used it, or ask the administrator to free the name."
 msgstr ""
-"השם הזה כבר שייך לחשבון ברשת זו, ולכן הצענו \"{name}\". אם החשבון שלך, התחבר"
-" שוב מהמחשב שבו השתמשת בו, או בקש מהמנהל לפנות את השם."
+"השם הזה כבר שייך לחשבון ברשת זו, ולכן הצענו \"{name}\". אם החשבון שלך, התחבר "
+"שוב מהמחשב שבו השתמשת בו, או בקש מהמנהל לפנות את השם."
 
 msgid ""
-"That name already belongs to an account on this network. Try another one, or"
-" ask the administrator to free it."
-msgstr ""
-"השם הזה כבר שייך לחשבון ברשת זו. נסה שם אחר, או בקש מהמנהל לפנות אותו."
+"That name already belongs to an account on this network. Try another one, or "
+"ask the administrator to free it."
+msgstr "השם הזה כבר שייך לחשבון ברשת זו. נסה שם אחר, או בקש מהמנהל לפנות אותו."
 
 msgid "Type your name using at least two letters or digits."
 msgstr "הקלד את שמך עם שתי אותיות או ספרות לפחות."
@@ -1882,8 +1644,7 @@ msgid ""
 "This invite is waiting for the network administrator's approval. Try again "
 "once the person who invited you says it was approved."
 msgstr ""
-"ההזמנה הזו ממתינה לאישור מנהל הרשת. נסה שוב כשמי שהזמין אותך יאמר שהיא "
-"אושרה."
+"ההזמנה הזו ממתינה לאישור מנהל הרשת. נסה שוב כשמי שהזמין אותך יאמר שהיא אושרה."
 
 msgid "This invite is not valid. Check the link or ask for a new one."
 msgstr "ההזמנה הזו אינה תקפה. בדוק את הקישור או בקש הזמנה חדשה."
@@ -1913,8 +1674,8 @@ msgid ""
 "The name this device shows to other peers. Lowercase letters, digits and "
 "hyphens. Example: 'maria-laptop'."
 msgstr ""
-"השם שמכשיר זה מציג לעמיתים אחרים. אותיות קטנות, ספרות ומקפים. לדוגמה: "
-"'maria-laptop'."
+"השם שמכשיר זה מציג לעמיתים אחרים. אותיות קטנות, ספרות ומקפים. לדוגמה: 'maria-"
+"laptop'."
 
 msgid "Network"
 msgstr "רשת"
@@ -1923,8 +1684,8 @@ msgid "Joining…"
 msgstr "מצטרף…"
 
 msgid ""
-"That doesn't look like an invite link. It starts with https:// and contains "
-"/join#."
+"That doesn't look like an invite link. It starts with https:// and contains /"
+"join#."
 msgstr "זה לא נראה כמו קישור הזמנה. הוא מתחיל ב־https:// ומכיל /join#."
 
 msgid "Type your name."
@@ -1938,6 +1699,36 @@ msgstr "ברוך הבא, {name}! הצטרפת לקבוצה {group}. מתחבר�
 msgid "Welcome, {name}! Connecting…"
 msgstr "ברוך הבא, {name}! מתחבר…"
 
+msgid "Message"
+msgstr "הודעה"
+
+msgid "Bold"
+msgstr "מודגש"
+
+msgid "Italic"
+msgstr "נטוי"
+
+msgid "Underline"
+msgstr "קו תחתון"
+
+msgid "Strikethrough"
+msgstr "קו חוצה"
+
+msgid "Monospace"
+msgstr "רוחב קבוע"
+
+msgid "Create link"
+msgstr "יצירת קישור"
+
+msgid "Plain text"
+msgstr "טקסט פשוט"
+
+msgid "Formatting"
+msgstr "עיצוב"
+
+msgid "Create"
+msgstr "יצירה"
+
 msgid "End access"
 msgstr "סיום הגישה"
 
@@ -1950,8 +1741,8 @@ msgstr "הגישה מרחוק החלה"
 
 #, rust-format
 msgid ""
-"{user} ({device}) is seeing and controlling this screen. Open BigLace to end"
-" the access."
+"{user} ({device}) is seeing and controlling this screen. Open BigLace to end "
+"the access."
 msgstr ""
 "{user} ({device}) צופה ושולט במסך זה. פתח את BigLace כדי לסיים את הגישה."
 
@@ -1988,8 +1779,8 @@ msgid ""
 "<b>Only allow it if you know this person and are expecting it.</b> You can "
 "end the access at any time from BigLace."
 msgstr ""
-"<b>אפשר זאת רק אם אתה מכיר את האדם ומצפה לכך.</b> ניתן לסיים את הגישה בכל עת"
-" מ־BigLace."
+"<b>אפשר זאת רק אם אתה מכיר את האדם ומצפה לכך.</b> ניתן לסיים את הגישה בכל עת "
+"מ־BigLace."
 
 #, rust-format
 msgid "Denied automatically in {seconds} s"
@@ -2000,8 +1791,8 @@ msgid "Restart {name}'s computer?"
 msgstr "להפעיל מחדש את המחשב של {name}?"
 
 msgid ""
-"It restarts, signs in by itself and locks the screen right away; this window"
-" connects again when it's back. Unsaved work there is lost."
+"It restarts, signs in by itself and locks the screen right away; this window "
+"connects again when it's back. Unsaved work there is lost."
 msgstr ""
 "הוא יופעל מחדש, יתחבר בעצמו וינעל את המסך מיד; חלון זה יתחבר שוב כשהמחשב "
 "יחזור. עבודה שלא נשמרה שם תאבד."
@@ -2103,10 +1894,9 @@ msgid "{name} didn't allow the access."
 msgstr "{name} לא אישר את הגישה."
 
 msgid ""
-"That computer couldn't confirm this device. Make sure both run an up-to-date"
-" BigLace."
-msgstr ""
-"המחשב הזה לא הצליח לאמת את מכשיר זה. ודא ששניהם מריצים BigLace מעודכן."
+"That computer couldn't confirm this device. Make sure both run an up-to-date "
+"BigLace."
+msgstr "המחשב הזה לא הצליח לאמת את מכשיר זה. ודא ששניהם מריצים BigLace מעודכן."
 
 #, rust-format
 msgid ""
@@ -2171,6 +1961,36 @@ msgstr "הגישה למסך של {name} הסתיימה: {error}"
 msgid "Give back control"
 msgstr "החזרת השליטה"
 
+msgid "Connected · 1 peer"
+msgstr "מחובר · 1 עמית"
+
+#, rust-format
+msgid "Connected · {n} peers"
+msgstr "מחובר · {n} עמיתים"
+
+#, rust-format
+msgid "In the room {group} · muted"
+msgstr "בחדר {group} · מושתק"
+
+#, rust-format
+msgid "In the room {group}"
+msgstr "בחדר {group}"
+
+msgid "Show BigLace"
+msgstr "הצג את BigLace"
+
+msgid "Unmute (Ctrl+Alt+M)"
+msgstr "ביטול השתקה (Ctrl+Alt+M)"
+
+msgid "Mute (Ctrl+Alt+M)"
+msgstr "השתקה (Ctrl+Alt+M)"
+
+msgid "Leave the room"
+msgstr "יציאה מהחדר"
+
+msgid "Quit"
+msgstr "צא"
+
 msgid "direct"
 msgstr "ישיר"
 
@@ -2188,8 +2008,8 @@ msgid ""
 "Signal sent to {name} (by {via}). If it's set to turn on over the network, "
 "it shows up in a minute or two."
 msgstr ""
-"האות נשלח אל {name} (דרך {via}). אם הוא מוגדר להידלק דרך הרשת, הוא יופיע תוך"
-" דקה או שתיים."
+"האות נשלח אל {name} (דרך {via}). אם הוא מוגדר להידלק דרך הרשת, הוא יופיע תוך "
+"דקה או שתיים."
 
 #, rust-format
 msgid "Could not turn on {name}: {error}"
@@ -2206,6 +2026,9 @@ msgstr "מוצמד לראש"
 
 msgid "Unpinned"
 msgstr "ביטול הצמדה"
+
+msgid "Copy IP address"
+msgstr "העתק כתובת IP"
 
 msgid "Open files (SFTP)"
 msgstr "פתח קבצים (SFTP)"
@@ -2254,6 +2077,200 @@ msgstr "עדכון צומת היציאה נכשל"
 
 msgid "Copy"
 msgstr "העתק"
+
+msgid "Search devices"
+msgstr "חיפוש מכשירים"
+
+msgid "Invite someone to your network"
+msgstr "הזמן מישהו לרשת שלך"
+
+msgid ""
+"Tailscale cannot write this device's DNS settings, so it can no longer keep "
+"peer names working. They may still resolve for now, from the configuration "
+"left over from before the failure, but that will break the next time the "
+"network changes — and BigLace will fall back to IP addresses. On most "
+"distributions `sudo resolvconf -u` repairs it."
+msgstr ""
+"Tailscale לא יכול לכתוב את הגדרות ה־DNS של מכשיר זה, ולכן לא יוכל עוד לשמור "
+"על פעולת שמות העמיתים. ייתכן שהם עדיין ייפתרו כרגע, מההגדרות שנותרו מלפני "
+"התקלה, אבל זה יישבר בפעם הבאה שהרשת תשתנה — ו־BigLace יחזור לכתובות IP. ברוב "
+"ההפצות `sudo resolvconf -u` מתקן זאת."
+
+msgid "Not connected"
+msgstr "לא מחובר"
+
+msgid "Press Connect on the left to join the network."
+msgstr "לחץ על \"התחבר\" בצד שמאל כדי להצטרף לרשת."
+
+msgid "The tailscale service is not running"
+msgstr "שירות tailscale אינו פועל"
+
+msgid "BigLace needs the tailscaled background service to manage the network."
+msgstr "BigLace זקוק לשירות הרקע tailscaled כדי לנהל את הרשת."
+
+msgid "Start service"
+msgstr "הפעל שירות"
+
+msgid "Join the network"
+msgstr "הצטרפות לרשת"
+
+msgid "Choose how you're going to sign in."
+msgstr "בחר כיצד להתחבר."
+
+msgid "Ways to sign in"
+msgstr "דרכי התחברות"
+
+msgid "Your account was kept on this computer. No invite needed."
+msgstr "החשבון שלך נשמר במחשב זה. אין צורך בהזמנה."
+
+msgid "I have an invite"
+msgstr "יש לי הזמנה"
+
+msgid "Someone on the network sent you a link or a QR code."
+msgstr "מישהו ברשת שלח לך קישור או קוד QR."
+
+msgid "I have an access key"
+msgstr "יש לי מפתח גישה"
+
+msgid "A key the administrator created for you (starts with hskey-auth-)."
+msgstr "מפתח שהמנהל יצר עבורך (מתחיל ב־hskey-auth-)."
+
+msgid "I'm the administrator"
+msgstr "אני המנהל"
+
+msgid "Sign in with the BigScale panel's admin username and password."
+msgstr "התחבר עם שם המשתמש והסיסמה של מנהל לוח הבקרה של BigScale."
+
+msgid "This device"
+msgstr "מכשיר זה"
+
+msgid "Devices on the network"
+msgstr "מכשירים ברשת"
+
+msgid "No other devices on the network yet."
+msgstr "עדיין אין מכשירים אחרים ברשת."
+
+msgid "you are not in a room"
+msgstr "אינך בחדר"
+
+msgid "screen sharing isn't available on this computer"
+msgstr "שיתוף מסך אינו זמין במחשב זה"
+
+#, rust-format
+msgid "The computer's sound can't be shared: {error}"
+msgstr "לא ניתן לשתף את הצליל של המחשב: {error}"
+
+#, rust-format
+msgid "The screen share stopped: {error}"
+msgstr "שיתוף המסך נעצר: {error}"
+
+msgid "This computer"
+msgstr "מחשב זה"
+
+msgid "Who may use this computer remotely"
+msgstr "מי רשאי להשתמש במחשב זה מרחוק"
+
+msgid ""
+"Anyone you're connected to can ask to see and control this screen. Choose "
+"who is let in without asking, and who is never let in."
+msgstr ""
+"כל מי שאתה מחובר אליו יכול לבקש לראות ולשלוט במסך זה. בחר את מי להכניס בלי "
+"לשאול, ואת מי לעולם לא להכניס."
+
+msgid "History of accesses"
+msgstr "היסטוריית גישות"
+
+msgid "Kept on this computer only."
+msgstr "נשמרת במחשב זה בלבד."
+
+msgid "Clear"
+msgstr "ניקוי"
+
+msgid "Nobody has asked yet."
+msgstr "איש עדיין לא ביקש."
+
+msgid "When someone asks, you can choose to always let them in."
+msgstr "כשמישהו מבקש, ניתן לבחור לאפשר לו תמיד."
+
+msgid "Ask every time"
+msgstr "לשאול בכל פעם"
+
+msgid "Always allow"
+msgstr "לאפשר תמיד"
+
+msgid "Never allow"
+msgstr "לעולם לא לאפשר"
+
+msgid "No accesses yet."
+msgstr "אין גישות עדיין."
+
+msgid "Remote access"
+msgstr "גישה מרחוק"
+
+msgid "Watched the screen shared with the room"
+msgstr "צפה במסך ששותף עם החדר"
+
+msgid "Got control of the shared screen"
+msgstr "קיבל שליטה על המסך המשותף"
+
+msgid "Restarted the computer"
+msgstr "הפעיל מחדש את המחשב"
+
+msgid "Restarted the session"
+msgstr "הפעיל מחדש את ההפעלה"
+
+msgid "Shut down the computer"
+msgstr "כיבה את המחשב"
+
+msgid "allowed"
+msgstr "אושר"
+
+msgid "allowed (always)"
+msgstr "אושר (תמיד)"
+
+msgid "came back after a restart"
+msgstr "חזר לאחר הפעלה מחדש"
+
+msgid "denied"
+msgstr "נדחה"
+
+msgid "blocked (never allowed)"
+msgstr "נחסם (לעולם לא מאושר)"
+
+msgid "ended"
+msgstr "הסתיים"
+
+#, rust-format
+msgid "{user} ({device})"
+msgstr "{user} ({device})"
+
+#, rust-format
+msgid "{done} of {total}"
+msgstr "{done} מתוך {total}"
+
+msgid "Play"
+msgstr "נגן"
+
+msgid "Download"
+msgstr "הורדה"
+
+msgid "Open"
+msgstr "פתיחה"
+
+msgid "Show in folder"
+msgstr "הצגה בתיקייה"
+
+msgid "Pause"
+msgstr "השהיה"
+
+msgid "Photo"
+msgstr "תמונה"
+
+msgid "Video"
+msgstr "וידאו"
+
+msgid "Voice message"
+msgstr "הודעה קולית"
 
 msgid "Smileys & people"
 msgstr "סמיילים ואנשים"
@@ -2311,8 +2328,8 @@ msgid "{user}'s computer is off or offline — try again when it's back"
 msgstr "המחשב של {user} כבוי או לא מקוון — נסו שוב כשיחזור"
 
 msgid ""
-"the file arrived different from the original (damaged on the way) — download"
-" it again"
+"the file arrived different from the original (damaged on the way) — download "
+"it again"
 msgstr "הקובץ הגיע שונה מהמקור (נפגם בדרך) — הורידו אותו שוב"
 
 msgid "the file is no longer on their computer (moved or changed)"
@@ -2354,8 +2371,7 @@ msgstr "📌 (ביטל את הצמדת ההודעה)"
 msgid "nothing was recorded — is a microphone connected?"
 msgstr "לא הוקלט דבר — האם מחובר מיקרופון?"
 
-msgid ""
-"this computer can't restart remotely (BigLace's helper isn't installed)"
+msgid "this computer can't restart remotely (BigLace's helper isn't installed)"
 msgstr ""
 "לא ניתן להפעיל מחדש את המחשב הזה מרחוק (הכלי המסייע של BigLace אינו מותקן)"
 
@@ -2388,22 +2404,8 @@ msgstr ""
 msgid "access to the camera was refused"
 msgstr "הגישה למצלמה נדחתה"
 
-msgid "you are not in a room"
-msgstr "אינך בחדר"
-
 msgid "Mute or unmute the microphone in a BigLace room"
 msgstr "השתקה או ביטול השתקה של המיקרופון בחדר BigLace"
-
-msgid "screen sharing isn't available on this computer"
-msgstr "שיתוף מסך אינו זמין במחשב זה"
-
-#, rust-format
-msgid "The computer's sound can't be shared: {error}"
-msgstr "לא ניתן לשתף את הצליל של המחשב: {error}"
-
-#, rust-format
-msgid "The screen share stopped: {error}"
-msgstr "שיתוף המסך נעצר: {error}"
 
 msgid "BigLace doesn't know that computer's network card yet"
 msgstr "BigLace עדיין לא מכיר את כרטיס הרשת של המחשב הזה"
@@ -2413,6 +2415,12 @@ msgstr "מחשב זה"
 
 msgid "no computer on its network is on to send the signal"
 msgstr "אף מחשב ברשת שלו אינו פועל כדי לשלוח את האות"
+
+msgid "Open with another app"
+msgstr "פתיחה ביישום אחר"
+
+msgid "Close"
+msgstr "סגירה"
 
 #~ msgid "Panel credentials"
 #~ msgstr "פרטי כניסה לפאנל"
@@ -2433,8 +2441,8 @@ msgstr "אף מחשב ברשת שלו אינו פועל כדי לשלוח את �
 #~ "Sign in with your BigScale panel username and password. A device identity "
 #~ "will be created on the network automatically — no manual key needed."
 #~ msgstr ""
-#~ "התחבר עם שם המשתמש והסיסמה שלך מפאנל BigScale. זהות התקן תיווצר ברשת באופן "
-#~ "אוטומטי — אין צורך במפתח ידני."
+#~ "התחבר עם שם המשתמש והסיסמה שלך מפאנל BigScale. זהות התקן תיווצר ברשת "
+#~ "באופן אוטומטי — אין צורך במפתח ידני."
 
 #~ msgid "Connected ·"
 #~ msgstr "מחובר ·"
@@ -2501,11 +2509,11 @@ msgstr "אף מחשב ברשת שלו אינו פועל כדי לשלוח את �
 #~ msgstr "הזהות שלך ברשת"
 
 #~ msgid ""
-#~ "Personal key generated for you in the BigScale panel (\"New key\" in Users)."
-#~ " Each person uses their own — this is not the server's key."
+#~ "Personal key generated for you in the BigScale panel (\"New key\" in "
+#~ "Users). Each person uses their own — this is not the server's key."
 #~ msgstr ""
-#~ "מפתח אישי שנוצר עבורך בלוח הבקרה של BigScale (\"מפתח חדש\" במשתמשים). כל אדם"
-#~ " משתמש במפתח משלו – זהו לא מפתח השרת."
+#~ "מפתח אישי שנוצר עבורך בלוח הבקרה של BigScale (\"מפתח חדש\" במשתמשים). כל "
+#~ "אדם משתמש במפתח משלו – זהו לא מפתח השרת."
 
 #~ msgid "Pre-auth key (yours)"
 #~ msgstr "מפתח הרשאה מראש (שלך)"

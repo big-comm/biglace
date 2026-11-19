@@ -36,6 +36,8 @@ pub struct Sidebar {
     pub avatar: libadwaita::Avatar,
     /// The same photo, shown alone while the sidebar is a narrow rail.
     pub rail_avatar: libadwaita::Avatar,
+    /// Folds the sidebar into a rail of icons, or unfolds it.
+    pub btn_rail: gtk4::Button,
     /// What changes when the sidebar folds into a rail of icons.
     rail: Rail,
 }
@@ -43,6 +45,7 @@ pub struct Sidebar {
 /// The parts that fold away (or appear) in the icons-only rail.
 #[derive(Clone)]
 struct Rail {
+    toggle: gtk4::Button,
     labels: Vec<(gtk4::ListBoxRow, gtk4::Revealer, String)>,
     title: gtk4::Stack,
     bottom: gtk4::Stack,
@@ -62,6 +65,7 @@ impl Sidebar {
             row.set_tooltip_text(rail.then_some(label.as_str()));
         }
         r.title.set_visible_child_name(if rail { "rail" } else { "full" });
+        r.toggle.set_tooltip_text(Some(&if rail { tr!("Show the full sidebar") } else { tr!("Show only icons in the sidebar") }));
         r.bottom.set_visible_child_name(if rail { "rail" } else { "full" });
         if rail {
             r.nav.add_css_class("rail");
@@ -95,8 +99,14 @@ pub fn build() -> Sidebar {
     header.set_show_start_title_buttons(false);
     let title = gtk4::Label::new(Some("BigLace"));
     title.add_css_class("heading");
-    let title_rail = gtk4::Image::from_icon_name(crate::APP_ID);
-    title_rail.set_pixel_size(28);
+    // In the rail the header holds only the button that unfolds it.
+    let title_rail = gtk4::Box::new(gtk4::Orientation::Horizontal, 0);
+    let btn_rail = gtk4::Button::builder()
+        .icon_name("sidebar-show-symbolic")
+        .css_classes(["flat"])
+        .tooltip_text(tr!("Show only icons in the sidebar"))
+        .build();
+    header.pack_start(&btn_rail);
     let title_stack = gtk4::Stack::builder()
         .transition_type(gtk4::StackTransitionType::Crossfade)
         .transition_duration(220)
@@ -454,6 +464,7 @@ pub fn build() -> Sidebar {
         chat_badge,
         avatar,
         rail_avatar,
-        rail: Rail { labels, title: title_stack, bottom, nav },
+        btn_rail: btn_rail.clone(),
+        rail: Rail { toggle: btn_rail, labels, title: title_stack, bottom, nav },
     }
 }

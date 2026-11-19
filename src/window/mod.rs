@@ -1,6 +1,7 @@
 mod access_page;
 mod chat;
 mod chat_media;
+mod media_viewer;
 mod chat_theme;
 mod composer;
 mod content;
@@ -261,8 +262,8 @@ pub fn build(app: &libadwaita::Application, start_hidden: bool) {
     split.set_sidebar(Some(&side_page));
     split.set_content(Some(&content_page));
 
-    // In Chat the sidebar folds into a rail of icons, giving the
-    // conversations room; elsewhere it unfolds again.
+    // The sidebar can fold into a rail of icons (the button at its top),
+    // the same on every page; the choice is kept.
     let set_rail = {
         let (split, sidebar) = (split.clone(), sidebar_widgets.clone());
         let anim: Rc<RefCell<Option<libadwaita::TimedAnimation>>> = Default::default();
@@ -312,16 +313,23 @@ pub fn build(app: &libadwaita::Application, start_hidden: bool) {
         }
     };
     let set_rail = Rc::new(set_rail);
+    let compact = Rc::new(std::cell::Cell::new(window_geometry::load().sidebar_compact));
     {
-        let (set_rail, nav) = (set_rail.clone(), sidebar_widgets.nav.clone());
-        split.connect_collapsed_notify(move |split| {
-            let in_chat = nav.selected_row().is_some_and(|r| r.widget_name() == "chat");
-            if split.is_collapsed() {
-                set_rail(false);
-            } else {
-                set_rail(in_chat);
-            }
+        let (set_rail, compact) = (set_rail.clone(), compact.clone());
+        split.connect_collapsed_notify(move |split| set_rail(!split.is_collapsed() && compact.get()));
+    }
+    {
+        let (set_rail, compact) = (set_rail.clone(), compact.clone());
+        sidebar_widgets.btn_rail.connect_clicked(move |_| {
+            compact.set(!compact.get());
+            window_geometry::set_sidebar_compact(compact.get());
+            set_rail(compact.get());
         });
+    }
+    if compact.get() {
+        let set_rail = set_rail.clone();
+        // Once the window has its size (the rail's width animates from it).
+        glib::idle_add_local_once(move || set_rail(true));
     }
 
     {
@@ -334,11 +342,9 @@ pub fn build(app: &libadwaita::Application, start_hidden: bool) {
             rooms_page.clone(),
             chat_page.clone(),
         );
-        let set_rail = set_rail.clone();
         sidebar_widgets.nav.connect_row_activated(move |_, row| {
             let id = row.widget_name();
             sections.set_visible_child_name(&id);
-            set_rail(id == "chat");
             chat_page.set_visible(id == "chat");
             let title = match id.as_str() {
                 "chat" => tr!("Chat"),
@@ -589,11 +595,31 @@ mod window_geometry {
         pub width: i32,
         pub height: i32,
         pub maximized: bool,
+        /// The sidebar folded into a rail of icons, on every page.
+        #[serde(default)]
+        pub sidebar_compact: bool,
     }
 
     impl Default for Geometry {
         fn default() -> Self {
-            Self { width: 1100, height: 700, maximized: false }
+            Self { width: 1100, height: 700, maximized: false, sidebar_compact: false }
+        }
+    }
+
+    fn write(g: &Geometry) {
+        if let Ok(json) = serde_json::to_vec(g) {
+            let p = path();
+            if let Some(dir) = p.parent() {
+                let _ = std::fs::create_dir_all(dir);
+            }
+            let _ = std::fs::write(p, json);
+        }
+    }
+
+    pub fn set_sidebar_compact(compact: bool) {
+        let g = load();
+        if g.sidebar_compact != compact {
+            write(&Geometry { sidebar_compact: compact, ..g });
         }
     }
 
@@ -612,17 +638,12 @@ mod window_geometry {
         if width <= 0 || height <= 0 {
             return;
         }
-        let g = Geometry { width, height, maximized: win.is_maximized() };
-        if load() == g {
+        let old = load();
+        let g = Geometry { width, height, maximized: win.is_maximized(), sidebar_compact: old.sidebar_compact };
+        if old == g {
             return;
         }
-        if let Ok(json) = serde_json::to_vec(&g) {
-            let p = path();
-            if let Some(dir) = p.parent() {
-                let _ = std::fs::create_dir_all(dir);
-            }
-            let _ = std::fs::write(p, json);
-        }
+        write(&g);
     }
 
     /// Save it whenever the window closes (or hides into the tray), and

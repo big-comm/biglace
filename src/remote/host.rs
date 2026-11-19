@@ -474,7 +474,11 @@ fn wayland_zero_copy(fd: i32, node: u32) -> Option<String> {
 pub(crate) fn open_source(stop: &StopHandle, want: Pointer) -> anyhow::Result<Source> {
     use std::os::fd::AsRawFd;
     if super::wayland_session() {
-        let portal = super::portal::start(want != Pointer::Local)?;
+        // Only a room's shared screen keeps the pointer in the video (the
+        // people watching follow it). One person seeing and controlling
+        // uses their own pointer — it follows their hand at once, where one
+        // drawn in the video comes back late.
+        let portal = super::portal::start(want == Pointer::Embedded)?;
         let pointer = if portal.cursor_embedded { Pointer::Embedded } else { Pointer::Local };
         let (fd, node) = (portal.fd.as_raw_fd(), portal.node);
         let enc = encoder().ok_or_else(|| anyhow::anyhow!("no H.264 encoder"))?;

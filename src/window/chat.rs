@@ -88,6 +88,8 @@ struct State {
     last: RefCell<Option<Message>>,
     /// The section is on screen.
     visible: Cell<bool>,
+    /// Who's on the network, as last listed (to redraw only on a change).
+    people: RefCell<String>,
     /// A voice message being recorded, and its loudness so far.
     recorder: RefCell<Option<voice::Recorder>>,
     rec_levels: RefCell<Vec<f32>>,
@@ -156,7 +158,7 @@ impl ChatPage {
         conv_title.set_xalign(0.0);
         let conv_subtitle = gtk4::Label::new(None);
         conv_subtitle.add_css_class("dim-label");
-        conv_subtitle.add_css_class("caption");
+        conv_subtitle.add_css_class("conv-subtitle");
         conv_subtitle.set_xalign(0.0);
         let titles = gtk4::Box::new(gtk4::Orientation::Vertical, 0);
         titles.set_valign(gtk4::Align::Center);
@@ -293,7 +295,9 @@ impl ChatPage {
         bar.append(&btn_emoji);
         bar.append(&action_stack);
 
-        // Recording a voice message: cancel · ● 0:07 · live bars · send.
+        // Recording a voice message: ● 0:07 · live bars · discard · send —
+        // the controls together, send where the microphone was (click to
+        // record, click the same spot to send).
         let btn_rec_cancel = gtk4::Button::builder()
             .icon_name("user-trash-symbolic")
             .css_classes(["flat", "circular", "chat-tool"])
@@ -314,10 +318,11 @@ impl ChatPage {
         let rec_bar = gtk4::Box::new(gtk4::Orientation::Horizontal, 10);
         rec_bar.add_css_class("chat-composer");
         rec_bar.add_css_class("recording");
-        rec_bar.append(&btn_rec_cancel);
+        rec_dot.set_margin_start(10);
         rec_bar.append(&rec_dot);
         rec_bar.append(&rec_time);
         rec_bar.append(&rec_area);
+        rec_bar.append(&btn_rec_cancel);
         rec_bar.append(&btn_rec_send);
 
         let compose_stack = gtk4::Stack::builder()
@@ -659,6 +664,17 @@ impl ChatPage {
             });
         }
 
+        // "@" lists who's in the conversation (not us).
+        {
+            let state = page.state.clone();
+            page.composer.on_mention_candidates(move || {
+                let me = chat::my_user();
+                let Some(conv) = state.current.borrow().clone() else { return vec![] };
+                let people = if conv.is_group() { chat::group_members(&conv.name) } else { vec![conv.name.clone()] };
+                people.into_iter().filter(|p| Some(p) != me.as_ref()).collect()
+            });
+        }
+
         // Enter sends; Shift+Enter is a new line.
         {
             let p = page.clone();
@@ -687,6 +703,19 @@ impl ChatPage {
                 if let Some(id) = row_conv(row) {
                     page.open_conv(&id);
                 }
+            });
+        }
+        // People coming online (or leaving): the list follows.
+        {
+            let page = page.clone();
+            glib::timeout_add_seconds_local(8, move || {
+                if page.state.visible.get() {
+                    let people = people_to_list(&chat::conversations());
+                    if people_signature(&people) != *page.state.people.borrow() {
+                        page.refresh_list();
+                    }
+                }
+                glib::ControlFlow::Continue
             });
         }
         // Messages arriving, delivered…
@@ -757,7 +786,25 @@ impl ChatPage {
             self.list.remove(&child);
         }
         for c in &convs {
-            let row = conv_row(c);
+            let row = conv_row(c, None);
+            self.list.append(&row);
+            if Some(&c.id) == current.as_ref() {
+                self.list.select_row(Some(&row));
+            }
+        }
+        // Everyone else on the network, right there: one click to talk.
+        let people = people_to_list(&convs);
+        *self.state.people.borrow_mut() = people_signature(&people);
+        if !people.is_empty() {
+            let title = gtk4::Label::new(Some(&tr!("People on the network")));
+            title.add_css_class("chat-list-section");
+            title.set_xalign(0.0);
+            let header = gtk4::ListBoxRow::builder().child(&title).activatable(false).selectable(false).build();
+            self.list.append(&header);
+        }
+        for (user, online) in people {
+            let c = chat::Summary { id: ConvId::direct(&user), last: None, unread: 0 };
+            let row = conv_row(&c, Some(online));
             self.list.append(&row);
             if Some(&c.id) == current.as_ref() {
                 self.list.select_row(Some(&row));
@@ -1282,7 +1329,33 @@ fn row_conv(row: &gtk4::ListBoxRow) -> Option<ConvId> {
 
 /// One line of the conversation list: avatar, name, last message, time,
 /// unread count.
-fn conv_row(c: &chat::Summary) -> gtk4::ListBoxRow {
+/// People on the network we have no conversation with (online first).
+fn people_to_list(convs: &[chat::Summary]) -> Vec<(String, bool)> {
+    let me = chat::my_user();
+    let mut people: Vec<(String, bool)> = Vec::new();
+    for p in crate::tailscale::get_peers() {
+        if p.user.is_empty() || Some(&p.user) == me.as_ref() || p.user.starts_with('_') || p.user == "tagged-devices" {
+            continue;
+        }
+        if convs.iter().any(|c| !c.id.is_group() && c.id.name == p.user) {
+            continue;
+        }
+        match people.iter_mut().find(|(u, _)| *u == p.user) {
+            Some(e) => e.1 |= p.online,
+            None => people.push((p.user.clone(), p.online)),
+        }
+    }
+    people.sort_by(|a, b| b.1.cmp(&a.1).then(a.0.cmp(&b.0)));
+    people
+}
+
+fn people_signature(people: &[(String, bool)]) -> String {
+    people.iter().map(|(u, on)| format!("{u}{}", if *on { "+" } else { "-" })).collect::<Vec<_>>().join(",")
+}
+
+/// A conversation in the list; `online` for a person we have no
+/// conversation with yet (shown with whether they're on).
+fn conv_row(c: &chat::Summary, online: Option<bool>) -> gtk4::ListBoxRow {
     let line = gtk4::Box::new(gtk4::Orientation::Horizontal, 10);
     line.set_margin_top(6);
     line.set_margin_bottom(6);
@@ -1292,7 +1365,19 @@ fn conv_row(c: &chat::Summary) -> gtk4::ListBoxRow {
     } else {
         crate::avatars::bind(&avatar, &c.id.name);
     }
-    line.append(&avatar);
+    if online == Some(true) {
+        let dot = gtk4::Box::new(gtk4::Orientation::Horizontal, 0);
+        dot.add_css_class("peer-status-dot");
+        dot.add_css_class("online");
+        dot.set_halign(gtk4::Align::End);
+        dot.set_valign(gtk4::Align::End);
+        let o = gtk4::Overlay::new();
+        o.set_child(Some(&avatar));
+        o.add_overlay(&dot);
+        line.append(&o);
+    } else {
+        line.append(&avatar);
+    }
     let texts = gtk4::Box::new(gtk4::Orientation::Vertical, 2);
     texts.set_hexpand(true);
     texts.set_valign(gtk4::Align::Center);
@@ -1306,7 +1391,7 @@ fn conv_row(c: &chat::Summary) -> gtk4::ListBoxRow {
     if let Some(m) = &c.last {
         let time = gtk4::Label::new(Some(&short_time(m.at)));
         time.add_css_class("dim-label");
-        time.add_css_class("caption");
+        time.add_css_class("conv-time");
         top.append(&time);
     }
     texts.append(&top);
@@ -1315,7 +1400,12 @@ fn conv_row(c: &chat::Summary) -> gtk4::ListBoxRow {
         Some(m) if c.id.is_group() && !m.mine => format!("{}: {}", m.from, message_line(m, 60)),
         Some(m) if m.mine => trf!("You: {text}", "text" => message_line(m, 60)),
         Some(m) => message_line(m, 60),
-        None => if c.id.is_group() { tr!("Group conversation") } else { String::new() },
+        None if c.id.is_group() => tr!("Group conversation"),
+        None => match online {
+            Some(true) => tr!("online"),
+            Some(false) => tr!("offline"),
+            None => String::new(),
+        },
     }));
     last.add_css_class("dim-label");
     last.set_xalign(0.0);
@@ -1529,6 +1619,7 @@ impl ChatPage {
             view
         });
         let text = gtk4::Label::new(None);
+        text.add_css_class("bubble-text");
         if m.deleted {
             text.set_text(&tr!("🗑 Message deleted"));
             text.add_css_class("bubble-deleted");
@@ -1538,6 +1629,21 @@ impl ChatPage {
         } else {
             text.set_markup(&markdown::to_pango(&m.text));
             text.set_visible(!m.text.trim().is_empty());
+            // "@name": a click opens the conversation with that person.
+            let page = self.clone();
+            text.connect_activate_link(move |_, uri| match uri.strip_prefix("mention:") {
+                Some(name) => {
+                    if chat::my_user().as_deref() != Some(name) && crate::chat::name_ok(name) {
+                        page.open_conv(&ConvId::direct(name));
+                    }
+                    glib::Propagation::Stop
+                }
+                None => glib::Propagation::Proceed,
+            });
+            // Someone mentioned us: the bubble says so (like Telegram).
+            if !m.mine && chat::my_user().is_some_and(|me| markdown::mentions_user(&m.text, &me)) {
+                b.add_css_class("mentions-me");
+            }
         }
         text.set_wrap(true);
         text.set_wrap_mode(gtk4::pango::WrapMode::WordChar);

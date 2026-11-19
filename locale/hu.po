@@ -39,8 +39,7 @@ msgid "Failed to run tailscale"
 msgstr "Nem sikerült futtatni a tailscale-t"
 
 msgid "Failed to connect — check the server URL and key."
-msgstr ""
-"Nem sikerült csatlakozni – ellenőrizze a szerver URL-jét és a kulcsot."
+msgstr "Nem sikerült csatlakozni – ellenőrizze a szerver URL-jét és a kulcsot."
 
 msgid "Failed to run pkexec tailscale"
 msgstr "Nem sikerült futtatni a pkexec tailscale-t"
@@ -52,8 +51,8 @@ msgid ""
 "The pre-auth key was rejected by the server. Generate a new key in the "
 "BigScale panel and try again."
 msgstr ""
-"A szerver elutasította az előhitelesítési kulcsot. Hozzon létre új kulcsot a"
-" BigScale panelen, és próbálja újra."
+"A szerver elutasította az előhitelesítési kulcsot. Hozzon létre új kulcsot a "
+"BigScale panelen, és próbálja újra."
 
 msgid "Sign in or paste a pre-auth key first."
 msgstr ""
@@ -113,8 +112,8 @@ msgid ""
 "Paste the key the administrator gave you. It's used once, to register this "
 "device."
 msgstr ""
-"Illeszd be a rendszergazdától kapott kulcsot. Egyszer használatos, az eszköz"
-" regisztrálásához."
+"Illeszd be a rendszergazdától kapott kulcsot. Egyszer használatos, az eszköz "
+"regisztrálásához."
 
 msgid "Server URL"
 msgstr "Szerver URL"
@@ -134,8 +133,7 @@ msgstr "Csatlakozás"
 msgid ""
 "The key to this account is no longer on this computer. Join with a new "
 "invite."
-msgstr ""
-"A fiók kulcsa már nincs ezen a számítógépen. Csatlakozz új meghívóval."
+msgstr "A fiók kulcsa már nincs ezen a számítógépen. Csatlakozz új meghívóval."
 
 #, rust-format
 msgid "Welcome back, {name}! Connecting…"
@@ -175,8 +173,8 @@ msgid "Account"
 msgstr "Fiók"
 
 msgid ""
-"Signing out removes this device's identity from BigLace. You will need a new"
-" invite or key to join again."
+"Signing out removes this device's identity from BigLace. You will need a new "
+"invite or key to join again."
 msgstr ""
 "A kijelentkezés eltávolítja az eszköz identitását a BigLace-ből. Az újbóli "
 "csatlakozáshoz új meghívó vagy kulcs kell."
@@ -210,8 +208,7 @@ msgstr ""
 "Előbb csatlakozz a hálózathoz, majd nyisd meg újra a meghívóhivatkozást."
 
 #, rust-format
-msgid ""
-"This invite is for another network ({host}). Sign out first to join it."
+msgid "This invite is for another network ({host}). Sign out first to join it."
 msgstr ""
 "Ez a meghívó egy másik hálózathoz szól ({host}). A csatlakozáshoz előbb "
 "jelentkezz ki."
@@ -234,8 +231,8 @@ msgid "Could not open the browser: {error}"
 msgstr "Nem sikerült megnyitni a böngészőt: {error}"
 
 msgid ""
-"You can't open the admin panel: you're not an administrator of this network,"
-" or the panel can't be reached."
+"You can't open the admin panel: you're not an administrator of this network, "
+"or the panel can't be reached."
 msgstr ""
 "Nem nyithatod meg az adminisztrációs panelt: nem vagy a hálózat "
 "rendszergazdája, vagy a panel nem érhető el."
@@ -335,131 +332,177 @@ msgstr "{count} eszköz offline lett"
 msgid "{on_count} online · {off_count} offline"
 msgstr "{on_count} online · {off_count} offline"
 
-msgid "Connected · 1 peer"
-msgstr "Csatlakozva · 1 társ"
+msgid ""
+"Invites from BigLace need a BigScale server that supports them. Ask your "
+"administrator to update the server, or to create the invite in the panel."
+msgstr ""
+"A BigLace meghívóihoz ezt támogató BigScale szerver kell. Kérd meg a "
+"rendszergazdát, hogy frissítse a szervert, vagy hozza létre a meghívót a "
+"panelen."
+
+msgid "This device can't send invites (it isn't linked to a person's account)."
+msgstr ""
+"Ez az eszköz nem küldhet meghívókat (nincs személyes fiókhoz kapcsolva)."
+
+msgid ""
+"The panel knows this device by a different key (BigLace was reinstalled?). "
+"Leave the network and join again to fix it."
+msgstr ""
+"A panel más kulccsal ismeri ezt az eszközt (újratelepítetted a BigLace-t?). "
+"A javításhoz lépj ki a hálózatból, és csatlakozz újra."
+
+msgid ""
+"The panel couldn't confirm this device. Make sure BigLace is up to date and "
+"stays open while connected, then try again."
+msgstr ""
+"A panel nem tudta megerősíteni ezt az eszközt. Győződj meg róla, hogy a "
+"BigLace naprakész, és csatlakozás közben nyitva marad, majd próbáld újra."
+
+msgid "You are no longer in that group."
+msgstr "Már nem vagy tagja annak a csoportnak."
+
+msgid ""
+"On this network everyone can reach everyone, so only the administrator can "
+"invite people."
+msgstr ""
+"Ezen a hálózaton mindenki mindenkit elér, így csak a rendszergazda hívhat "
+"meg embereket."
+
+msgid "You have too many pending invites. Cancel some or try again tomorrow."
+msgstr ""
+"Túl sok függő meghívód van. Vonj vissza néhányat, vagy próbáld újra holnap."
+
+msgid ""
+"On this network only administrators invite new people. You can still invite "
+"people already on the network into your groups."
+msgstr ""
+"Ezen a hálózaton csak a rendszergazdák hívnak meg új embereket. A hálózaton "
+"már lévőket továbbra is meghívhatod a csoportjaidba."
 
 #, rust-format
-msgid "Connected · {n} peers"
-msgstr "Csatlakozva · {n} társ"
+msgid "Could not reach the panel: {error}"
+msgstr "Nem sikerült elérni a panelt: {error}"
 
-#, rust-format
-msgid "In the room {group} · muted"
-msgstr "A(z) {group} szobában · némítva"
+msgid "Waiting to be used"
+msgstr "Felhasználásra vár"
 
-#, rust-format
-msgid "In the room {group}"
-msgstr "A(z) {group} szobában"
+msgid "Used"
+msgstr "Felhasználva"
 
-msgid "Show BigLace"
-msgstr "BigLace megjelenítése"
+msgid "Expired"
+msgstr "Lejárt"
 
-#, rust-format
-msgid "Room {group}"
-msgstr "{group} szoba"
+msgid "Cancelled"
+msgstr "Visszavonva"
 
-msgid "Unmute (Ctrl+Alt+M)"
-msgstr "Némítás feloldása (Ctrl+Alt+M)"
-
-msgid "Mute (Ctrl+Alt+M)"
-msgstr "Némítás (Ctrl+Alt+M)"
-
-msgid "Leave the room"
-msgstr "Kilépés a szobából"
-
-msgid "Quit"
-msgstr "Kilépés"
-
-msgid "Main menu"
-msgstr "Főmenü"
-
-msgid "Search devices"
-msgstr "Eszközök keresése"
+msgid "Waiting for an administrator's approval"
+msgstr "Rendszergazdai jóváhagyásra vár"
 
 msgid "Refresh"
 msgstr "Frissítés"
 
+msgid "Main menu"
+msgstr "Főmenü"
+
+msgid "Bring someone to your network"
+msgstr "Hozz valakit a hálózatodba"
+
+msgid ""
+"Create a link or QR code and send it to the person. When they join, you two "
+"can reach each other's devices — no administrator needed. The link works "
+"once and stays valid until it's used or you cancel it."
+msgstr ""
+"Hozz létre egy hivatkozást vagy QR-kódot, és küldd el a személynek. Amikor "
+"csatlakozik, elérhetitek egymás eszközeit — rendszergazda nélkül. A "
+"hivatkozás egyszer működik, és addig érvényes, amíg fel nem használják vagy "
+"vissza nem vonod."
+
+msgid "No invites yet"
+msgstr "Még nincsenek meghívók"
+
+msgid "Invites unavailable"
+msgstr "A meghívók nem érhetők el"
+
+#, rust-format
+msgid "{user} joined"
+msgstr "{user} csatlakozott"
+
 msgid "Invite"
 msgstr "Meghívás"
 
-msgid "Invite someone to your network"
-msgstr "Valaki meghívása a hálózatodba"
+#, rust-format
+msgid "group {group}"
+msgstr "{group} csoport"
+
+msgid "Cancel this invite: the link stops working"
+msgstr "Meghívó visszavonása: a hivatkozás nem fog működni"
+
+msgid "The person you invite will reach your devices, and you theirs."
+msgstr "Akit meghívsz, eléri az eszközeidet, te pedig az övéit."
+
+msgid "Who is it for? (optional)"
+msgstr "Kinek szól? (nem kötelező)"
+
+msgid "Access"
+msgstr "Hozzáférés"
+
+msgid "Just the two of us"
+msgstr "Csak mi ketten"
+
+msgid "You see each other's devices, nobody else"
+msgstr "Látjátok egymás eszközeit, más senkit"
+
+#, rust-format
+msgid "Also the group {group}"
+msgstr "A(z) {group} csoport is"
+
+msgid "They join the group and see everyone in it"
+msgstr "Csatlakozik a csoporthoz, és mindenkit lát benne"
+
+msgid "A network of their own"
+msgstr "Saját hálózat"
 
 msgid ""
-"Tailscale cannot write this device's DNS settings, so it can no longer keep "
-"peer names working. They may still resolve for now, from the configuration "
-"left over from before the failure, but that will break the next time the "
-"network changes — and BigLace will fall back to IP addresses. On most "
-"distributions `sudo resolvconf -u` repairs it."
+"No link to you: they see only their own devices and whoever they invite "
+"(you're the administrator)"
 msgstr ""
-"A Tailscale nem tudja írni ennek az eszköznek a DNS-beállításait, így nem "
-"tudja tovább működtetni a társak neveit. Egyelőre még feloldódhatnak a hiba "
-"előtti konfigurációból, de a hálózat következő változásakor ez megszakad — "
-"és a BigLace visszatér az IP-címekhez. A legtöbb disztribúción a `sudo "
-"resolvconf -u` megjavítja."
+"Nincs kapcsolat veled: csak a saját eszközeit és az általa meghívottakat "
+"látja (te vagy a rendszergazda)"
 
-msgid "Not connected"
-msgstr "Nincs csatlakoztatva"
+msgid "Create invite"
+msgstr "Meghívó létrehozása"
 
-msgid "Press Connect on the left to join the network."
+msgid "QR code of the invite link"
+msgstr "A meghívóhivatkozás QR-kódja"
+
+msgid ""
+"Send the link or let the person scan the code with their phone. It works "
+"once and stays valid until used or cancelled."
 msgstr ""
-"Nyomja meg a Csatlakozás gombot a bal oldalon a hálózathoz való "
-"csatlakozáshoz."
+"Küldd el a hivatkozást, vagy hagyd, hogy a személy beolvassa a kódot a "
+"telefonjával. Egyszer működik, és felhasználásig vagy visszavonásig érvényes."
 
-msgid "The tailscale service is not running"
-msgstr "A tailscale szolgáltatás nem fut"
+msgid "Copy link"
+msgstr "Hivatkozás másolása"
 
-msgid "BigLace needs the tailscaled background service to manage the network."
+msgid "Done"
+msgstr "Kész"
+
+msgid "Copied!"
+msgstr "Másolva!"
+
+msgid ""
+"This network asks an administrator to approve each invite: the link starts "
+"working once they do. Its status shows in Invites."
 msgstr ""
-"A BigLace-nek szüksége van a tailscaled háttérszolgáltatásra a hálózat "
-"kezeléséhez."
+"Ez a hálózat minden meghívóhoz rendszergazdai jóváhagyást kér: a hivatkozás "
+"a jóváhagyás után kezd működni. Az állapota a Meghívók részben látható."
 
-msgid "Start service"
-msgstr "Szolgáltatás indítása"
+msgid "Show the full sidebar"
+msgstr "Teljes oldalsáv megjelenítése"
 
-msgid "Join the network"
-msgstr "Csatlakozás a hálózathoz"
-
-msgid "Choose how you're going to sign in."
-msgstr "Válaszd ki, hogyan jelentkezel be."
-
-msgid "Ways to sign in"
-msgstr "Bejelentkezési módok"
-
-msgid "Your account was kept on this computer. No invite needed."
-msgstr "A fiókod megmaradt ezen a számítógépen. Nincs szükség meghívóra."
-
-msgid "I have an invite"
-msgstr "Van meghívóm"
-
-msgid "Someone on the network sent you a link or a QR code."
-msgstr "Valaki a hálózatról küldött neked egy hivatkozást vagy QR-kódot."
-
-msgid "I have an access key"
-msgstr "Van hozzáférési kulcsom"
-
-msgid "A key the administrator created for you (starts with hskey-auth-)."
-msgstr ""
-"Egy kulcs, amelyet a rendszergazda hozott létre neked (hskey-auth- kezdetű)."
-
-msgid "I'm the administrator"
-msgstr "Én vagyok a rendszergazda"
-
-msgid "Sign in with the BigScale panel's admin username and password."
-msgstr ""
-"Bejelentkezés a BigScale panel rendszergazdai felhasználónevével és "
-"jelszavával."
-
-msgid "This device"
-msgstr "Ez az eszköz"
-
-msgid "Copy IP address"
-msgstr "IP-cím másolása"
-
-msgid "Devices on the network"
-msgstr "Eszközök a hálózaton"
-
-msgid "No other devices on the network yet."
-msgstr "Még nincsenek más eszközök a hálózaton."
+msgid "Show only icons in the sidebar"
+msgstr "Csak ikonok az oldalsávban"
 
 msgid "Sections"
 msgstr "Szakaszok"
@@ -517,8 +560,8 @@ msgstr ""
 "szolgál anélkül, hogy böngészőt kellene megnyitni."
 
 msgid ""
-"The name this device shows to other peers on the VPN — this is the Tailscale"
-" hostname, NOT your computer's name and NOT your user. Lowercase letters, "
+"The name this device shows to other peers on the VPN — this is the Tailscale "
+"hostname, NOT your computer's name and NOT your user. Lowercase letters, "
 "digits and hyphens. Example: 'tales-laptop', 'francois', 'office-pc'."
 msgstr ""
 "A név, amelyet ez az eszköz mutat a többi társnak a VPN-en — ez a Tailscale "
@@ -532,8 +575,8 @@ msgid "Save"
 msgstr "Mentés"
 
 msgid ""
-"Persist the server, key and device name above. Won't connect — press Connect"
-" afterwards."
+"Persist the server, key and device name above. Won't connect — press Connect "
+"afterwards."
 msgstr ""
 "A fenti szerver, kulcs és eszköznév megőrzése. Nem csatlakozik — nyomja meg "
 "a Csatlakozás gombot utána."
@@ -545,8 +588,8 @@ msgid "Join the network when BigLace starts"
 msgstr "Csatlakozzon a hálózathoz a BigLace indulásakor"
 
 msgid ""
-"When on, BigLace runs 'tailscale up' as soon as it launches, so you join the"
-" mesh without clicking Connect every time."
+"When on, BigLace runs 'tailscale up' as soon as it launches, so you join the "
+"mesh without clicking Connect every time."
 msgstr ""
 "Ha be van kapcsolva, a BigLace a 'tailscale up' parancsot futtatja, amint "
 "elindul, így csatlakozik a hálózathoz anélkül, hogy minden alkalommal a "
@@ -578,12 +621,11 @@ msgid "Retry with backoff when the connection is lost"
 msgstr "Újrapróbálkozás késleltetéssel, ha megszakad a kapcsolat"
 
 msgid ""
-"If the tunnel drops (network change, sleep, server hiccup), BigLace silently"
-" retries with growing delays instead of leaving you offline until you "
-"notice."
+"If the tunnel drops (network change, sleep, server hiccup), BigLace silently "
+"retries with growing delays instead of leaving you offline until you notice."
 msgstr ""
-"Ha az alagút megszakad (hálózatváltás, alvó üzemmód, szerverhiba), a BigLace"
-" csendben újrapróbálkozik növekvő késleltetésekkel, ahelyett, hogy offline "
+"Ha az alagút megszakad (hálózatváltás, alvó üzemmód, szerverhiba), a BigLace "
+"csendben újrapróbálkozik növekvő késleltetésekkel, ahelyett, hogy offline "
 "állapotban hagyná, amíg észre nem veszi."
 
 msgid "Toggle auto-reconnect"
@@ -612,308 +654,11 @@ msgid ""
 "Join or leave the mesh network. When connected, this device becomes "
 "reachable by the other peers in your account."
 msgstr ""
-"Csatlakozás vagy kilépés a mesh hálózatból. Csatlakoztatott állapotban ez az"
-" eszköz elérhetővé válik a fiókjában lévő többi partner számára."
+"Csatlakozás vagy kilépés a mesh hálózatból. Csatlakoztatott állapotban ez az "
+"eszköz elérhetővé válik a fiókjában lévő többi partner számára."
 
 msgid "Your photo"
 msgstr "Fényképed"
-
-msgid ""
-"Each of your groups has a voice room. Join it and talk with whoever is there"
-" — the sound goes straight between you, through the network."
-msgstr ""
-"Minden csoportodnak van egy hangszobája. Lépj be, és beszélgess azokkal, "
-"akik ott vannak — a hang közvetlenül köztetek megy, a hálózaton keresztül."
-
-msgid "You're not in any group yet. Create one in Groups."
-msgstr ""
-"Még nem vagy egy csoportban sem. Hozz létre egyet a Csoportok részben."
-
-msgid "People in the room"
-msgstr "Személyek a szobában"
-
-msgid "Everyone"
-msgstr "Mindenki"
-
-msgid "Who's speaking"
-msgstr "Aki beszél"
-
-msgid "Mute"
-msgstr "Némítás"
-
-msgid "Mute your microphone for everyone"
-msgstr "Mikrofon némítása mindenki számára"
-
-msgid "Leave"
-msgstr "Kilépés"
-
-msgid "Which camera"
-msgstr "Melyik kamera"
-
-msgid "Include the computer's sound when sharing the screen"
-msgstr "A számítógép hangjának belefoglalása képernyőmegosztáskor"
-
-msgid ""
-"Videos and music playing here go to the room too; the room's voices don't "
-"(no echo)"
-msgstr ""
-"Az itt lejátszott videók és zenék is a szobába kerülnek; a szoba hangjai nem"
-" (nincs visszhang)"
-
-msgid "Rooms unavailable"
-msgstr "A szobák nem érhetők el"
-
-#, rust-format
-msgid "Could not turn on the camera: {error}"
-msgstr "Nem sikerült bekapcsolni a kamerát: {error}"
-
-#, rust-format
-msgid "Could not share the screen: {error}"
-msgstr "Nem sikerült megosztani a képernyőt: {error}"
-
-#, rust-format
-msgid "Could not reach the panel: {error}"
-msgstr "Nem sikerült elérni a panelt: {error}"
-
-msgid "Nobody here right now"
-msgstr "Most senki sincs itt"
-
-#, rust-format
-msgid "In the room: {people}"
-msgstr "A szobában: {people}"
-
-msgid "Join"
-msgstr "Csatlakozás"
-
-#, rust-format
-msgid "Join the room {group}"
-msgstr "Belépés a(z) {group} szobába"
-
-#, rust-format
-msgid "Could not join {group}: {error}"
-msgstr "Nem sikerült belépni ide: {group}: {error}"
-
-msgid "📺 You're showing your screen to the room"
-msgstr "📺 Megmutatod a képernyődet a szobának"
-
-msgid "📺 You're showing your screen · 1 person watching"
-msgstr "📺 Megmutatod a képernyődet · 1 személy nézi"
-
-#, rust-format
-msgid "📺 You're showing your screen · {count} people watching"
-msgstr "📺 Megmutatod a képernyődet · {count} személy nézi"
-
-msgid "1 person"
-msgstr "1 személy"
-
-#, rust-format
-msgid "{count} people"
-msgstr "{count} személy"
-
-#, rust-format
-msgid "{people} · {talking} talking"
-msgstr "{people} · {talking} beszél"
-
-msgid "you"
-msgstr "te"
-
-msgid "connecting…"
-msgstr "kapcsolódás…"
-
-msgid "muted"
-msgstr "némítva"
-
-msgid "talking"
-msgstr "beszél"
-
-msgid "quiet"
-msgstr "csendben"
-
-msgid "Sharing screen"
-msgstr "Képernyőmegosztás"
-
-msgid "In control"
-msgstr "Vezérel"
-
-msgid "Controls your screen now"
-msgstr "Most a képernyődet vezérli"
-
-msgid "Watching"
-msgstr "Néz"
-
-msgid "Watching your screen"
-msgstr "A képernyődet nézi"
-
-#, rust-format
-msgid "{user} is showing their screen"
-msgstr "{user} megmutatja a képernyőjét"
-
-msgid "Watch"
-msgstr "Megtekintés"
-
-#, rust-format
-msgid "{user} asks to control your screen"
-msgstr "{user} kéri a képernyőd vezérlését"
-
-msgid ""
-"They'll be able to use your mouse and keyboard. You can take control back at"
-" any time."
-msgstr ""
-"Használhatja az egeredet és a billentyűzetedet. A vezérlést bármikor "
-"visszaveheted."
-
-msgid "Deny"
-msgstr "Elutasítás"
-
-msgid "Allow"
-msgstr "Engedélyezés"
-
-msgid "Turn off camera"
-msgstr "Kamera kikapcsolása"
-
-msgid "Turn on camera"
-msgstr "Kamera bekapcsolása"
-
-msgid "No camera found on this computer"
-msgstr "Nem található kamera ezen a számítógépen"
-
-msgid "Stop sharing"
-msgstr "Megosztás leállítása"
-
-msgid "Share screen"
-msgstr "Képernyő megosztása"
-
-msgid "Stop showing your screen to the room"
-msgstr "Képernyő megmutatásának leállítása a szobában"
-
-msgid "Show your screen to everyone in the room"
-msgstr "Képernyő megmutatása mindenkinek a szobában"
-
-msgid "Take back control"
-msgstr "Vezérlés visszavétele"
-
-msgid "Give control"
-msgstr "Vezérlés átadása"
-
-msgid "Stop them from using your mouse and keyboard"
-msgstr "Megakadályozza, hogy használja az egeredet és a billentyűzetedet"
-
-msgid "Let them use your mouse and keyboard"
-msgstr "Engedi, hogy használja az egeredet és a billentyűzetedet"
-
-msgid "Sound level"
-msgstr "Hangerőszint"
-
-msgid "Unmute"
-msgstr "Némítás feloldása"
-
-msgid "This computer"
-msgstr "Ez a számítógép"
-
-msgid "Who may use this computer remotely"
-msgstr "Ki használhatja távolról ezt a számítógépet"
-
-msgid ""
-"Anyone you're connected to can ask to see and control this screen. Choose "
-"who is let in without asking, and who is never let in."
-msgstr ""
-"Bárki, akihez csatlakozol, kérheti, hogy lássa és vezérelje ezt a képernyőt."
-" Válaszd ki, ki léphet be kérdés nélkül, és ki soha."
-
-msgid "History of accesses"
-msgstr "Hozzáférési előzmények"
-
-msgid "Kept on this computer only."
-msgstr "Csak ezen a számítógépen tárolva."
-
-msgid "Clear"
-msgstr "Törlés"
-
-msgid "Nobody has asked yet."
-msgstr "Még senki sem kérte."
-
-msgid "When someone asks, you can choose to always let them in."
-msgstr "Ha valaki kéri, választhatod, hogy mindig beengeded."
-
-msgid "Ask every time"
-msgstr "Mindig kérdezzen"
-
-msgid "Always allow"
-msgstr "Mindig engedélyez"
-
-msgid "Never allow"
-msgstr "Soha nem engedélyez"
-
-msgid "No accesses yet."
-msgstr "Még nincs hozzáférés."
-
-msgid "Remote access"
-msgstr "Távoli hozzáférés"
-
-msgid "Watched the screen shared with the room"
-msgstr "Nézte a szobával megosztott képernyőt"
-
-msgid "Got control of the shared screen"
-msgstr "Átvette a megosztott képernyő vezérlését"
-
-msgid "Restarted the computer"
-msgstr "Újraindította a számítógépet"
-
-msgid "Restarted the session"
-msgstr "Újraindította a munkamenetet"
-
-msgid "Shut down the computer"
-msgstr "Leállította a számítógépet"
-
-msgid "allowed"
-msgstr "engedélyezve"
-
-msgid "allowed (always)"
-msgstr "engedélyezve (mindig)"
-
-msgid "came back after a restart"
-msgstr "újraindítás után visszatért"
-
-msgid "denied"
-msgstr "elutasítva"
-
-msgid "blocked (never allowed)"
-msgstr "letiltva (soha nem engedélyezett)"
-
-msgid "ended"
-msgstr "befejeződött"
-
-#, rust-format
-msgid "{user} ({device})"
-msgstr "{user} ({device})"
-
-#, rust-format
-msgid "{done} of {total}"
-msgstr "{done} / {total}"
-
-msgid "Play"
-msgstr "Lejátszás"
-
-msgid "Download"
-msgstr "Letöltés"
-
-msgid "Open"
-msgstr "Megnyitás"
-
-msgid "Show in folder"
-msgstr "Megjelenítés mappában"
-
-msgid "Pause"
-msgstr "Szünet"
-
-msgid "Photo"
-msgstr "Fénykép"
-
-msgid "Video"
-msgstr "Videó"
-
-msgid "Voice message"
-msgstr "Hangüzenet"
 
 msgid "New chat"
 msgstr "Új csevegés"
@@ -984,6 +729,9 @@ msgid ""
 msgstr ""
 "Válassz egy beszélgetést, vagy indíts egyet. Az üzenetek közvetlenül a "
 "számítógépeid között mennek — a szerver soha nem látja őket."
+
+msgid "People on the network"
+msgstr "Személyek a hálózaton"
 
 msgid "Group"
 msgstr "Csoport"
@@ -1162,31 +910,14 @@ msgstr ""
 "Ez az eszköz nincs személyes fiókhoz kapcsolva, ezért nincsenek csoportjai."
 
 msgid ""
-"The panel knows this device by a different key (BigLace was reinstalled?). "
-"Leave the network and join again to fix it."
-msgstr ""
-"A panel más kulccsal ismeri ezt az eszközt (újratelepítetted a BigLace-t?). "
-"A javításhoz lépj ki a hálózatból, és csatlakozz újra."
-
-msgid ""
-"The panel couldn't confirm this device. Make sure BigLace is up to date and "
-"stays open while connected, then try again."
-msgstr ""
-"A panel nem tudta megerősíteni ezt az eszközt. Győződj meg róla, hogy a "
-"BigLace naprakész, és csatlakozás közben nyitva marad, majd próbáld újra."
-
-msgid ""
 "On this network everyone already reaches everyone, so groups aren't needed. "
 "The administrator can set access rules first."
 msgstr ""
-"Ezen a hálózaton már mindenki mindenkit elér, így nincs szükség csoportokra."
-" A rendszergazda előbb hozzáférési szabályokat állíthat be."
+"Ezen a hálózaton már mindenki mindenkit elér, így nincs szükség csoportokra. "
+"A rendszergazda előbb hozzáférési szabályokat állíthat be."
 
 msgid "You already created the maximum number of groups."
 msgstr "Már létrehoztad a csoportok maximális számát."
-
-msgid "You are no longer in that group."
-msgstr "Már nem vagy tagja annak a csoportnak."
 
 msgid "A group with that name already exists. Choose another name."
 msgstr "Már létezik ilyen nevű csoport. Válassz másik nevet."
@@ -1256,8 +987,8 @@ msgid ""
 "People in the same group reach each other's devices. Create groups for "
 "family, work or friends, and invite people into them."
 msgstr ""
-"Az azonos csoportban lévők elérik egymás eszközeit. Hozz létre csoportokat a"
-" családnak, a munkának vagy a barátoknak, és hívj meg embereket."
+"Az azonos csoportban lévők elérik egymás eszközeit. Hozz létre csoportokat a "
+"családnak, a munkának vagy a barátoknak, és hívj meg embereket."
 
 msgid "Invitations for you"
 msgstr "Meghívások neked"
@@ -1308,6 +1039,13 @@ msgstr "Csatlakoztál ide: {group}."
 msgid "Invitation declined."
 msgstr "Meghívás elutasítva."
 
+msgid "1 person"
+msgstr "1 személy"
+
+#, rust-format
+msgid "{count} people"
+msgstr "{count} személy"
+
 msgid "Created by you"
 msgstr "Te hoztad létre"
 
@@ -1317,6 +1055,9 @@ msgstr "Létrehozta: {user}"
 
 msgid "Network group (administrator)"
 msgstr "Hálózati csoport (rendszergazda)"
+
+msgid "you"
+msgstr "te"
 
 msgid "owner"
 msgstr "tulajdonos"
@@ -1340,8 +1081,7 @@ msgstr "Eltávolítod: {user}?"
 
 #, rust-format
 msgid ""
-"{user} leaves the group {group} and no longer reaches its members through "
-"it."
+"{user} leaves the group {group} and no longer reaches its members through it."
 msgstr ""
 "{user} kilép a(z) {group} csoportból, és azon keresztül már nem éri el a "
 "tagjait."
@@ -1361,8 +1101,11 @@ msgid ""
 "You stop reaching the group's members through it. To come back, someone has "
 "to invite you again."
 msgstr ""
-"Ezen keresztül már nem éred el a csoport tagjait. A visszatéréshez valakinek"
-" újra meg kell hívnia."
+"Ezen keresztül már nem éred el a csoport tagjait. A visszatéréshez valakinek "
+"újra meg kell hívnia."
+
+msgid "Leave"
+msgstr "Kilépés"
 
 msgid "You left the group."
 msgstr "Kiléptél a csoportból."
@@ -1389,8 +1132,7 @@ msgstr "Csatlakozol ide: {group}?"
 msgid ""
 "{user} invited you. You and the group's members will reach each other's "
 "devices."
-msgstr ""
-"{user} meghívott. Te és a csoport tagjai elérhetitek egymás eszközeit."
+msgstr "{user} meghívott. Te és a csoport tagjai elérhetitek egymás eszközeit."
 
 msgid "You and the group's members will reach each other's devices."
 msgstr "Te és a csoport tagjai elérhetitek egymás eszközeit."
@@ -1402,6 +1144,9 @@ msgstr "Kapcsolódsz vele: {user}?"
 #, rust-format
 msgid "You and {user} will reach each other's devices."
 msgstr "Te és {user} elérhetitek egymás eszközeit."
+
+msgid "Join"
+msgstr "Csatlakozás"
 
 msgid "Done. You can now reach each other's devices."
 msgstr "Kész. Most már elérhetitek egymás eszközeit."
@@ -1423,9 +1168,6 @@ msgstr "Személyek keresése"
 msgid ""
 "If someone on the network has exactly this name, they get the invitation."
 msgstr "Ha valakinek a hálózaton pontosan ez a neve, megkapja a meghívást."
-
-msgid "People on the network"
-msgstr "Személyek a hálózaton"
 
 #, rust-format
 msgid "Invite \"{name}\""
@@ -1449,9 +1191,9 @@ msgstr ""
 "csoportban."
 
 msgid ""
-"Listed are the people you're already connected to. To invite someone else on"
-" the network, type their exact name. Each one gets the invitation in BigLace"
-" and decides whether to join."
+"Listed are the people you're already connected to. To invite someone else on "
+"the network, type their exact name. Each one gets the invitation in BigLace "
+"and decides whether to join."
 msgstr ""
 "Azok szerepelnek itt, akikhez már csatlakoztál. Ha valaki mást hívnál meg a "
 "hálózatról, írd be a pontos nevét. Mindegyikük megkapja a meghívást a "
@@ -1460,8 +1202,7 @@ msgstr ""
 msgid ""
 "Nobody you're connected to yet. Type someone's exact name to invite them."
 msgstr ""
-"Még senkihez sem csatlakoztál. A meghíváshoz írd be valakinek a pontos "
-"nevét."
+"Még senkihez sem csatlakoztál. A meghíváshoz írd be valakinek a pontos nevét."
 
 msgid "Nobody else is on the network yet."
 msgstr "Még senki más nincs a hálózaton."
@@ -1504,142 +1245,176 @@ msgid "Invite {user}"
 msgstr "{user} meghívása"
 
 msgid ""
-"Invites from BigLace need a BigScale server that supports them. Ask your "
-"administrator to update the server, or to create the invite in the panel."
+"Each of your groups has a voice room. Join it and talk with whoever is there "
+"— the sound goes straight between you, through the network."
 msgstr ""
-"A BigLace meghívóihoz ezt támogató BigScale szerver kell. Kérd meg a "
-"rendszergazdát, hogy frissítse a szervert, vagy hozza létre a meghívót a "
-"panelen."
+"Minden csoportodnak van egy hangszobája. Lépj be, és beszélgess azokkal, "
+"akik ott vannak — a hang közvetlenül köztetek megy, a hálózaton keresztül."
+
+msgid "You're not in any group yet. Create one in Groups."
+msgstr "Még nem vagy egy csoportban sem. Hozz létre egyet a Csoportok részben."
+
+msgid "People in the room"
+msgstr "Személyek a szobában"
+
+msgid "Everyone"
+msgstr "Mindenki"
+
+msgid "Who's speaking"
+msgstr "Aki beszél"
+
+msgid "Mute"
+msgstr "Némítás"
+
+msgid "Mute your microphone for everyone"
+msgstr "Mikrofon némítása mindenki számára"
+
+msgid "Which camera"
+msgstr "Melyik kamera"
+
+msgid "Include the computer's sound when sharing the screen"
+msgstr "A számítógép hangjának belefoglalása képernyőmegosztáskor"
 
 msgid ""
-"This device can't send invites (it isn't linked to a person's account)."
+"Videos and music playing here go to the room too; the room's voices don't "
+"(no echo)"
 msgstr ""
-"Ez az eszköz nem küldhet meghívókat (nincs személyes fiókhoz kapcsolva)."
+"Az itt lejátszott videók és zenék is a szobába kerülnek; a szoba hangjai nem "
+"(nincs visszhang)"
 
-msgid ""
-"On this network everyone can reach everyone, so only the administrator can "
-"invite people."
-msgstr ""
-"Ezen a hálózaton mindenki mindenkit elér, így csak a rendszergazda hívhat "
-"meg embereket."
-
-msgid "You have too many pending invites. Cancel some or try again tomorrow."
-msgstr ""
-"Túl sok függő meghívód van. Vonj vissza néhányat, vagy próbáld újra holnap."
-
-msgid ""
-"On this network only administrators invite new people. You can still invite "
-"people already on the network into your groups."
-msgstr ""
-"Ezen a hálózaton csak a rendszergazdák hívnak meg új embereket. A hálózaton "
-"már lévőket továbbra is meghívhatod a csoportjaidba."
-
-msgid "Waiting to be used"
-msgstr "Felhasználásra vár"
-
-msgid "Used"
-msgstr "Felhasználva"
-
-msgid "Expired"
-msgstr "Lejárt"
-
-msgid "Cancelled"
-msgstr "Visszavonva"
-
-msgid "Waiting for an administrator's approval"
-msgstr "Rendszergazdai jóváhagyásra vár"
-
-msgid "Bring someone to your network"
-msgstr "Hozz valakit a hálózatodba"
-
-msgid ""
-"Create a link or QR code and send it to the person. When they join, you two "
-"can reach each other's devices — no administrator needed. The link works "
-"once and stays valid until it's used or you cancel it."
-msgstr ""
-"Hozz létre egy hivatkozást vagy QR-kódot, és küldd el a személynek. Amikor "
-"csatlakozik, elérhetitek egymás eszközeit — rendszergazda nélkül. A "
-"hivatkozás egyszer működik, és addig érvényes, amíg fel nem használják vagy "
-"vissza nem vonod."
-
-msgid "No invites yet"
-msgstr "Még nincsenek meghívók"
-
-msgid "Invites unavailable"
-msgstr "A meghívók nem érhetők el"
+msgid "Rooms unavailable"
+msgstr "A szobák nem érhetők el"
 
 #, rust-format
-msgid "{user} joined"
-msgstr "{user} csatlakozott"
+msgid "Could not turn on the camera: {error}"
+msgstr "Nem sikerült bekapcsolni a kamerát: {error}"
 
 #, rust-format
-msgid "group {group}"
-msgstr "{group} csoport"
+msgid "Could not share the screen: {error}"
+msgstr "Nem sikerült megosztani a képernyőt: {error}"
 
-msgid "Cancel this invite: the link stops working"
-msgstr "Meghívó visszavonása: a hivatkozás nem fog működni"
-
-msgid "The person you invite will reach your devices, and you theirs."
-msgstr "Akit meghívsz, eléri az eszközeidet, te pedig az övéit."
-
-msgid "Who is it for? (optional)"
-msgstr "Kinek szól? (nem kötelező)"
-
-msgid "Access"
-msgstr "Hozzáférés"
-
-msgid "Just the two of us"
-msgstr "Csak mi ketten"
-
-msgid "You see each other's devices, nobody else"
-msgstr "Látjátok egymás eszközeit, más senkit"
+msgid "Nobody here right now"
+msgstr "Most senki sincs itt"
 
 #, rust-format
-msgid "Also the group {group}"
-msgstr "A(z) {group} csoport is"
+msgid "In the room: {people}"
+msgstr "A szobában: {people}"
 
-msgid "They join the group and see everyone in it"
-msgstr "Csatlakozik a csoporthoz, és mindenkit lát benne"
+#, rust-format
+msgid "Join the room {group}"
+msgstr "Belépés a(z) {group} szobába"
 
-msgid "A network of their own"
-msgstr "Saját hálózat"
+#, rust-format
+msgid "Could not join {group}: {error}"
+msgstr "Nem sikerült belépni ide: {group}: {error}"
+
+msgid "📺 You're showing your screen to the room"
+msgstr "📺 Megmutatod a képernyődet a szobának"
+
+msgid "📺 You're showing your screen · 1 person watching"
+msgstr "📺 Megmutatod a képernyődet · 1 személy nézi"
+
+#, rust-format
+msgid "📺 You're showing your screen · {count} people watching"
+msgstr "📺 Megmutatod a képernyődet · {count} személy nézi"
+
+#, rust-format
+msgid "Room {group}"
+msgstr "{group} szoba"
+
+#, rust-format
+msgid "{people} · {talking} talking"
+msgstr "{people} · {talking} beszél"
+
+msgid "connecting…"
+msgstr "kapcsolódás…"
+
+msgid "muted"
+msgstr "némítva"
+
+msgid "talking"
+msgstr "beszél"
+
+msgid "quiet"
+msgstr "csendben"
+
+msgid "Sharing screen"
+msgstr "Képernyőmegosztás"
+
+msgid "In control"
+msgstr "Vezérel"
+
+msgid "Controls your screen now"
+msgstr "Most a képernyődet vezérli"
+
+msgid "Watching"
+msgstr "Néz"
+
+msgid "Watching your screen"
+msgstr "A képernyődet nézi"
+
+#, rust-format
+msgid "{user} is showing their screen"
+msgstr "{user} megmutatja a képernyőjét"
+
+msgid "Watch"
+msgstr "Megtekintés"
+
+#, rust-format
+msgid "{user} asks to control your screen"
+msgstr "{user} kéri a képernyőd vezérlését"
 
 msgid ""
-"No link to you: they see only their own devices and whoever they invite "
-"(you're the administrator)"
+"They'll be able to use your mouse and keyboard. You can take control back at "
+"any time."
 msgstr ""
-"Nincs kapcsolat veled: csak a saját eszközeit és az általa meghívottakat "
-"látja (te vagy a rendszergazda)"
+"Használhatja az egeredet és a billentyűzetedet. A vezérlést bármikor "
+"visszaveheted."
 
-msgid "Create invite"
-msgstr "Meghívó létrehozása"
+msgid "Deny"
+msgstr "Elutasítás"
 
-msgid "QR code of the invite link"
-msgstr "A meghívóhivatkozás QR-kódja"
+msgid "Allow"
+msgstr "Engedélyezés"
 
-msgid ""
-"Send the link or let the person scan the code with their phone. It works "
-"once and stays valid until used or cancelled."
-msgstr ""
-"Küldd el a hivatkozást, vagy hagyd, hogy a személy beolvassa a kódot a "
-"telefonjával. Egyszer működik, és felhasználásig vagy visszavonásig "
-"érvényes."
+msgid "Turn off camera"
+msgstr "Kamera kikapcsolása"
 
-msgid "Copy link"
-msgstr "Hivatkozás másolása"
+msgid "Turn on camera"
+msgstr "Kamera bekapcsolása"
 
-msgid "Done"
-msgstr "Kész"
+msgid "No camera found on this computer"
+msgstr "Nem található kamera ezen a számítógépen"
 
-msgid "Copied!"
-msgstr "Másolva!"
+msgid "Stop sharing"
+msgstr "Megosztás leállítása"
 
-msgid ""
-"This network asks an administrator to approve each invite: the link starts "
-"working once they do. Its status shows in Invites."
-msgstr ""
-"Ez a hálózat minden meghívóhoz rendszergazdai jóváhagyást kér: a hivatkozás "
-"a jóváhagyás után kezd működni. Az állapota a Meghívók részben látható."
+msgid "Share screen"
+msgstr "Képernyő megosztása"
+
+msgid "Stop showing your screen to the room"
+msgstr "Képernyő megmutatásának leállítása a szobában"
+
+msgid "Show your screen to everyone in the room"
+msgstr "Képernyő megmutatása mindenkinek a szobában"
+
+msgid "Take back control"
+msgstr "Vezérlés visszavétele"
+
+msgid "Give control"
+msgstr "Vezérlés átadása"
+
+msgid "Stop them from using your mouse and keyboard"
+msgstr "Megakadályozza, hogy használja az egeredet és a billentyűzetedet"
+
+msgid "Let them use your mouse and keyboard"
+msgstr "Engedi, hogy használja az egeredet és a billentyűzetedet"
+
+msgid "Sound level"
+msgstr "Hangerőszint"
+
+msgid "Unmute"
+msgstr "Némítás feloldása"
 
 msgid "System accent"
 msgstr "Rendszer kiemelőszíne"
@@ -1719,36 +1494,6 @@ msgstr "Kép…"
 msgid "Choose a background picture"
 msgstr "Háttérkép kiválasztása"
 
-msgid "Message"
-msgstr "Üzenet"
-
-msgid "Bold"
-msgstr "Félkövér"
-
-msgid "Italic"
-msgstr "Dőlt"
-
-msgid "Underline"
-msgstr "Aláhúzott"
-
-msgid "Strikethrough"
-msgstr "Áthúzott"
-
-msgid "Monospace"
-msgstr "Rögzített szélességű"
-
-msgid "Create link"
-msgstr "Hivatkozás létrehozása"
-
-msgid "Plain text"
-msgstr "Egyszerű szöveg"
-
-msgid "Formatting"
-msgstr "Formázás"
-
-msgid "Create"
-msgstr "Létrehozás"
-
 msgid "Mesh VPN client for BigScale/Headscale."
 msgstr "Mesh VPN kliens a BigScale/Headscale számára."
 
@@ -1776,19 +1521,23 @@ msgid ""
 "in with a different account."
 msgstr ""
 "Ez leválasztja a hálózatról, kijelentkezteti ezt az eszközt a jelenlegi "
-"vezérlő szerverről, és elfelejti a mentett jelszót. Ezután egy másik fiókkal"
-" jelentkezhet be."
+"vezérlő szerverről, és elfelejti a mentett jelszót. Ezután egy másik fiókkal "
+"jelentkezhet be."
 
 msgid "Leave the network?"
 msgstr "Kilépsz a hálózatból?"
 
 #, rust-format
 msgid ""
-"This device leaves the network and its name becomes free. Your account {user} is kept: you can come back later from this computer, without an invite.\n"
+"This device leaves the network and its name becomes free. Your account "
+"{user} is kept: you can come back later from this computer, without an "
+"invite.\n"
 "\n"
-"If you won't come back, delete the account and the name {user} becomes free too."
+"If you won't come back, delete the account and the name {user} becomes free "
+"too."
 msgstr ""
-"Ez az eszköz kilép a hálózatból, és a neve felszabadul. A(z) {user} fiókod megmarad: később visszatérhetsz erről a számítógépről, meghívó nélkül.\n"
+"Ez az eszköz kilép a hálózatból, és a neve felszabadul. A(z) {user} fiókod "
+"megmarad: később visszatérhetsz erről a számítógépről, meghívó nélkül.\n"
 "\n"
 "Ha nem térsz vissza, töröld a fiókot, és a(z) {user} név is felszabadul."
 
@@ -1811,8 +1560,8 @@ msgid ""
 "Couldn't delete the account: the panel can't be reached. Connect and try "
 "again."
 msgstr ""
-"Nem sikerült törölni a fiókot: a panel nem érhető el. Csatlakozz, és próbáld"
-" újra."
+"Nem sikerült törölni a fiókot: a panel nem érhető el. Csatlakozz, és próbáld "
+"újra."
 
 msgid "Signed out and account deleted."
 msgstr "Kijelentkeztél, és a fiók törölve."
@@ -1827,11 +1576,15 @@ msgstr "Nem sikerült elérni a szervert"
 msgid ""
 "The control server didn't confirm the sign-out: {error}\n"
 "\n"
-"You can still sign out on this computer: BigLace forgets the saved key and account and disconnects. The server keeps listing this device until an administrator removes it."
+"You can still sign out on this computer: BigLace forgets the saved key and "
+"account and disconnects. The server keeps listing this device until an "
+"administrator removes it."
 msgstr ""
 "A vezérlőszerver nem erősítette meg a kijelentkezést: {error}\n"
 "\n"
-"Ezen a számítógépen így is kijelentkezhetsz: a BigLace elfelejti a mentett kulcsot és fiókot, majd bontja a kapcsolatot. A szerver addig listázza ezt az eszközt, amíg egy rendszergazda el nem távolítja."
+"Ezen a számítógépen így is kijelentkezhetsz: a BigLace elfelejti a mentett "
+"kulcsot és fiókot, majd bontja a kapcsolatot. A szerver addig listázza ezt "
+"az eszközt, amíg egy rendszergazda el nem távolítja."
 
 msgid "Sign out on this computer"
 msgstr "Kijelentkezés ezen a számítógépen"
@@ -1855,8 +1608,8 @@ msgid "Panel URL"
 msgstr "Panel URL"
 
 msgid ""
-"Address of your BigScale panel (e.g. panel.example.org). The https:// scheme"
-" is added automatically if you omit it."
+"Address of your BigScale panel (e.g. panel.example.org). The https:// scheme "
+"is added automatically if you omit it."
 msgstr ""
 "A BigScale panel címe (pl. panel.pelda.hu). A https:// séma automatikusan "
 "hozzáadódik, ha elhagyja."
@@ -1878,13 +1631,13 @@ msgstr ""
 "libsecret, macOS-en Keychain, Windowson Credential Manager)."
 
 msgid ""
-"The name this device shows to other peers on the VPN — this is the Tailscale"
-" hostname, NOT your computer's name and NOT your user. Lowercase letters, "
+"The name this device shows to other peers on the VPN — this is the Tailscale "
+"hostname, NOT your computer's name and NOT your user. Lowercase letters, "
 "digits and hyphens. Example: 'tales-laptop', 'francois', 'office-pc'. Pick "
 "something other peers will recognise."
 msgstr ""
-"A név, amely alatt ez az eszköz megjelenik a VPN többi partnere számára – ez"
-" a Tailscale hosztnév, NEM a számítógép neve és NEM a felhasználó neve. "
+"A név, amely alatt ez az eszköz megjelenik a VPN többi partnere számára – ez "
+"a Tailscale hosztnév, NEM a számítógép neve és NEM a felhasználó neve. "
 "Kisbetűk, számjegyek és kötőjelek. Példa: 'tales-laptop', 'francois', "
 "'irodai-pc'. Válasszon olyat, amit a többi partner felismer."
 
@@ -1946,8 +1699,8 @@ msgstr ""
 "szabadítsa fel a nevet."
 
 msgid ""
-"That name already belongs to an account on this network. Try another one, or"
-" ask the administrator to free it."
+"That name already belongs to an account on this network. Try another one, or "
+"ask the administrator to free it."
 msgstr ""
 "Ez a név már egy fiókhoz tartozik ezen a hálózaton. Próbálj másikat, vagy "
 "kérd meg a rendszergazdát, hogy szabadítsa fel."
@@ -2008,11 +1761,11 @@ msgid "Joining…"
 msgstr "Csatlakozás…"
 
 msgid ""
-"That doesn't look like an invite link. It starts with https:// and contains "
-"/join#."
+"That doesn't look like an invite link. It starts with https:// and contains /"
+"join#."
 msgstr ""
-"Ez nem tűnik meghívóhivatkozásnak. https:// kezdetű, és tartalmazza a /join#"
-" részt."
+"Ez nem tűnik meghívóhivatkozásnak. https:// kezdetű, és tartalmazza a /join# "
+"részt."
 
 msgid "Type your name."
 msgstr "Írd be a neved."
@@ -2024,6 +1777,36 @@ msgstr "Üdv, {name}! Csatlakoztál a(z) {group} csoporthoz. Kapcsolódás…"
 #, rust-format
 msgid "Welcome, {name}! Connecting…"
 msgstr "Üdv, {name}! Kapcsolódás…"
+
+msgid "Message"
+msgstr "Üzenet"
+
+msgid "Bold"
+msgstr "Félkövér"
+
+msgid "Italic"
+msgstr "Dőlt"
+
+msgid "Underline"
+msgstr "Aláhúzott"
+
+msgid "Strikethrough"
+msgstr "Áthúzott"
+
+msgid "Monospace"
+msgstr "Rögzített szélességű"
+
+msgid "Create link"
+msgstr "Hivatkozás létrehozása"
+
+msgid "Plain text"
+msgstr "Egyszerű szöveg"
+
+msgid "Formatting"
+msgstr "Formázás"
+
+msgid "Create"
+msgstr "Létrehozás"
 
 msgid "End access"
 msgstr "Hozzáférés befejezése"
@@ -2037,8 +1820,8 @@ msgstr "Távoli hozzáférés elindult"
 
 #, rust-format
 msgid ""
-"{user} ({device}) is seeing and controlling this screen. Open BigLace to end"
-" the access."
+"{user} ({device}) is seeing and controlling this screen. Open BigLace to end "
+"the access."
 msgstr ""
 "{user} ({device}) látja és vezérli ezt a képernyőt. A hozzáférés "
 "befejezéséhez nyisd meg a BigLace-t."
@@ -2076,8 +1859,8 @@ msgid ""
 "<b>Only allow it if you know this person and are expecting it.</b> You can "
 "end the access at any time from BigLace."
 msgstr ""
-"<b>Csak akkor engedélyezd, ha ismered ezt a személyt, és számítasz rá.</b> A"
-" hozzáférést bármikor befejezheted a BigLace-ből."
+"<b>Csak akkor engedélyezd, ha ismered ezt a személyt, és számítasz rá.</b> A "
+"hozzáférést bármikor befejezheted a BigLace-ből."
 
 #, rust-format
 msgid "Denied automatically in {seconds} s"
@@ -2088,8 +1871,8 @@ msgid "Restart {name}'s computer?"
 msgstr "Újraindítod {name} számítógépét?"
 
 msgid ""
-"It restarts, signs in by itself and locks the screen right away; this window"
-" connects again when it's back. Unsaved work there is lost."
+"It restarts, signs in by itself and locks the screen right away; this window "
+"connects again when it's back. Unsaved work there is lost."
 msgstr ""
 "Újraindul, magától bejelentkezik, és azonnal zárolja a képernyőt; ez az "
 "ablak újracsatlakozik, amikor visszatér. Az ottani mentetlen munka elvész."
@@ -2107,8 +1890,8 @@ msgid ""
 "Unsaved work there is lost."
 msgstr ""
 "Az ott megnyitott programok bezárulnak, a számítógép kijelentkezik és "
-"magától visszajelentkezik (újraindítás nélkül), majd zárolja a képernyőt; ez"
-" az ablak újracsatlakozik. Az ottani mentetlen munka elvész."
+"magától visszajelentkezik (újraindítás nélkül), majd zárolja a képernyőt; ez "
+"az ablak újracsatlakozik. Az ottani mentetlen munka elvész."
 
 msgid "Restart the session"
 msgstr "Munkamenet újraindítása"
@@ -2197,8 +1980,8 @@ msgid "{name} didn't allow the access."
 msgstr "{name} nem engedélyezte a hozzáférést."
 
 msgid ""
-"That computer couldn't confirm this device. Make sure both run an up-to-date"
-" BigLace."
+"That computer couldn't confirm this device. Make sure both run an up-to-date "
+"BigLace."
 msgstr ""
 "Az a számítógép nem tudta megerősíteni ezt az eszközt. Győződj meg róla, "
 "hogy mindkettőn naprakész BigLace fut."
@@ -2272,6 +2055,36 @@ msgstr "A hozzáférés {name} képernyőjéhez befejeződött: {error}"
 msgid "Give back control"
 msgstr "Vezérlés visszaadása"
 
+msgid "Connected · 1 peer"
+msgstr "Csatlakozva · 1 társ"
+
+#, rust-format
+msgid "Connected · {n} peers"
+msgstr "Csatlakozva · {n} társ"
+
+#, rust-format
+msgid "In the room {group} · muted"
+msgstr "A(z) {group} szobában · némítva"
+
+#, rust-format
+msgid "In the room {group}"
+msgstr "A(z) {group} szobában"
+
+msgid "Show BigLace"
+msgstr "BigLace megjelenítése"
+
+msgid "Unmute (Ctrl+Alt+M)"
+msgstr "Némítás feloldása (Ctrl+Alt+M)"
+
+msgid "Mute (Ctrl+Alt+M)"
+msgstr "Némítás (Ctrl+Alt+M)"
+
+msgid "Leave the room"
+msgstr "Kilépés a szobából"
+
+msgid "Quit"
+msgstr "Kilépés"
+
 msgid "direct"
 msgstr "közvetlen"
 
@@ -2307,6 +2120,9 @@ msgstr "Rögzítve a tetejére"
 
 msgid "Unpinned"
 msgstr "Rögzítés feloldva"
+
+msgid "Copy IP address"
+msgstr "IP-cím másolása"
 
 msgid "Open files (SFTP)"
 msgstr "Fájlok megnyitása (SFTP)"
@@ -2355,6 +2171,208 @@ msgstr "A kilépési csomópont frissítése sikertelen"
 
 msgid "Copy"
 msgstr "Másolás"
+
+msgid "Search devices"
+msgstr "Eszközök keresése"
+
+msgid "Invite someone to your network"
+msgstr "Valaki meghívása a hálózatodba"
+
+msgid ""
+"Tailscale cannot write this device's DNS settings, so it can no longer keep "
+"peer names working. They may still resolve for now, from the configuration "
+"left over from before the failure, but that will break the next time the "
+"network changes — and BigLace will fall back to IP addresses. On most "
+"distributions `sudo resolvconf -u` repairs it."
+msgstr ""
+"A Tailscale nem tudja írni ennek az eszköznek a DNS-beállításait, így nem "
+"tudja tovább működtetni a társak neveit. Egyelőre még feloldódhatnak a hiba "
+"előtti konfigurációból, de a hálózat következő változásakor ez megszakad — "
+"és a BigLace visszatér az IP-címekhez. A legtöbb disztribúción a `sudo "
+"resolvconf -u` megjavítja."
+
+msgid "Not connected"
+msgstr "Nincs csatlakoztatva"
+
+msgid "Press Connect on the left to join the network."
+msgstr ""
+"Nyomja meg a Csatlakozás gombot a bal oldalon a hálózathoz való "
+"csatlakozáshoz."
+
+msgid "The tailscale service is not running"
+msgstr "A tailscale szolgáltatás nem fut"
+
+msgid "BigLace needs the tailscaled background service to manage the network."
+msgstr ""
+"A BigLace-nek szüksége van a tailscaled háttérszolgáltatásra a hálózat "
+"kezeléséhez."
+
+msgid "Start service"
+msgstr "Szolgáltatás indítása"
+
+msgid "Join the network"
+msgstr "Csatlakozás a hálózathoz"
+
+msgid "Choose how you're going to sign in."
+msgstr "Válaszd ki, hogyan jelentkezel be."
+
+msgid "Ways to sign in"
+msgstr "Bejelentkezési módok"
+
+msgid "Your account was kept on this computer. No invite needed."
+msgstr "A fiókod megmaradt ezen a számítógépen. Nincs szükség meghívóra."
+
+msgid "I have an invite"
+msgstr "Van meghívóm"
+
+msgid "Someone on the network sent you a link or a QR code."
+msgstr "Valaki a hálózatról küldött neked egy hivatkozást vagy QR-kódot."
+
+msgid "I have an access key"
+msgstr "Van hozzáférési kulcsom"
+
+msgid "A key the administrator created for you (starts with hskey-auth-)."
+msgstr ""
+"Egy kulcs, amelyet a rendszergazda hozott létre neked (hskey-auth- kezdetű)."
+
+msgid "I'm the administrator"
+msgstr "Én vagyok a rendszergazda"
+
+msgid "Sign in with the BigScale panel's admin username and password."
+msgstr ""
+"Bejelentkezés a BigScale panel rendszergazdai felhasználónevével és "
+"jelszavával."
+
+msgid "This device"
+msgstr "Ez az eszköz"
+
+msgid "Devices on the network"
+msgstr "Eszközök a hálózaton"
+
+msgid "No other devices on the network yet."
+msgstr "Még nincsenek más eszközök a hálózaton."
+
+msgid "you are not in a room"
+msgstr "nincs szobában"
+
+msgid "screen sharing isn't available on this computer"
+msgstr "a képernyőmegosztás nem érhető el ezen a számítógépen"
+
+#, rust-format
+msgid "The computer's sound can't be shared: {error}"
+msgstr "A számítógép hangja nem osztható meg: {error}"
+
+#, rust-format
+msgid "The screen share stopped: {error}"
+msgstr "A képernyőmegosztás leállt: {error}"
+
+msgid "This computer"
+msgstr "Ez a számítógép"
+
+msgid "Who may use this computer remotely"
+msgstr "Ki használhatja távolról ezt a számítógépet"
+
+msgid ""
+"Anyone you're connected to can ask to see and control this screen. Choose "
+"who is let in without asking, and who is never let in."
+msgstr ""
+"Bárki, akihez csatlakozol, kérheti, hogy lássa és vezérelje ezt a képernyőt. "
+"Válaszd ki, ki léphet be kérdés nélkül, és ki soha."
+
+msgid "History of accesses"
+msgstr "Hozzáférési előzmények"
+
+msgid "Kept on this computer only."
+msgstr "Csak ezen a számítógépen tárolva."
+
+msgid "Clear"
+msgstr "Törlés"
+
+msgid "Nobody has asked yet."
+msgstr "Még senki sem kérte."
+
+msgid "When someone asks, you can choose to always let them in."
+msgstr "Ha valaki kéri, választhatod, hogy mindig beengeded."
+
+msgid "Ask every time"
+msgstr "Mindig kérdezzen"
+
+msgid "Always allow"
+msgstr "Mindig engedélyez"
+
+msgid "Never allow"
+msgstr "Soha nem engedélyez"
+
+msgid "No accesses yet."
+msgstr "Még nincs hozzáférés."
+
+msgid "Remote access"
+msgstr "Távoli hozzáférés"
+
+msgid "Watched the screen shared with the room"
+msgstr "Nézte a szobával megosztott képernyőt"
+
+msgid "Got control of the shared screen"
+msgstr "Átvette a megosztott képernyő vezérlését"
+
+msgid "Restarted the computer"
+msgstr "Újraindította a számítógépet"
+
+msgid "Restarted the session"
+msgstr "Újraindította a munkamenetet"
+
+msgid "Shut down the computer"
+msgstr "Leállította a számítógépet"
+
+msgid "allowed"
+msgstr "engedélyezve"
+
+msgid "allowed (always)"
+msgstr "engedélyezve (mindig)"
+
+msgid "came back after a restart"
+msgstr "újraindítás után visszatért"
+
+msgid "denied"
+msgstr "elutasítva"
+
+msgid "blocked (never allowed)"
+msgstr "letiltva (soha nem engedélyezett)"
+
+msgid "ended"
+msgstr "befejeződött"
+
+#, rust-format
+msgid "{user} ({device})"
+msgstr "{user} ({device})"
+
+#, rust-format
+msgid "{done} of {total}"
+msgstr "{done} / {total}"
+
+msgid "Play"
+msgstr "Lejátszás"
+
+msgid "Download"
+msgstr "Letöltés"
+
+msgid "Open"
+msgstr "Megnyitás"
+
+msgid "Show in folder"
+msgstr "Megjelenítés mappában"
+
+msgid "Pause"
+msgstr "Szünet"
+
+msgid "Photo"
+msgstr "Fénykép"
+
+msgid "Video"
+msgstr "Videó"
+
+msgid "Voice message"
+msgstr "Hangüzenet"
 
 msgid "Smileys & people"
 msgstr "Hangulatjelek és emberek"
@@ -2414,8 +2432,8 @@ msgstr ""
 "elérhető"
 
 msgid ""
-"the file arrived different from the original (damaged on the way) — download"
-" it again"
+"the file arrived different from the original (damaged on the way) — download "
+"it again"
 msgstr ""
 "a fájl az eredetitől eltérően érkezett meg (útközben megsérült) — töltse le "
 "újra"
@@ -2459,8 +2477,7 @@ msgstr "📌 (levette az üzenet kitűzését)"
 msgid "nothing was recorded — is a microphone connected?"
 msgstr "semmi sem lett felvéve — csatlakoztatva van mikrofon?"
 
-msgid ""
-"this computer can't restart remotely (BigLace's helper isn't installed)"
+msgid "this computer can't restart remotely (BigLace's helper isn't installed)"
 msgstr ""
 "ez a számítógép nem indítható újra távolról (a BigLace segédprogramja nincs "
 "telepítve)"
@@ -2494,22 +2511,8 @@ msgstr ""
 msgid "access to the camera was refused"
 msgstr "a kamerához való hozzáférés megtagadva"
 
-msgid "you are not in a room"
-msgstr "nincs szobában"
-
 msgid "Mute or unmute the microphone in a BigLace room"
 msgstr "Mikrofon némítása vagy visszakapcsolása egy BigLace-szobában"
-
-msgid "screen sharing isn't available on this computer"
-msgstr "a képernyőmegosztás nem érhető el ezen a számítógépen"
-
-#, rust-format
-msgid "The computer's sound can't be shared: {error}"
-msgstr "A számítógép hangja nem osztható meg: {error}"
-
-#, rust-format
-msgid "The screen share stopped: {error}"
-msgstr "A képernyőmegosztás leállt: {error}"
 
 msgid "BigLace doesn't know that computer's network card yet"
 msgstr "A BigLace még nem ismeri annak a számítógépnek a hálózati kártyáját"
@@ -2519,6 +2522,12 @@ msgstr "ez a számítógép"
 
 msgid "no computer on its network is on to send the signal"
 msgstr "a hálózatán egyetlen számítógép sincs bekapcsolva a jel elküldéséhez"
+
+msgid "Open with another app"
+msgstr "Megnyitás másik alkalmazással"
+
+msgid "Close"
+msgstr "Bezárás"
 
 #~ msgid "Panel credentials"
 #~ msgstr "Panel hitelesítő adatok"
@@ -2541,9 +2550,9 @@ msgstr "a hálózatán egyetlen számítógép sincs bekapcsolva a jel elküldé
 #~ "Sign in with your BigScale panel username and password. A device identity "
 #~ "will be created on the network automatically — no manual key needed."
 #~ msgstr ""
-#~ "Jelentkezzen be BigScale panel felhasználónevével és jelszavával. A rendszer"
-#~ " automatikusan létrehoz egy eszközazonosságot a hálózaton – nincs szükség "
-#~ "kézi kulcsra."
+#~ "Jelentkezzen be BigScale panel felhasználónevével és jelszavával. A "
+#~ "rendszer automatikusan létrehoz egy eszközazonosságot a hálózaton – nincs "
+#~ "szükség kézi kulcsra."
 
 #~ msgid "Connected ·"
 #~ msgstr "Csatlakoztatva ·"
@@ -2561,8 +2570,8 @@ msgstr "a hálózatán egyetlen számítógép sincs bekapcsolva a jel elküldé
 #~ "Use your BigScale panel username and password to generate a key "
 #~ "automatically."
 #~ msgstr ""
-#~ "Használja BigScale panel felhasználónevét és jelszavát a kulcs automatikus "
-#~ "létrehozásához."
+#~ "Használja BigScale panel felhasználónevét és jelszavát a kulcs "
+#~ "automatikus létrehozásához."
 
 #~ msgid "Network user identifier"
 #~ msgstr "Hálózati felhasználóazonosító"
@@ -2611,11 +2620,11 @@ msgstr "a hálózatán egyetlen számítógép sincs bekapcsolva a jel elküldé
 #~ msgstr "Az Ön identitása a hálózaton"
 
 #~ msgid ""
-#~ "Personal key generated for you in the BigScale panel (\"New key\" in Users)."
-#~ " Each person uses their own — this is not the server's key."
+#~ "Personal key generated for you in the BigScale panel (\"New key\" in "
+#~ "Users). Each person uses their own — this is not the server's key."
 #~ msgstr ""
-#~ "Személyes kulcs generálva az Ön számára a BigScale panelen (\"Új kulcs\" a "
-#~ "Felhasználók menüben). Mindenki a sajátját használja – ez nem a szerver "
+#~ "Személyes kulcs generálva az Ön számára a BigScale panelen (\"Új kulcs\" "
+#~ "a Felhasználók menüben). Mindenki a sajátját használja – ez nem a szerver "
 #~ "kulcsa."
 
 #~ msgid "Pre-auth key (yours)"

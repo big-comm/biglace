@@ -25,8 +25,8 @@ msgstr ""
 msgid ""
 "No file manager could open the SFTP location. Install WinSCP and try again."
 msgstr ""
-"Niciun manager de fișiere nu a putut deschide locația SFTP. Instalați WinSCP"
-" și încercați din nou."
+"Niciun manager de fișiere nu a putut deschide locația SFTP. Instalați WinSCP "
+"și încercați din nou."
 
 msgid ""
 "No terminal emulator found. Install one (Konsole, GNOME Terminal, xterm…) "
@@ -98,8 +98,7 @@ msgid "Choose your photo"
 msgstr "Alegeți-vă fotografia"
 
 msgid "Photo updated. Everyone you're connected to will see it."
-msgstr ""
-"Fotografie actualizată. Toți cei cu care sunteți conectat o vor vedea."
+msgstr "Fotografie actualizată. Toți cei cu care sunteți conectat o vor vedea."
 
 #, rust-format
 msgid "Could not change the photo: {error}"
@@ -176,8 +175,8 @@ msgid "Account"
 msgstr "Cont"
 
 msgid ""
-"Signing out removes this device's identity from BigLace. You will need a new"
-" invite or key to join again."
+"Signing out removes this device's identity from BigLace. You will need a new "
+"invite or key to join again."
 msgstr ""
 "Deconectarea elimină identitatea acestui dispozitiv din BigLace. Veți avea "
 "nevoie de o invitație sau o cheie nouă pentru a vă alătura din nou."
@@ -208,12 +207,10 @@ msgstr "Despre BigLace"
 
 msgid "Connect to the network first, then open the invite link again."
 msgstr ""
-"Conectați-vă mai întâi la rețea, apoi deschideți din nou linkul de "
-"invitație."
+"Conectați-vă mai întâi la rețea, apoi deschideți din nou linkul de invitație."
 
 #, rust-format
-msgid ""
-"This invite is for another network ({host}). Sign out first to join it."
+msgid "This invite is for another network ({host}). Sign out first to join it."
 msgstr ""
 "Această invitație este pentru altă rețea ({host}). Deconectați-vă mai întâi "
 "pentru a vă alătura."
@@ -236,8 +233,8 @@ msgid "Could not open the browser: {error}"
 msgstr "Browserul nu a putut fi deschis: {error}"
 
 msgid ""
-"You can't open the admin panel: you're not an administrator of this network,"
-" or the panel can't be reached."
+"You can't open the admin panel: you're not an administrator of this network, "
+"or the panel can't be reached."
 msgstr ""
 "Nu puteți deschide panoul de administrare: nu sunteți administrator al "
 "acestei rețele sau panoul nu poate fi accesat."
@@ -337,130 +334,182 @@ msgstr "{count} dispozitive au devenit offline"
 msgid "{on_count} online · {off_count} offline"
 msgstr "{on_count} online · {off_count} offline"
 
-msgid "Connected · 1 peer"
-msgstr "Conectat · 1 peer"
+msgid ""
+"Invites from BigLace need a BigScale server that supports them. Ask your "
+"administrator to update the server, or to create the invite in the panel."
+msgstr ""
+"Invitațiile din BigLace necesită un server BigScale care le acceptă. Cereți "
+"administratorului să actualizeze serverul sau să creeze invitația în panou."
+
+msgid "This device can't send invites (it isn't linked to a person's account)."
+msgstr ""
+"Acest dispozitiv nu poate trimite invitații (nu este legat de contul unei "
+"persoane)."
+
+msgid ""
+"The panel knows this device by a different key (BigLace was reinstalled?). "
+"Leave the network and join again to fix it."
+msgstr ""
+"Panoul cunoaște acest dispozitiv după o altă cheie (BigLace a fost "
+"reinstalat?). Părăsiți rețeaua și alăturați-vă din nou pentru a rezolva."
+
+msgid ""
+"The panel couldn't confirm this device. Make sure BigLace is up to date and "
+"stays open while connected, then try again."
+msgstr ""
+"Panoul nu a putut confirma acest dispozitiv. Asigurați-vă că BigLace este "
+"actualizat și rămâne deschis cât timp sunteți conectat, apoi încercați din "
+"nou."
+
+msgid "You are no longer in that group."
+msgstr "Nu mai sunteți în acel grup."
+
+msgid ""
+"On this network everyone can reach everyone, so only the administrator can "
+"invite people."
+msgstr ""
+"În această rețea toată lumea ajunge la toată lumea, deci doar "
+"administratorul poate invita persoane."
+
+msgid "You have too many pending invites. Cancel some or try again tomorrow."
+msgstr ""
+"Aveți prea multe invitații în așteptare. Anulați câteva sau încercați din "
+"nou mâine."
+
+msgid ""
+"On this network only administrators invite new people. You can still invite "
+"people already on the network into your groups."
+msgstr ""
+"În această rețea doar administratorii invită persoane noi. Puteți totuși "
+"invita în grupurile dvs. persoane aflate deja în rețea."
 
 #, rust-format
-msgid "Connected · {n} peers"
-msgstr "Conectat · {n} peeri"
+msgid "Could not reach the panel: {error}"
+msgstr "Panoul nu a putut fi contactat: {error}"
 
-#, rust-format
-msgid "In the room {group} · muted"
-msgstr "În camera {group} · microfon oprit"
+msgid "Waiting to be used"
+msgstr "În așteptarea folosirii"
 
-#, rust-format
-msgid "In the room {group}"
-msgstr "În camera {group}"
+msgid "Used"
+msgstr "Folosită"
 
-msgid "Show BigLace"
-msgstr "Afișează BigLace"
+msgid "Expired"
+msgstr "Expirată"
 
-#, rust-format
-msgid "Room {group}"
-msgstr "Camera {group}"
+msgid "Cancelled"
+msgstr "Anulată"
 
-msgid "Unmute (Ctrl+Alt+M)"
-msgstr "Pornire microfon (Ctrl+Alt+M)"
-
-msgid "Mute (Ctrl+Alt+M)"
-msgstr "Oprire microfon (Ctrl+Alt+M)"
-
-msgid "Leave the room"
-msgstr "Părăsiți camera"
-
-msgid "Quit"
-msgstr "Ieșire"
-
-msgid "Main menu"
-msgstr "Meniu principal"
-
-msgid "Search devices"
-msgstr "Căutați dispozitive"
+msgid "Waiting for an administrator's approval"
+msgstr "În așteptarea aprobării unui administrator"
 
 msgid "Refresh"
 msgstr "Reîmprospătează"
 
+msgid "Main menu"
+msgstr "Meniu principal"
+
+msgid "Bring someone to your network"
+msgstr "Aduceți pe cineva în rețeaua dvs."
+
+msgid ""
+"Create a link or QR code and send it to the person. When they join, you two "
+"can reach each other's devices — no administrator needed. The link works "
+"once and stays valid until it's used or you cancel it."
+msgstr ""
+"Creați un link sau un cod QR și trimiteți-l persoanei. Când se alătură, veți "
+"ajunge unul la dispozitivele celuilalt — fără a fi nevoie de administrator. "
+"Linkul funcționează o singură dată și rămâne valabil până când este folosit "
+"sau îl anulați."
+
+msgid "No invites yet"
+msgstr "Nicio invitație încă"
+
+msgid "Invites unavailable"
+msgstr "Invitații indisponibile"
+
+#, rust-format
+msgid "{user} joined"
+msgstr "{user} s-a alăturat"
+
 msgid "Invite"
 msgstr "Invită"
 
-msgid "Invite someone to your network"
-msgstr "Invitați pe cineva în rețeaua dvs."
+#, rust-format
+msgid "group {group}"
+msgstr "grupul {group}"
+
+msgid "Cancel this invite: the link stops working"
+msgstr "Anulați această invitație: linkul nu va mai funcționa"
+
+msgid "The person you invite will reach your devices, and you theirs."
+msgstr ""
+"Persoana pe care o invitați va ajunge la dispozitivele dvs., iar dvs. la ale "
+"ei."
+
+msgid "Who is it for? (optional)"
+msgstr "Pentru cine este? (opțional)"
+
+msgid "Access"
+msgstr "Acces"
+
+msgid "Just the two of us"
+msgstr "Doar noi doi"
+
+msgid "You see each other's devices, nobody else"
+msgstr "Vă vedeți dispozitivele unul altuia, nimeni altcineva"
+
+#, rust-format
+msgid "Also the group {group}"
+msgstr "Și grupul {group}"
+
+msgid "They join the group and see everyone in it"
+msgstr "Se alătură grupului și îi vede pe toți cei din el"
+
+msgid "A network of their own"
+msgstr "O rețea proprie"
 
 msgid ""
-"Tailscale cannot write this device's DNS settings, so it can no longer keep "
-"peer names working. They may still resolve for now, from the configuration "
-"left over from before the failure, but that will break the next time the "
-"network changes — and BigLace will fall back to IP addresses. On most "
-"distributions `sudo resolvconf -u` repairs it."
+"No link to you: they see only their own devices and whoever they invite "
+"(you're the administrator)"
 msgstr ""
-"Tailscale nu poate scrie setările DNS ale acestui dispozitiv, așa că nu mai "
-"poate menține funcționale numele dispozitivelor. Este posibil ca ele să se "
-"mai rezolve deocamdată, din configurația rămasă de dinainte de eroare, dar "
-"asta se va strica la următoarea schimbare a rețelei — iar BigLace va reveni "
-"la adrese IP. Pe majoritatea distribuțiilor, `sudo resolvconf -u` rezolvă "
-"problema."
+"Fără legătură cu dvs.: vede doar propriile dispozitive și pe cei pe care îi "
+"invită (este administratorul)"
 
-msgid "Not connected"
-msgstr "Neconectat"
+msgid "Create invite"
+msgstr "Creează invitația"
 
-msgid "Press Connect on the left to join the network."
-msgstr "Apăsați Conectare în stânga pentru a vă alătura rețelei."
+msgid "QR code of the invite link"
+msgstr "Codul QR al linkului de invitație"
 
-msgid "The tailscale service is not running"
-msgstr "Serviciul tailscale nu rulează"
-
-msgid "BigLace needs the tailscaled background service to manage the network."
+msgid ""
+"Send the link or let the person scan the code with their phone. It works "
+"once and stays valid until used or cancelled."
 msgstr ""
-"BigLace are nevoie de serviciul de fundal tailscaled pentru a gestiona "
-"rețeaua."
+"Trimiteți linkul sau lăsați persoana să scaneze codul cu telefonul. "
+"Funcționează o singură dată și rămâne valabil până când este folosit sau "
+"anulat."
 
-msgid "Start service"
-msgstr "Pornește serviciul"
+msgid "Copy link"
+msgstr "Copiază linkul"
 
-msgid "Join the network"
-msgstr "Alăturați-vă rețelei"
+msgid "Done"
+msgstr "Gata"
 
-msgid "Choose how you're going to sign in."
-msgstr "Alegeți cum vă veți autentifica."
+msgid "Copied!"
+msgstr "Copiat!"
 
-msgid "Ways to sign in"
-msgstr "Moduri de autentificare"
-
-msgid "Your account was kept on this computer. No invite needed."
+msgid ""
+"This network asks an administrator to approve each invite: the link starts "
+"working once they do. Its status shows in Invites."
 msgstr ""
-"Contul dvs. a fost păstrat pe acest computer. Nu este nevoie de invitație."
+"Această rețea cere ca un administrator să aprobe fiecare invitație: linkul "
+"începe să funcționeze după aprobare. Starea sa apare în Invitații."
 
-msgid "I have an invite"
-msgstr "Am o invitație"
+msgid "Show the full sidebar"
+msgstr "Afișează bara laterală completă"
 
-msgid "Someone on the network sent you a link or a QR code."
-msgstr "Cineva din rețea v-a trimis un link sau un cod QR."
-
-msgid "I have an access key"
-msgstr "Am o cheie de acces"
-
-msgid "A key the administrator created for you (starts with hskey-auth-)."
-msgstr "O cheie creată pentru dvs. de administrator (începe cu hskey-auth-)."
-
-msgid "I'm the administrator"
-msgstr "Sunt administratorul"
-
-msgid "Sign in with the BigScale panel's admin username and password."
-msgstr ""
-"Autentificați-vă cu numele de utilizator și parola de administrator ale "
-"panoului BigScale."
-
-msgid "This device"
-msgstr "Acest dispozitiv"
-
-msgid "Copy IP address"
-msgstr "Copiază adresa IP"
-
-msgid "Devices on the network"
-msgstr "Dispozitive din rețea"
-
-msgid "No other devices on the network yet."
-msgstr "Încă nu există alte dispozitive în rețea."
+msgid "Show only icons in the sidebar"
+msgstr "Doar pictograme în bara laterală"
 
 msgid "Sections"
 msgstr "Secțiuni"
@@ -495,8 +544,8 @@ msgid ""
 "already received them from your administrator. Most users should sign in "
 "through the panel button above instead."
 msgstr ""
-"Configurare manuală — extindeți pentru a lipi un URL de server și o cheie de"
-" pre-autentificare atunci când le-ați primit deja de la administrator. "
+"Configurare manuală — extindeți pentru a lipi un URL de server și o cheie de "
+"pre-autentificare atunci când le-ați primit deja de la administrator. "
 "Majoritatea utilizatorilor ar trebui să se autentifice prin butonul de mai "
 "sus."
 
@@ -519,8 +568,8 @@ msgstr ""
 "browser."
 
 msgid ""
-"The name this device shows to other peers on the VPN — this is the Tailscale"
-" hostname, NOT your computer's name and NOT your user. Lowercase letters, "
+"The name this device shows to other peers on the VPN — this is the Tailscale "
+"hostname, NOT your computer's name and NOT your user. Lowercase letters, "
 "digits and hyphens. Example: 'tales-laptop', 'francois', 'office-pc'."
 msgstr ""
 "Numele sub care acest dispozitiv se afișează celorlalți colegi din VPN — "
@@ -535,8 +584,8 @@ msgid "Save"
 msgstr "Salvează"
 
 msgid ""
-"Persist the server, key and device name above. Won't connect — press Connect"
-" afterwards."
+"Persist the server, key and device name above. Won't connect — press Connect "
+"afterwards."
 msgstr ""
 "Salvează serverul, cheia și numele dispozitivului de mai sus. Nu se va "
 "conecta — apăsați Conectare ulterior."
@@ -548,8 +597,8 @@ msgid "Join the network when BigLace starts"
 msgstr "Alătură-te rețelei când BigLace pornește"
 
 msgid ""
-"When on, BigLace runs 'tailscale up' as soon as it launches, so you join the"
-" mesh without clicking Connect every time."
+"When on, BigLace runs 'tailscale up' as soon as it launches, so you join the "
+"mesh without clicking Connect every time."
 msgstr ""
 "Când este activată, BigLace rulează 'tailscale up' imediat ce pornește, "
 "astfel încât să vă alăturați rețelei fără a face clic pe Conectare de "
@@ -581,13 +630,12 @@ msgid "Retry with backoff when the connection is lost"
 msgstr "Reîncercare cu întârziere progresivă când conexiunea se pierde"
 
 msgid ""
-"If the tunnel drops (network change, sleep, server hiccup), BigLace silently"
-" retries with growing delays instead of leaving you offline until you "
-"notice."
+"If the tunnel drops (network change, sleep, server hiccup), BigLace silently "
+"retries with growing delays instead of leaving you offline until you notice."
 msgstr ""
 "Dacă tunelul se întrerupe (schimbare rețea, repaus, eroare server), BigLace "
-"reîncearcă în tăcere cu întârzieri crescânde, în loc să vă lase offline până"
-" observați."
+"reîncearcă în tăcere cu întârzieri crescânde, în loc să vă lase offline până "
+"observați."
 
 msgid "Toggle auto-reconnect"
 msgstr "Comutare reconectare automată"
@@ -619,302 +667,6 @@ msgstr ""
 
 msgid "Your photo"
 msgstr "Fotografia dvs."
-
-msgid ""
-"Each of your groups has a voice room. Join it and talk with whoever is there"
-" — the sound goes straight between you, through the network."
-msgstr ""
-"Fiecare dintre grupurile dvs. are o cameră vocală. Intrați și vorbiți cu "
-"cine este acolo — sunetul merge direct între dvs., prin rețea."
-
-msgid "You're not in any group yet. Create one in Groups."
-msgstr "Nu sunteți încă în niciun grup. Creați unul în Grupuri."
-
-msgid "People in the room"
-msgstr "Persoane din cameră"
-
-msgid "Everyone"
-msgstr "Toată lumea"
-
-msgid "Who's speaking"
-msgstr "Cine vorbește"
-
-msgid "Mute"
-msgstr "Oprire microfon"
-
-msgid "Mute your microphone for everyone"
-msgstr "Opriți microfonul pentru toți"
-
-msgid "Leave"
-msgstr "Părăsește"
-
-msgid "Which camera"
-msgstr "Ce cameră"
-
-msgid "Include the computer's sound when sharing the screen"
-msgstr "Includeți sunetul computerului la partajarea ecranului"
-
-msgid ""
-"Videos and music playing here go to the room too; the room's voices don't "
-"(no echo)"
-msgstr ""
-"Videoclipurile și muzica redate aici ajung și în cameră; vocile din cameră "
-"nu (fără ecou)"
-
-msgid "Rooms unavailable"
-msgstr "Camere indisponibile"
-
-#, rust-format
-msgid "Could not turn on the camera: {error}"
-msgstr "Camera nu a putut fi pornită: {error}"
-
-#, rust-format
-msgid "Could not share the screen: {error}"
-msgstr "Ecranul nu a putut fi partajat: {error}"
-
-#, rust-format
-msgid "Could not reach the panel: {error}"
-msgstr "Panoul nu a putut fi contactat: {error}"
-
-msgid "Nobody here right now"
-msgstr "Nu este nimeni aici acum"
-
-#, rust-format
-msgid "In the room: {people}"
-msgstr "În cameră: {people}"
-
-msgid "Join"
-msgstr "Alăturare"
-
-#, rust-format
-msgid "Join the room {group}"
-msgstr "Intrați în camera {group}"
-
-#, rust-format
-msgid "Could not join {group}: {error}"
-msgstr "Nu s-a putut intra în {group}: {error}"
-
-msgid "📺 You're showing your screen to the room"
-msgstr "📺 Vă arătați ecranul camerei"
-
-msgid "📺 You're showing your screen · 1 person watching"
-msgstr "📺 Vă arătați ecranul · 1 persoană urmărește"
-
-#, rust-format
-msgid "📺 You're showing your screen · {count} people watching"
-msgstr "📺 Vă arătați ecranul · {count} persoane urmăresc"
-
-msgid "1 person"
-msgstr "1 persoană"
-
-#, rust-format
-msgid "{count} people"
-msgstr "{count} persoane"
-
-#, rust-format
-msgid "{people} · {talking} talking"
-msgstr "{people} · {talking} vorbesc"
-
-msgid "you"
-msgstr "dvs."
-
-msgid "connecting…"
-msgstr "se conectează…"
-
-msgid "muted"
-msgstr "microfon oprit"
-
-msgid "talking"
-msgstr "vorbește"
-
-msgid "quiet"
-msgstr "tăcut"
-
-msgid "Sharing screen"
-msgstr "Partajează ecranul"
-
-msgid "In control"
-msgstr "Are controlul"
-
-msgid "Controls your screen now"
-msgstr "Vă controlează ecranul acum"
-
-msgid "Watching"
-msgstr "Urmărește"
-
-msgid "Watching your screen"
-msgstr "Vă urmărește ecranul"
-
-#, rust-format
-msgid "{user} is showing their screen"
-msgstr "{user} își arată ecranul"
-
-msgid "Watch"
-msgstr "Urmăriți"
-
-#, rust-format
-msgid "{user} asks to control your screen"
-msgstr "{user} cere să vă controleze ecranul"
-
-msgid ""
-"They'll be able to use your mouse and keyboard. You can take control back at"
-" any time."
-msgstr ""
-"Va putea folosi mouse-ul și tastatura dvs. Puteți prelua înapoi controlul "
-"oricând."
-
-msgid "Deny"
-msgstr "Refuză"
-
-msgid "Allow"
-msgstr "Permite"
-
-msgid "Turn off camera"
-msgstr "Oprește camera"
-
-msgid "Turn on camera"
-msgstr "Pornește camera"
-
-msgid "No camera found on this computer"
-msgstr "Nu s-a găsit nicio cameră pe acest calculator"
-
-msgid "Stop sharing"
-msgstr "Oprește partajarea"
-
-msgid "Share screen"
-msgstr "Partajează ecranul"
-
-msgid "Stop showing your screen to the room"
-msgstr "Nu mai arătați ecranul camerei"
-
-msgid "Show your screen to everyone in the room"
-msgstr "Arătați-vă ecranul tuturor celor din cameră"
-
-msgid "Take back control"
-msgstr "Preia înapoi controlul"
-
-msgid "Give control"
-msgstr "Dă controlul"
-
-msgid "Stop them from using your mouse and keyboard"
-msgstr "Împiedicați-l să vă folosească mouse-ul și tastatura"
-
-msgid "Let them use your mouse and keyboard"
-msgstr "Lăsați-l să vă folosească mouse-ul și tastatura"
-
-msgid "Sound level"
-msgstr "Nivel sunet"
-
-msgid "Unmute"
-msgstr "Pornire microfon"
-
-msgid "This computer"
-msgstr "Acest computer"
-
-msgid "Who may use this computer remotely"
-msgstr "Cine poate folosi acest computer de la distanță"
-
-msgid ""
-"Anyone you're connected to can ask to see and control this screen. Choose "
-"who is let in without asking, and who is never let in."
-msgstr ""
-"Oricine cu care sunteți conectat poate cere să vadă și să controleze acest "
-"ecran. Alegeți cine intră fără să fie întrebat și cine nu intră niciodată."
-
-msgid "History of accesses"
-msgstr "Istoricul acceselor"
-
-msgid "Kept on this computer only."
-msgstr "Păstrat doar pe acest computer."
-
-msgid "Clear"
-msgstr "Golire"
-
-msgid "Nobody has asked yet."
-msgstr "Nu a cerut nimeni încă."
-
-msgid "When someone asks, you can choose to always let them in."
-msgstr "Când cineva cere, puteți alege să îl lăsați mereu să intre."
-
-msgid "Ask every time"
-msgstr "Întreabă de fiecare dată"
-
-msgid "Always allow"
-msgstr "Permite mereu"
-
-msgid "Never allow"
-msgstr "Nu permite niciodată"
-
-msgid "No accesses yet."
-msgstr "Niciun acces încă."
-
-msgid "Remote access"
-msgstr "Acces la distanță"
-
-msgid "Watched the screen shared with the room"
-msgstr "A urmărit ecranul partajat cu camera"
-
-msgid "Got control of the shared screen"
-msgstr "A primit controlul ecranului partajat"
-
-msgid "Restarted the computer"
-msgstr "A repornit computerul"
-
-msgid "Restarted the session"
-msgstr "A repornit sesiunea"
-
-msgid "Shut down the computer"
-msgstr "A oprit computerul"
-
-msgid "allowed"
-msgstr "permis"
-
-msgid "allowed (always)"
-msgstr "permis (mereu)"
-
-msgid "came back after a restart"
-msgstr "a revenit după o repornire"
-
-msgid "denied"
-msgstr "refuzat"
-
-msgid "blocked (never allowed)"
-msgstr "blocat (niciodată permis)"
-
-msgid "ended"
-msgstr "încheiat"
-
-#, rust-format
-msgid "{user} ({device})"
-msgstr "{user} ({device})"
-
-#, rust-format
-msgid "{done} of {total}"
-msgstr "{done} din {total}"
-
-msgid "Play"
-msgstr "Redare"
-
-msgid "Download"
-msgstr "Descărcare"
-
-msgid "Open"
-msgstr "Deschide"
-
-msgid "Show in folder"
-msgstr "Arată în dosar"
-
-msgid "Pause"
-msgstr "Pauză"
-
-msgid "Photo"
-msgstr "Fotografie"
-
-msgid "Video"
-msgstr "Video"
-
-msgid "Voice message"
-msgstr "Mesaj vocal"
 
 msgid "New chat"
 msgstr "Chat nou"
@@ -985,6 +737,9 @@ msgid ""
 msgstr ""
 "Alegeți o conversație sau începeți una. Mesajele merg direct între "
 "computerele dvs. — serverul nu le vede niciodată."
+
+msgid "People on the network"
+msgstr "Persoane din rețea"
 
 msgid "Group"
 msgstr "Grup"
@@ -1163,21 +918,6 @@ msgstr ""
 "Acest dispozitiv nu este legat de contul unei persoane, deci nu are grupuri."
 
 msgid ""
-"The panel knows this device by a different key (BigLace was reinstalled?). "
-"Leave the network and join again to fix it."
-msgstr ""
-"Panoul cunoaște acest dispozitiv după o altă cheie (BigLace a fost "
-"reinstalat?). Părăsiți rețeaua și alăturați-vă din nou pentru a rezolva."
-
-msgid ""
-"The panel couldn't confirm this device. Make sure BigLace is up to date and "
-"stays open while connected, then try again."
-msgstr ""
-"Panoul nu a putut confirma acest dispozitiv. Asigurați-vă că BigLace este "
-"actualizat și rămâne deschis cât timp sunteți conectat, apoi încercați din "
-"nou."
-
-msgid ""
 "On this network everyone already reaches everyone, so groups aren't needed. "
 "The administrator can set access rules first."
 msgstr ""
@@ -1186,9 +926,6 @@ msgstr ""
 
 msgid "You already created the maximum number of groups."
 msgstr "Ați creat deja numărul maxim de grupuri."
-
-msgid "You are no longer in that group."
-msgstr "Nu mai sunteți în acel grup."
 
 msgid "A group with that name already exists. Choose another name."
 msgstr "Există deja un grup cu acest nume. Alegeți alt nume."
@@ -1230,8 +967,8 @@ msgid ""
 "This invite only brings new people into the network, and you're already in "
 "it."
 msgstr ""
-"Această invitație aduce doar persoane noi în rețea, iar dvs. sunteți deja în"
-" ea."
+"Această invitație aduce doar persoane noi în rețea, iar dvs. sunteți deja în "
+"ea."
 
 msgid "This invite was already used. Ask for a new one."
 msgstr "Această invitație a fost deja folosită. Cereți una nouă."
@@ -1312,6 +1049,13 @@ msgstr "V-ați alăturat grupului {group}."
 msgid "Invitation declined."
 msgstr "Invitație refuzată."
 
+msgid "1 person"
+msgstr "1 persoană"
+
+#, rust-format
+msgid "{count} people"
+msgstr "{count} persoane"
+
 msgid "Created by you"
 msgstr "Creat de dvs."
 
@@ -1321,6 +1065,9 @@ msgstr "Creat de {user}"
 
 msgid "Network group (administrator)"
 msgstr "Grup de rețea (administrator)"
+
+msgid "you"
+msgstr "dvs."
 
 msgid "owner"
 msgstr "proprietar"
@@ -1344,8 +1091,7 @@ msgstr "Eliminați pe {user}?"
 
 #, rust-format
 msgid ""
-"{user} leaves the group {group} and no longer reaches its members through "
-"it."
+"{user} leaves the group {group} and no longer reaches its members through it."
 msgstr ""
 "{user} părăsește grupul {group} și nu mai ajunge la membrii săi prin el."
 
@@ -1366,6 +1112,9 @@ msgid ""
 msgstr ""
 "Nu veți mai ajunge la membrii grupului prin el. Pentru a reveni, cineva "
 "trebuie să vă invite din nou."
+
+msgid "Leave"
+msgstr "Părăsește"
 
 msgid "You left the group."
 msgstr "Ați părăsit grupul."
@@ -1407,6 +1156,9 @@ msgstr "Vă conectați cu {user}?"
 msgid "You and {user} will reach each other's devices."
 msgstr "Dvs. și {user} veți ajunge la dispozitivele celuilalt."
 
+msgid "Join"
+msgstr "Alăturare"
+
 msgid "Done. You can now reach each other's devices."
 msgstr "Gata. Acum puteți ajunge la dispozitivele celuilalt."
 
@@ -1428,9 +1180,6 @@ msgid ""
 "If someone on the network has exactly this name, they get the invitation."
 msgstr "Dacă cineva din rețea are exact acest nume, primește invitația."
 
-msgid "People on the network"
-msgstr "Persoane din rețea"
-
 #, rust-format
 msgid "Invite \"{name}\""
 msgstr "Invită „{name}”"
@@ -1450,9 +1199,9 @@ msgstr ""
 "{count} invitații trimise. Persoanele apar în grup pe măsură ce acceptă."
 
 msgid ""
-"Listed are the people you're already connected to. To invite someone else on"
-" the network, type their exact name. Each one gets the invitation in BigLace"
-" and decides whether to join."
+"Listed are the people you're already connected to. To invite someone else on "
+"the network, type their exact name. Each one gets the invitation in BigLace "
+"and decides whether to join."
 msgstr ""
 "Sunt listate persoanele cu care sunteți deja conectat. Pentru a invita pe "
 "altcineva din rețea, tastați numele exact. Fiecare primește invitația în "
@@ -1461,8 +1210,8 @@ msgstr ""
 msgid ""
 "Nobody you're connected to yet. Type someone's exact name to invite them."
 msgstr ""
-"Nu sunteți conectat încă cu nimeni. Tastați numele exact al cuiva pentru a-l"
-" invita."
+"Nu sunteți conectat încă cu nimeni. Tastați numele exact al cuiva pentru a-l "
+"invita."
 
 msgid "Nobody else is on the network yet."
 msgstr "Nu mai este nimeni altcineva în rețea încă."
@@ -1471,8 +1220,8 @@ msgid ""
 "You'll be the group's owner: you invite people into it and can remove them. "
 "Everyone in the group reaches each other's devices."
 msgstr ""
-"Veți fi proprietarul grupului: invitați persoane în el și le puteți elimina."
-" Toți cei din grup ajung la dispozitivele celorlalți."
+"Veți fi proprietarul grupului: invitați persoane în el și le puteți elimina. "
+"Toți cei din grup ajung la dispozitivele celorlalți."
 
 msgid "Group name"
 msgstr "Numele grupului"
@@ -1505,145 +1254,176 @@ msgid "Invite {user}"
 msgstr "Invitați pe {user}"
 
 msgid ""
-"Invites from BigLace need a BigScale server that supports them. Ask your "
-"administrator to update the server, or to create the invite in the panel."
+"Each of your groups has a voice room. Join it and talk with whoever is there "
+"— the sound goes straight between you, through the network."
 msgstr ""
-"Invitațiile din BigLace necesită un server BigScale care le acceptă. Cereți "
-"administratorului să actualizeze serverul sau să creeze invitația în panou."
+"Fiecare dintre grupurile dvs. are o cameră vocală. Intrați și vorbiți cu "
+"cine este acolo — sunetul merge direct între dvs., prin rețea."
+
+msgid "You're not in any group yet. Create one in Groups."
+msgstr "Nu sunteți încă în niciun grup. Creați unul în Grupuri."
+
+msgid "People in the room"
+msgstr "Persoane din cameră"
+
+msgid "Everyone"
+msgstr "Toată lumea"
+
+msgid "Who's speaking"
+msgstr "Cine vorbește"
+
+msgid "Mute"
+msgstr "Oprire microfon"
+
+msgid "Mute your microphone for everyone"
+msgstr "Opriți microfonul pentru toți"
+
+msgid "Which camera"
+msgstr "Ce cameră"
+
+msgid "Include the computer's sound when sharing the screen"
+msgstr "Includeți sunetul computerului la partajarea ecranului"
 
 msgid ""
-"This device can't send invites (it isn't linked to a person's account)."
+"Videos and music playing here go to the room too; the room's voices don't "
+"(no echo)"
 msgstr ""
-"Acest dispozitiv nu poate trimite invitații (nu este legat de contul unei "
-"persoane)."
+"Videoclipurile și muzica redate aici ajung și în cameră; vocile din cameră "
+"nu (fără ecou)"
 
-msgid ""
-"On this network everyone can reach everyone, so only the administrator can "
-"invite people."
-msgstr ""
-"În această rețea toată lumea ajunge la toată lumea, deci doar "
-"administratorul poate invita persoane."
-
-msgid "You have too many pending invites. Cancel some or try again tomorrow."
-msgstr ""
-"Aveți prea multe invitații în așteptare. Anulați câteva sau încercați din "
-"nou mâine."
-
-msgid ""
-"On this network only administrators invite new people. You can still invite "
-"people already on the network into your groups."
-msgstr ""
-"În această rețea doar administratorii invită persoane noi. Puteți totuși "
-"invita în grupurile dvs. persoane aflate deja în rețea."
-
-msgid "Waiting to be used"
-msgstr "În așteptarea folosirii"
-
-msgid "Used"
-msgstr "Folosită"
-
-msgid "Expired"
-msgstr "Expirată"
-
-msgid "Cancelled"
-msgstr "Anulată"
-
-msgid "Waiting for an administrator's approval"
-msgstr "În așteptarea aprobării unui administrator"
-
-msgid "Bring someone to your network"
-msgstr "Aduceți pe cineva în rețeaua dvs."
-
-msgid ""
-"Create a link or QR code and send it to the person. When they join, you two "
-"can reach each other's devices — no administrator needed. The link works "
-"once and stays valid until it's used or you cancel it."
-msgstr ""
-"Creați un link sau un cod QR și trimiteți-l persoanei. Când se alătură, veți"
-" ajunge unul la dispozitivele celuilalt — fără a fi nevoie de administrator."
-" Linkul funcționează o singură dată și rămâne valabil până când este folosit"
-" sau îl anulați."
-
-msgid "No invites yet"
-msgstr "Nicio invitație încă"
-
-msgid "Invites unavailable"
-msgstr "Invitații indisponibile"
+msgid "Rooms unavailable"
+msgstr "Camere indisponibile"
 
 #, rust-format
-msgid "{user} joined"
-msgstr "{user} s-a alăturat"
+msgid "Could not turn on the camera: {error}"
+msgstr "Camera nu a putut fi pornită: {error}"
 
 #, rust-format
-msgid "group {group}"
-msgstr "grupul {group}"
+msgid "Could not share the screen: {error}"
+msgstr "Ecranul nu a putut fi partajat: {error}"
 
-msgid "Cancel this invite: the link stops working"
-msgstr "Anulați această invitație: linkul nu va mai funcționa"
-
-msgid "The person you invite will reach your devices, and you theirs."
-msgstr ""
-"Persoana pe care o invitați va ajunge la dispozitivele dvs., iar dvs. la ale"
-" ei."
-
-msgid "Who is it for? (optional)"
-msgstr "Pentru cine este? (opțional)"
-
-msgid "Access"
-msgstr "Acces"
-
-msgid "Just the two of us"
-msgstr "Doar noi doi"
-
-msgid "You see each other's devices, nobody else"
-msgstr "Vă vedeți dispozitivele unul altuia, nimeni altcineva"
+msgid "Nobody here right now"
+msgstr "Nu este nimeni aici acum"
 
 #, rust-format
-msgid "Also the group {group}"
-msgstr "Și grupul {group}"
+msgid "In the room: {people}"
+msgstr "În cameră: {people}"
 
-msgid "They join the group and see everyone in it"
-msgstr "Se alătură grupului și îi vede pe toți cei din el"
+#, rust-format
+msgid "Join the room {group}"
+msgstr "Intrați în camera {group}"
 
-msgid "A network of their own"
-msgstr "O rețea proprie"
+#, rust-format
+msgid "Could not join {group}: {error}"
+msgstr "Nu s-a putut intra în {group}: {error}"
+
+msgid "📺 You're showing your screen to the room"
+msgstr "📺 Vă arătați ecranul camerei"
+
+msgid "📺 You're showing your screen · 1 person watching"
+msgstr "📺 Vă arătați ecranul · 1 persoană urmărește"
+
+#, rust-format
+msgid "📺 You're showing your screen · {count} people watching"
+msgstr "📺 Vă arătați ecranul · {count} persoane urmăresc"
+
+#, rust-format
+msgid "Room {group}"
+msgstr "Camera {group}"
+
+#, rust-format
+msgid "{people} · {talking} talking"
+msgstr "{people} · {talking} vorbesc"
+
+msgid "connecting…"
+msgstr "se conectează…"
+
+msgid "muted"
+msgstr "microfon oprit"
+
+msgid "talking"
+msgstr "vorbește"
+
+msgid "quiet"
+msgstr "tăcut"
+
+msgid "Sharing screen"
+msgstr "Partajează ecranul"
+
+msgid "In control"
+msgstr "Are controlul"
+
+msgid "Controls your screen now"
+msgstr "Vă controlează ecranul acum"
+
+msgid "Watching"
+msgstr "Urmărește"
+
+msgid "Watching your screen"
+msgstr "Vă urmărește ecranul"
+
+#, rust-format
+msgid "{user} is showing their screen"
+msgstr "{user} își arată ecranul"
+
+msgid "Watch"
+msgstr "Urmăriți"
+
+#, rust-format
+msgid "{user} asks to control your screen"
+msgstr "{user} cere să vă controleze ecranul"
 
 msgid ""
-"No link to you: they see only their own devices and whoever they invite "
-"(you're the administrator)"
+"They'll be able to use your mouse and keyboard. You can take control back at "
+"any time."
 msgstr ""
-"Fără legătură cu dvs.: vede doar propriile dispozitive și pe cei pe care îi "
-"invită (este administratorul)"
+"Va putea folosi mouse-ul și tastatura dvs. Puteți prelua înapoi controlul "
+"oricând."
 
-msgid "Create invite"
-msgstr "Creează invitația"
+msgid "Deny"
+msgstr "Refuză"
 
-msgid "QR code of the invite link"
-msgstr "Codul QR al linkului de invitație"
+msgid "Allow"
+msgstr "Permite"
 
-msgid ""
-"Send the link or let the person scan the code with their phone. It works "
-"once and stays valid until used or cancelled."
-msgstr ""
-"Trimiteți linkul sau lăsați persoana să scaneze codul cu telefonul. "
-"Funcționează o singură dată și rămâne valabil până când este folosit sau "
-"anulat."
+msgid "Turn off camera"
+msgstr "Oprește camera"
 
-msgid "Copy link"
-msgstr "Copiază linkul"
+msgid "Turn on camera"
+msgstr "Pornește camera"
 
-msgid "Done"
-msgstr "Gata"
+msgid "No camera found on this computer"
+msgstr "Nu s-a găsit nicio cameră pe acest calculator"
 
-msgid "Copied!"
-msgstr "Copiat!"
+msgid "Stop sharing"
+msgstr "Oprește partajarea"
 
-msgid ""
-"This network asks an administrator to approve each invite: the link starts "
-"working once they do. Its status shows in Invites."
-msgstr ""
-"Această rețea cere ca un administrator să aprobe fiecare invitație: linkul "
-"începe să funcționeze după aprobare. Starea sa apare în Invitații."
+msgid "Share screen"
+msgstr "Partajează ecranul"
+
+msgid "Stop showing your screen to the room"
+msgstr "Nu mai arătați ecranul camerei"
+
+msgid "Show your screen to everyone in the room"
+msgstr "Arătați-vă ecranul tuturor celor din cameră"
+
+msgid "Take back control"
+msgstr "Preia înapoi controlul"
+
+msgid "Give control"
+msgstr "Dă controlul"
+
+msgid "Stop them from using your mouse and keyboard"
+msgstr "Împiedicați-l să vă folosească mouse-ul și tastatura"
+
+msgid "Let them use your mouse and keyboard"
+msgstr "Lăsați-l să vă folosească mouse-ul și tastatura"
+
+msgid "Sound level"
+msgstr "Nivel sunet"
+
+msgid "Unmute"
+msgstr "Pornire microfon"
 
 msgid "System accent"
 msgstr "Accentul sistemului"
@@ -1723,36 +1503,6 @@ msgstr "Imagine…"
 msgid "Choose a background picture"
 msgstr "Alegeți o imagine de fundal"
 
-msgid "Message"
-msgstr "Mesaj"
-
-msgid "Bold"
-msgstr "Aldin"
-
-msgid "Italic"
-msgstr "Cursiv"
-
-msgid "Underline"
-msgstr "Subliniat"
-
-msgid "Strikethrough"
-msgstr "Tăiat"
-
-msgid "Monospace"
-msgstr "Monospațiat"
-
-msgid "Create link"
-msgstr "Creează link"
-
-msgid "Plain text"
-msgstr "Text simplu"
-
-msgid "Formatting"
-msgstr "Formatare"
-
-msgid "Create"
-msgstr "Creează"
-
 msgid "Mesh VPN client for BigScale/Headscale."
 msgstr "Client VPN Mesh pentru BigScale/Headscale."
 
@@ -1778,20 +1528,25 @@ msgid ""
 "control server, and forget the saved password. You'll then be able to sign "
 "in with a different account."
 msgstr ""
-"Aceasta va deconecta dispozitivul de la rețea, va deconecta acest dispozitiv"
-" de pe serverul de control curent și va uita parola salvată. Veți putea apoi"
-" să vă conectați cu un alt cont."
+"Aceasta va deconecta dispozitivul de la rețea, va deconecta acest dispozitiv "
+"de pe serverul de control curent și va uita parola salvată. Veți putea apoi "
+"să vă conectați cu un alt cont."
 
 msgid "Leave the network?"
 msgstr "Părăsiți rețeaua?"
 
 #, rust-format
 msgid ""
-"This device leaves the network and its name becomes free. Your account {user} is kept: you can come back later from this computer, without an invite.\n"
+"This device leaves the network and its name becomes free. Your account "
+"{user} is kept: you can come back later from this computer, without an "
+"invite.\n"
 "\n"
-"If you won't come back, delete the account and the name {user} becomes free too."
+"If you won't come back, delete the account and the name {user} becomes free "
+"too."
 msgstr ""
-"Acest dispozitiv părăsește rețeaua, iar numele său devine liber. Contul dvs. {user} este păstrat: puteți reveni mai târziu de pe acest computer, fără invitație.\n"
+"Acest dispozitiv părăsește rețeaua, iar numele său devine liber. Contul dvs. "
+"{user} este păstrat: puteți reveni mai târziu de pe acest computer, fără "
+"invitație.\n"
 "\n"
 "Dacă nu veți reveni, ștergeți contul și numele {user} devine și el liber."
 
@@ -1808,8 +1563,8 @@ msgstr "Se deconectează…"
 msgid ""
 "Signed out. Your account was kept: {count} other device(s) still use it."
 msgstr ""
-"Deconectat. Contul dvs. a fost păstrat: încă {count} alt(e) dispozitiv(e) îl"
-" folosesc."
+"Deconectat. Contul dvs. a fost păstrat: încă {count} alt(e) dispozitiv(e) îl "
+"folosesc."
 
 msgid ""
 "Couldn't delete the account: the panel can't be reached. Connect and try "
@@ -1831,11 +1586,15 @@ msgstr "Serverul nu a putut fi contactat"
 msgid ""
 "The control server didn't confirm the sign-out: {error}\n"
 "\n"
-"You can still sign out on this computer: BigLace forgets the saved key and account and disconnects. The server keeps listing this device until an administrator removes it."
+"You can still sign out on this computer: BigLace forgets the saved key and "
+"account and disconnects. The server keeps listing this device until an "
+"administrator removes it."
 msgstr ""
 "Serverul de control nu a confirmat deconectarea: {error}\n"
 "\n"
-"Vă puteți deconecta totuși pe acest computer: BigLace uită cheia și contul salvate și se deconectează. Serverul continuă să listeze acest dispozitiv până când un administrator îl elimină."
+"Vă puteți deconecta totuși pe acest computer: BigLace uită cheia și contul "
+"salvate și se deconectează. Serverul continuă să listeze acest dispozitiv "
+"până când un administrator îl elimină."
 
 msgid "Sign out on this computer"
 msgstr "Deconectare pe acest computer"
@@ -1860,8 +1619,8 @@ msgid "Panel URL"
 msgstr "URL panou"
 
 msgid ""
-"Address of your BigScale panel (e.g. panel.example.org). The https:// scheme"
-" is added automatically if you omit it."
+"Address of your BigScale panel (e.g. panel.example.org). The https:// scheme "
+"is added automatically if you omit it."
 msgstr ""
 "Adresa panoului dvs. BigScale (de exemplu, panel.example.org). Schema "
 "https:// se adaugă automat dacă o omiteți."
@@ -1885,16 +1644,16 @@ msgstr ""
 "(libsecret pe Linux, Keychain pe macOS, Manager de acreditări pe Windows)."
 
 msgid ""
-"The name this device shows to other peers on the VPN — this is the Tailscale"
-" hostname, NOT your computer's name and NOT your user. Lowercase letters, "
+"The name this device shows to other peers on the VPN — this is the Tailscale "
+"hostname, NOT your computer's name and NOT your user. Lowercase letters, "
 "digits and hyphens. Example: 'tales-laptop', 'francois', 'office-pc'. Pick "
 "something other peers will recognise."
 msgstr ""
 "Numele sub care acest dispozitiv apare pentru ceilalți colegi din VPN — "
 "acesta este numele de gazdă Tailscale, NU numele computerului dvs. și NU "
 "numele dvs. de utilizator. Litere mici, cifre și cratime. Exemplu: 'tales-"
-"laptop', 'francois', 'office-pc'. Alegeți un nume pe care ceilalți colegi îl"
-" vor recunoaște."
+"laptop', 'francois', 'office-pc'. Alegeți un nume pe care ceilalți colegi îl "
+"vor recunoaște."
 
 msgid "Sign in"
 msgstr "Autentificare"
@@ -1919,8 +1678,7 @@ msgid "Save & apply"
 msgstr "Salvați și aplicați"
 
 msgid "Saved. The new name will take effect the next time you connect."
-msgstr ""
-"Salvat. Noul nume va intra în vigoare data viitoare când vă conectați."
+msgstr "Salvat. Noul nume va intra în vigoare data viitoare când vă conectați."
 
 msgid "Device renamed."
 msgstr "Dispozitiv redenumit."
@@ -1953,8 +1711,8 @@ msgstr ""
 "numele."
 
 msgid ""
-"That name already belongs to an account on this network. Try another one, or"
-" ask the administrator to free it."
+"That name already belongs to an account on this network. Try another one, or "
+"ask the administrator to free it."
 msgstr ""
 "Acest nume aparține deja unui cont din această rețea. Încercați altul sau "
 "cereți administratorului să îl elibereze."
@@ -2016,8 +1774,8 @@ msgid "Joining…"
 msgstr "Se alătură…"
 
 msgid ""
-"That doesn't look like an invite link. It starts with https:// and contains "
-"/join#."
+"That doesn't look like an invite link. It starts with https:// and contains /"
+"join#."
 msgstr ""
 "Acesta nu pare un link de invitație. Începe cu https:// și conține /join#."
 
@@ -2032,6 +1790,36 @@ msgstr "Bun venit, {name}! V-ați alăturat grupului {group}. Se conectează…"
 msgid "Welcome, {name}! Connecting…"
 msgstr "Bun venit, {name}! Se conectează…"
 
+msgid "Message"
+msgstr "Mesaj"
+
+msgid "Bold"
+msgstr "Aldin"
+
+msgid "Italic"
+msgstr "Cursiv"
+
+msgid "Underline"
+msgstr "Subliniat"
+
+msgid "Strikethrough"
+msgstr "Tăiat"
+
+msgid "Monospace"
+msgstr "Monospațiat"
+
+msgid "Create link"
+msgstr "Creează link"
+
+msgid "Plain text"
+msgstr "Text simplu"
+
+msgid "Formatting"
+msgstr "Formatare"
+
+msgid "Create"
+msgstr "Creează"
+
 msgid "End access"
 msgstr "Încheie accesul"
 
@@ -2044,11 +1832,11 @@ msgstr "Acces la distanță pornit"
 
 #, rust-format
 msgid ""
-"{user} ({device}) is seeing and controlling this screen. Open BigLace to end"
-" the access."
+"{user} ({device}) is seeing and controlling this screen. Open BigLace to end "
+"the access."
 msgstr ""
-"{user} ({device}) vede și controlează acest ecran. Deschideți BigLace pentru"
-" a încheia accesul."
+"{user} ({device}) vede și controlează acest ecran. Deschideți BigLace pentru "
+"a încheia accesul."
 
 #, rust-format
 msgid "Always allow {user} (no more asking)"
@@ -2083,8 +1871,8 @@ msgid ""
 "<b>Only allow it if you know this person and are expecting it.</b> You can "
 "end the access at any time from BigLace."
 msgstr ""
-"<b>Permiteți doar dacă cunoașteți această persoană și vă așteptați la "
-"asta.</b> Puteți încheia accesul oricând din BigLace."
+"<b>Permiteți doar dacă cunoașteți această persoană și vă așteptați la asta.</"
+"b> Puteți încheia accesul oricând din BigLace."
 
 #, rust-format
 msgid "Denied automatically in {seconds} s"
@@ -2095,8 +1883,8 @@ msgid "Restart {name}'s computer?"
 msgstr "Reporniți computerul lui {name}?"
 
 msgid ""
-"It restarts, signs in by itself and locks the screen right away; this window"
-" connects again when it's back. Unsaved work there is lost."
+"It restarts, signs in by itself and locks the screen right away; this window "
+"connects again when it's back. Unsaved work there is lost."
 msgstr ""
 "Repornește, se autentifică singur și blochează imediat ecranul; această "
 "fereastră se reconectează când revine. Lucrul nesalvat de acolo se pierde."
@@ -2201,8 +1989,8 @@ msgid "{name} didn't allow the access."
 msgstr "{name} nu a permis accesul."
 
 msgid ""
-"That computer couldn't confirm this device. Make sure both run an up-to-date"
-" BigLace."
+"That computer couldn't confirm this device. Make sure both run an up-to-date "
+"BigLace."
 msgstr ""
 "Acel computer nu a putut confirma acest dispozitiv. Asigurați-vă că ambele "
 "rulează un BigLace actualizat."
@@ -2276,6 +2064,36 @@ msgstr "Accesul la ecranul lui {name} s-a încheiat: {error}"
 msgid "Give back control"
 msgstr "Predă controlul"
 
+msgid "Connected · 1 peer"
+msgstr "Conectat · 1 peer"
+
+#, rust-format
+msgid "Connected · {n} peers"
+msgstr "Conectat · {n} peeri"
+
+#, rust-format
+msgid "In the room {group} · muted"
+msgstr "În camera {group} · microfon oprit"
+
+#, rust-format
+msgid "In the room {group}"
+msgstr "În camera {group}"
+
+msgid "Show BigLace"
+msgstr "Afișează BigLace"
+
+msgid "Unmute (Ctrl+Alt+M)"
+msgstr "Pornire microfon (Ctrl+Alt+M)"
+
+msgid "Mute (Ctrl+Alt+M)"
+msgstr "Oprire microfon (Ctrl+Alt+M)"
+
+msgid "Leave the room"
+msgstr "Părăsiți camera"
+
+msgid "Quit"
+msgstr "Ieșire"
+
 msgid "direct"
 msgstr "direct"
 
@@ -2311,6 +2129,9 @@ msgstr "Fixat în partea de sus"
 
 msgid "Unpinned"
 msgstr "De-fixat"
+
+msgid "Copy IP address"
+msgstr "Copiază adresa IP"
 
 msgid "Open files (SFTP)"
 msgstr "Deschide fișiere (SFTP)"
@@ -2359,6 +2180,207 @@ msgstr "Actualizarea nodului de ieșire a eșuat"
 
 msgid "Copy"
 msgstr "Copiază"
+
+msgid "Search devices"
+msgstr "Căutați dispozitive"
+
+msgid "Invite someone to your network"
+msgstr "Invitați pe cineva în rețeaua dvs."
+
+msgid ""
+"Tailscale cannot write this device's DNS settings, so it can no longer keep "
+"peer names working. They may still resolve for now, from the configuration "
+"left over from before the failure, but that will break the next time the "
+"network changes — and BigLace will fall back to IP addresses. On most "
+"distributions `sudo resolvconf -u` repairs it."
+msgstr ""
+"Tailscale nu poate scrie setările DNS ale acestui dispozitiv, așa că nu mai "
+"poate menține funcționale numele dispozitivelor. Este posibil ca ele să se "
+"mai rezolve deocamdată, din configurația rămasă de dinainte de eroare, dar "
+"asta se va strica la următoarea schimbare a rețelei — iar BigLace va reveni "
+"la adrese IP. Pe majoritatea distribuțiilor, `sudo resolvconf -u` rezolvă "
+"problema."
+
+msgid "Not connected"
+msgstr "Neconectat"
+
+msgid "Press Connect on the left to join the network."
+msgstr "Apăsați Conectare în stânga pentru a vă alătura rețelei."
+
+msgid "The tailscale service is not running"
+msgstr "Serviciul tailscale nu rulează"
+
+msgid "BigLace needs the tailscaled background service to manage the network."
+msgstr ""
+"BigLace are nevoie de serviciul de fundal tailscaled pentru a gestiona "
+"rețeaua."
+
+msgid "Start service"
+msgstr "Pornește serviciul"
+
+msgid "Join the network"
+msgstr "Alăturați-vă rețelei"
+
+msgid "Choose how you're going to sign in."
+msgstr "Alegeți cum vă veți autentifica."
+
+msgid "Ways to sign in"
+msgstr "Moduri de autentificare"
+
+msgid "Your account was kept on this computer. No invite needed."
+msgstr ""
+"Contul dvs. a fost păstrat pe acest computer. Nu este nevoie de invitație."
+
+msgid "I have an invite"
+msgstr "Am o invitație"
+
+msgid "Someone on the network sent you a link or a QR code."
+msgstr "Cineva din rețea v-a trimis un link sau un cod QR."
+
+msgid "I have an access key"
+msgstr "Am o cheie de acces"
+
+msgid "A key the administrator created for you (starts with hskey-auth-)."
+msgstr "O cheie creată pentru dvs. de administrator (începe cu hskey-auth-)."
+
+msgid "I'm the administrator"
+msgstr "Sunt administratorul"
+
+msgid "Sign in with the BigScale panel's admin username and password."
+msgstr ""
+"Autentificați-vă cu numele de utilizator și parola de administrator ale "
+"panoului BigScale."
+
+msgid "This device"
+msgstr "Acest dispozitiv"
+
+msgid "Devices on the network"
+msgstr "Dispozitive din rețea"
+
+msgid "No other devices on the network yet."
+msgstr "Încă nu există alte dispozitive în rețea."
+
+msgid "you are not in a room"
+msgstr "nu sunteți într-o cameră"
+
+msgid "screen sharing isn't available on this computer"
+msgstr "partajarea ecranului nu este disponibilă pe acest computer"
+
+#, rust-format
+msgid "The computer's sound can't be shared: {error}"
+msgstr "Sunetul computerului nu poate fi partajat: {error}"
+
+#, rust-format
+msgid "The screen share stopped: {error}"
+msgstr "Partajarea ecranului s-a oprit: {error}"
+
+msgid "This computer"
+msgstr "Acest computer"
+
+msgid "Who may use this computer remotely"
+msgstr "Cine poate folosi acest computer de la distanță"
+
+msgid ""
+"Anyone you're connected to can ask to see and control this screen. Choose "
+"who is let in without asking, and who is never let in."
+msgstr ""
+"Oricine cu care sunteți conectat poate cere să vadă și să controleze acest "
+"ecran. Alegeți cine intră fără să fie întrebat și cine nu intră niciodată."
+
+msgid "History of accesses"
+msgstr "Istoricul acceselor"
+
+msgid "Kept on this computer only."
+msgstr "Păstrat doar pe acest computer."
+
+msgid "Clear"
+msgstr "Golire"
+
+msgid "Nobody has asked yet."
+msgstr "Nu a cerut nimeni încă."
+
+msgid "When someone asks, you can choose to always let them in."
+msgstr "Când cineva cere, puteți alege să îl lăsați mereu să intre."
+
+msgid "Ask every time"
+msgstr "Întreabă de fiecare dată"
+
+msgid "Always allow"
+msgstr "Permite mereu"
+
+msgid "Never allow"
+msgstr "Nu permite niciodată"
+
+msgid "No accesses yet."
+msgstr "Niciun acces încă."
+
+msgid "Remote access"
+msgstr "Acces la distanță"
+
+msgid "Watched the screen shared with the room"
+msgstr "A urmărit ecranul partajat cu camera"
+
+msgid "Got control of the shared screen"
+msgstr "A primit controlul ecranului partajat"
+
+msgid "Restarted the computer"
+msgstr "A repornit computerul"
+
+msgid "Restarted the session"
+msgstr "A repornit sesiunea"
+
+msgid "Shut down the computer"
+msgstr "A oprit computerul"
+
+msgid "allowed"
+msgstr "permis"
+
+msgid "allowed (always)"
+msgstr "permis (mereu)"
+
+msgid "came back after a restart"
+msgstr "a revenit după o repornire"
+
+msgid "denied"
+msgstr "refuzat"
+
+msgid "blocked (never allowed)"
+msgstr "blocat (niciodată permis)"
+
+msgid "ended"
+msgstr "încheiat"
+
+#, rust-format
+msgid "{user} ({device})"
+msgstr "{user} ({device})"
+
+#, rust-format
+msgid "{done} of {total}"
+msgstr "{done} din {total}"
+
+msgid "Play"
+msgstr "Redare"
+
+msgid "Download"
+msgstr "Descărcare"
+
+msgid "Open"
+msgstr "Deschide"
+
+msgid "Show in folder"
+msgstr "Arată în dosar"
+
+msgid "Pause"
+msgstr "Pauză"
+
+msgid "Photo"
+msgstr "Fotografie"
+
+msgid "Video"
+msgstr "Video"
+
+msgid "Voice message"
+msgstr "Mesaj vocal"
 
 msgid "Smileys & people"
 msgstr "Fețe și oameni"
@@ -2417,11 +2439,11 @@ msgstr ""
 "computerul lui {user} este oprit sau offline — încercați din nou când revine"
 
 msgid ""
-"the file arrived different from the original (damaged on the way) — download"
-" it again"
+"the file arrived different from the original (damaged on the way) — download "
+"it again"
 msgstr ""
-"fișierul a sosit diferit de original (deteriorat pe drum) — descărcați-l din"
-" nou"
+"fișierul a sosit diferit de original (deteriorat pe drum) — descărcați-l din "
+"nou"
 
 msgid "the file is no longer on their computer (moved or changed)"
 msgstr "fișierul nu mai este pe computerul celuilalt (mutat sau modificat)"
@@ -2462,8 +2484,7 @@ msgstr "📌 (a anulat fixarea mesajului)"
 msgid "nothing was recorded — is a microphone connected?"
 msgstr "nu s-a înregistrat nimic — este conectat un microfon?"
 
-msgid ""
-"this computer can't restart remotely (BigLace's helper isn't installed)"
+msgid "this computer can't restart remotely (BigLace's helper isn't installed)"
 msgstr ""
 "acest computer nu poate fi repornit de la distanță (asistentul BigLace nu "
 "este instalat)"
@@ -2491,28 +2512,14 @@ msgid ""
 "the screen there is locked, and GNOME doesn't allow remote access to a "
 "locked screen — ask the person to unlock it"
 msgstr ""
-"ecranul de acolo este blocat, iar GNOME nu permite accesul la distanță la un"
-" ecran blocat — rugați persoana să îl deblocheze"
+"ecranul de acolo este blocat, iar GNOME nu permite accesul la distanță la un "
+"ecran blocat — rugați persoana să îl deblocheze"
 
 msgid "access to the camera was refused"
 msgstr "accesul la cameră a fost refuzat"
 
-msgid "you are not in a room"
-msgstr "nu sunteți într-o cameră"
-
 msgid "Mute or unmute the microphone in a BigLace room"
 msgstr "Oprește sau pornește microfonul într-o cameră BigLace"
-
-msgid "screen sharing isn't available on this computer"
-msgstr "partajarea ecranului nu este disponibilă pe acest computer"
-
-#, rust-format
-msgid "The computer's sound can't be shared: {error}"
-msgstr "Sunetul computerului nu poate fi partajat: {error}"
-
-#, rust-format
-msgid "The screen share stopped: {error}"
-msgstr "Partajarea ecranului s-a oprit: {error}"
 
 msgid "BigLace doesn't know that computer's network card yet"
 msgstr "BigLace nu cunoaște încă placa de rețea a acelui computer"
@@ -2523,6 +2530,12 @@ msgstr "acest computer"
 msgid "no computer on its network is on to send the signal"
 msgstr ""
 "niciun computer din rețeaua sa nu este pornit pentru a trimite semnalul"
+
+msgid "Open with another app"
+msgstr "Deschide cu altă aplicație"
+
+msgid "Close"
+msgstr "Închide"
 
 #~ msgid "Panel credentials"
 #~ msgstr "Credențiale panou"
@@ -2615,12 +2628,12 @@ msgstr ""
 #~ msgstr "Identitatea ta în rețea"
 
 #~ msgid ""
-#~ "Personal key generated for you in the BigScale panel (\"New key\" in Users)."
-#~ " Each person uses their own — this is not the server's key."
+#~ "Personal key generated for you in the BigScale panel (\"New key\" in "
+#~ "Users). Each person uses their own — this is not the server's key."
 #~ msgstr ""
-#~ "Cheie personală generată pentru tine în panoul BigScale (\"Cheie nouă\" în "
-#~ "Utilizatori). Fiecare persoană o folosește pe a sa — aceasta nu este cheia "
-#~ "serverului."
+#~ "Cheie personală generată pentru tine în panoul BigScale (\"Cheie nouă\" "
+#~ "în Utilizatori). Fiecare persoană o folosește pe a sa — aceasta nu este "
+#~ "cheia serverului."
 
 #~ msgid "Pre-auth key (yours)"
 #~ msgstr "Cheie de pre-autentificare (a ta)"

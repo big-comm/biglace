@@ -378,6 +378,8 @@ fn open_viewer_as(ip: &str, name: &str, toast: &libadwaita::ToastOverlay, stage:
     header.pack_start(&btn_control);
     // 0 idle, 1 asked, 2 in control.
     let control_state = Rc::new(Cell::new(0u8));
+    // The other side draws its pointer into the video (Wayland, rooms).
+    let pointer_in_video = Rc::new(Cell::new(false));
     toolbar.add_top_bar(&header);
 
     // Pixel for pixel whenever the window is big enough (scaling is what
@@ -612,8 +614,17 @@ fn open_viewer_as(ip: &str, name: &str, toast: &libadwaita::ToastOverlay, stage:
                             }
                         }
                         client::Event::Cursor(shape) => match shape {
-                            // Drawn in the video: no second pointer on top.
-                            None => picture.set_cursor_from_name(Some("none")),
+                            // Drawn in the video: no second pointer on top —
+                            // unless we're the one in control (a room's
+                            // shared screen): then our own, which follows the
+                            // hand at once, and not the one coming back late
+                            // in the video.
+                            None => {
+                                pointer_in_video.set(true);
+                                if control_state.get() != 2 {
+                                    picture.set_cursor_from_name(Some("none"));
+                                }
+                            }
                             Some(c) => {
                                 crate::tailscale::dbg(&format!(
                                     "viewer: pointer shape {}x{} (hotspot {},{})",
@@ -669,6 +680,9 @@ fn open_viewer_as(ip: &str, name: &str, toast: &libadwaita::ToastOverlay, stage:
                             }
                             let before = control_state.replace(if granted { 2 } else { 0 });
                             set_control_look(&btn_control, control_state.get(), &name_s);
+                            if pointer_in_video.get() {
+                                picture.set_cursor_from_name(Some(if granted { "default" } else { "none" }));
+                            }
                             if granted {
                                 live.add_css_class("controlling");
                                 picture.grab_focus();

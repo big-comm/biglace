@@ -111,8 +111,8 @@ msgid ""
 "Paste the key the administrator gave you. It's used once, to register this "
 "device."
 msgstr ""
-"Kleebi administraatorilt saadud võti. Seda kasutatakse üks kord selle seadme"
-" registreerimiseks."
+"Kleebi administraatorilt saadud võti. Seda kasutatakse üks kord selle seadme "
+"registreerimiseks."
 
 msgid "Server URL"
 msgstr "Serveri URL"
@@ -170,8 +170,8 @@ msgid "Account"
 msgstr "Konto"
 
 msgid ""
-"Signing out removes this device's identity from BigLace. You will need a new"
-" invite or key to join again."
+"Signing out removes this device's identity from BigLace. You will need a new "
+"invite or key to join again."
 msgstr ""
 "Väljalogimine eemaldab selle seadme identiteedi BigLace'ist. Uuesti "
 "liitumiseks vajad uut kutset või võtit."
@@ -204,8 +204,7 @@ msgid "Connect to the network first, then open the invite link again."
 msgstr "Ühendu esmalt võrguga ja ava siis kutselink uuesti."
 
 #, rust-format
-msgid ""
-"This invite is for another network ({host}). Sign out first to join it."
+msgid "This invite is for another network ({host}). Sign out first to join it."
 msgstr ""
 "See kutse on teise võrgu jaoks ({host}). Sellega liitumiseks logi esmalt "
 "välja."
@@ -227,11 +226,11 @@ msgid "Could not open the browser: {error}"
 msgstr "Brauserit ei saanud avada: {error}"
 
 msgid ""
-"You can't open the admin panel: you're not an administrator of this network,"
-" or the panel can't be reached."
+"You can't open the admin panel: you're not an administrator of this network, "
+"or the panel can't be reached."
 msgstr ""
-"Administraatori paneeli ei saa avada: sa pole selle võrgu administraator või"
-" paneelini ei jõua."
+"Administraatori paneeli ei saa avada: sa pole selle võrgu administraator või "
+"paneelini ei jõua."
 
 msgid "Enter the server URL before saving."
 msgstr "Enne salvestamist sisesta serveri URL."
@@ -255,8 +254,8 @@ msgid ""
 "register it anew."
 msgstr ""
 "Salvestatud, kuid eelautentimisvõtit ei saanud süsteemi võtmerõngasse "
-"salvestada ({error}). See seade saab endiselt uuesti ühenduda; võtit on vaja"
-" ainult seadme uuesti registreerimiseks."
+"salvestada ({error}). See seade saab endiselt uuesti ühenduda; võtit on vaja "
+"ainult seadme uuesti registreerimiseks."
 
 msgid "Connected"
 msgstr "Ühendatud"
@@ -328,125 +327,175 @@ msgstr "{count} seadet läks võrguühenduseta"
 msgid "{on_count} online · {off_count} offline"
 msgstr "{on_count} võrgus · {off_count} võrguühenduseta"
 
-msgid "Connected · 1 peer"
-msgstr "Ühendatud · 1 peer"
+msgid ""
+"Invites from BigLace need a BigScale server that supports them. Ask your "
+"administrator to update the server, or to create the invite in the panel."
+msgstr ""
+"BigLace'i kutsed vajavad BigScale'i serverit, mis neid toetab. Palu "
+"administraatoril server uuendada või luua kutse paneelis."
+
+msgid "This device can't send invites (it isn't linked to a person's account)."
+msgstr ""
+"See seade ei saa kutseid saata (see pole seotud ühegi inimese kontoga)."
+
+msgid ""
+"The panel knows this device by a different key (BigLace was reinstalled?). "
+"Leave the network and join again to fix it."
+msgstr ""
+"Paneel tunneb seda seadet teise võtme järgi (kas BigLace paigaldati "
+"uuesti?). Parandamiseks lahku võrgust ja liitu uuesti."
+
+msgid ""
+"The panel couldn't confirm this device. Make sure BigLace is up to date and "
+"stays open while connected, then try again."
+msgstr ""
+"Paneel ei suutnud seda seadet kinnitada. Veendu, et BigLace on ajakohane ja "
+"ühenduse ajal avatud, ning proovi uuesti."
+
+msgid "You are no longer in that group."
+msgstr "Sa ei ole enam selles grupis."
+
+msgid ""
+"On this network everyone can reach everyone, so only the administrator can "
+"invite people."
+msgstr ""
+"Selles võrgus jõuavad kõik kõigini, seega saab inimesi kutsuda ainult "
+"administraator."
+
+msgid "You have too many pending invites. Cancel some or try again tomorrow."
+msgstr ""
+"Sul on liiga palju ootel kutseid. Tühista mõned või proovi homme uuesti."
+
+msgid ""
+"On this network only administrators invite new people. You can still invite "
+"people already on the network into your groups."
+msgstr ""
+"Selles võrgus kutsuvad uusi inimesi ainult administraatorid. Saad siiski "
+"kutsuda juba võrgus olevaid inimesi oma gruppidesse."
 
 #, rust-format
-msgid "Connected · {n} peers"
-msgstr "Ühendatud · {n} peeri"
+msgid "Could not reach the panel: {error}"
+msgstr "Paneelini ei jõutud: {error}"
 
-#, rust-format
-msgid "In the room {group} · muted"
-msgstr "Ruumis {group} · vaigistatud"
+msgid "Waiting to be used"
+msgstr "Ootab kasutamist"
 
-#, rust-format
-msgid "In the room {group}"
-msgstr "Ruumis {group}"
+msgid "Used"
+msgstr "Kasutatud"
 
-msgid "Show BigLace"
-msgstr "Näita BigLace’i"
+msgid "Expired"
+msgstr "Aegunud"
 
-#, rust-format
-msgid "Room {group}"
-msgstr "Ruum {group}"
+msgid "Cancelled"
+msgstr "Tühistatud"
 
-msgid "Unmute (Ctrl+Alt+M)"
-msgstr "Lülita heli sisse (Ctrl+Alt+M)"
-
-msgid "Mute (Ctrl+Alt+M)"
-msgstr "Vaigista (Ctrl+Alt+M)"
-
-msgid "Leave the room"
-msgstr "Lahku ruumist"
-
-msgid "Quit"
-msgstr "Välju"
-
-msgid "Main menu"
-msgstr "Peamenüü"
-
-msgid "Search devices"
-msgstr "Otsi seadmeid"
+msgid "Waiting for an administrator's approval"
+msgstr "Ootab administraatori kinnitust"
 
 msgid "Refresh"
 msgstr "Värskenda"
 
+msgid "Main menu"
+msgstr "Peamenüü"
+
+msgid "Bring someone to your network"
+msgstr "Too keegi oma võrku"
+
+msgid ""
+"Create a link or QR code and send it to the person. When they join, you two "
+"can reach each other's devices — no administrator needed. The link works "
+"once and stays valid until it's used or you cancel it."
+msgstr ""
+"Loo link või QR-kood ja saada see inimesele. Kui ta liitub, jõuate "
+"teineteise seadmeteni — administraatorit pole vaja. Link töötab üks kord ja "
+"kehtib, kuni seda kasutatakse või sa selle tühistad."
+
+msgid "No invites yet"
+msgstr "Kutseid veel pole"
+
+msgid "Invites unavailable"
+msgstr "Kutsed pole saadaval"
+
+#, rust-format
+msgid "{user} joined"
+msgstr "{user} liitus"
+
 msgid "Invite"
 msgstr "Kutsu"
 
-msgid "Invite someone to your network"
-msgstr "Kutsu keegi oma võrku"
+#, rust-format
+msgid "group {group}"
+msgstr "grupp {group}"
+
+msgid "Cancel this invite: the link stops working"
+msgstr "Tühista see kutse: link lakkab töötamast"
+
+msgid "The person you invite will reach your devices, and you theirs."
+msgstr "Sinu kutsutu jõuab sinu seadmeteni ja sina tema omadeni."
+
+msgid "Who is it for? (optional)"
+msgstr "Kellele see on? (valikuline)"
+
+msgid "Access"
+msgstr "Juurdepääs"
+
+msgid "Just the two of us"
+msgstr "Ainult meie kahekesi"
+
+msgid "You see each other's devices, nobody else"
+msgstr "Näete teineteise seadmeid, mitte kellegi teise omi"
+
+#, rust-format
+msgid "Also the group {group}"
+msgstr "Ka grupp {group}"
+
+msgid "They join the group and see everyone in it"
+msgstr "Ta liitub grupiga ja näeb kõiki selles"
+
+msgid "A network of their own"
+msgstr "Oma võrk"
 
 msgid ""
-"Tailscale cannot write this device's DNS settings, so it can no longer keep "
-"peer names working. They may still resolve for now, from the configuration "
-"left over from before the failure, but that will break the next time the "
-"network changes — and BigLace will fall back to IP addresses. On most "
-"distributions `sudo resolvconf -u` repairs it."
+"No link to you: they see only their own devices and whoever they invite "
+"(you're the administrator)"
 msgstr ""
-"Tailscale ei saa selle seadme DNS-sätteid kirjutada, seega ei suuda see enam"
-" peeride nimesid töös hoida. Need võivad praegu veel lahenduda, enne tõrget "
-"alles jäänud seadistuse põhjal, kuid see läheb katki järgmisel võrgumuutusel"
-" — ja BigLace kasutab siis IP-aadresse. Enamikus distributsioonides parandab"
-" selle `sudo resolvconf -u`."
+"Sinuga seost pole: ta näeb ainult oma seadmeid ja neid, keda ta kutsub (tema "
+"on administraator)"
 
-msgid "Not connected"
-msgstr "Pole ühendatud"
+msgid "Create invite"
+msgstr "Loo kutse"
 
-msgid "Press Connect on the left to join the network."
-msgstr "Võrguga liitumiseks vajutage vasakul nuppu Ühenda."
+msgid "QR code of the invite link"
+msgstr "Kutselingi QR-kood"
 
-msgid "The tailscale service is not running"
-msgstr "Tailscale'i teenus ei tööta"
-
-msgid "BigLace needs the tailscaled background service to manage the network."
-msgstr "BigLace vajab võrgu haldamiseks tailscaled taustateenust."
-
-msgid "Start service"
-msgstr "Käivita teenus"
-
-msgid "Join the network"
-msgstr "Liitu võrguga"
-
-msgid "Choose how you're going to sign in."
-msgstr "Vali, kuidas sisse logid."
-
-msgid "Ways to sign in"
-msgstr "Sisselogimise viisid"
-
-msgid "Your account was kept on this computer. No invite needed."
-msgstr "Sinu konto jäeti sellesse arvutisse alles. Kutset pole vaja."
-
-msgid "I have an invite"
-msgstr "Mul on kutse"
-
-msgid "Someone on the network sent you a link or a QR code."
-msgstr "Keegi võrgust saatis sulle lingi või QR-koodi."
-
-msgid "I have an access key"
-msgstr "Mul on juurdepääsuvõti"
-
-msgid "A key the administrator created for you (starts with hskey-auth-)."
-msgstr "Administraatori sinu jaoks loodud võti (algab hskey-auth-)."
-
-msgid "I'm the administrator"
-msgstr "Mina olen administraator"
-
-msgid "Sign in with the BigScale panel's admin username and password."
+msgid ""
+"Send the link or let the person scan the code with their phone. It works "
+"once and stays valid until used or cancelled."
 msgstr ""
-"Logi sisse BigScale'i paneeli administraatori kasutajanime ja parooliga."
+"Saada link või lase inimesel koodi telefoniga skannida. See töötab üks kord "
+"ja kehtib, kuni seda kasutatakse või see tühistatakse."
 
-msgid "This device"
-msgstr "See seade"
+msgid "Copy link"
+msgstr "Kopeeri link"
 
-msgid "Copy IP address"
-msgstr "Kopeeri IP-aadress"
+msgid "Done"
+msgstr "Valmis"
 
-msgid "Devices on the network"
-msgstr "Seadmed võrgus"
+msgid "Copied!"
+msgstr "Kopeeritud!"
 
-msgid "No other devices on the network yet."
-msgstr "Võrgus pole veel teisi seadmeid."
+msgid ""
+"This network asks an administrator to approve each invite: the link starts "
+"working once they do. Its status shows in Invites."
+msgstr ""
+"See võrk nõuab, et administraator kinnitaks iga kutse: link hakkab tööle "
+"pärast kinnitust. Selle olekut näed jaotises Kutsed."
+
+msgid "Show the full sidebar"
+msgstr "Näita kogu külgriba"
+
+msgid "Show only icons in the sidebar"
+msgstr "Külgribal ainult ikoonid"
 
 msgid "Sections"
 msgstr "Jaotised"
@@ -489,8 +538,8 @@ msgid ""
 "Address of the coordination server (e.g. vpn.example.org). The https:// "
 "scheme is added automatically if you omit it."
 msgstr ""
-"Koordineerimisserveri aadress (nt vpn.example.org). Skeem https:// lisatakse"
-" automaatselt, kui selle välja jätad."
+"Koordineerimisserveri aadress (nt vpn.example.org). Skeem https:// lisatakse "
+"automaatselt, kui selle välja jätad."
 
 msgid "Pre-auth key"
 msgstr "Eelautentimise võti"
@@ -500,12 +549,12 @@ msgid ""
 "Used to register this device automatically without opening a browser."
 msgstr ""
 "Ühekordne või korduvkasutatav võti, mis on loodud serveris (algab tähtedega "
-"'hskey-auth-'). Kasutatakse selle seadme automaatseks registreerimiseks ilma"
-" brauserit avamata."
+"'hskey-auth-'). Kasutatakse selle seadme automaatseks registreerimiseks ilma "
+"brauserit avamata."
 
 msgid ""
-"The name this device shows to other peers on the VPN — this is the Tailscale"
-" hostname, NOT your computer's name and NOT your user. Lowercase letters, "
+"The name this device shows to other peers on the VPN — this is the Tailscale "
+"hostname, NOT your computer's name and NOT your user. Lowercase letters, "
 "digits and hyphens. Example: 'tales-laptop', 'francois', 'office-pc'."
 msgstr ""
 "Nimi, mida see seade teistele VPN-i peeridele näitab — see on Tailscale'i "
@@ -519,8 +568,8 @@ msgid "Save"
 msgstr "Salvesta"
 
 msgid ""
-"Persist the server, key and device name above. Won't connect — press Connect"
-" afterwards."
+"Persist the server, key and device name above. Won't connect — press Connect "
+"afterwards."
 msgstr ""
 "Salvesta ülaltoodud server, võti ja seadme nimi. Ei ühendu — vajuta pärast "
 "seda nuppu Connect."
@@ -532,8 +581,8 @@ msgid "Join the network when BigLace starts"
 msgstr "Liitu võrguga, kui BigLace käivitub"
 
 msgid ""
-"When on, BigLace runs 'tailscale up' as soon as it launches, so you join the"
-" mesh without clicking Connect every time."
+"When on, BigLace runs 'tailscale up' as soon as it launches, so you join the "
+"mesh without clicking Connect every time."
 msgstr ""
 "Kui see on sisse lülitatud, käivitab BigLace 'tailscale up' kohe pärast "
 "käivitamist, nii et liitud võrguga ilma iga kord Connect nupule klõpsamata."
@@ -564,9 +613,8 @@ msgid "Retry with backoff when the connection is lost"
 msgstr "Proovi uuesti viivitusega, kui ühendus katkeb"
 
 msgid ""
-"If the tunnel drops (network change, sleep, server hiccup), BigLace silently"
-" retries with growing delays instead of leaving you offline until you "
-"notice."
+"If the tunnel drops (network change, sleep, server hiccup), BigLace silently "
+"retries with growing delays instead of leaving you offline until you notice."
 msgstr ""
 "Kui tunnel katkeb (võrgu muutus, uni, serveri tõrge), proovib BigLace "
 "vaikselt uuesti, pikenevate viivitustega, selle asemel et jätta sind "
@@ -586,8 +634,8 @@ msgid ""
 "offline. Rapid bursts are coalesced into a single notification so you don't "
 "get spammed during reconnects."
 msgstr ""
-"Saada töölauateade, kui mõni teine seade sinu võrgus läheb võrku või võrgust"
-" välja. Kiired puhangud ühendatakse üheks teateks, et sa ei saaks "
+"Saada töölauateade, kui mõni teine seade sinu võrgus läheb võrku või võrgust "
+"välja. Kiired puhangud ühendatakse üheks teateks, et sa ei saaks "
 "taasthenduste ajal rämpsposti."
 
 msgid "Toggle peer-change notifications"
@@ -602,302 +650,6 @@ msgstr ""
 
 msgid "Your photo"
 msgstr "Sinu foto"
-
-msgid ""
-"Each of your groups has a voice room. Join it and talk with whoever is there"
-" — the sound goes straight between you, through the network."
-msgstr ""
-"Igal sinu grupil on häälruum. Liitu sellega ja räägi nendega, kes seal on — "
-"heli liigub otse teie vahel, läbi võrgu."
-
-msgid "You're not in any group yet. Create one in Groups."
-msgstr "Sa pole veel üheski grupis. Loo grupp jaotises Grupid."
-
-msgid "People in the room"
-msgstr "Inimesed ruumis"
-
-msgid "Everyone"
-msgstr "Kõik"
-
-msgid "Who's speaking"
-msgstr "Kes räägib"
-
-msgid "Mute"
-msgstr "Vaigista"
-
-msgid "Mute your microphone for everyone"
-msgstr "Vaigista oma mikrofon kõigi jaoks"
-
-msgid "Leave"
-msgstr "Lahku"
-
-msgid "Which camera"
-msgstr "Milline kaamera"
-
-msgid "Include the computer's sound when sharing the screen"
-msgstr "Kaasa arvuti heli ekraani jagamisel"
-
-msgid ""
-"Videos and music playing here go to the room too; the room's voices don't "
-"(no echo)"
-msgstr ""
-"Siin mängivad videod ja muusika lähevad ka ruumi; ruumi hääled mitte (kaja "
-"pole)"
-
-msgid "Rooms unavailable"
-msgstr "Ruumid pole saadaval"
-
-#, rust-format
-msgid "Could not turn on the camera: {error}"
-msgstr "Kaamerat ei õnnestunud sisse lülitada: {error}"
-
-#, rust-format
-msgid "Could not share the screen: {error}"
-msgstr "Ekraani ei saanud jagada: {error}"
-
-#, rust-format
-msgid "Could not reach the panel: {error}"
-msgstr "Paneelini ei jõutud: {error}"
-
-msgid "Nobody here right now"
-msgstr "Praegu pole siin kedagi"
-
-#, rust-format
-msgid "In the room: {people}"
-msgstr "Ruumis: {people}"
-
-msgid "Join"
-msgstr "Liitu"
-
-#, rust-format
-msgid "Join the room {group}"
-msgstr "Liitu ruumiga {group}"
-
-#, rust-format
-msgid "Could not join {group}: {error}"
-msgstr "Ruumiga {group} ei saanud liituda: {error}"
-
-msgid "📺 You're showing your screen to the room"
-msgstr "📺 Sa näitad ruumile oma ekraani"
-
-msgid "📺 You're showing your screen · 1 person watching"
-msgstr "📺 Sa näitad oma ekraani · 1 inimene vaatab"
-
-#, rust-format
-msgid "📺 You're showing your screen · {count} people watching"
-msgstr "📺 Sa näitad oma ekraani · {count} inimest vaatab"
-
-msgid "1 person"
-msgstr "1 inimene"
-
-#, rust-format
-msgid "{count} people"
-msgstr "{count} inimest"
-
-#, rust-format
-msgid "{people} · {talking} talking"
-msgstr "{people} · {talking} räägib"
-
-msgid "you"
-msgstr "sina"
-
-msgid "connecting…"
-msgstr "ühendamine…"
-
-msgid "muted"
-msgstr "vaigistatud"
-
-msgid "talking"
-msgstr "räägib"
-
-msgid "quiet"
-msgstr "vaikne"
-
-msgid "Sharing screen"
-msgstr "Jagab ekraani"
-
-msgid "In control"
-msgstr "Juhib"
-
-msgid "Controls your screen now"
-msgstr "Juhib nüüd sinu ekraani"
-
-msgid "Watching"
-msgstr "Vaatab"
-
-msgid "Watching your screen"
-msgstr "Vaatab sinu ekraani"
-
-#, rust-format
-msgid "{user} is showing their screen"
-msgstr "{user} näitab oma ekraani"
-
-msgid "Watch"
-msgstr "Vaata"
-
-#, rust-format
-msgid "{user} asks to control your screen"
-msgstr "{user} palub sinu ekraani juhtida"
-
-msgid ""
-"They'll be able to use your mouse and keyboard. You can take control back at"
-" any time."
-msgstr ""
-"Ta saab kasutada sinu hiirt ja klaviatuuri. Saad juhtimise igal ajal tagasi "
-"võtta."
-
-msgid "Deny"
-msgstr "Keela"
-
-msgid "Allow"
-msgstr "Luba"
-
-msgid "Turn off camera"
-msgstr "Lülita kaamera välja"
-
-msgid "Turn on camera"
-msgstr "Lülita kaamera sisse"
-
-msgid "No camera found on this computer"
-msgstr "Selles arvutis ei leitud kaamerat"
-
-msgid "Stop sharing"
-msgstr "Lõpeta jagamine"
-
-msgid "Share screen"
-msgstr "Jaga ekraani"
-
-msgid "Stop showing your screen to the room"
-msgstr "Lõpeta ruumile oma ekraani näitamine"
-
-msgid "Show your screen to everyone in the room"
-msgstr "Näita oma ekraani kõigile ruumis"
-
-msgid "Take back control"
-msgstr "Võta juhtimine tagasi"
-
-msgid "Give control"
-msgstr "Anna juhtimine"
-
-msgid "Stop them from using your mouse and keyboard"
-msgstr "Keela neil sinu hiire ja klaviatuuri kasutamine"
-
-msgid "Let them use your mouse and keyboard"
-msgstr "Luba neil kasutada sinu hiirt ja klaviatuuri"
-
-msgid "Sound level"
-msgstr "Helitase"
-
-msgid "Unmute"
-msgstr "Lülita heli sisse"
-
-msgid "This computer"
-msgstr "See arvuti"
-
-msgid "Who may use this computer remotely"
-msgstr "Kes tohib seda arvutit kaugelt kasutada"
-
-msgid ""
-"Anyone you're connected to can ask to see and control this screen. Choose "
-"who is let in without asking, and who is never let in."
-msgstr ""
-"Igaüks, kellega oled ühendatud, võib paluda seda ekraani näha ja juhtida. "
-"Vali, keda lastakse sisse küsimata ja keda ei lasta kunagi."
-
-msgid "History of accesses"
-msgstr "Ligipääsude ajalugu"
-
-msgid "Kept on this computer only."
-msgstr "Hoitakse ainult selles arvutis."
-
-msgid "Clear"
-msgstr "Tühjenda"
-
-msgid "Nobody has asked yet."
-msgstr "Keegi pole veel küsinud."
-
-msgid "When someone asks, you can choose to always let them in."
-msgstr "Kui keegi küsib, saad valida, et teda lastakse alati sisse."
-
-msgid "Ask every time"
-msgstr "Küsi iga kord"
-
-msgid "Always allow"
-msgstr "Luba alati"
-
-msgid "Never allow"
-msgstr "Ära luba kunagi"
-
-msgid "No accesses yet."
-msgstr "Ligipääse veel pole."
-
-msgid "Remote access"
-msgstr "Kaugjuurdepääs"
-
-msgid "Watched the screen shared with the room"
-msgstr "Vaatas ruumiga jagatud ekraani"
-
-msgid "Got control of the shared screen"
-msgstr "Sai jagatud ekraani juhtimise"
-
-msgid "Restarted the computer"
-msgstr "Taaskäivitas arvuti"
-
-msgid "Restarted the session"
-msgstr "Taaskäivitas seansi"
-
-msgid "Shut down the computer"
-msgstr "Lülitas arvuti välja"
-
-msgid "allowed"
-msgstr "lubatud"
-
-msgid "allowed (always)"
-msgstr "lubatud (alati)"
-
-msgid "came back after a restart"
-msgstr "tuli pärast taaskäivitust tagasi"
-
-msgid "denied"
-msgstr "keelatud"
-
-msgid "blocked (never allowed)"
-msgstr "blokeeritud (ei lubata kunagi)"
-
-msgid "ended"
-msgstr "lõppenud"
-
-#, rust-format
-msgid "{user} ({device})"
-msgstr "{user} ({device})"
-
-#, rust-format
-msgid "{done} of {total}"
-msgstr "{done} / {total}"
-
-msgid "Play"
-msgstr "Esita"
-
-msgid "Download"
-msgstr "Laadi alla"
-
-msgid "Open"
-msgstr "Ava"
-
-msgid "Show in folder"
-msgstr "Näita kaustas"
-
-msgid "Pause"
-msgstr "Paus"
-
-msgid "Photo"
-msgstr "Foto"
-
-msgid "Video"
-msgstr "Video"
-
-msgid "Voice message"
-msgstr "Häälsõnum"
 
 msgid "New chat"
 msgstr "Uus vestlus"
@@ -968,6 +720,9 @@ msgid ""
 msgstr ""
 "Vali vestlus või alusta uut. Sõnumid liiguvad otse sinu arvutite vahel — "
 "server ei näe neid kunagi."
+
+msgid "People on the network"
+msgstr "Inimesed võrgus"
 
 msgid "Group"
 msgstr "Grupp"
@@ -1145,20 +900,6 @@ msgid "This device isn't linked to a person's account, so it has no groups."
 msgstr "See seade pole seotud ühegi inimese kontoga, seega pole sel gruppe."
 
 msgid ""
-"The panel knows this device by a different key (BigLace was reinstalled?). "
-"Leave the network and join again to fix it."
-msgstr ""
-"Paneel tunneb seda seadet teise võtme järgi (kas BigLace paigaldati "
-"uuesti?). Parandamiseks lahku võrgust ja liitu uuesti."
-
-msgid ""
-"The panel couldn't confirm this device. Make sure BigLace is up to date and "
-"stays open while connected, then try again."
-msgstr ""
-"Paneel ei suutnud seda seadet kinnitada. Veendu, et BigLace on ajakohane ja "
-"ühenduse ajal avatud, ning proovi uuesti."
-
-msgid ""
 "On this network everyone already reaches everyone, so groups aren't needed. "
 "The administrator can set access rules first."
 msgstr ""
@@ -1167,9 +908,6 @@ msgstr ""
 
 msgid "You already created the maximum number of groups."
 msgstr "Oled juba loonud maksimaalse arvu gruppe."
-
-msgid "You are no longer in that group."
-msgstr "Sa ei ole enam selles grupis."
 
 msgid "A group with that name already exists. Choose another name."
 msgstr "Sellise nimega grupp on juba olemas. Vali teine nimi."
@@ -1266,8 +1004,7 @@ msgstr "Kutse gruppi"
 msgid ""
 "{user} invites you to the group {group}. Open BigLace to accept or decline."
 msgstr ""
-"{user} kutsub sind gruppi {group}. Nõustumiseks või keeldumiseks ava "
-"BigLace."
+"{user} kutsub sind gruppi {group}. Nõustumiseks või keeldumiseks ava BigLace."
 
 #, rust-format
 msgid "{user} invites you to {group}"
@@ -1289,6 +1026,13 @@ msgstr "Liitusid grupiga {group}."
 msgid "Invitation declined."
 msgstr "Kutsest keelduti."
 
+msgid "1 person"
+msgstr "1 inimene"
+
+#, rust-format
+msgid "{count} people"
+msgstr "{count} inimest"
+
 msgid "Created by you"
 msgstr "Sinu loodud"
 
@@ -1298,6 +1042,9 @@ msgstr "Looja: {user}"
 
 msgid "Network group (administrator)"
 msgstr "Võrgugrupp (administraator)"
+
+msgid "you"
+msgstr "sina"
 
 msgid "owner"
 msgstr "omanik"
@@ -1321,8 +1068,7 @@ msgstr "Kas eemaldada {user}?"
 
 #, rust-format
 msgid ""
-"{user} leaves the group {group} and no longer reaches its members through "
-"it."
+"{user} leaves the group {group} and no longer reaches its members through it."
 msgstr ""
 "{user} lahkub grupist {group} ega jõua enam selle kaudu selle liikmeteni."
 
@@ -1343,6 +1089,9 @@ msgid ""
 msgstr ""
 "Sa ei jõua enam selle kaudu grupi liikmeteni. Tagasi tulemiseks peab keegi "
 "sind uuesti kutsuma."
+
+msgid "Leave"
+msgstr "Lahku"
 
 msgid "You left the group."
 msgstr "Lahkusid grupist."
@@ -1382,6 +1131,9 @@ msgstr "Kas ühenduda kasutajaga {user}?"
 msgid "You and {user} will reach each other's devices."
 msgstr "Sina ja {user} jõuate üksteise seadmeteni."
 
+msgid "Join"
+msgstr "Liitu"
+
 msgid "Done. You can now reach each other's devices."
 msgstr "Valmis. Nüüd jõuate üksteise seadmeteni."
 
@@ -1403,9 +1155,6 @@ msgid ""
 "If someone on the network has exactly this name, they get the invitation."
 msgstr "Kui kellelgi võrgus on täpselt see nimi, saab ta kutse."
 
-msgid "People on the network"
-msgstr "Inimesed võrgus"
-
 #, rust-format
 msgid "Invite \"{name}\""
 msgstr "Kutsu \"{name}\""
@@ -1424,13 +1173,13 @@ msgid "{count} invitations sent. People show up in the group as they accept."
 msgstr "{count} kutset saadetud. Inimesed ilmuvad gruppi, kui nad nõustuvad."
 
 msgid ""
-"Listed are the people you're already connected to. To invite someone else on"
-" the network, type their exact name. Each one gets the invitation in BigLace"
-" and decides whether to join."
+"Listed are the people you're already connected to. To invite someone else on "
+"the network, type their exact name. Each one gets the invitation in BigLace "
+"and decides whether to join."
 msgstr ""
 "Loetletud on inimesed, kellega oled juba ühendatud. Kellegi teise "
-"kutsumiseks võrgust sisesta tema täpne nimi. Igaüks saab kutse BigLace'is ja"
-" otsustab, kas liituda."
+"kutsumiseks võrgust sisesta tema täpne nimi. Igaüks saab kutse BigLace'is ja "
+"otsustab, kas liituda."
 
 msgid ""
 "Nobody you're connected to yet. Type someone's exact name to invite them."
@@ -1478,139 +1227,176 @@ msgid "Invite {user}"
 msgstr "Kutsu {user}"
 
 msgid ""
-"Invites from BigLace need a BigScale server that supports them. Ask your "
-"administrator to update the server, or to create the invite in the panel."
+"Each of your groups has a voice room. Join it and talk with whoever is there "
+"— the sound goes straight between you, through the network."
 msgstr ""
-"BigLace'i kutsed vajavad BigScale'i serverit, mis neid toetab. Palu "
-"administraatoril server uuendada või luua kutse paneelis."
+"Igal sinu grupil on häälruum. Liitu sellega ja räägi nendega, kes seal on — "
+"heli liigub otse teie vahel, läbi võrgu."
+
+msgid "You're not in any group yet. Create one in Groups."
+msgstr "Sa pole veel üheski grupis. Loo grupp jaotises Grupid."
+
+msgid "People in the room"
+msgstr "Inimesed ruumis"
+
+msgid "Everyone"
+msgstr "Kõik"
+
+msgid "Who's speaking"
+msgstr "Kes räägib"
+
+msgid "Mute"
+msgstr "Vaigista"
+
+msgid "Mute your microphone for everyone"
+msgstr "Vaigista oma mikrofon kõigi jaoks"
+
+msgid "Which camera"
+msgstr "Milline kaamera"
+
+msgid "Include the computer's sound when sharing the screen"
+msgstr "Kaasa arvuti heli ekraani jagamisel"
 
 msgid ""
-"This device can't send invites (it isn't linked to a person's account)."
+"Videos and music playing here go to the room too; the room's voices don't "
+"(no echo)"
 msgstr ""
-"See seade ei saa kutseid saata (see pole seotud ühegi inimese kontoga)."
+"Siin mängivad videod ja muusika lähevad ka ruumi; ruumi hääled mitte (kaja "
+"pole)"
 
-msgid ""
-"On this network everyone can reach everyone, so only the administrator can "
-"invite people."
-msgstr ""
-"Selles võrgus jõuavad kõik kõigini, seega saab inimesi kutsuda ainult "
-"administraator."
-
-msgid "You have too many pending invites. Cancel some or try again tomorrow."
-msgstr ""
-"Sul on liiga palju ootel kutseid. Tühista mõned või proovi homme uuesti."
-
-msgid ""
-"On this network only administrators invite new people. You can still invite "
-"people already on the network into your groups."
-msgstr ""
-"Selles võrgus kutsuvad uusi inimesi ainult administraatorid. Saad siiski "
-"kutsuda juba võrgus olevaid inimesi oma gruppidesse."
-
-msgid "Waiting to be used"
-msgstr "Ootab kasutamist"
-
-msgid "Used"
-msgstr "Kasutatud"
-
-msgid "Expired"
-msgstr "Aegunud"
-
-msgid "Cancelled"
-msgstr "Tühistatud"
-
-msgid "Waiting for an administrator's approval"
-msgstr "Ootab administraatori kinnitust"
-
-msgid "Bring someone to your network"
-msgstr "Too keegi oma võrku"
-
-msgid ""
-"Create a link or QR code and send it to the person. When they join, you two "
-"can reach each other's devices — no administrator needed. The link works "
-"once and stays valid until it's used or you cancel it."
-msgstr ""
-"Loo link või QR-kood ja saada see inimesele. Kui ta liitub, jõuate "
-"teineteise seadmeteni — administraatorit pole vaja. Link töötab üks kord ja "
-"kehtib, kuni seda kasutatakse või sa selle tühistad."
-
-msgid "No invites yet"
-msgstr "Kutseid veel pole"
-
-msgid "Invites unavailable"
-msgstr "Kutsed pole saadaval"
+msgid "Rooms unavailable"
+msgstr "Ruumid pole saadaval"
 
 #, rust-format
-msgid "{user} joined"
-msgstr "{user} liitus"
+msgid "Could not turn on the camera: {error}"
+msgstr "Kaamerat ei õnnestunud sisse lülitada: {error}"
 
 #, rust-format
-msgid "group {group}"
-msgstr "grupp {group}"
+msgid "Could not share the screen: {error}"
+msgstr "Ekraani ei saanud jagada: {error}"
 
-msgid "Cancel this invite: the link stops working"
-msgstr "Tühista see kutse: link lakkab töötamast"
-
-msgid "The person you invite will reach your devices, and you theirs."
-msgstr "Sinu kutsutu jõuab sinu seadmeteni ja sina tema omadeni."
-
-msgid "Who is it for? (optional)"
-msgstr "Kellele see on? (valikuline)"
-
-msgid "Access"
-msgstr "Juurdepääs"
-
-msgid "Just the two of us"
-msgstr "Ainult meie kahekesi"
-
-msgid "You see each other's devices, nobody else"
-msgstr "Näete teineteise seadmeid, mitte kellegi teise omi"
+msgid "Nobody here right now"
+msgstr "Praegu pole siin kedagi"
 
 #, rust-format
-msgid "Also the group {group}"
-msgstr "Ka grupp {group}"
+msgid "In the room: {people}"
+msgstr "Ruumis: {people}"
 
-msgid "They join the group and see everyone in it"
-msgstr "Ta liitub grupiga ja näeb kõiki selles"
+#, rust-format
+msgid "Join the room {group}"
+msgstr "Liitu ruumiga {group}"
 
-msgid "A network of their own"
-msgstr "Oma võrk"
+#, rust-format
+msgid "Could not join {group}: {error}"
+msgstr "Ruumiga {group} ei saanud liituda: {error}"
+
+msgid "📺 You're showing your screen to the room"
+msgstr "📺 Sa näitad ruumile oma ekraani"
+
+msgid "📺 You're showing your screen · 1 person watching"
+msgstr "📺 Sa näitad oma ekraani · 1 inimene vaatab"
+
+#, rust-format
+msgid "📺 You're showing your screen · {count} people watching"
+msgstr "📺 Sa näitad oma ekraani · {count} inimest vaatab"
+
+#, rust-format
+msgid "Room {group}"
+msgstr "Ruum {group}"
+
+#, rust-format
+msgid "{people} · {talking} talking"
+msgstr "{people} · {talking} räägib"
+
+msgid "connecting…"
+msgstr "ühendamine…"
+
+msgid "muted"
+msgstr "vaigistatud"
+
+msgid "talking"
+msgstr "räägib"
+
+msgid "quiet"
+msgstr "vaikne"
+
+msgid "Sharing screen"
+msgstr "Jagab ekraani"
+
+msgid "In control"
+msgstr "Juhib"
+
+msgid "Controls your screen now"
+msgstr "Juhib nüüd sinu ekraani"
+
+msgid "Watching"
+msgstr "Vaatab"
+
+msgid "Watching your screen"
+msgstr "Vaatab sinu ekraani"
+
+#, rust-format
+msgid "{user} is showing their screen"
+msgstr "{user} näitab oma ekraani"
+
+msgid "Watch"
+msgstr "Vaata"
+
+#, rust-format
+msgid "{user} asks to control your screen"
+msgstr "{user} palub sinu ekraani juhtida"
 
 msgid ""
-"No link to you: they see only their own devices and whoever they invite "
-"(you're the administrator)"
+"They'll be able to use your mouse and keyboard. You can take control back at "
+"any time."
 msgstr ""
-"Sinuga seost pole: ta näeb ainult oma seadmeid ja neid, keda ta kutsub (tema"
-" on administraator)"
+"Ta saab kasutada sinu hiirt ja klaviatuuri. Saad juhtimise igal ajal tagasi "
+"võtta."
 
-msgid "Create invite"
-msgstr "Loo kutse"
+msgid "Deny"
+msgstr "Keela"
 
-msgid "QR code of the invite link"
-msgstr "Kutselingi QR-kood"
+msgid "Allow"
+msgstr "Luba"
 
-msgid ""
-"Send the link or let the person scan the code with their phone. It works "
-"once and stays valid until used or cancelled."
-msgstr ""
-"Saada link või lase inimesel koodi telefoniga skannida. See töötab üks kord "
-"ja kehtib, kuni seda kasutatakse või see tühistatakse."
+msgid "Turn off camera"
+msgstr "Lülita kaamera välja"
 
-msgid "Copy link"
-msgstr "Kopeeri link"
+msgid "Turn on camera"
+msgstr "Lülita kaamera sisse"
 
-msgid "Done"
-msgstr "Valmis"
+msgid "No camera found on this computer"
+msgstr "Selles arvutis ei leitud kaamerat"
 
-msgid "Copied!"
-msgstr "Kopeeritud!"
+msgid "Stop sharing"
+msgstr "Lõpeta jagamine"
 
-msgid ""
-"This network asks an administrator to approve each invite: the link starts "
-"working once they do. Its status shows in Invites."
-msgstr ""
-"See võrk nõuab, et administraator kinnitaks iga kutse: link hakkab tööle "
-"pärast kinnitust. Selle olekut näed jaotises Kutsed."
+msgid "Share screen"
+msgstr "Jaga ekraani"
+
+msgid "Stop showing your screen to the room"
+msgstr "Lõpeta ruumile oma ekraani näitamine"
+
+msgid "Show your screen to everyone in the room"
+msgstr "Näita oma ekraani kõigile ruumis"
+
+msgid "Take back control"
+msgstr "Võta juhtimine tagasi"
+
+msgid "Give control"
+msgstr "Anna juhtimine"
+
+msgid "Stop them from using your mouse and keyboard"
+msgstr "Keela neil sinu hiire ja klaviatuuri kasutamine"
+
+msgid "Let them use your mouse and keyboard"
+msgstr "Luba neil kasutada sinu hiirt ja klaviatuuri"
+
+msgid "Sound level"
+msgstr "Helitase"
+
+msgid "Unmute"
+msgstr "Lülita heli sisse"
 
 msgid "System accent"
 msgstr "Süsteemi rõhuvärv"
@@ -1690,36 +1476,6 @@ msgstr "Pilt…"
 msgid "Choose a background picture"
 msgstr "Vali taustapilt"
 
-msgid "Message"
-msgstr "Sõnum"
-
-msgid "Bold"
-msgstr "Paks"
-
-msgid "Italic"
-msgstr "Kaldkiri"
-
-msgid "Underline"
-msgstr "Allajoonitud"
-
-msgid "Strikethrough"
-msgstr "Läbikriipsutatud"
-
-msgid "Monospace"
-msgstr "Püsisammkiri"
-
-msgid "Create link"
-msgstr "Loo link"
-
-msgid "Plain text"
-msgstr "Lihttekst"
-
-msgid "Formatting"
-msgstr "Vormindus"
-
-msgid "Create"
-msgstr "Loo"
-
 msgid "Mesh VPN client for BigScale/Headscale."
 msgstr "Mesh VPN klient BigScale/Headscale jaoks."
 
@@ -1754,11 +1510,15 @@ msgstr "Kas lahkuda võrgust?"
 
 #, rust-format
 msgid ""
-"This device leaves the network and its name becomes free. Your account {user} is kept: you can come back later from this computer, without an invite.\n"
+"This device leaves the network and its name becomes free. Your account "
+"{user} is kept: you can come back later from this computer, without an "
+"invite.\n"
 "\n"
-"If you won't come back, delete the account and the name {user} becomes free too."
+"If you won't come back, delete the account and the name {user} becomes free "
+"too."
 msgstr ""
-"See seade lahkub võrgust ja selle nimi vabaneb. Sinu konto {user} jääb alles: saad hiljem sellest arvutist tagasi tulla, ilma kutseta.\n"
+"See seade lahkub võrgust ja selle nimi vabaneb. Sinu konto {user} jääb "
+"alles: saad hiljem sellest arvutist tagasi tulla, ilma kutseta.\n"
 "\n"
 "Kui sa tagasi ei tule, kustuta konto ja ka nimi {user} vabaneb."
 
@@ -1797,11 +1557,15 @@ msgstr "Serverini ei jõutud"
 msgid ""
 "The control server didn't confirm the sign-out: {error}\n"
 "\n"
-"You can still sign out on this computer: BigLace forgets the saved key and account and disconnects. The server keeps listing this device until an administrator removes it."
+"You can still sign out on this computer: BigLace forgets the saved key and "
+"account and disconnects. The server keeps listing this device until an "
+"administrator removes it."
 msgstr ""
 "Juhtserver ei kinnitanud väljalogimist: {error}\n"
 "\n"
-"Saad siiski sellest arvutist välja logida: BigLace unustab salvestatud võtme ja konto ning katkestab ühenduse. Server näitab seda seadet seni, kuni administraator selle eemaldab."
+"Saad siiski sellest arvutist välja logida: BigLace unustab salvestatud võtme "
+"ja konto ning katkestab ühenduse. Server näitab seda seadet seni, kuni "
+"administraator selle eemaldab."
 
 msgid "Sign out on this computer"
 msgstr "Logi sellest arvutist välja"
@@ -1825,8 +1589,8 @@ msgid "Panel URL"
 msgstr "Paneeli URL"
 
 msgid ""
-"Address of your BigScale panel (e.g. panel.example.org). The https:// scheme"
-" is added automatically if you omit it."
+"Address of your BigScale panel (e.g. panel.example.org). The https:// scheme "
+"is added automatically if you omit it."
 msgstr ""
 "Teie BigScale paneeli aadress (nt panel.example.org). https:// skeem "
 "lisatakse automaatselt, kui selle välja jätate."
@@ -1849,14 +1613,14 @@ msgstr ""
 "(Linuxil libsecret, macOS-il Keychain, Windowsil Credential Manager)."
 
 msgid ""
-"The name this device shows to other peers on the VPN — this is the Tailscale"
-" hostname, NOT your computer's name and NOT your user. Lowercase letters, "
+"The name this device shows to other peers on the VPN — this is the Tailscale "
+"hostname, NOT your computer's name and NOT your user. Lowercase letters, "
 "digits and hyphens. Example: 'tales-laptop', 'francois', 'office-pc'. Pick "
 "something other peers will recognise."
 msgstr ""
 "Nimi, mida see seade teistele VPN-i osalejatele näitab – see on Tailscale "
-"hostinimi, MITTE teie arvuti nimi ega teie kasutajanimi. Väiketähed, numbrid"
-" ja sidekriipsud. Näide: 'tales-laptop', 'francois', 'office-pc'. Valige "
+"hostinimi, MITTE teie arvuti nimi ega teie kasutajanimi. Väiketähed, numbrid "
+"ja sidekriipsud. Näide: 'tales-laptop', 'francois', 'office-pc'. Valige "
 "midagi, mida teised osalejad ära tunnevad."
 
 msgid "Sign in"
@@ -1914,8 +1678,8 @@ msgstr ""
 "administraatoril nimi vabastada."
 
 msgid ""
-"That name already belongs to an account on this network. Try another one, or"
-" ask the administrator to free it."
+"That name already belongs to an account on this network. Try another one, or "
+"ask the administrator to free it."
 msgstr ""
 "See nimi kuulub juba selle võrgu kontole. Proovi teist või palu "
 "administraatoril see vabastada."
@@ -1949,8 +1713,8 @@ msgid ""
 "Paste the invite link you received and type your name. Your account is "
 "created and this device joins the network."
 msgstr ""
-"Kleebi saadud kutselink ja sisesta oma nimi. Sinu konto luuakse ja see seade"
-" liitub võrguga."
+"Kleebi saadud kutselink ja sisesta oma nimi. Sinu konto luuakse ja see seade "
+"liitub võrguga."
 
 msgid "Invite link"
 msgstr "Kutselink"
@@ -1975,8 +1739,8 @@ msgid "Joining…"
 msgstr "Liitumine…"
 
 msgid ""
-"That doesn't look like an invite link. It starts with https:// and contains "
-"/join#."
+"That doesn't look like an invite link. It starts with https:// and contains /"
+"join#."
 msgstr ""
 "See ei näe välja nagu kutselink. See algab https:// ja sisaldab /join#."
 
@@ -1991,6 +1755,36 @@ msgstr "Tere tulemast, {name}! Liitusid grupiga {group}. Ühendamine…"
 msgid "Welcome, {name}! Connecting…"
 msgstr "Tere tulemast, {name}! Ühendamine…"
 
+msgid "Message"
+msgstr "Sõnum"
+
+msgid "Bold"
+msgstr "Paks"
+
+msgid "Italic"
+msgstr "Kaldkiri"
+
+msgid "Underline"
+msgstr "Allajoonitud"
+
+msgid "Strikethrough"
+msgstr "Läbikriipsutatud"
+
+msgid "Monospace"
+msgstr "Püsisammkiri"
+
+msgid "Create link"
+msgstr "Loo link"
+
+msgid "Plain text"
+msgstr "Lihttekst"
+
+msgid "Formatting"
+msgstr "Vormindus"
+
+msgid "Create"
+msgstr "Loo"
+
 msgid "End access"
 msgstr "Lõpeta juurdepääs"
 
@@ -2003,11 +1797,11 @@ msgstr "Kaugjuurdepääs alustatud"
 
 #, rust-format
 msgid ""
-"{user} ({device}) is seeing and controlling this screen. Open BigLace to end"
-" the access."
+"{user} ({device}) is seeing and controlling this screen. Open BigLace to end "
+"the access."
 msgstr ""
-"{user} ({device}) vaatab ja juhib seda ekraani. Juurdepääsu lõpetamiseks ava"
-" BigLace."
+"{user} ({device}) vaatab ja juhib seda ekraani. Juurdepääsu lõpetamiseks ava "
+"BigLace."
 
 #, rust-format
 msgid "Always allow {user} (no more asking)"
@@ -2054,11 +1848,11 @@ msgid "Restart {name}'s computer?"
 msgstr "Kas taaskäivitada kasutaja {name} arvuti?"
 
 msgid ""
-"It restarts, signs in by itself and locks the screen right away; this window"
-" connects again when it's back. Unsaved work there is lost."
+"It restarts, signs in by itself and locks the screen right away; this window "
+"connects again when it's back. Unsaved work there is lost."
 msgstr ""
-"See taaskäivitub, logib ise sisse ja lukustab kohe ekraani; see aken ühendub"
-" uuesti, kui arvuti on tagasi. Seal salvestamata töö läheb kaotsi."
+"See taaskäivitub, logib ise sisse ja lukustab kohe ekraani; see aken ühendub "
+"uuesti, kui arvuti on tagasi. Seal salvestamata töö läheb kaotsi."
 
 msgid "Restart"
 msgstr "Taaskäivita"
@@ -2160,8 +1954,8 @@ msgid "{name} didn't allow the access."
 msgstr "{name} ei lubanud juurdepääsu."
 
 msgid ""
-"That computer couldn't confirm this device. Make sure both run an up-to-date"
-" BigLace."
+"That computer couldn't confirm this device. Make sure both run an up-to-date "
+"BigLace."
 msgstr ""
 "See arvuti ei suutnud seda seadet kinnitada. Veendu, et mõlemas töötab "
 "ajakohane BigLace."
@@ -2171,8 +1965,8 @@ msgid ""
 "{name}'s computer can't share its screen (screen sharing isn't available "
 "there)."
 msgstr ""
-"Kasutaja {name} arvuti ei saa oma ekraani jagada (ekraani jagamine pole seal"
-" saadaval)."
+"Kasutaja {name} arvuti ei saa oma ekraani jagada (ekraani jagamine pole seal "
+"saadaval)."
 
 #, rust-format
 msgid "Could not connect: {error}"
@@ -2190,8 +1984,7 @@ msgid ""
 "This window connects again by itself when the session is back. It takes a "
 "few seconds."
 msgstr ""
-"See aken ühendub ise uuesti, kui seanss on tagasi. Selleks kulub mõni "
-"sekund."
+"See aken ühendub ise uuesti, kui seanss on tagasi. Selleks kulub mõni sekund."
 
 #, rust-format
 msgid "Restarting {name}…"
@@ -2234,6 +2027,36 @@ msgstr "Juurdepääs kasutaja {name} ekraanile lõppes: {error}"
 msgid "Give back control"
 msgstr "Anna juhtimine tagasi"
 
+msgid "Connected · 1 peer"
+msgstr "Ühendatud · 1 peer"
+
+#, rust-format
+msgid "Connected · {n} peers"
+msgstr "Ühendatud · {n} peeri"
+
+#, rust-format
+msgid "In the room {group} · muted"
+msgstr "Ruumis {group} · vaigistatud"
+
+#, rust-format
+msgid "In the room {group}"
+msgstr "Ruumis {group}"
+
+msgid "Show BigLace"
+msgstr "Näita BigLace’i"
+
+msgid "Unmute (Ctrl+Alt+M)"
+msgstr "Lülita heli sisse (Ctrl+Alt+M)"
+
+msgid "Mute (Ctrl+Alt+M)"
+msgstr "Vaigista (Ctrl+Alt+M)"
+
+msgid "Leave the room"
+msgstr "Lahku ruumist"
+
+msgid "Quit"
+msgstr "Välju"
+
 msgid "direct"
 msgstr "otse"
 
@@ -2251,8 +2074,8 @@ msgid ""
 "Signal sent to {name} (by {via}). If it's set to turn on over the network, "
 "it shows up in a minute or two."
 msgstr ""
-"Signaal saadetud seadmele {name} ({via} kaudu). Kui see on seadistatud võrgu"
-" kaudu sisse lülituma, ilmub see minuti või kahe pärast."
+"Signaal saadetud seadmele {name} ({via} kaudu). Kui see on seadistatud võrgu "
+"kaudu sisse lülituma, ilmub see minuti või kahe pärast."
 
 #, rust-format
 msgid "Could not turn on {name}: {error}"
@@ -2269,6 +2092,9 @@ msgstr "Kinnitatud üles<br>"
 
 msgid "Unpinned"
 msgstr "Kinnitusest eemaldatud"
+
+msgid "Copy IP address"
+msgstr "Kopeeri IP-aadress"
 
 msgid "Open files (SFTP)"
 msgstr "Ava failid (SFTP)"
@@ -2317,6 +2143,202 @@ msgstr "Väljumissõlme uuendamine ebaõnnestus"
 
 msgid "Copy"
 msgstr "Kopeeri"
+
+msgid "Search devices"
+msgstr "Otsi seadmeid"
+
+msgid "Invite someone to your network"
+msgstr "Kutsu keegi oma võrku"
+
+msgid ""
+"Tailscale cannot write this device's DNS settings, so it can no longer keep "
+"peer names working. They may still resolve for now, from the configuration "
+"left over from before the failure, but that will break the next time the "
+"network changes — and BigLace will fall back to IP addresses. On most "
+"distributions `sudo resolvconf -u` repairs it."
+msgstr ""
+"Tailscale ei saa selle seadme DNS-sätteid kirjutada, seega ei suuda see enam "
+"peeride nimesid töös hoida. Need võivad praegu veel lahenduda, enne tõrget "
+"alles jäänud seadistuse põhjal, kuid see läheb katki järgmisel võrgumuutusel "
+"— ja BigLace kasutab siis IP-aadresse. Enamikus distributsioonides parandab "
+"selle `sudo resolvconf -u`."
+
+msgid "Not connected"
+msgstr "Pole ühendatud"
+
+msgid "Press Connect on the left to join the network."
+msgstr "Võrguga liitumiseks vajutage vasakul nuppu Ühenda."
+
+msgid "The tailscale service is not running"
+msgstr "Tailscale'i teenus ei tööta"
+
+msgid "BigLace needs the tailscaled background service to manage the network."
+msgstr "BigLace vajab võrgu haldamiseks tailscaled taustateenust."
+
+msgid "Start service"
+msgstr "Käivita teenus"
+
+msgid "Join the network"
+msgstr "Liitu võrguga"
+
+msgid "Choose how you're going to sign in."
+msgstr "Vali, kuidas sisse logid."
+
+msgid "Ways to sign in"
+msgstr "Sisselogimise viisid"
+
+msgid "Your account was kept on this computer. No invite needed."
+msgstr "Sinu konto jäeti sellesse arvutisse alles. Kutset pole vaja."
+
+msgid "I have an invite"
+msgstr "Mul on kutse"
+
+msgid "Someone on the network sent you a link or a QR code."
+msgstr "Keegi võrgust saatis sulle lingi või QR-koodi."
+
+msgid "I have an access key"
+msgstr "Mul on juurdepääsuvõti"
+
+msgid "A key the administrator created for you (starts with hskey-auth-)."
+msgstr "Administraatori sinu jaoks loodud võti (algab hskey-auth-)."
+
+msgid "I'm the administrator"
+msgstr "Mina olen administraator"
+
+msgid "Sign in with the BigScale panel's admin username and password."
+msgstr ""
+"Logi sisse BigScale'i paneeli administraatori kasutajanime ja parooliga."
+
+msgid "This device"
+msgstr "See seade"
+
+msgid "Devices on the network"
+msgstr "Seadmed võrgus"
+
+msgid "No other devices on the network yet."
+msgstr "Võrgus pole veel teisi seadmeid."
+
+msgid "you are not in a room"
+msgstr "sa ei ole ruumis"
+
+msgid "screen sharing isn't available on this computer"
+msgstr "ekraani jagamine pole selles arvutis saadaval"
+
+#, rust-format
+msgid "The computer's sound can't be shared: {error}"
+msgstr "Arvuti heli ei saa jagada: {error}"
+
+#, rust-format
+msgid "The screen share stopped: {error}"
+msgstr "Ekraani jagamine peatus: {error}"
+
+msgid "This computer"
+msgstr "See arvuti"
+
+msgid "Who may use this computer remotely"
+msgstr "Kes tohib seda arvutit kaugelt kasutada"
+
+msgid ""
+"Anyone you're connected to can ask to see and control this screen. Choose "
+"who is let in without asking, and who is never let in."
+msgstr ""
+"Igaüks, kellega oled ühendatud, võib paluda seda ekraani näha ja juhtida. "
+"Vali, keda lastakse sisse küsimata ja keda ei lasta kunagi."
+
+msgid "History of accesses"
+msgstr "Ligipääsude ajalugu"
+
+msgid "Kept on this computer only."
+msgstr "Hoitakse ainult selles arvutis."
+
+msgid "Clear"
+msgstr "Tühjenda"
+
+msgid "Nobody has asked yet."
+msgstr "Keegi pole veel küsinud."
+
+msgid "When someone asks, you can choose to always let them in."
+msgstr "Kui keegi küsib, saad valida, et teda lastakse alati sisse."
+
+msgid "Ask every time"
+msgstr "Küsi iga kord"
+
+msgid "Always allow"
+msgstr "Luba alati"
+
+msgid "Never allow"
+msgstr "Ära luba kunagi"
+
+msgid "No accesses yet."
+msgstr "Ligipääse veel pole."
+
+msgid "Remote access"
+msgstr "Kaugjuurdepääs"
+
+msgid "Watched the screen shared with the room"
+msgstr "Vaatas ruumiga jagatud ekraani"
+
+msgid "Got control of the shared screen"
+msgstr "Sai jagatud ekraani juhtimise"
+
+msgid "Restarted the computer"
+msgstr "Taaskäivitas arvuti"
+
+msgid "Restarted the session"
+msgstr "Taaskäivitas seansi"
+
+msgid "Shut down the computer"
+msgstr "Lülitas arvuti välja"
+
+msgid "allowed"
+msgstr "lubatud"
+
+msgid "allowed (always)"
+msgstr "lubatud (alati)"
+
+msgid "came back after a restart"
+msgstr "tuli pärast taaskäivitust tagasi"
+
+msgid "denied"
+msgstr "keelatud"
+
+msgid "blocked (never allowed)"
+msgstr "blokeeritud (ei lubata kunagi)"
+
+msgid "ended"
+msgstr "lõppenud"
+
+#, rust-format
+msgid "{user} ({device})"
+msgstr "{user} ({device})"
+
+#, rust-format
+msgid "{done} of {total}"
+msgstr "{done} / {total}"
+
+msgid "Play"
+msgstr "Esita"
+
+msgid "Download"
+msgstr "Laadi alla"
+
+msgid "Open"
+msgstr "Ava"
+
+msgid "Show in folder"
+msgstr "Näita kaustas"
+
+msgid "Pause"
+msgstr "Paus"
+
+msgid "Photo"
+msgstr "Foto"
+
+msgid "Video"
+msgstr "Video"
+
+msgid "Voice message"
+msgstr "Häälsõnum"
 
 msgid "Smileys & people"
 msgstr "Emotikonid ja inimesed"
@@ -2376,8 +2398,8 @@ msgstr ""
 "uuesti, kui see tagasi on"
 
 msgid ""
-"the file arrived different from the original (damaged on the way) — download"
-" it again"
+"the file arrived different from the original (damaged on the way) — download "
+"it again"
 msgstr ""
 "fail saabus originaalist erinevana (kahjustus teel) — laadi see uuesti alla"
 
@@ -2420,8 +2442,7 @@ msgstr "📌 (eemaldas sõnumi kinnituse)"
 msgid "nothing was recorded — is a microphone connected?"
 msgstr "midagi ei salvestatud — kas mikrofon on ühendatud?"
 
-msgid ""
-"this computer can't restart remotely (BigLace's helper isn't installed)"
+msgid "this computer can't restart remotely (BigLace's helper isn't installed)"
 msgstr ""
 "seda arvutit ei saa kaugelt taaskäivitada (BigLace'i abiline pole "
 "paigaldatud)"
@@ -2449,28 +2470,14 @@ msgid ""
 "the screen there is locked, and GNOME doesn't allow remote access to a "
 "locked screen — ask the person to unlock it"
 msgstr ""
-"seal on ekraan lukus ja GNOME ei luba lukus ekraanile kaugjuurdepääsu — palu"
-" inimesel see avada"
+"seal on ekraan lukus ja GNOME ei luba lukus ekraanile kaugjuurdepääsu — palu "
+"inimesel see avada"
 
 msgid "access to the camera was refused"
 msgstr "juurdepääs kaamerale keelati"
 
-msgid "you are not in a room"
-msgstr "sa ei ole ruumis"
-
 msgid "Mute or unmute the microphone in a BigLace room"
 msgstr "Vaigista või luba mikrofon BigLace'i ruumis"
-
-msgid "screen sharing isn't available on this computer"
-msgstr "ekraani jagamine pole selles arvutis saadaval"
-
-#, rust-format
-msgid "The computer's sound can't be shared: {error}"
-msgstr "Arvuti heli ei saa jagada: {error}"
-
-#, rust-format
-msgid "The screen share stopped: {error}"
-msgstr "Ekraani jagamine peatus: {error}"
 
 msgid "BigLace doesn't know that computer's network card yet"
 msgstr "BigLace ei tunne veel selle arvuti võrgukaarti"
@@ -2480,6 +2487,12 @@ msgstr "see arvuti"
 
 msgid "no computer on its network is on to send the signal"
 msgstr "ükski arvuti selle võrgus pole sisse lülitatud, et signaali saata"
+
+msgid "Open with another app"
+msgstr "Ava teise rakendusega"
+
+msgid "Close"
+msgstr "Sulge"
 
 #~ msgid "Panel credentials"
 #~ msgstr "Paneeli sisselogimisandmed"
@@ -2502,8 +2515,8 @@ msgstr "ükski arvuti selle võrgus pole sisse lülitatud, et signaali saata"
 #~ "Sign in with your BigScale panel username and password. A device identity "
 #~ "will be created on the network automatically — no manual key needed."
 #~ msgstr ""
-#~ "Logi sisse oma BigScale'i paneeli kasutajanime ja parooliga. Võrgus luuakse "
-#~ "automaatselt seadme identiteet – käsitsi võtit pole vaja."
+#~ "Logi sisse oma BigScale'i paneeli kasutajanime ja parooliga. Võrgus "
+#~ "luuakse automaatselt seadme identiteet – käsitsi võtit pole vaja."
 
 #~ msgid "Connected ·"
 #~ msgstr "Ühendatud ·"
@@ -2571,8 +2584,8 @@ msgstr "ükski arvuti selle võrgus pole sisse lülitatud, et signaali saata"
 #~ msgstr "Sinu identiteet võrgus"
 
 #~ msgid ""
-#~ "Personal key generated for you in the BigScale panel (\"New key\" in Users)."
-#~ " Each person uses their own — this is not the server's key."
+#~ "Personal key generated for you in the BigScale panel (\"New key\" in "
+#~ "Users). Each person uses their own — this is not the server's key."
 #~ msgstr ""
 #~ "Isiklik võti, mis on loodud sinu jaoks BigScale'i paneelis (\"Uus võti\" "
 #~ "jaotises Kasutajad). Iga inimene kasutab oma võtit – see ei ole serveri "

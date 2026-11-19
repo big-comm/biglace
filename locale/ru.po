@@ -19,8 +19,8 @@ msgid ""
 "No file manager could open the SFTP location. Install one (Dolphin, "
 "Nautilus, Nemo, Thunar…) and try again."
 msgstr ""
-"Ни один файловый менеджер не смог открыть расположение SFTP. Установите один"
-" из них (Dolphin, Nautilus, Nemo, Thunar…) и попробуйте снова."
+"Ни один файловый менеджер не смог открыть расположение SFTP. Установите один "
+"из них (Dolphin, Nautilus, Nemo, Thunar…) и попробуйте снова."
 
 msgid ""
 "No file manager could open the SFTP location. Install WinSCP and try again."
@@ -51,8 +51,8 @@ msgid ""
 "The pre-auth key was rejected by the server. Generate a new key in the "
 "BigScale panel and try again."
 msgstr ""
-"Ключ предварительной аутентификации отклонён сервером. Создайте новый ключ в"
-" панели BigScale и попробуйте снова."
+"Ключ предварительной аутентификации отклонён сервером. Создайте новый ключ в "
+"панели BigScale и попробуйте снова."
 
 msgid "Sign in or paste a pre-auth key first."
 msgstr "Сначала войдите или вставьте предварительный ключ."
@@ -175,8 +175,8 @@ msgid "Account"
 msgstr "Учётная запись"
 
 msgid ""
-"Signing out removes this device's identity from BigLace. You will need a new"
-" invite or key to join again."
+"Signing out removes this device's identity from BigLace. You will need a new "
+"invite or key to join again."
 msgstr ""
 "Выход удаляет идентификатор этого устройства из BigLace. Чтобы подключиться "
 "снова, понадобится новое приглашение или ключ."
@@ -209,8 +209,7 @@ msgid "Connect to the network first, then open the invite link again."
 msgstr "Сначала подключитесь к сети, затем снова откройте ссылку-приглашение."
 
 #, rust-format
-msgid ""
-"This invite is for another network ({host}). Sign out first to join it."
+msgid "This invite is for another network ({host}). Sign out first to join it."
 msgstr ""
 "Это приглашение для другой сети ({host}). Чтобы подключиться к ней, сначала "
 "выйдите."
@@ -233,8 +232,8 @@ msgid "Could not open the browser: {error}"
 msgstr "Не удалось открыть браузер: {error}"
 
 msgid ""
-"You can't open the admin panel: you're not an administrator of this network,"
-" or the panel can't be reached."
+"You can't open the admin panel: you're not an administrator of this network, "
+"or the panel can't be reached."
 msgstr ""
 "Не удаётся открыть панель администратора: вы не администратор этой сети или "
 "панель недоступна."
@@ -334,126 +333,178 @@ msgstr "{count} устройств отключились"
 msgid "{on_count} online · {off_count} offline"
 msgstr "{on_count} в сети · {off_count} не в сети"
 
-msgid "Connected · 1 peer"
-msgstr "Подключено · 1 пир"
+msgid ""
+"Invites from BigLace need a BigScale server that supports them. Ask your "
+"administrator to update the server, or to create the invite in the panel."
+msgstr ""
+"Для приглашений из BigLace нужен сервер BigScale с их поддержкой. Попросите "
+"администратора обновить сервер или создать приглашение в панели."
+
+msgid "This device can't send invites (it isn't linked to a person's account)."
+msgstr ""
+"Это устройство не может отправлять приглашения (оно не привязано к учётной "
+"записи человека)."
+
+msgid ""
+"The panel knows this device by a different key (BigLace was reinstalled?). "
+"Leave the network and join again to fix it."
+msgstr ""
+"Панель знает это устройство под другим ключом (BigLace переустанавливали?). "
+"Покиньте сеть и подключитесь снова, чтобы это исправить."
+
+msgid ""
+"The panel couldn't confirm this device. Make sure BigLace is up to date and "
+"stays open while connected, then try again."
+msgstr ""
+"Панель не смогла подтвердить это устройство. Убедитесь, что BigLace обновлён "
+"и остаётся открытым во время подключения, затем попробуйте снова."
+
+msgid "You are no longer in that group."
+msgstr "Вы больше не состоите в этой группе."
+
+msgid ""
+"On this network everyone can reach everyone, so only the administrator can "
+"invite people."
+msgstr ""
+"В этой сети все связаны со всеми, поэтому приглашать людей может только "
+"администратор."
+
+msgid "You have too many pending invites. Cancel some or try again tomorrow."
+msgstr ""
+"У вас слишком много ожидающих приглашений. Отмените некоторые или попробуйте "
+"завтра."
+
+msgid ""
+"On this network only administrators invite new people. You can still invite "
+"people already on the network into your groups."
+msgstr ""
+"В этой сети новых людей приглашают только администраторы. Вы всё равно "
+"можете приглашать в свои группы людей, которые уже в сети."
 
 #, rust-format
-msgid "Connected · {n} peers"
-msgstr "Подключено · {n} пиров"
+msgid "Could not reach the panel: {error}"
+msgstr "Не удалось связаться с панелью: {error}"
 
-#, rust-format
-msgid "In the room {group} · muted"
-msgstr "В комнате {group} · звук выключен"
+msgid "Waiting to be used"
+msgstr "Ожидает использования"
 
-#, rust-format
-msgid "In the room {group}"
-msgstr "В комнате {group}"
+msgid "Used"
+msgstr "Использовано"
 
-msgid "Show BigLace"
-msgstr "Показать BigLace"
+msgid "Expired"
+msgstr "Истекло"
 
-#, rust-format
-msgid "Room {group}"
-msgstr "Комната {group}"
+msgid "Cancelled"
+msgstr "Отменено"
 
-msgid "Unmute (Ctrl+Alt+M)"
-msgstr "Включить микрофон (Ctrl+Alt+M)"
-
-msgid "Mute (Ctrl+Alt+M)"
-msgstr "Выключить микрофон (Ctrl+Alt+M)"
-
-msgid "Leave the room"
-msgstr "Покинуть комнату"
-
-msgid "Quit"
-msgstr "Выйти"
-
-msgid "Main menu"
-msgstr "Главное меню"
-
-msgid "Search devices"
-msgstr "Поиск устройств"
+msgid "Waiting for an administrator's approval"
+msgstr "Ожидает одобрения администратора"
 
 msgid "Refresh"
 msgstr "Обновить"
 
+msgid "Main menu"
+msgstr "Главное меню"
+
+msgid "Bring someone to your network"
+msgstr "Приведите кого-нибудь в свою сеть"
+
+msgid ""
+"Create a link or QR code and send it to the person. When they join, you two "
+"can reach each other's devices — no administrator needed. The link works "
+"once and stays valid until it's used or you cancel it."
+msgstr ""
+"Создайте ссылку или QR-код и отправьте человеку. Когда он подключится, у вас "
+"будет доступ к устройствам друг друга — без администратора. Ссылка "
+"срабатывает один раз и действует, пока её не используют или вы её не "
+"отмените."
+
+msgid "No invites yet"
+msgstr "Приглашений пока нет"
+
+msgid "Invites unavailable"
+msgstr "Приглашения недоступны"
+
+#, rust-format
+msgid "{user} joined"
+msgstr "{user} подключился"
+
 msgid "Invite"
 msgstr "Пригласить"
 
-msgid "Invite someone to your network"
-msgstr "Пригласите кого-нибудь в свою сеть"
+#, rust-format
+msgid "group {group}"
+msgstr "группа {group}"
+
+msgid "Cancel this invite: the link stops working"
+msgstr "Отменить это приглашение: ссылка перестанет работать"
+
+msgid "The person you invite will reach your devices, and you theirs."
+msgstr "Приглашённый получит доступ к вашим устройствам, а вы — к его."
+
+msgid "Who is it for? (optional)"
+msgstr "Для кого это? (необязательно)"
+
+msgid "Access"
+msgstr "Доступ"
+
+msgid "Just the two of us"
+msgstr "Только мы вдвоём"
+
+msgid "You see each other's devices, nobody else"
+msgstr "Вы видите устройства друг друга, больше никто"
+
+#, rust-format
+msgid "Also the group {group}"
+msgstr "А также группа {group}"
+
+msgid "They join the group and see everyone in it"
+msgstr "Он вступит в группу и будет видеть всех её участников"
+
+msgid "A network of their own"
+msgstr "Своя собственная сеть"
 
 msgid ""
-"Tailscale cannot write this device's DNS settings, so it can no longer keep "
-"peer names working. They may still resolve for now, from the configuration "
-"left over from before the failure, but that will break the next time the "
-"network changes — and BigLace will fall back to IP addresses. On most "
-"distributions `sudo resolvconf -u` repairs it."
+"No link to you: they see only their own devices and whoever they invite "
+"(you're the administrator)"
 msgstr ""
-"Tailscale не может записать настройки DNS этого устройства, поэтому имена "
-"узлов больше не будут работать надёжно. Пока они ещё могут разрешаться по "
-"конфигурации, оставшейся с момента до сбоя, но это сломается при следующем "
-"изменении сети — и BigLace перейдёт на IP-адреса. В большинстве "
-"дистрибутивов это исправляет `sudo resolvconf -u`."
+"Без связи с вами: он видит только свои устройства и тех, кого пригласит (вы "
+"— администратор)"
 
-msgid "Not connected"
-msgstr "Не подключено"
+msgid "Create invite"
+msgstr "Создать приглашение"
 
-msgid "Press Connect on the left to join the network."
-msgstr "Нажмите «Подключиться» слева, чтобы присоединиться к сети."
+msgid "QR code of the invite link"
+msgstr "QR-код ссылки-приглашения"
 
-msgid "The tailscale service is not running"
-msgstr "Служба tailscale не запущена"
-
-msgid "BigLace needs the tailscaled background service to manage the network."
-msgstr "BigLace требует фоновую службу tailscaled для управления сетью."
-
-msgid "Start service"
-msgstr "Запустить службу"
-
-msgid "Join the network"
-msgstr "Подключиться к сети"
-
-msgid "Choose how you're going to sign in."
-msgstr "Выберите способ входа."
-
-msgid "Ways to sign in"
-msgstr "Способы входа"
-
-msgid "Your account was kept on this computer. No invite needed."
+msgid ""
+"Send the link or let the person scan the code with their phone. It works "
+"once and stays valid until used or cancelled."
 msgstr ""
-"Ваша учётная запись сохранена на этом компьютере. Приглашение не нужно."
+"Отправьте ссылку или дайте человеку отсканировать код телефоном. Она "
+"срабатывает один раз и действует, пока её не используют или не отменят."
 
-msgid "I have an invite"
-msgstr "У меня есть приглашение"
+msgid "Copy link"
+msgstr "Копировать ссылку"
 
-msgid "Someone on the network sent you a link or a QR code."
-msgstr "Кто-то из сети прислал вам ссылку или QR-код."
+msgid "Done"
+msgstr "Готово"
 
-msgid "I have an access key"
-msgstr "У меня есть ключ доступа"
+msgid "Copied!"
+msgstr "Скопировано!"
 
-msgid "A key the administrator created for you (starts with hskey-auth-)."
-msgstr "Ключ, созданный для вас администратором (начинается с hskey-auth-)."
-
-msgid "I'm the administrator"
-msgstr "Я администратор"
-
-msgid "Sign in with the BigScale panel's admin username and password."
+msgid ""
+"This network asks an administrator to approve each invite: the link starts "
+"working once they do. Its status shows in Invites."
 msgstr ""
-"Войдите с именем пользователя и паролем администратора панели BigScale."
+"В этой сети каждое приглашение должен одобрить администратор: ссылка "
+"заработает после одобрения. Её статус виден в разделе «Приглашения»."
 
-msgid "This device"
-msgstr "Это устройство"
+msgid "Show the full sidebar"
+msgstr "Показать всю боковую панель"
 
-msgid "Copy IP address"
-msgstr "Скопировать IP-адрес"
-
-msgid "Devices on the network"
-msgstr "Устройства в сети"
-
-msgid "No other devices on the network yet."
-msgstr "Пока нет других устройств в сети."
+msgid "Show only icons in the sidebar"
+msgstr "Только значки в боковой панели"
 
 msgid "Sections"
 msgstr "Разделы"
@@ -506,13 +557,13 @@ msgid ""
 "One-time or reusable key created on the server (starts with 'hskey-auth-'). "
 "Used to register this device automatically without opening a browser."
 msgstr ""
-"Одноразовый или многоразовый ключ, созданный на сервере (начинается с "
-"'hskey-auth-'). Используется для автоматической регистрации этого устройства"
-" без открытия браузера."
+"Одноразовый или многоразовый ключ, созданный на сервере (начинается с 'hskey-"
+"auth-'). Используется для автоматической регистрации этого устройства без "
+"открытия браузера."
 
 msgid ""
-"The name this device shows to other peers on the VPN — this is the Tailscale"
-" hostname, NOT your computer's name and NOT your user. Lowercase letters, "
+"The name this device shows to other peers on the VPN — this is the Tailscale "
+"hostname, NOT your computer's name and NOT your user. Lowercase letters, "
 "digits and hyphens. Example: 'tales-laptop', 'francois', 'office-pc'."
 msgstr ""
 "Имя, под которым это устройство отображается для других пиров в VPN — это "
@@ -527,8 +578,8 @@ msgid "Save"
 msgstr "Сохранить"
 
 msgid ""
-"Persist the server, key and device name above. Won't connect — press Connect"
-" afterwards."
+"Persist the server, key and device name above. Won't connect — press Connect "
+"afterwards."
 msgstr ""
 "Сохранить сервер, ключ и имя устройства выше. Подключение не произойдет — "
 "нажмите «Подключиться» после."
@@ -540,8 +591,8 @@ msgid "Join the network when BigLace starts"
 msgstr "Присоединяться к сети при запуске BigLace"
 
 msgid ""
-"When on, BigLace runs 'tailscale up' as soon as it launches, so you join the"
-" mesh without clicking Connect every time."
+"When on, BigLace runs 'tailscale up' as soon as it launches, so you join the "
+"mesh without clicking Connect every time."
 msgstr ""
 "При включении BigLace выполняет 'tailscale up' сразу после запуска, так что "
 "вы присоединяетесь к сети без необходимости нажимать «Подключиться» каждый "
@@ -573,9 +624,8 @@ msgid "Retry with backoff when the connection is lost"
 msgstr "Повторять с задержкой при потере соединения"
 
 msgid ""
-"If the tunnel drops (network change, sleep, server hiccup), BigLace silently"
-" retries with growing delays instead of leaving you offline until you "
-"notice."
+"If the tunnel drops (network change, sleep, server hiccup), BigLace silently "
+"retries with growing delays instead of leaving you offline until you notice."
 msgstr ""
 "Если туннель разрывается (смена сети, сон, сбой сервера), BigLace молча "
 "повторяет попытку с увеличивающимися задержками, вместо того чтобы оставить "
@@ -612,303 +662,6 @@ msgstr ""
 
 msgid "Your photo"
 msgstr "Ваше фото"
-
-msgid ""
-"Each of your groups has a voice room. Join it and talk with whoever is there"
-" — the sound goes straight between you, through the network."
-msgstr ""
-"У каждой вашей группы есть голосовая комната. Заходите и говорите с теми, "
-"кто там, — звук идёт напрямую между вами, через сеть."
-
-msgid "You're not in any group yet. Create one in Groups."
-msgstr ""
-"Вы пока не состоите ни в одной группе. Создайте её в разделе «Группы»."
-
-msgid "People in the room"
-msgstr "Люди в комнате"
-
-msgid "Everyone"
-msgstr "Все"
-
-msgid "Who's speaking"
-msgstr "Кто говорит"
-
-msgid "Mute"
-msgstr "Выключить микрофон"
-
-msgid "Mute your microphone for everyone"
-msgstr "Выключить ваш микрофон для всех"
-
-msgid "Leave"
-msgstr "Покинуть"
-
-msgid "Which camera"
-msgstr "Какая камера"
-
-msgid "Include the computer's sound when sharing the screen"
-msgstr "Передавать звук компьютера при показе экрана"
-
-msgid ""
-"Videos and music playing here go to the room too; the room's voices don't "
-"(no echo)"
-msgstr ""
-"Видео и музыка, играющие здесь, тоже идут в комнату; голоса комнаты — нет "
-"(без эха)"
-
-msgid "Rooms unavailable"
-msgstr "Комнаты недоступны"
-
-#, rust-format
-msgid "Could not turn on the camera: {error}"
-msgstr "Не удалось включить камеру: {error}"
-
-#, rust-format
-msgid "Could not share the screen: {error}"
-msgstr "Не удалось показать экран: {error}"
-
-#, rust-format
-msgid "Could not reach the panel: {error}"
-msgstr "Не удалось связаться с панелью: {error}"
-
-msgid "Nobody here right now"
-msgstr "Сейчас здесь никого нет"
-
-#, rust-format
-msgid "In the room: {people}"
-msgstr "В комнате: {people}"
-
-msgid "Join"
-msgstr "Вступить"
-
-#, rust-format
-msgid "Join the room {group}"
-msgstr "Войти в комнату {group}"
-
-#, rust-format
-msgid "Could not join {group}: {error}"
-msgstr "Не удалось войти в {group}: {error}"
-
-msgid "📺 You're showing your screen to the room"
-msgstr "📺 Вы показываете свой экран комнате"
-
-msgid "📺 You're showing your screen · 1 person watching"
-msgstr "📺 Вы показываете свой экран · смотрит 1 человек"
-
-#, rust-format
-msgid "📺 You're showing your screen · {count} people watching"
-msgstr "📺 Вы показываете свой экран · зрителей: {count}"
-
-msgid "1 person"
-msgstr "1 человек"
-
-#, rust-format
-msgid "{count} people"
-msgstr "Людей: {count}"
-
-#, rust-format
-msgid "{people} · {talking} talking"
-msgstr "{people} · говорят: {talking}"
-
-msgid "you"
-msgstr "вы"
-
-msgid "connecting…"
-msgstr "подключение…"
-
-msgid "muted"
-msgstr "микрофон выключен"
-
-msgid "talking"
-msgstr "говорит"
-
-msgid "quiet"
-msgstr "молчит"
-
-msgid "Sharing screen"
-msgstr "Показывает экран"
-
-msgid "In control"
-msgstr "Управляет"
-
-msgid "Controls your screen now"
-msgstr "Сейчас управляет вашим экраном"
-
-msgid "Watching"
-msgstr "Смотрит"
-
-msgid "Watching your screen"
-msgstr "Смотрит ваш экран"
-
-#, rust-format
-msgid "{user} is showing their screen"
-msgstr "{user} показывает свой экран"
-
-msgid "Watch"
-msgstr "Смотреть"
-
-#, rust-format
-msgid "{user} asks to control your screen"
-msgstr "{user} просит управление вашим экраном"
-
-msgid ""
-"They'll be able to use your mouse and keyboard. You can take control back at"
-" any time."
-msgstr ""
-"Он сможет пользоваться вашими мышью и клавиатурой. Вы можете забрать "
-"управление в любой момент."
-
-msgid "Deny"
-msgstr "Отклонить"
-
-msgid "Allow"
-msgstr "Разрешить"
-
-msgid "Turn off camera"
-msgstr "Выключить камеру"
-
-msgid "Turn on camera"
-msgstr "Включить камеру"
-
-msgid "No camera found on this computer"
-msgstr "На этом компьютере не найдено камер"
-
-msgid "Stop sharing"
-msgstr "Остановить показ"
-
-msgid "Share screen"
-msgstr "Показать экран"
-
-msgid "Stop showing your screen to the room"
-msgstr "Перестать показывать свой экран комнате"
-
-msgid "Show your screen to everyone in the room"
-msgstr "Показать свой экран всем в комнате"
-
-msgid "Take back control"
-msgstr "Забрать управление"
-
-msgid "Give control"
-msgstr "Дать управление"
-
-msgid "Stop them from using your mouse and keyboard"
-msgstr "Запретить им пользоваться вашими мышью и клавиатурой"
-
-msgid "Let them use your mouse and keyboard"
-msgstr "Разрешить им пользоваться вашими мышью и клавиатурой"
-
-msgid "Sound level"
-msgstr "Уровень звука"
-
-msgid "Unmute"
-msgstr "Включить микрофон"
-
-msgid "This computer"
-msgstr "Этот компьютер"
-
-msgid "Who may use this computer remotely"
-msgstr "Кто может удалённо пользоваться этим компьютером"
-
-msgid ""
-"Anyone you're connected to can ask to see and control this screen. Choose "
-"who is let in without asking, and who is never let in."
-msgstr ""
-"Любой, с кем вы связаны, может попросить показать этот экран и управлять им."
-" Выберите, кого пускать без вопросов, а кого не пускать никогда."
-
-msgid "History of accesses"
-msgstr "История доступа"
-
-msgid "Kept on this computer only."
-msgstr "Хранится только на этом компьютере."
-
-msgid "Clear"
-msgstr "Очистить"
-
-msgid "Nobody has asked yet."
-msgstr "Пока никто не запрашивал доступ."
-
-msgid "When someone asks, you can choose to always let them in."
-msgstr "Когда кто-то попросит, можно выбрать, чтобы его пускали всегда."
-
-msgid "Ask every time"
-msgstr "Спрашивать каждый раз"
-
-msgid "Always allow"
-msgstr "Всегда разрешать"
-
-msgid "Never allow"
-msgstr "Никогда не разрешать"
-
-msgid "No accesses yet."
-msgstr "Пока нет доступов."
-
-msgid "Remote access"
-msgstr "Удалённый доступ"
-
-msgid "Watched the screen shared with the room"
-msgstr "Смотрел экран, показанный в комнате"
-
-msgid "Got control of the shared screen"
-msgstr "Получил управление показанным экраном"
-
-msgid "Restarted the computer"
-msgstr "Перезагрузил компьютер"
-
-msgid "Restarted the session"
-msgstr "Перезапустил сеанс"
-
-msgid "Shut down the computer"
-msgstr "Выключил компьютер"
-
-msgid "allowed"
-msgstr "разрешено"
-
-msgid "allowed (always)"
-msgstr "разрешено (всегда)"
-
-msgid "came back after a restart"
-msgstr "вернулся после перезагрузки"
-
-msgid "denied"
-msgstr "отклонено"
-
-msgid "blocked (never allowed)"
-msgstr "заблокировано (никогда не разрешать)"
-
-msgid "ended"
-msgstr "завершено"
-
-#, rust-format
-msgid "{user} ({device})"
-msgstr "{user} ({device})"
-
-#, rust-format
-msgid "{done} of {total}"
-msgstr "{done} из {total}"
-
-msgid "Play"
-msgstr "Воспроизвести"
-
-msgid "Download"
-msgstr "Скачать"
-
-msgid "Open"
-msgstr "Открыть"
-
-msgid "Show in folder"
-msgstr "Показать в папке"
-
-msgid "Pause"
-msgstr "Пауза"
-
-msgid "Photo"
-msgstr "Фото"
-
-msgid "Video"
-msgstr "Видео"
-
-msgid "Voice message"
-msgstr "Голосовое сообщение"
 
 msgid "New chat"
 msgstr "Новый чат"
@@ -979,6 +732,9 @@ msgid ""
 msgstr ""
 "Выберите разговор или начните новый. Сообщения идут напрямую между вашими "
 "компьютерами — сервер их никогда не видит."
+
+msgid "People on the network"
+msgstr "Люди в сети"
 
 msgid "Group"
 msgstr "Группа"
@@ -1158,20 +914,6 @@ msgstr ""
 "групп."
 
 msgid ""
-"The panel knows this device by a different key (BigLace was reinstalled?). "
-"Leave the network and join again to fix it."
-msgstr ""
-"Панель знает это устройство под другим ключом (BigLace переустанавливали?). "
-"Покиньте сеть и подключитесь снова, чтобы это исправить."
-
-msgid ""
-"The panel couldn't confirm this device. Make sure BigLace is up to date and "
-"stays open while connected, then try again."
-msgstr ""
-"Панель не смогла подтвердить это устройство. Убедитесь, что BigLace обновлён"
-" и остаётся открытым во время подключения, затем попробуйте снова."
-
-msgid ""
 "On this network everyone already reaches everyone, so groups aren't needed. "
 "The administrator can set access rules first."
 msgstr ""
@@ -1180,9 +922,6 @@ msgstr ""
 
 msgid "You already created the maximum number of groups."
 msgstr "Вы уже создали максимальное число групп."
-
-msgid "You are no longer in that group."
-msgstr "Вы больше не состоите в этой группе."
 
 msgid "A group with that name already exists. Choose another name."
 msgstr "Группа с таким именем уже существует. Выберите другое имя."
@@ -1303,6 +1042,13 @@ msgstr "Вы вступили в {group}."
 msgid "Invitation declined."
 msgstr "Приглашение отклонено."
 
+msgid "1 person"
+msgstr "1 человек"
+
+#, rust-format
+msgid "{count} people"
+msgstr "Людей: {count}"
+
 msgid "Created by you"
 msgstr "Создана вами"
 
@@ -1312,6 +1058,9 @@ msgstr "Создатель: {user}"
 
 msgid "Network group (administrator)"
 msgstr "Сетевая группа (администратор)"
+
+msgid "you"
+msgstr "вы"
 
 msgid "owner"
 msgstr "владелец"
@@ -1335,8 +1084,7 @@ msgstr "Удалить {user}?"
 
 #, rust-format
 msgid ""
-"{user} leaves the group {group} and no longer reaches its members through "
-"it."
+"{user} leaves the group {group} and no longer reaches its members through it."
 msgstr ""
 "{user} покинет группу {group} и больше не будет связан через неё с её "
 "участниками."
@@ -1356,8 +1104,11 @@ msgid ""
 "You stop reaching the group's members through it. To come back, someone has "
 "to invite you again."
 msgstr ""
-"Вы больше не будете связаны с участниками группы через неё. Чтобы вернуться,"
-" кто-то должен снова вас пригласить."
+"Вы больше не будете связаны с участниками группы через неё. Чтобы вернуться, "
+"кто-то должен снова вас пригласить."
+
+msgid "Leave"
+msgstr "Покинуть"
 
 msgid "You left the group."
 msgstr "Вы покинули группу."
@@ -1399,6 +1150,9 @@ msgstr "Связаться с {user}?"
 msgid "You and {user} will reach each other's devices."
 msgstr "Вы и {user} получите доступ к устройствам друг друга."
 
+msgid "Join"
+msgstr "Вступить"
+
 msgid "Done. You can now reach each other's devices."
 msgstr "Готово. Теперь у вас есть доступ к устройствам друг друга."
 
@@ -1420,9 +1174,6 @@ msgid ""
 "If someone on the network has exactly this name, they get the invitation."
 msgstr "Если в сети есть кто-то с точно таким именем, он получит приглашение."
 
-msgid "People on the network"
-msgstr "Люди в сети"
-
 #, rust-format
 msgid "Invite \"{name}\""
 msgstr "Пригласить \"{name}\""
@@ -1442,13 +1193,13 @@ msgstr ""
 "Отправлено приглашений: {count}. Люди появятся в группе, когда примут их."
 
 msgid ""
-"Listed are the people you're already connected to. To invite someone else on"
-" the network, type their exact name. Each one gets the invitation in BigLace"
-" and decides whether to join."
+"Listed are the people you're already connected to. To invite someone else on "
+"the network, type their exact name. Each one gets the invitation in BigLace "
+"and decides whether to join."
 msgstr ""
-"Здесь показаны люди, с которыми вы уже связаны. Чтобы пригласить кого-то ещё"
-" из сети, введите его точное имя. Каждый получит приглашение в BigLace и сам"
-" решит, вступать ли."
+"Здесь показаны люди, с которыми вы уже связаны. Чтобы пригласить кого-то ещё "
+"из сети, введите его точное имя. Каждый получит приглашение в BigLace и сам "
+"решит, вступать ли."
 
 msgid ""
 "Nobody you're connected to yet. Type someone's exact name to invite them."
@@ -1497,142 +1248,176 @@ msgid "Invite {user}"
 msgstr "Пригласить {user}"
 
 msgid ""
-"Invites from BigLace need a BigScale server that supports them. Ask your "
-"administrator to update the server, or to create the invite in the panel."
+"Each of your groups has a voice room. Join it and talk with whoever is there "
+"— the sound goes straight between you, through the network."
 msgstr ""
-"Для приглашений из BigLace нужен сервер BigScale с их поддержкой. Попросите "
-"администратора обновить сервер или создать приглашение в панели."
+"У каждой вашей группы есть голосовая комната. Заходите и говорите с теми, "
+"кто там, — звук идёт напрямую между вами, через сеть."
+
+msgid "You're not in any group yet. Create one in Groups."
+msgstr "Вы пока не состоите ни в одной группе. Создайте её в разделе «Группы»."
+
+msgid "People in the room"
+msgstr "Люди в комнате"
+
+msgid "Everyone"
+msgstr "Все"
+
+msgid "Who's speaking"
+msgstr "Кто говорит"
+
+msgid "Mute"
+msgstr "Выключить микрофон"
+
+msgid "Mute your microphone for everyone"
+msgstr "Выключить ваш микрофон для всех"
+
+msgid "Which camera"
+msgstr "Какая камера"
+
+msgid "Include the computer's sound when sharing the screen"
+msgstr "Передавать звук компьютера при показе экрана"
 
 msgid ""
-"This device can't send invites (it isn't linked to a person's account)."
+"Videos and music playing here go to the room too; the room's voices don't "
+"(no echo)"
 msgstr ""
-"Это устройство не может отправлять приглашения (оно не привязано к учётной "
-"записи человека)."
+"Видео и музыка, играющие здесь, тоже идут в комнату; голоса комнаты — нет "
+"(без эха)"
 
-msgid ""
-"On this network everyone can reach everyone, so only the administrator can "
-"invite people."
-msgstr ""
-"В этой сети все связаны со всеми, поэтому приглашать людей может только "
-"администратор."
-
-msgid "You have too many pending invites. Cancel some or try again tomorrow."
-msgstr ""
-"У вас слишком много ожидающих приглашений. Отмените некоторые или попробуйте"
-" завтра."
-
-msgid ""
-"On this network only administrators invite new people. You can still invite "
-"people already on the network into your groups."
-msgstr ""
-"В этой сети новых людей приглашают только администраторы. Вы всё равно "
-"можете приглашать в свои группы людей, которые уже в сети."
-
-msgid "Waiting to be used"
-msgstr "Ожидает использования"
-
-msgid "Used"
-msgstr "Использовано"
-
-msgid "Expired"
-msgstr "Истекло"
-
-msgid "Cancelled"
-msgstr "Отменено"
-
-msgid "Waiting for an administrator's approval"
-msgstr "Ожидает одобрения администратора"
-
-msgid "Bring someone to your network"
-msgstr "Приведите кого-нибудь в свою сеть"
-
-msgid ""
-"Create a link or QR code and send it to the person. When they join, you two "
-"can reach each other's devices — no administrator needed. The link works "
-"once and stays valid until it's used or you cancel it."
-msgstr ""
-"Создайте ссылку или QR-код и отправьте человеку. Когда он подключится, у вас"
-" будет доступ к устройствам друг друга — без администратора. Ссылка "
-"срабатывает один раз и действует, пока её не используют или вы её не "
-"отмените."
-
-msgid "No invites yet"
-msgstr "Приглашений пока нет"
-
-msgid "Invites unavailable"
-msgstr "Приглашения недоступны"
+msgid "Rooms unavailable"
+msgstr "Комнаты недоступны"
 
 #, rust-format
-msgid "{user} joined"
-msgstr "{user} подключился"
+msgid "Could not turn on the camera: {error}"
+msgstr "Не удалось включить камеру: {error}"
 
 #, rust-format
-msgid "group {group}"
-msgstr "группа {group}"
+msgid "Could not share the screen: {error}"
+msgstr "Не удалось показать экран: {error}"
 
-msgid "Cancel this invite: the link stops working"
-msgstr "Отменить это приглашение: ссылка перестанет работать"
-
-msgid "The person you invite will reach your devices, and you theirs."
-msgstr "Приглашённый получит доступ к вашим устройствам, а вы — к его."
-
-msgid "Who is it for? (optional)"
-msgstr "Для кого это? (необязательно)"
-
-msgid "Access"
-msgstr "Доступ"
-
-msgid "Just the two of us"
-msgstr "Только мы вдвоём"
-
-msgid "You see each other's devices, nobody else"
-msgstr "Вы видите устройства друг друга, больше никто"
+msgid "Nobody here right now"
+msgstr "Сейчас здесь никого нет"
 
 #, rust-format
-msgid "Also the group {group}"
-msgstr "А также группа {group}"
+msgid "In the room: {people}"
+msgstr "В комнате: {people}"
 
-msgid "They join the group and see everyone in it"
-msgstr "Он вступит в группу и будет видеть всех её участников"
+#, rust-format
+msgid "Join the room {group}"
+msgstr "Войти в комнату {group}"
 
-msgid "A network of their own"
-msgstr "Своя собственная сеть"
+#, rust-format
+msgid "Could not join {group}: {error}"
+msgstr "Не удалось войти в {group}: {error}"
+
+msgid "📺 You're showing your screen to the room"
+msgstr "📺 Вы показываете свой экран комнате"
+
+msgid "📺 You're showing your screen · 1 person watching"
+msgstr "📺 Вы показываете свой экран · смотрит 1 человек"
+
+#, rust-format
+msgid "📺 You're showing your screen · {count} people watching"
+msgstr "📺 Вы показываете свой экран · зрителей: {count}"
+
+#, rust-format
+msgid "Room {group}"
+msgstr "Комната {group}"
+
+#, rust-format
+msgid "{people} · {talking} talking"
+msgstr "{people} · говорят: {talking}"
+
+msgid "connecting…"
+msgstr "подключение…"
+
+msgid "muted"
+msgstr "микрофон выключен"
+
+msgid "talking"
+msgstr "говорит"
+
+msgid "quiet"
+msgstr "молчит"
+
+msgid "Sharing screen"
+msgstr "Показывает экран"
+
+msgid "In control"
+msgstr "Управляет"
+
+msgid "Controls your screen now"
+msgstr "Сейчас управляет вашим экраном"
+
+msgid "Watching"
+msgstr "Смотрит"
+
+msgid "Watching your screen"
+msgstr "Смотрит ваш экран"
+
+#, rust-format
+msgid "{user} is showing their screen"
+msgstr "{user} показывает свой экран"
+
+msgid "Watch"
+msgstr "Смотреть"
+
+#, rust-format
+msgid "{user} asks to control your screen"
+msgstr "{user} просит управление вашим экраном"
 
 msgid ""
-"No link to you: they see only their own devices and whoever they invite "
-"(you're the administrator)"
+"They'll be able to use your mouse and keyboard. You can take control back at "
+"any time."
 msgstr ""
-"Без связи с вами: он видит только свои устройства и тех, кого пригласит (вы "
-"— администратор)"
+"Он сможет пользоваться вашими мышью и клавиатурой. Вы можете забрать "
+"управление в любой момент."
 
-msgid "Create invite"
-msgstr "Создать приглашение"
+msgid "Deny"
+msgstr "Отклонить"
 
-msgid "QR code of the invite link"
-msgstr "QR-код ссылки-приглашения"
+msgid "Allow"
+msgstr "Разрешить"
 
-msgid ""
-"Send the link or let the person scan the code with their phone. It works "
-"once and stays valid until used or cancelled."
-msgstr ""
-"Отправьте ссылку или дайте человеку отсканировать код телефоном. Она "
-"срабатывает один раз и действует, пока её не используют или не отменят."
+msgid "Turn off camera"
+msgstr "Выключить камеру"
 
-msgid "Copy link"
-msgstr "Копировать ссылку"
+msgid "Turn on camera"
+msgstr "Включить камеру"
 
-msgid "Done"
-msgstr "Готово"
+msgid "No camera found on this computer"
+msgstr "На этом компьютере не найдено камер"
 
-msgid "Copied!"
-msgstr "Скопировано!"
+msgid "Stop sharing"
+msgstr "Остановить показ"
 
-msgid ""
-"This network asks an administrator to approve each invite: the link starts "
-"working once they do. Its status shows in Invites."
-msgstr ""
-"В этой сети каждое приглашение должен одобрить администратор: ссылка "
-"заработает после одобрения. Её статус виден в разделе «Приглашения»."
+msgid "Share screen"
+msgstr "Показать экран"
+
+msgid "Stop showing your screen to the room"
+msgstr "Перестать показывать свой экран комнате"
+
+msgid "Show your screen to everyone in the room"
+msgstr "Показать свой экран всем в комнате"
+
+msgid "Take back control"
+msgstr "Забрать управление"
+
+msgid "Give control"
+msgstr "Дать управление"
+
+msgid "Stop them from using your mouse and keyboard"
+msgstr "Запретить им пользоваться вашими мышью и клавиатурой"
+
+msgid "Let them use your mouse and keyboard"
+msgstr "Разрешить им пользоваться вашими мышью и клавиатурой"
+
+msgid "Sound level"
+msgstr "Уровень звука"
+
+msgid "Unmute"
+msgstr "Включить микрофон"
 
 msgid "System accent"
 msgstr "Системный акцент"
@@ -1712,36 +1497,6 @@ msgstr "Изображение…"
 msgid "Choose a background picture"
 msgstr "Выберите фоновое изображение"
 
-msgid "Message"
-msgstr "Сообщение"
-
-msgid "Bold"
-msgstr "Жирный"
-
-msgid "Italic"
-msgstr "Курсив"
-
-msgid "Underline"
-msgstr "Подчёркнутый"
-
-msgid "Strikethrough"
-msgstr "Зачёркнутый"
-
-msgid "Monospace"
-msgstr "Моноширинный"
-
-msgid "Create link"
-msgstr "Создать ссылку"
-
-msgid "Plain text"
-msgstr "Обычный текст"
-
-msgid "Formatting"
-msgstr "Форматирование"
-
-msgid "Create"
-msgstr "Создать"
-
 msgid "Mesh VPN client for BigScale/Headscale."
 msgstr "Mesh VPN-клиент для BigScale/Headscale."
 
@@ -1775,13 +1530,19 @@ msgstr "Покинуть сеть?"
 
 #, rust-format
 msgid ""
-"This device leaves the network and its name becomes free. Your account {user} is kept: you can come back later from this computer, without an invite.\n"
+"This device leaves the network and its name becomes free. Your account "
+"{user} is kept: you can come back later from this computer, without an "
+"invite.\n"
 "\n"
-"If you won't come back, delete the account and the name {user} becomes free too."
+"If you won't come back, delete the account and the name {user} becomes free "
+"too."
 msgstr ""
-"Это устройство покинет сеть, и его имя освободится. Ваша учётная запись {user} сохранится: позже вы сможете вернуться с этого компьютера без приглашения.\n"
+"Это устройство покинет сеть, и его имя освободится. Ваша учётная запись "
+"{user} сохранится: позже вы сможете вернуться с этого компьютера без "
+"приглашения.\n"
 "\n"
-"Если вы не собираетесь возвращаться, удалите учётную запись — тогда освободится и имя {user}."
+"Если вы не собираетесь возвращаться, удалите учётную запись — тогда "
+"освободится и имя {user}."
 
 msgid "Leave and delete account"
 msgstr "Покинуть и удалить учётную запись"
@@ -1819,11 +1580,15 @@ msgstr "Не удалось связаться с сервером"
 msgid ""
 "The control server didn't confirm the sign-out: {error}\n"
 "\n"
-"You can still sign out on this computer: BigLace forgets the saved key and account and disconnects. The server keeps listing this device until an administrator removes it."
+"You can still sign out on this computer: BigLace forgets the saved key and "
+"account and disconnects. The server keeps listing this device until an "
+"administrator removes it."
 msgstr ""
 "Сервер управления не подтвердил выход: {error}\n"
 "\n"
-"Вы всё равно можете выйти на этом компьютере: BigLace забудет сохранённый ключ и учётную запись и отключится. Сервер будет показывать это устройство, пока администратор его не удалит."
+"Вы всё равно можете выйти на этом компьютере: BigLace забудет сохранённый "
+"ключ и учётную запись и отключится. Сервер будет показывать это устройство, "
+"пока администратор его не удалит."
 
 msgid "Sign out on this computer"
 msgstr "Выйти на этом компьютере"
@@ -1848,8 +1613,8 @@ msgid "Panel URL"
 msgstr "URL панели"
 
 msgid ""
-"Address of your BigScale panel (e.g. panel.example.org). The https:// scheme"
-" is added automatically if you omit it."
+"Address of your BigScale panel (e.g. panel.example.org). The https:// scheme "
+"is added automatically if you omit it."
 msgstr ""
 "Адрес вашей панели BigScale (например, panel.example.org). Схема https:// "
 "добавляется автоматически, если её опустить."
@@ -1873,13 +1638,13 @@ msgstr ""
 "Linux, Keychain в macOS, Credential Manager в Windows)."
 
 msgid ""
-"The name this device shows to other peers on the VPN — this is the Tailscale"
-" hostname, NOT your computer's name and NOT your user. Lowercase letters, "
+"The name this device shows to other peers on the VPN — this is the Tailscale "
+"hostname, NOT your computer's name and NOT your user. Lowercase letters, "
 "digits and hyphens. Example: 'tales-laptop', 'francois', 'office-pc'. Pick "
 "something other peers will recognise."
 msgstr ""
-"Имя, под которым это устройство отображается для других участников VPN — это"
-" имя хоста Tailscale, НЕ имя вашего компьютера и НЕ ваше имя пользователя. "
+"Имя, под которым это устройство отображается для других участников VPN — это "
+"имя хоста Tailscale, НЕ имя вашего компьютера и НЕ ваше имя пользователя. "
 "Строчные буквы, цифры и дефисы. Пример: 'tales-laptop', 'francois', 'office-"
 "pc'. Выберите то, что другие участники смогут узнать."
 
@@ -1938,8 +1703,8 @@ msgstr ""
 "использовали, или попросите администратора освободить имя."
 
 msgid ""
-"That name already belongs to an account on this network. Try another one, or"
-" ask the administrator to free it."
+"That name already belongs to an account on this network. Try another one, or "
+"ask the administrator to free it."
 msgstr ""
 "Это имя уже принадлежит учётной записи в этой сети. Попробуйте другое или "
 "попросите администратора освободить его."
@@ -1961,8 +1726,7 @@ msgstr ""
 "когда пригласивший скажет, что его одобрили."
 
 msgid "This invite is not valid. Check the link or ask for a new one."
-msgstr ""
-"Это приглашение недействительно. Проверьте ссылку или попросите новое."
+msgstr "Это приглашение недействительно. Проверьте ссылку или попросите новое."
 
 msgid ""
 "This server doesn't support invites yet. Sign in with a panel account "
@@ -1985,15 +1749,14 @@ msgid "Your name"
 msgstr "Ваше имя"
 
 msgid "How others will see you on the network, e.g. 'Maria' or 'Office PC'."
-msgstr ""
-"Как другие будут видеть вас в сети, например 'Мария' или 'Офисный ПК'."
+msgstr "Как другие будут видеть вас в сети, например 'Мария' или 'Офисный ПК'."
 
 msgid ""
 "The name this device shows to other peers. Lowercase letters, digits and "
 "hyphens. Example: 'maria-laptop'."
 msgstr ""
-"Имя, которое это устройство показывает другим узлам. Строчные буквы, цифры и"
-" дефисы. Пример: 'maria-laptop'."
+"Имя, которое это устройство показывает другим узлам. Строчные буквы, цифры и "
+"дефисы. Пример: 'maria-laptop'."
 
 msgid "Network"
 msgstr "Сеть"
@@ -2002,11 +1765,11 @@ msgid "Joining…"
 msgstr "Подключение…"
 
 msgid ""
-"That doesn't look like an invite link. It starts with https:// and contains "
-"/join#."
+"That doesn't look like an invite link. It starts with https:// and contains /"
+"join#."
 msgstr ""
-"Это не похоже на ссылку-приглашение. Она начинается с https:// и содержит "
-"/join#."
+"Это не похоже на ссылку-приглашение. Она начинается с https:// и содержит /"
+"join#."
 
 msgid "Type your name."
 msgstr "Введите своё имя."
@@ -2018,6 +1781,36 @@ msgstr "Добро пожаловать, {name}! Вы вступили в гру
 #, rust-format
 msgid "Welcome, {name}! Connecting…"
 msgstr "Добро пожаловать, {name}! Подключение…"
+
+msgid "Message"
+msgstr "Сообщение"
+
+msgid "Bold"
+msgstr "Жирный"
+
+msgid "Italic"
+msgstr "Курсив"
+
+msgid "Underline"
+msgstr "Подчёркнутый"
+
+msgid "Strikethrough"
+msgstr "Зачёркнутый"
+
+msgid "Monospace"
+msgstr "Моноширинный"
+
+msgid "Create link"
+msgstr "Создать ссылку"
+
+msgid "Plain text"
+msgstr "Обычный текст"
+
+msgid "Formatting"
+msgstr "Форматирование"
+
+msgid "Create"
+msgstr "Создать"
 
 msgid "End access"
 msgstr "Завершить доступ"
@@ -2031,8 +1824,8 @@ msgstr "Удалённый доступ начат"
 
 #, rust-format
 msgid ""
-"{user} ({device}) is seeing and controlling this screen. Open BigLace to end"
-" the access."
+"{user} ({device}) is seeing and controlling this screen. Open BigLace to end "
+"the access."
 msgstr ""
 "{user} ({device}) видит этот экран и управляет им. Откройте BigLace, чтобы "
 "завершить доступ."
@@ -2082,8 +1875,8 @@ msgid "Restart {name}'s computer?"
 msgstr "Перезагрузить компьютер {name}?"
 
 msgid ""
-"It restarts, signs in by itself and locks the screen right away; this window"
-" connects again when it's back. Unsaved work there is lost."
+"It restarts, signs in by itself and locks the screen right away; this window "
+"connects again when it's back. Unsaved work there is lost."
 msgstr ""
 "Он перезагрузится, сам войдёт в систему и сразу заблокирует экран; это окно "
 "переподключится, когда он вернётся. Несохранённая работа на нём будет "
@@ -2116,8 +1909,8 @@ msgid ""
 "You won't be able to reach it again until someone turns it on. Unsaved work "
 "there is lost."
 msgstr ""
-"Вы не сможете связаться с ним, пока кто-нибудь его не включит. Несохранённая"
-" работа на нём будет потеряна."
+"Вы не сможете связаться с ним, пока кто-нибудь его не включит. Несохранённая "
+"работа на нём будет потеряна."
 
 msgid "Shut Down"
 msgstr "Выключить"
@@ -2189,8 +1982,8 @@ msgid "{name} didn't allow the access."
 msgstr "{name} не разрешил доступ."
 
 msgid ""
-"That computer couldn't confirm this device. Make sure both run an up-to-date"
-" BigLace."
+"That computer couldn't confirm this device. Make sure both run an up-to-date "
+"BigLace."
 msgstr ""
 "Тот компьютер не смог подтвердить это устройство. Убедитесь, что на обоих "
 "установлена актуальная версия BigLace."
@@ -2264,6 +2057,36 @@ msgstr "Доступ к экрану {name} завершён: {error}"
 msgid "Give back control"
 msgstr "Вернуть управление"
 
+msgid "Connected · 1 peer"
+msgstr "Подключено · 1 пир"
+
+#, rust-format
+msgid "Connected · {n} peers"
+msgstr "Подключено · {n} пиров"
+
+#, rust-format
+msgid "In the room {group} · muted"
+msgstr "В комнате {group} · звук выключен"
+
+#, rust-format
+msgid "In the room {group}"
+msgstr "В комнате {group}"
+
+msgid "Show BigLace"
+msgstr "Показать BigLace"
+
+msgid "Unmute (Ctrl+Alt+M)"
+msgstr "Включить микрофон (Ctrl+Alt+M)"
+
+msgid "Mute (Ctrl+Alt+M)"
+msgstr "Выключить микрофон (Ctrl+Alt+M)"
+
+msgid "Leave the room"
+msgstr "Покинуть комнату"
+
+msgid "Quit"
+msgstr "Выйти"
+
 msgid "direct"
 msgstr "напрямую"
 
@@ -2299,6 +2122,9 @@ msgstr "Закреплено вверху"
 
 msgid "Unpinned"
 msgstr "Откреплено"
+
+msgid "Copy IP address"
+msgstr "Скопировать IP-адрес"
 
 msgid "Open files (SFTP)"
 msgstr "Открыть файлы (SFTP)"
@@ -2347,6 +2173,203 @@ msgstr "Не удалось обновить выходной узел"
 
 msgid "Copy"
 msgstr "Копировать"
+
+msgid "Search devices"
+msgstr "Поиск устройств"
+
+msgid "Invite someone to your network"
+msgstr "Пригласите кого-нибудь в свою сеть"
+
+msgid ""
+"Tailscale cannot write this device's DNS settings, so it can no longer keep "
+"peer names working. They may still resolve for now, from the configuration "
+"left over from before the failure, but that will break the next time the "
+"network changes — and BigLace will fall back to IP addresses. On most "
+"distributions `sudo resolvconf -u` repairs it."
+msgstr ""
+"Tailscale не может записать настройки DNS этого устройства, поэтому имена "
+"узлов больше не будут работать надёжно. Пока они ещё могут разрешаться по "
+"конфигурации, оставшейся с момента до сбоя, но это сломается при следующем "
+"изменении сети — и BigLace перейдёт на IP-адреса. В большинстве "
+"дистрибутивов это исправляет `sudo resolvconf -u`."
+
+msgid "Not connected"
+msgstr "Не подключено"
+
+msgid "Press Connect on the left to join the network."
+msgstr "Нажмите «Подключиться» слева, чтобы присоединиться к сети."
+
+msgid "The tailscale service is not running"
+msgstr "Служба tailscale не запущена"
+
+msgid "BigLace needs the tailscaled background service to manage the network."
+msgstr "BigLace требует фоновую службу tailscaled для управления сетью."
+
+msgid "Start service"
+msgstr "Запустить службу"
+
+msgid "Join the network"
+msgstr "Подключиться к сети"
+
+msgid "Choose how you're going to sign in."
+msgstr "Выберите способ входа."
+
+msgid "Ways to sign in"
+msgstr "Способы входа"
+
+msgid "Your account was kept on this computer. No invite needed."
+msgstr ""
+"Ваша учётная запись сохранена на этом компьютере. Приглашение не нужно."
+
+msgid "I have an invite"
+msgstr "У меня есть приглашение"
+
+msgid "Someone on the network sent you a link or a QR code."
+msgstr "Кто-то из сети прислал вам ссылку или QR-код."
+
+msgid "I have an access key"
+msgstr "У меня есть ключ доступа"
+
+msgid "A key the administrator created for you (starts with hskey-auth-)."
+msgstr "Ключ, созданный для вас администратором (начинается с hskey-auth-)."
+
+msgid "I'm the administrator"
+msgstr "Я администратор"
+
+msgid "Sign in with the BigScale panel's admin username and password."
+msgstr ""
+"Войдите с именем пользователя и паролем администратора панели BigScale."
+
+msgid "This device"
+msgstr "Это устройство"
+
+msgid "Devices on the network"
+msgstr "Устройства в сети"
+
+msgid "No other devices on the network yet."
+msgstr "Пока нет других устройств в сети."
+
+msgid "you are not in a room"
+msgstr "вы не в комнате"
+
+msgid "screen sharing isn't available on this computer"
+msgstr "демонстрация экрана недоступна на этом компьютере"
+
+#, rust-format
+msgid "The computer's sound can't be shared: {error}"
+msgstr "Звук компьютера нельзя передать: {error}"
+
+#, rust-format
+msgid "The screen share stopped: {error}"
+msgstr "Демонстрация экрана остановлена: {error}"
+
+msgid "This computer"
+msgstr "Этот компьютер"
+
+msgid "Who may use this computer remotely"
+msgstr "Кто может удалённо пользоваться этим компьютером"
+
+msgid ""
+"Anyone you're connected to can ask to see and control this screen. Choose "
+"who is let in without asking, and who is never let in."
+msgstr ""
+"Любой, с кем вы связаны, может попросить показать этот экран и управлять им. "
+"Выберите, кого пускать без вопросов, а кого не пускать никогда."
+
+msgid "History of accesses"
+msgstr "История доступа"
+
+msgid "Kept on this computer only."
+msgstr "Хранится только на этом компьютере."
+
+msgid "Clear"
+msgstr "Очистить"
+
+msgid "Nobody has asked yet."
+msgstr "Пока никто не запрашивал доступ."
+
+msgid "When someone asks, you can choose to always let them in."
+msgstr "Когда кто-то попросит, можно выбрать, чтобы его пускали всегда."
+
+msgid "Ask every time"
+msgstr "Спрашивать каждый раз"
+
+msgid "Always allow"
+msgstr "Всегда разрешать"
+
+msgid "Never allow"
+msgstr "Никогда не разрешать"
+
+msgid "No accesses yet."
+msgstr "Пока нет доступов."
+
+msgid "Remote access"
+msgstr "Удалённый доступ"
+
+msgid "Watched the screen shared with the room"
+msgstr "Смотрел экран, показанный в комнате"
+
+msgid "Got control of the shared screen"
+msgstr "Получил управление показанным экраном"
+
+msgid "Restarted the computer"
+msgstr "Перезагрузил компьютер"
+
+msgid "Restarted the session"
+msgstr "Перезапустил сеанс"
+
+msgid "Shut down the computer"
+msgstr "Выключил компьютер"
+
+msgid "allowed"
+msgstr "разрешено"
+
+msgid "allowed (always)"
+msgstr "разрешено (всегда)"
+
+msgid "came back after a restart"
+msgstr "вернулся после перезагрузки"
+
+msgid "denied"
+msgstr "отклонено"
+
+msgid "blocked (never allowed)"
+msgstr "заблокировано (никогда не разрешать)"
+
+msgid "ended"
+msgstr "завершено"
+
+#, rust-format
+msgid "{user} ({device})"
+msgstr "{user} ({device})"
+
+#, rust-format
+msgid "{done} of {total}"
+msgstr "{done} из {total}"
+
+msgid "Play"
+msgstr "Воспроизвести"
+
+msgid "Download"
+msgstr "Скачать"
+
+msgid "Open"
+msgstr "Открыть"
+
+msgid "Show in folder"
+msgstr "Показать в папке"
+
+msgid "Pause"
+msgstr "Пауза"
+
+msgid "Photo"
+msgstr "Фото"
+
+msgid "Video"
+msgstr "Видео"
+
+msgid "Voice message"
+msgstr "Голосовое сообщение"
 
 msgid "Smileys & people"
 msgstr "Смайлики и люди"
@@ -2402,12 +2425,11 @@ msgstr "файл с таким именем нельзя отправить"
 #, rust-format
 msgid "{user}'s computer is off or offline — try again when it's back"
 msgstr ""
-"компьютер {user} выключен или не в сети — попробуйте снова, когда он "
-"появится"
+"компьютер {user} выключен или не в сети — попробуйте снова, когда он появится"
 
 msgid ""
-"the file arrived different from the original (damaged on the way) — download"
-" it again"
+"the file arrived different from the original (damaged on the way) — download "
+"it again"
 msgstr ""
 "файл пришёл не таким, как оригинал (повреждён в пути) — скачайте его снова"
 
@@ -2450,11 +2472,9 @@ msgstr "📌 (открепил(а) сообщение)"
 msgid "nothing was recorded — is a microphone connected?"
 msgstr "ничего не записано — подключён ли микрофон?"
 
-msgid ""
-"this computer can't restart remotely (BigLace's helper isn't installed)"
+msgid "this computer can't restart remotely (BigLace's helper isn't installed)"
 msgstr ""
-"этот компьютер нельзя перезагрузить удалённо (помощник BigLace не "
-"установлен)"
+"этот компьютер нельзя перезагрузить удалённо (помощник BigLace не установлен)"
 
 #, rust-format
 msgid "could not prepare the automatic sign-in: {error}"
@@ -2485,22 +2505,8 @@ msgstr ""
 msgid "access to the camera was refused"
 msgstr "доступ к камере запрещён"
 
-msgid "you are not in a room"
-msgstr "вы не в комнате"
-
 msgid "Mute or unmute the microphone in a BigLace room"
 msgstr "Включить или выключить микрофон в комнате BigLace"
-
-msgid "screen sharing isn't available on this computer"
-msgstr "демонстрация экрана недоступна на этом компьютере"
-
-#, rust-format
-msgid "The computer's sound can't be shared: {error}"
-msgstr "Звук компьютера нельзя передать: {error}"
-
-#, rust-format
-msgid "The screen share stopped: {error}"
-msgstr "Демонстрация экрана остановлена: {error}"
 
 msgid "BigLace doesn't know that computer's network card yet"
 msgstr "BigLace ещё не знает сетевую карту этого компьютера"
@@ -2509,8 +2515,13 @@ msgid "this computer"
 msgstr "этот компьютер"
 
 msgid "no computer on its network is on to send the signal"
-msgstr ""
-"в его сети нет включённого компьютера, который мог бы отправить сигнал"
+msgstr "в его сети нет включённого компьютера, который мог бы отправить сигнал"
+
+msgid "Open with another app"
+msgstr "Открыть в другом приложении"
+
+msgid "Close"
+msgstr "Закрыть"
 
 #~ msgid "Panel credentials"
 #~ msgstr "Учетные данные панели"
@@ -2532,9 +2543,9 @@ msgstr ""
 #~ "Sign in with your BigScale panel username and password. A device identity "
 #~ "will be created on the network automatically — no manual key needed."
 #~ msgstr ""
-#~ "Войдите с помощью имени пользователя и пароля панели BigScale. Идентификатор"
-#~ " устройства будет создан в сети автоматически — ручной ввод ключа не "
-#~ "требуется."
+#~ "Войдите с помощью имени пользователя и пароля панели BigScale. "
+#~ "Идентификатор устройства будет создан в сети автоматически — ручной ввод "
+#~ "ключа не требуется."
 
 #~ msgid "Connected ·"
 #~ msgstr "Подключено ·"
@@ -2552,8 +2563,8 @@ msgstr ""
 #~ "Use your BigScale panel username and password to generate a key "
 #~ "automatically."
 #~ msgstr ""
-#~ "Используйте имя пользователя и пароль от панели BigScale для автоматической "
-#~ "генерации ключа."
+#~ "Используйте имя пользователя и пароль от панели BigScale для "
+#~ "автоматической генерации ключа."
 
 #~ msgid "Network user identifier"
 #~ msgstr "Идентификатор пользователя сети"
@@ -2602,8 +2613,8 @@ msgstr ""
 #~ msgstr "Ваш идентификатор в сети"
 
 #~ msgid ""
-#~ "Personal key generated for you in the BigScale panel (\"New key\" in Users)."
-#~ " Each person uses their own — this is not the server's key."
+#~ "Personal key generated for you in the BigScale panel (\"New key\" in "
+#~ "Users). Each person uses their own — this is not the server's key."
 #~ msgstr ""
 #~ "Персональный ключ, созданный для вас в панели BigScale («Новый ключ» в "
 #~ "разделе «Пользователи»). Каждый использует свой собственный — это не ключ "

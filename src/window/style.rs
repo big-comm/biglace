@@ -104,6 +104,19 @@ const CSS: &str = r#"
     font-size: 0.8em;
 }
 .chat-list row { border-radius: 12px; margin: 2px 4px; }
+window.media-viewer, window.media-viewer > * { background-color: black; }
+.media-viewer-bar {
+    padding: 10px 14px;
+    color: white;
+    background-image: linear-gradient(180deg, alpha(black, 0.65), alpha(black, 0));
+}
+.chat-list .peer-status-dot.online {
+    min-width: 11px;
+    min-height: 11px;
+    background-color: #2ec27e;
+    box-shadow: 0 0 0 2px @window_bg_color;
+}
+.chat-list-section { font-weight: 700; font-size: 0.85em; opacity: 0.6; margin: 12px 10px 2px 10px; }
 .chat-header { padding: 8px 14px; }
 .chat-backdrop {
     background-image: linear-gradient(180deg,
@@ -130,14 +143,19 @@ const CSS: &str = r#"
 .bubble.mine.continues { border-top-right-radius: 6px; }
 .bubble label { color: inherit; }
 .bubble.mine label link, .bubble.mine label > link { color: @accent_fg_color; text-decoration: underline; }
-.bubble-name { font-weight: 700; font-size: 0.9em; }
+.bubble.mentions-me { box-shadow: inset 3px 0 0 @accent_color, 0 1px 2px alpha(black, 0.12); }
+.bubble-name { font-weight: 700; font-size: 0.95em; }
 .bubble .bubble-name.name-color-0 { color: #e66100; }
 .bubble .bubble-name.name-color-1 { color: #2ec27e; }
 .bubble .bubble-name.name-color-2 { color: #1c71d8; }
 .bubble .bubble-name.name-color-3 { color: #c061cb; }
 .bubble .bubble-name.name-color-4 { color: #e5a50a; }
 .bubble .bubble-name.name-color-5 { color: #26a1a2; }
-.bubble-meta { font-size: 0.72em; opacity: 0.7; }
+/* A little larger than the system's text, like Telegram's. */
+.bubble-text { font-size: 1.08em; }
+.bubble-meta { font-size: 0.8em; opacity: 0.7; }
+.conv-subtitle { font-size: 0.92em; }
+.conv-time { font-size: 0.85em; }
 .bubble-meta .tick { font-weight: 800; letter-spacing: -2px; }
 .bubble.mine .bubble-meta .tick.delivered { opacity: 1; }
 .bubble.theirs .bubble-meta .tick.delivered { color: @accent_color; }
@@ -152,7 +170,7 @@ const CSS: &str = r#"
     font-weight: 600;
 }
 /* Replies, forwards, edits, deletions, reactions (Telegram-like). */
-.bubble-forwarded { font-size: 0.82em; font-style: italic; opacity: 0.85; }
+.bubble-forwarded { font-size: 0.9em; font-style: italic; opacity: 0.85; }
 .bubble-reply {
     padding: 3px 8px;
     margin: 2px 0 3px 0;
@@ -160,8 +178,8 @@ const CSS: &str = r#"
     border-radius: 6px;
     background-color: alpha(currentColor, 0.08);
 }
-.bubble-reply-name { font-weight: 700; font-size: 0.85em; }
-.bubble-reply-text { font-size: 0.88em; opacity: 0.85; }
+.bubble-reply-name { font-weight: 700; font-size: 0.92em; }
+.bubble-reply-text { font-size: 0.95em; opacity: 0.85; }
 .bubble.mine .bubble-reply { border-left-color: alpha(@accent_fg_color, 0.9); }
 .bubble.mine .bubble-reply .bubble-reply-name { color: @accent_fg_color; }
 .bubble-reply.reply-color-0 { border-left-color: #e66100; }
@@ -203,13 +221,13 @@ popover.msg-actions > contents { padding: 6px; border-radius: 14px; min-width: 2
 /* Pinned message, search, "replying to". */
 .pinned-bar { padding: 6px 14px; background-color: alpha(@view_bg_color, 0.6); border-bottom: 1px solid alpha(@view_fg_color, 0.08); }
 .pinned-icon { color: @accent_color; }
-.pinned-head { font-size: 0.8em; font-weight: 700; color: @accent_color; }
-.pinned-text { font-size: 0.9em; }
+.pinned-head { font-size: 0.88em; font-weight: 700; color: @accent_color; }
+.pinned-text { font-size: 0.97em; }
 .chat-search-bar { padding: 6px 12px; border-bottom: 1px solid alpha(@view_fg_color, 0.08); }
 .reply-bar { padding: 6px 12px; background-color: @view_bg_color; border-top: 1px solid alpha(@view_fg_color, 0.08); }
 .reply-bar-icon { color: @accent_color; }
-.reply-bar-title { font-weight: 700; font-size: 0.85em; color: @accent_color; }
-.reply-bar-text { font-size: 0.9em; opacity: 0.85; }
+.reply-bar-title { font-weight: 700; font-size: 0.92em; color: @accent_color; }
+.reply-bar-text { font-size: 0.97em; opacity: 0.85; }
 .typing { color: @accent_color; font-style: italic; }
 
 /* Composer, flat like Telegram's: attach · text · emoji · mic/send. */
@@ -220,7 +238,7 @@ popover.msg-actions > contents { padding: 6px; border-radius: 14px; min-width: 2
     border-top: 1px solid alpha(@view_fg_color, 0.08);
 }
 .chat-input-frame { background: none; box-shadow: none; }
-textview.chat-input, textview.chat-input > text { background: transparent; }
+textview.chat-input, textview.chat-input > text { background: transparent; font-size: 1.08em; }
 .chat-tool { min-width: 42px; min-height: 42px; margin-bottom: 1px; color: alpha(@view_fg_color, 0.6); }
 .chat-tool:hover { color: @accent_color; }
 .chat-send { color: @accent_color; }

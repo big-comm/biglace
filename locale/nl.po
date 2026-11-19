@@ -51,8 +51,8 @@ msgid ""
 "The pre-auth key was rejected by the server. Generate a new key in the "
 "BigScale panel and try again."
 msgstr ""
-"De pre-auth-sleutel is afgewezen door de server. Genereer een nieuwe sleutel"
-" in het BigScale-paneel en probeer het opnieuw."
+"De pre-auth-sleutel is afgewezen door de server. Genereer een nieuwe sleutel "
+"in het BigScale-paneel en probeer het opnieuw."
 
 msgid "Sign in or paste a pre-auth key first."
 msgstr "Log eerst in of plak een pre-authenticatiesleutel."
@@ -148,8 +148,8 @@ msgstr "Fout: {error}"
 msgid ""
 "The account {user} no longer exists on this network. Join with a new invite."
 msgstr ""
-"Het account {user} bestaat niet meer op dit netwerk. Word lid met een nieuwe"
-" uitnodiging."
+"Het account {user} bestaat niet meer op dit netwerk. Word lid met een nieuwe "
+"uitnodiging."
 
 msgid "Preferences"
 msgstr "Voorkeuren"
@@ -169,15 +169,14 @@ msgstr "Maak deze gebruiker de tailscale-operator"
 msgid ""
 "Lets BigLace manage the connection without asking for a password each time"
 msgstr ""
-"Laat BigLace de verbinding beheren zonder telkens om een wachtwoord te "
-"vragen"
+"Laat BigLace de verbinding beheren zonder telkens om een wachtwoord te vragen"
 
 msgid "Account"
 msgstr "Account"
 
 msgid ""
-"Signing out removes this device's identity from BigLace. You will need a new"
-" invite or key to join again."
+"Signing out removes this device's identity from BigLace. You will need a new "
+"invite or key to join again."
 msgstr ""
 "Afmelden verwijdert de identiteit van dit apparaat uit BigLace. Je hebt een "
 "nieuwe uitnodiging of sleutel nodig om weer lid te worden."
@@ -212,8 +211,7 @@ msgstr ""
 "opnieuw."
 
 #, rust-format
-msgid ""
-"This invite is for another network ({host}). Sign out first to join it."
+msgid "This invite is for another network ({host}). Sign out first to join it."
 msgstr ""
 "Deze uitnodiging is voor een ander netwerk ({host}). Meld je eerst af om "
 "daar lid van te worden."
@@ -236,8 +234,8 @@ msgid "Could not open the browser: {error}"
 msgstr "Kon de browser niet openen: {error}"
 
 msgid ""
-"You can't open the admin panel: you're not an administrator of this network,"
-" or the panel can't be reached."
+"You can't open the admin panel: you're not an administrator of this network, "
+"or the panel can't be reached."
 msgstr ""
 "Je kunt het beheerpaneel niet openen: je bent geen beheerder van dit "
 "netwerk, of het paneel is niet bereikbaar."
@@ -263,8 +261,8 @@ msgid ""
 "({error}). This device can still reconnect; the key is only needed again to "
 "register it anew."
 msgstr ""
-"Opgeslagen, maar de pre-auth-sleutel kon niet in de systeemsleutelbos worden"
-" opgeslagen ({error}). Dit apparaat kan nog steeds opnieuw verbinden; de "
+"Opgeslagen, maar de pre-auth-sleutel kon niet in de systeemsleutelbos worden "
+"opgeslagen ({error}). Dit apparaat kan nog steeds opnieuw verbinden; de "
 "sleutel is alleen nodig om het opnieuw te registreren."
 
 msgid "Connected"
@@ -337,129 +335,178 @@ msgstr "{count} apparaten zijn offline gegaan"
 msgid "{on_count} online · {off_count} offline"
 msgstr "{on_count} online · {off_count} offline"
 
-msgid "Connected · 1 peer"
-msgstr "Verbonden · 1 peer"
+msgid ""
+"Invites from BigLace need a BigScale server that supports them. Ask your "
+"administrator to update the server, or to create the invite in the panel."
+msgstr ""
+"Uitnodigingen vanuit BigLace vereisen een BigScale-server die ze "
+"ondersteunt. Vraag je beheerder om de server bij te werken, of om de "
+"uitnodiging in het paneel te maken."
+
+msgid "This device can't send invites (it isn't linked to a person's account)."
+msgstr ""
+"Dit apparaat kan geen uitnodigingen versturen (het is niet gekoppeld aan het "
+"account van een persoon)."
+
+msgid ""
+"The panel knows this device by a different key (BigLace was reinstalled?). "
+"Leave the network and join again to fix it."
+msgstr ""
+"Het paneel kent dit apparaat onder een andere sleutel (is BigLace opnieuw "
+"geïnstalleerd?). Verlaat het netwerk en word opnieuw lid om dit op te lossen."
+
+msgid ""
+"The panel couldn't confirm this device. Make sure BigLace is up to date and "
+"stays open while connected, then try again."
+msgstr ""
+"Het paneel kon dit apparaat niet bevestigen. Zorg dat BigLace up-to-date is "
+"en open blijft zolang je verbonden bent, en probeer het dan opnieuw."
+
+msgid "You are no longer in that group."
+msgstr "Je zit niet meer in die groep."
+
+msgid ""
+"On this network everyone can reach everyone, so only the administrator can "
+"invite people."
+msgstr ""
+"Op dit netwerk kan iedereen iedereen bereiken, dus alleen de beheerder kan "
+"mensen uitnodigen."
+
+msgid "You have too many pending invites. Cancel some or try again tomorrow."
+msgstr ""
+"Je hebt te veel openstaande uitnodigingen. Annuleer er een paar of probeer "
+"het morgen opnieuw."
+
+msgid ""
+"On this network only administrators invite new people. You can still invite "
+"people already on the network into your groups."
+msgstr ""
+"Op dit netwerk nodigen alleen beheerders nieuwe mensen uit. Je kunt wel "
+"mensen die al op het netwerk zijn uitnodigen voor je groepen."
 
 #, rust-format
-msgid "Connected · {n} peers"
-msgstr "Verbonden · {n} peers"
+msgid "Could not reach the panel: {error}"
+msgstr "Kon het paneel niet bereiken: {error}"
 
-#, rust-format
-msgid "In the room {group} · muted"
-msgstr "In de ruimte {group} · gedempt"
+msgid "Waiting to be used"
+msgstr "Wacht op gebruik"
 
-#, rust-format
-msgid "In the room {group}"
-msgstr "In de ruimte {group}"
+msgid "Used"
+msgstr "Gebruikt"
 
-msgid "Show BigLace"
-msgstr "Toon BigLace"
+msgid "Expired"
+msgstr "Verlopen"
 
-#, rust-format
-msgid "Room {group}"
-msgstr "Ruimte {group}"
+msgid "Cancelled"
+msgstr "Geannuleerd"
 
-msgid "Unmute (Ctrl+Alt+M)"
-msgstr "Dempen opheffen (Ctrl+Alt+M)"
-
-msgid "Mute (Ctrl+Alt+M)"
-msgstr "Dempen (Ctrl+Alt+M)"
-
-msgid "Leave the room"
-msgstr "Ruimte verlaten"
-
-msgid "Quit"
-msgstr "Afsluiten"
-
-msgid "Main menu"
-msgstr "Hoofdmenu"
-
-msgid "Search devices"
-msgstr "Apparaten zoeken"
+msgid "Waiting for an administrator's approval"
+msgstr "Wacht op goedkeuring van een beheerder"
 
 msgid "Refresh"
 msgstr "Vernieuwen"
 
+msgid "Main menu"
+msgstr "Hoofdmenu"
+
+msgid "Bring someone to your network"
+msgstr "Haal iemand naar je netwerk"
+
+msgid ""
+"Create a link or QR code and send it to the person. When they join, you two "
+"can reach each other's devices — no administrator needed. The link works "
+"once and stays valid until it's used or you cancel it."
+msgstr ""
+"Maak een link of QR-code en stuur die naar de persoon. Zodra die lid wordt, "
+"kunnen jullie elkaars apparaten bereiken — zonder beheerder. De link werkt "
+"één keer en blijft geldig totdat hij is gebruikt of je hem annuleert."
+
+msgid "No invites yet"
+msgstr "Nog geen uitnodigingen"
+
+msgid "Invites unavailable"
+msgstr "Uitnodigingen niet beschikbaar"
+
+#, rust-format
+msgid "{user} joined"
+msgstr "{user} is lid geworden"
+
 msgid "Invite"
 msgstr "Uitnodigen"
 
-msgid "Invite someone to your network"
-msgstr "Iemand uitnodigen voor je netwerk"
+#, rust-format
+msgid "group {group}"
+msgstr "groep {group}"
+
+msgid "Cancel this invite: the link stops working"
+msgstr "Deze uitnodiging annuleren: de link werkt dan niet meer"
+
+msgid "The person you invite will reach your devices, and you theirs."
+msgstr "De persoon die je uitnodigt, bereikt jouw apparaten en jij de zijne."
+
+msgid "Who is it for? (optional)"
+msgstr "Voor wie is het? (optioneel)"
+
+msgid "Access"
+msgstr "Toegang"
+
+msgid "Just the two of us"
+msgstr "Alleen wij tweeën"
+
+msgid "You see each other's devices, nobody else"
+msgstr "Jullie zien elkaars apparaten, verder niemand"
+
+#, rust-format
+msgid "Also the group {group}"
+msgstr "Ook de groep {group}"
+
+msgid "They join the group and see everyone in it"
+msgstr "Wordt lid van de groep en ziet iedereen daarin"
+
+msgid "A network of their own"
+msgstr "Een eigen netwerk"
 
 msgid ""
-"Tailscale cannot write this device's DNS settings, so it can no longer keep "
-"peer names working. They may still resolve for now, from the configuration "
-"left over from before the failure, but that will break the next time the "
-"network changes — and BigLace will fall back to IP addresses. On most "
-"distributions `sudo resolvconf -u` repairs it."
+"No link to you: they see only their own devices and whoever they invite "
+"(you're the administrator)"
 msgstr ""
-"Tailscale kan de DNS-instellingen van dit apparaat niet schrijven en kan de "
-"namen van peers dus niet langer werkend houden. Voorlopig worden ze "
-"misschien nog opgelost, dankzij de configuratie van vóór de storing, maar "
-"dat gaat mis bij de volgende netwerkwijziging — en dan valt BigLace terug op"
-" IP-adressen. Op de meeste distributies verhelpt `sudo resolvconf -u` dit."
+"Geen koppeling met jou: ziet alleen de eigen apparaten en wie hij of zij "
+"uitnodigt (jij bent de beheerder)"
 
-msgid "Not connected"
-msgstr "Niet verbonden"
+msgid "Create invite"
+msgstr "Uitnodiging maken"
 
-msgid "Press Connect on the left to join the network."
-msgstr "Druk links op Verbinden om lid te worden van het netwerk."
+msgid "QR code of the invite link"
+msgstr "QR-code van de uitnodigingslink"
 
-msgid "The tailscale service is not running"
-msgstr "De tailscale-service draait niet"
-
-msgid "BigLace needs the tailscaled background service to manage the network."
+msgid ""
+"Send the link or let the person scan the code with their phone. It works "
+"once and stays valid until used or cancelled."
 msgstr ""
-"BigLace heeft de tailscaled-achtergrondservice nodig om het netwerk te "
-"beheren."
+"Stuur de link of laat de persoon de code scannen met de telefoon. Hij werkt "
+"één keer en blijft geldig totdat hij is gebruikt of geannuleerd."
 
-msgid "Start service"
-msgstr "Service starten"
+msgid "Copy link"
+msgstr "Link kopiëren"
 
-msgid "Join the network"
-msgstr "Lid worden van het netwerk"
+msgid "Done"
+msgstr "Klaar"
 
-msgid "Choose how you're going to sign in."
-msgstr "Kies hoe je wilt aanmelden."
+msgid "Copied!"
+msgstr "Gekopieerd!"
 
-msgid "Ways to sign in"
-msgstr "Manieren om aan te melden"
-
-msgid "Your account was kept on this computer. No invite needed."
-msgstr "Je account is op deze computer bewaard. Geen uitnodiging nodig."
-
-msgid "I have an invite"
-msgstr "Ik heb een uitnodiging"
-
-msgid "Someone on the network sent you a link or a QR code."
-msgstr "Iemand op het netwerk heeft je een link of QR-code gestuurd."
-
-msgid "I have an access key"
-msgstr "Ik heb een toegangssleutel"
-
-msgid "A key the administrator created for you (starts with hskey-auth-)."
+msgid ""
+"This network asks an administrator to approve each invite: the link starts "
+"working once they do. Its status shows in Invites."
 msgstr ""
-"Een sleutel die de beheerder voor je heeft gemaakt (begint met hskey-auth-)."
+"Op dit netwerk moet een beheerder elke uitnodiging goedkeuren: de link werkt "
+"zodra dat is gebeurd. De status staat onder Uitnodigingen."
 
-msgid "I'm the administrator"
-msgstr "Ik ben de beheerder"
+msgid "Show the full sidebar"
+msgstr "Volledige zijbalk tonen"
 
-msgid "Sign in with the BigScale panel's admin username and password."
-msgstr ""
-"Meld je aan met de beheerdersgebruikersnaam en het wachtwoord van het "
-"BigScale-paneel."
-
-msgid "This device"
-msgstr "Dit apparaat"
-
-msgid "Copy IP address"
-msgstr "IP-adres kopiëren"
-
-msgid "Devices on the network"
-msgstr "Apparaten in het netwerk"
-
-msgid "No other devices on the network yet."
-msgstr "Nog geen andere apparaten in het netwerk."
+msgid "Show only icons in the sidebar"
+msgstr "Alleen pictogrammen in de zijbalk"
 
 msgid "Sections"
 msgstr "Secties"
@@ -512,13 +559,13 @@ msgid ""
 "One-time or reusable key created on the server (starts with 'hskey-auth-'). "
 "Used to register this device automatically without opening a browser."
 msgstr ""
-"Eenmalige of herbruikbare sleutel aangemaakt op de server (begint met "
-"'hskey-auth-'). Wordt gebruikt om dit apparaat automatisch te registreren "
-"zonder een browser te openen."
+"Eenmalige of herbruikbare sleutel aangemaakt op de server (begint met 'hskey-"
+"auth-'). Wordt gebruikt om dit apparaat automatisch te registreren zonder "
+"een browser te openen."
 
 msgid ""
-"The name this device shows to other peers on the VPN — this is the Tailscale"
-" hostname, NOT your computer's name and NOT your user. Lowercase letters, "
+"The name this device shows to other peers on the VPN — this is the Tailscale "
+"hostname, NOT your computer's name and NOT your user. Lowercase letters, "
 "digits and hyphens. Example: 'tales-laptop', 'francois', 'office-pc'."
 msgstr ""
 "De naam die dit apparaat aan andere peers op de VPN toont — dit is de "
@@ -533,11 +580,11 @@ msgid "Save"
 msgstr "Opslaan"
 
 msgid ""
-"Persist the server, key and device name above. Won't connect — press Connect"
-" afterwards."
+"Persist the server, key and device name above. Won't connect — press Connect "
+"afterwards."
 msgstr ""
-"Bewaar de server, sleutel en apparaatnaam hierboven. Maakt geen verbinding —"
-" druk daarna op Verbinden."
+"Bewaar de server, sleutel en apparaatnaam hierboven. Maakt geen verbinding — "
+"druk daarna op Verbinden."
 
 msgid "Connect automatically"
 msgstr "Automatisch verbinden"
@@ -546,8 +593,8 @@ msgid "Join the network when BigLace starts"
 msgstr "Word lid van het netwerk wanneer BigLace start"
 
 msgid ""
-"When on, BigLace runs 'tailscale up' as soon as it launches, so you join the"
-" mesh without clicking Connect every time."
+"When on, BigLace runs 'tailscale up' as soon as it launches, so you join the "
+"mesh without clicking Connect every time."
 msgstr ""
 "Indien ingeschakeld voert BigLace 'tailscale up' uit zodra het opstart, "
 "zodat u deelneemt aan het mesh-netwerk zonder elke keer op Verbinden te "
@@ -579,9 +626,8 @@ msgid "Retry with backoff when the connection is lost"
 msgstr "Opnieuw proberen met backoff wanneer de verbinding verbroken is"
 
 msgid ""
-"If the tunnel drops (network change, sleep, server hiccup), BigLace silently"
-" retries with growing delays instead of leaving you offline until you "
-"notice."
+"If the tunnel drops (network change, sleep, server hiccup), BigLace silently "
+"retries with growing delays instead of leaving you offline until you notice."
 msgstr ""
 "Als de tunnel wegvalt (netwerkwijziging, slaapstand, serverstoring), "
 "probeert BigLace het stilzwijgend opnieuw met oplopende vertragingen, in "
@@ -617,303 +663,6 @@ msgstr ""
 
 msgid "Your photo"
 msgstr "Je foto"
-
-msgid ""
-"Each of your groups has a voice room. Join it and talk with whoever is there"
-" — the sound goes straight between you, through the network."
-msgstr ""
-"Elk van je groepen heeft een spraakruimte. Doe mee en praat met wie er is — "
-"het geluid gaat rechtstreeks tussen jullie, via het netwerk."
-
-msgid "You're not in any group yet. Create one in Groups."
-msgstr "Je zit nog in geen enkele groep. Maak er een onder Groepen."
-
-msgid "People in the room"
-msgstr "Mensen in de ruimte"
-
-msgid "Everyone"
-msgstr "Iedereen"
-
-msgid "Who's speaking"
-msgstr "Wie er praat"
-
-msgid "Mute"
-msgstr "Dempen"
-
-msgid "Mute your microphone for everyone"
-msgstr "Je microfoon voor iedereen dempen"
-
-msgid "Leave"
-msgstr "Verlaten"
-
-msgid "Which camera"
-msgstr "Welke camera"
-
-msgid "Include the computer's sound when sharing the screen"
-msgstr "Computergeluid meesturen bij het delen van het scherm"
-
-msgid ""
-"Videos and music playing here go to the room too; the room's voices don't "
-"(no echo)"
-msgstr ""
-"Video's en muziek die hier spelen gaan ook naar de ruimte; de stemmen uit de"
-" ruimte niet (geen echo)"
-
-msgid "Rooms unavailable"
-msgstr "Ruimtes niet beschikbaar"
-
-#, rust-format
-msgid "Could not turn on the camera: {error}"
-msgstr "Kan de camera niet aanzetten: {error}"
-
-#, rust-format
-msgid "Could not share the screen: {error}"
-msgstr "Kon het scherm niet delen: {error}"
-
-#, rust-format
-msgid "Could not reach the panel: {error}"
-msgstr "Kon het paneel niet bereiken: {error}"
-
-msgid "Nobody here right now"
-msgstr "Op dit moment is hier niemand"
-
-#, rust-format
-msgid "In the room: {people}"
-msgstr "In de ruimte: {people}"
-
-msgid "Join"
-msgstr "Lid worden"
-
-#, rust-format
-msgid "Join the room {group}"
-msgstr "Deelnemen aan de ruimte {group}"
-
-#, rust-format
-msgid "Could not join {group}: {error}"
-msgstr "Kon niet deelnemen aan {group}: {error}"
-
-msgid "📺 You're showing your screen to the room"
-msgstr "📺 Je toont je scherm aan de ruimte"
-
-msgid "📺 You're showing your screen · 1 person watching"
-msgstr "📺 Je toont je scherm · 1 persoon kijkt"
-
-#, rust-format
-msgid "📺 You're showing your screen · {count} people watching"
-msgstr "📺 Je toont je scherm · {count} personen kijken"
-
-msgid "1 person"
-msgstr "1 persoon"
-
-#, rust-format
-msgid "{count} people"
-msgstr "{count} personen"
-
-#, rust-format
-msgid "{people} · {talking} talking"
-msgstr "{people} · {talking} praten"
-
-msgid "you"
-msgstr "jij"
-
-msgid "connecting…"
-msgstr "verbinden…"
-
-msgid "muted"
-msgstr "gedempt"
-
-msgid "talking"
-msgstr "praat"
-
-msgid "quiet"
-msgstr "stil"
-
-msgid "Sharing screen"
-msgstr "Deelt scherm"
-
-msgid "In control"
-msgstr "Heeft bediening"
-
-msgid "Controls your screen now"
-msgstr "Bedient nu je scherm"
-
-msgid "Watching"
-msgstr "Kijkt"
-
-msgid "Watching your screen"
-msgstr "Kijkt naar je scherm"
-
-#, rust-format
-msgid "{user} is showing their screen"
-msgstr "{user} toont het scherm"
-
-msgid "Watch"
-msgstr "Bekijken"
-
-#, rust-format
-msgid "{user} asks to control your screen"
-msgstr "{user} vraagt om je scherm te bedienen"
-
-msgid ""
-"They'll be able to use your mouse and keyboard. You can take control back at"
-" any time."
-msgstr ""
-"Die persoon kan dan je muis en toetsenbord gebruiken. Je kunt de bediening "
-"op elk moment terugnemen."
-
-msgid "Deny"
-msgstr "Weigeren"
-
-msgid "Allow"
-msgstr "Toestaan"
-
-msgid "Turn off camera"
-msgstr "Camera uitzetten"
-
-msgid "Turn on camera"
-msgstr "Camera aanzetten"
-
-msgid "No camera found on this computer"
-msgstr "Geen camera gevonden op deze computer"
-
-msgid "Stop sharing"
-msgstr "Delen stoppen"
-
-msgid "Share screen"
-msgstr "Scherm delen"
-
-msgid "Stop showing your screen to the room"
-msgstr "Stoppen met je scherm tonen aan de ruimte"
-
-msgid "Show your screen to everyone in the room"
-msgstr "Je scherm tonen aan iedereen in de ruimte"
-
-msgid "Take back control"
-msgstr "Bediening terugnemen"
-
-msgid "Give control"
-msgstr "Bediening geven"
-
-msgid "Stop them from using your mouse and keyboard"
-msgstr "Voorkomen dat die persoon je muis en toetsenbord gebruikt"
-
-msgid "Let them use your mouse and keyboard"
-msgstr "Die persoon je muis en toetsenbord laten gebruiken"
-
-msgid "Sound level"
-msgstr "Geluidsniveau"
-
-msgid "Unmute"
-msgstr "Dempen opheffen"
-
-msgid "This computer"
-msgstr "Deze computer"
-
-msgid "Who may use this computer remotely"
-msgstr "Wie deze computer op afstand mag gebruiken"
-
-msgid ""
-"Anyone you're connected to can ask to see and control this screen. Choose "
-"who is let in without asking, and who is never let in."
-msgstr ""
-"Iedereen met wie je verbonden bent, kan vragen om dit scherm te zien en te "
-"bedienen. Kies wie zonder te vragen binnen mag en wie nooit."
-
-msgid "History of accesses"
-msgstr "Toegangsgeschiedenis"
-
-msgid "Kept on this computer only."
-msgstr "Alleen op deze computer bewaard."
-
-msgid "Clear"
-msgstr "Wissen"
-
-msgid "Nobody has asked yet."
-msgstr "Nog niemand heeft het gevraagd."
-
-msgid "When someone asks, you can choose to always let them in."
-msgstr ""
-"Als iemand het vraagt, kun je ervoor kiezen die persoon altijd toe te laten."
-
-msgid "Ask every time"
-msgstr "Elke keer vragen"
-
-msgid "Always allow"
-msgstr "Altijd toestaan"
-
-msgid "Never allow"
-msgstr "Nooit toestaan"
-
-msgid "No accesses yet."
-msgstr "Nog geen toegang."
-
-msgid "Remote access"
-msgstr "Toegang op afstand"
-
-msgid "Watched the screen shared with the room"
-msgstr "Heeft het met de ruimte gedeelde scherm bekeken"
-
-msgid "Got control of the shared screen"
-msgstr "Kreeg de bediening van het gedeelde scherm"
-
-msgid "Restarted the computer"
-msgstr "Heeft de computer herstart"
-
-msgid "Restarted the session"
-msgstr "Heeft de sessie herstart"
-
-msgid "Shut down the computer"
-msgstr "Heeft de computer afgesloten"
-
-msgid "allowed"
-msgstr "toegestaan"
-
-msgid "allowed (always)"
-msgstr "toegestaan (altijd)"
-
-msgid "came back after a restart"
-msgstr "terug na een herstart"
-
-msgid "denied"
-msgstr "geweigerd"
-
-msgid "blocked (never allowed)"
-msgstr "geblokkeerd (nooit toegestaan)"
-
-msgid "ended"
-msgstr "beëindigd"
-
-#, rust-format
-msgid "{user} ({device})"
-msgstr "{user} ({device})"
-
-#, rust-format
-msgid "{done} of {total}"
-msgstr "{done} van {total}"
-
-msgid "Play"
-msgstr "Afspelen"
-
-msgid "Download"
-msgstr "Downloaden"
-
-msgid "Open"
-msgstr "Openen"
-
-msgid "Show in folder"
-msgstr "Tonen in map"
-
-msgid "Pause"
-msgstr "Pauzeren"
-
-msgid "Photo"
-msgstr "Foto"
-
-msgid "Video"
-msgstr "Video"
-
-msgid "Voice message"
-msgstr "Spraakbericht"
 
 msgid "New chat"
 msgstr "Nieuwe chat"
@@ -984,6 +733,9 @@ msgid ""
 msgstr ""
 "Kies een gesprek of begin er een. Berichten gaan rechtstreeks tussen je "
 "computers — de server ziet ze nooit."
+
+msgid "People on the network"
+msgstr "Personen op het netwerk"
 
 msgid "Group"
 msgstr "Groep"
@@ -1163,32 +915,14 @@ msgstr ""
 "geen groepen."
 
 msgid ""
-"The panel knows this device by a different key (BigLace was reinstalled?). "
-"Leave the network and join again to fix it."
-msgstr ""
-"Het paneel kent dit apparaat onder een andere sleutel (is BigLace opnieuw "
-"geïnstalleerd?). Verlaat het netwerk en word opnieuw lid om dit op te "
-"lossen."
-
-msgid ""
-"The panel couldn't confirm this device. Make sure BigLace is up to date and "
-"stays open while connected, then try again."
-msgstr ""
-"Het paneel kon dit apparaat niet bevestigen. Zorg dat BigLace up-to-date is "
-"en open blijft zolang je verbonden bent, en probeer het dan opnieuw."
-
-msgid ""
 "On this network everyone already reaches everyone, so groups aren't needed. "
 "The administrator can set access rules first."
 msgstr ""
-"Op dit netwerk bereikt iedereen al iedereen, dus groepen zijn niet nodig. De"
-" beheerder kan eerst toegangsregels instellen."
+"Op dit netwerk bereikt iedereen al iedereen, dus groepen zijn niet nodig. De "
+"beheerder kan eerst toegangsregels instellen."
 
 msgid "You already created the maximum number of groups."
 msgstr "Je hebt al het maximale aantal groepen gemaakt."
-
-msgid "You are no longer in that group."
-msgstr "Je zit niet meer in die groep."
 
 msgid "A group with that name already exists. Choose another name."
 msgstr "Er bestaat al een groep met die naam. Kies een andere naam."
@@ -1196,8 +930,8 @@ msgstr "Er bestaat al een groep met die naam. Kies een andere naam."
 msgid ""
 "Use lowercase letters, digits and hyphens, starting with a letter or digit."
 msgstr ""
-"Gebruik kleine letters, cijfers en koppeltekens, beginnend met een letter of"
-" cijfer."
+"Gebruik kleine letters, cijfers en koppeltekens, beginnend met een letter of "
+"cijfer."
 
 msgid ""
 "The administrator uses this group in the network's rules, so it can't be "
@@ -1233,8 +967,8 @@ msgid ""
 "This invite only brings new people into the network, and you're already in "
 "it."
 msgstr ""
-"Deze uitnodiging brengt alleen nieuwe mensen in het netwerk, en je zit er al"
-" in."
+"Deze uitnodiging brengt alleen nieuwe mensen in het netwerk, en je zit er al "
+"in."
 
 msgid "This invite was already used. Ask for a new one."
 msgstr "Deze uitnodiging is al gebruikt. Vraag om een nieuwe."
@@ -1290,8 +1024,8 @@ msgstr "Uitnodiging voor een groep"
 msgid ""
 "{user} invites you to the group {group}. Open BigLace to accept or decline."
 msgstr ""
-"{user} nodigt je uit voor de groep {group}. Open BigLace om te accepteren of"
-" te weigeren."
+"{user} nodigt je uit voor de groep {group}. Open BigLace om te accepteren of "
+"te weigeren."
 
 #, rust-format
 msgid "{user} invites you to {group}"
@@ -1314,6 +1048,13 @@ msgstr "Je bent lid geworden van {group}."
 msgid "Invitation declined."
 msgstr "Uitnodiging geweigerd."
 
+msgid "1 person"
+msgstr "1 persoon"
+
+#, rust-format
+msgid "{count} people"
+msgstr "{count} personen"
+
 msgid "Created by you"
 msgstr "Door jou gemaakt"
 
@@ -1323,6 +1064,9 @@ msgstr "Gemaakt door {user}"
 
 msgid "Network group (administrator)"
 msgstr "Netwerkgroep (beheerder)"
+
+msgid "you"
+msgstr "jij"
 
 msgid "owner"
 msgstr "eigenaar"
@@ -1346,11 +1090,9 @@ msgstr "{user} verwijderen?"
 
 #, rust-format
 msgid ""
-"{user} leaves the group {group} and no longer reaches its members through "
-"it."
+"{user} leaves the group {group} and no longer reaches its members through it."
 msgstr ""
-"{user} verlaat de groep {group} en bereikt de leden niet meer via deze "
-"groep."
+"{user} verlaat de groep {group} en bereikt de leden niet meer via deze groep."
 
 msgid "Remove"
 msgstr "Verwijderen"
@@ -1369,6 +1111,9 @@ msgid ""
 msgstr ""
 "Je bereikt de leden van de groep niet meer via deze groep. Om terug te "
 "komen, moet iemand je opnieuw uitnodigen."
+
+msgid "Leave"
+msgstr "Verlaten"
 
 msgid "You left the group."
 msgstr "Je hebt de groep verlaten."
@@ -1410,6 +1155,9 @@ msgstr "Verbinden met {user}?"
 msgid "You and {user} will reach each other's devices."
 msgstr "Jij en {user} bereiken elkaars apparaten."
 
+msgid "Join"
+msgstr "Lid worden"
+
 msgid "Done. You can now reach each other's devices."
 msgstr "Klaar. Jullie kunnen nu elkaars apparaten bereiken."
 
@@ -1430,11 +1178,7 @@ msgstr "Personen zoeken"
 msgid ""
 "If someone on the network has exactly this name, they get the invitation."
 msgstr ""
-"Als iemand op het netwerk precies deze naam heeft, krijgt die de "
-"uitnodiging."
-
-msgid "People on the network"
-msgstr "Personen op het netwerk"
+"Als iemand op het netwerk precies deze naam heeft, krijgt die de uitnodiging."
 
 #, rust-format
 msgid "Invite \"{name}\""
@@ -1457,9 +1201,9 @@ msgstr ""
 "accepteren."
 
 msgid ""
-"Listed are the people you're already connected to. To invite someone else on"
-" the network, type their exact name. Each one gets the invitation in BigLace"
-" and decides whether to join."
+"Listed are the people you're already connected to. To invite someone else on "
+"the network, type their exact name. Each one gets the invitation in BigLace "
+"and decides whether to join."
 msgstr ""
 "Hier staan de mensen met wie je al verbonden bent. Typ de exacte naam om "
 "iemand anders op het netwerk uit te nodigen. Iedereen krijgt de uitnodiging "
@@ -1511,142 +1255,176 @@ msgid "Invite {user}"
 msgstr "{user} uitnodigen"
 
 msgid ""
-"Invites from BigLace need a BigScale server that supports them. Ask your "
-"administrator to update the server, or to create the invite in the panel."
+"Each of your groups has a voice room. Join it and talk with whoever is there "
+"— the sound goes straight between you, through the network."
 msgstr ""
-"Uitnodigingen vanuit BigLace vereisen een BigScale-server die ze "
-"ondersteunt. Vraag je beheerder om de server bij te werken, of om de "
-"uitnodiging in het paneel te maken."
+"Elk van je groepen heeft een spraakruimte. Doe mee en praat met wie er is — "
+"het geluid gaat rechtstreeks tussen jullie, via het netwerk."
+
+msgid "You're not in any group yet. Create one in Groups."
+msgstr "Je zit nog in geen enkele groep. Maak er een onder Groepen."
+
+msgid "People in the room"
+msgstr "Mensen in de ruimte"
+
+msgid "Everyone"
+msgstr "Iedereen"
+
+msgid "Who's speaking"
+msgstr "Wie er praat"
+
+msgid "Mute"
+msgstr "Dempen"
+
+msgid "Mute your microphone for everyone"
+msgstr "Je microfoon voor iedereen dempen"
+
+msgid "Which camera"
+msgstr "Welke camera"
+
+msgid "Include the computer's sound when sharing the screen"
+msgstr "Computergeluid meesturen bij het delen van het scherm"
 
 msgid ""
-"This device can't send invites (it isn't linked to a person's account)."
+"Videos and music playing here go to the room too; the room's voices don't "
+"(no echo)"
 msgstr ""
-"Dit apparaat kan geen uitnodigingen versturen (het is niet gekoppeld aan het"
-" account van een persoon)."
+"Video's en muziek die hier spelen gaan ook naar de ruimte; de stemmen uit de "
+"ruimte niet (geen echo)"
 
-msgid ""
-"On this network everyone can reach everyone, so only the administrator can "
-"invite people."
-msgstr ""
-"Op dit netwerk kan iedereen iedereen bereiken, dus alleen de beheerder kan "
-"mensen uitnodigen."
-
-msgid "You have too many pending invites. Cancel some or try again tomorrow."
-msgstr ""
-"Je hebt te veel openstaande uitnodigingen. Annuleer er een paar of probeer "
-"het morgen opnieuw."
-
-msgid ""
-"On this network only administrators invite new people. You can still invite "
-"people already on the network into your groups."
-msgstr ""
-"Op dit netwerk nodigen alleen beheerders nieuwe mensen uit. Je kunt wel "
-"mensen die al op het netwerk zijn uitnodigen voor je groepen."
-
-msgid "Waiting to be used"
-msgstr "Wacht op gebruik"
-
-msgid "Used"
-msgstr "Gebruikt"
-
-msgid "Expired"
-msgstr "Verlopen"
-
-msgid "Cancelled"
-msgstr "Geannuleerd"
-
-msgid "Waiting for an administrator's approval"
-msgstr "Wacht op goedkeuring van een beheerder"
-
-msgid "Bring someone to your network"
-msgstr "Haal iemand naar je netwerk"
-
-msgid ""
-"Create a link or QR code and send it to the person. When they join, you two "
-"can reach each other's devices — no administrator needed. The link works "
-"once and stays valid until it's used or you cancel it."
-msgstr ""
-"Maak een link of QR-code en stuur die naar de persoon. Zodra die lid wordt, "
-"kunnen jullie elkaars apparaten bereiken — zonder beheerder. De link werkt "
-"één keer en blijft geldig totdat hij is gebruikt of je hem annuleert."
-
-msgid "No invites yet"
-msgstr "Nog geen uitnodigingen"
-
-msgid "Invites unavailable"
-msgstr "Uitnodigingen niet beschikbaar"
+msgid "Rooms unavailable"
+msgstr "Ruimtes niet beschikbaar"
 
 #, rust-format
-msgid "{user} joined"
-msgstr "{user} is lid geworden"
+msgid "Could not turn on the camera: {error}"
+msgstr "Kan de camera niet aanzetten: {error}"
 
 #, rust-format
-msgid "group {group}"
-msgstr "groep {group}"
+msgid "Could not share the screen: {error}"
+msgstr "Kon het scherm niet delen: {error}"
 
-msgid "Cancel this invite: the link stops working"
-msgstr "Deze uitnodiging annuleren: de link werkt dan niet meer"
-
-msgid "The person you invite will reach your devices, and you theirs."
-msgstr "De persoon die je uitnodigt, bereikt jouw apparaten en jij de zijne."
-
-msgid "Who is it for? (optional)"
-msgstr "Voor wie is het? (optioneel)"
-
-msgid "Access"
-msgstr "Toegang"
-
-msgid "Just the two of us"
-msgstr "Alleen wij tweeën"
-
-msgid "You see each other's devices, nobody else"
-msgstr "Jullie zien elkaars apparaten, verder niemand"
+msgid "Nobody here right now"
+msgstr "Op dit moment is hier niemand"
 
 #, rust-format
-msgid "Also the group {group}"
-msgstr "Ook de groep {group}"
+msgid "In the room: {people}"
+msgstr "In de ruimte: {people}"
 
-msgid "They join the group and see everyone in it"
-msgstr "Wordt lid van de groep en ziet iedereen daarin"
+#, rust-format
+msgid "Join the room {group}"
+msgstr "Deelnemen aan de ruimte {group}"
 
-msgid "A network of their own"
-msgstr "Een eigen netwerk"
+#, rust-format
+msgid "Could not join {group}: {error}"
+msgstr "Kon niet deelnemen aan {group}: {error}"
+
+msgid "📺 You're showing your screen to the room"
+msgstr "📺 Je toont je scherm aan de ruimte"
+
+msgid "📺 You're showing your screen · 1 person watching"
+msgstr "📺 Je toont je scherm · 1 persoon kijkt"
+
+#, rust-format
+msgid "📺 You're showing your screen · {count} people watching"
+msgstr "📺 Je toont je scherm · {count} personen kijken"
+
+#, rust-format
+msgid "Room {group}"
+msgstr "Ruimte {group}"
+
+#, rust-format
+msgid "{people} · {talking} talking"
+msgstr "{people} · {talking} praten"
+
+msgid "connecting…"
+msgstr "verbinden…"
+
+msgid "muted"
+msgstr "gedempt"
+
+msgid "talking"
+msgstr "praat"
+
+msgid "quiet"
+msgstr "stil"
+
+msgid "Sharing screen"
+msgstr "Deelt scherm"
+
+msgid "In control"
+msgstr "Heeft bediening"
+
+msgid "Controls your screen now"
+msgstr "Bedient nu je scherm"
+
+msgid "Watching"
+msgstr "Kijkt"
+
+msgid "Watching your screen"
+msgstr "Kijkt naar je scherm"
+
+#, rust-format
+msgid "{user} is showing their screen"
+msgstr "{user} toont het scherm"
+
+msgid "Watch"
+msgstr "Bekijken"
+
+#, rust-format
+msgid "{user} asks to control your screen"
+msgstr "{user} vraagt om je scherm te bedienen"
 
 msgid ""
-"No link to you: they see only their own devices and whoever they invite "
-"(you're the administrator)"
+"They'll be able to use your mouse and keyboard. You can take control back at "
+"any time."
 msgstr ""
-"Geen koppeling met jou: ziet alleen de eigen apparaten en wie hij of zij "
-"uitnodigt (jij bent de beheerder)"
+"Die persoon kan dan je muis en toetsenbord gebruiken. Je kunt de bediening "
+"op elk moment terugnemen."
 
-msgid "Create invite"
-msgstr "Uitnodiging maken"
+msgid "Deny"
+msgstr "Weigeren"
 
-msgid "QR code of the invite link"
-msgstr "QR-code van de uitnodigingslink"
+msgid "Allow"
+msgstr "Toestaan"
 
-msgid ""
-"Send the link or let the person scan the code with their phone. It works "
-"once and stays valid until used or cancelled."
-msgstr ""
-"Stuur de link of laat de persoon de code scannen met de telefoon. Hij werkt "
-"één keer en blijft geldig totdat hij is gebruikt of geannuleerd."
+msgid "Turn off camera"
+msgstr "Camera uitzetten"
 
-msgid "Copy link"
-msgstr "Link kopiëren"
+msgid "Turn on camera"
+msgstr "Camera aanzetten"
 
-msgid "Done"
-msgstr "Klaar"
+msgid "No camera found on this computer"
+msgstr "Geen camera gevonden op deze computer"
 
-msgid "Copied!"
-msgstr "Gekopieerd!"
+msgid "Stop sharing"
+msgstr "Delen stoppen"
 
-msgid ""
-"This network asks an administrator to approve each invite: the link starts "
-"working once they do. Its status shows in Invites."
-msgstr ""
-"Op dit netwerk moet een beheerder elke uitnodiging goedkeuren: de link werkt"
-" zodra dat is gebeurd. De status staat onder Uitnodigingen."
+msgid "Share screen"
+msgstr "Scherm delen"
+
+msgid "Stop showing your screen to the room"
+msgstr "Stoppen met je scherm tonen aan de ruimte"
+
+msgid "Show your screen to everyone in the room"
+msgstr "Je scherm tonen aan iedereen in de ruimte"
+
+msgid "Take back control"
+msgstr "Bediening terugnemen"
+
+msgid "Give control"
+msgstr "Bediening geven"
+
+msgid "Stop them from using your mouse and keyboard"
+msgstr "Voorkomen dat die persoon je muis en toetsenbord gebruikt"
+
+msgid "Let them use your mouse and keyboard"
+msgstr "Die persoon je muis en toetsenbord laten gebruiken"
+
+msgid "Sound level"
+msgstr "Geluidsniveau"
+
+msgid "Unmute"
+msgstr "Dempen opheffen"
 
 msgid "System accent"
 msgstr "Systeemaccent"
@@ -1726,36 +1504,6 @@ msgstr "Afbeelding…"
 msgid "Choose a background picture"
 msgstr "Kies een achtergrondafbeelding"
 
-msgid "Message"
-msgstr "Bericht"
-
-msgid "Bold"
-msgstr "Vet"
-
-msgid "Italic"
-msgstr "Cursief"
-
-msgid "Underline"
-msgstr "Onderstrepen"
-
-msgid "Strikethrough"
-msgstr "Doorhalen"
-
-msgid "Monospace"
-msgstr "Vaste breedte"
-
-msgid "Create link"
-msgstr "Link maken"
-
-msgid "Plain text"
-msgstr "Platte tekst"
-
-msgid "Formatting"
-msgstr "Opmaak"
-
-msgid "Create"
-msgstr "Maken"
-
 msgid "Mesh VPN client for BigScale/Headscale."
 msgstr "Mesh VPN-client voor BigScale/Headscale."
 
@@ -1783,21 +1531,27 @@ msgid ""
 "in with a different account."
 msgstr ""
 "Dit verbreekt de verbinding met het netwerk, meldt dit apparaat af van de "
-"huidige besturingsserver en vergeet het opgeslagen wachtwoord. U kunt daarna"
-" inloggen met een ander account."
+"huidige besturingsserver en vergeet het opgeslagen wachtwoord. U kunt daarna "
+"inloggen met een ander account."
 
 msgid "Leave the network?"
 msgstr "Netwerk verlaten?"
 
 #, rust-format
 msgid ""
-"This device leaves the network and its name becomes free. Your account {user} is kept: you can come back later from this computer, without an invite.\n"
+"This device leaves the network and its name becomes free. Your account "
+"{user} is kept: you can come back later from this computer, without an "
+"invite.\n"
 "\n"
-"If you won't come back, delete the account and the name {user} becomes free too."
+"If you won't come back, delete the account and the name {user} becomes free "
+"too."
 msgstr ""
-"Dit apparaat verlaat het netwerk en de naam komt vrij. Je account {user} blijft bewaard: je kunt later vanaf deze computer terugkomen, zonder uitnodiging.\n"
+"Dit apparaat verlaat het netwerk en de naam komt vrij. Je account {user} "
+"blijft bewaard: je kunt later vanaf deze computer terugkomen, zonder "
+"uitnodiging.\n"
 "\n"
-"Als je niet terugkomt, verwijder dan het account, dan komt ook de naam {user} vrij."
+"Als je niet terugkomt, verwijder dan het account, dan komt ook de naam "
+"{user} vrij."
 
 msgid "Leave and delete account"
 msgstr "Verlaten en account verwijderen"
@@ -1835,11 +1589,15 @@ msgstr "Kon de server niet bereiken"
 msgid ""
 "The control server didn't confirm the sign-out: {error}\n"
 "\n"
-"You can still sign out on this computer: BigLace forgets the saved key and account and disconnects. The server keeps listing this device until an administrator removes it."
+"You can still sign out on this computer: BigLace forgets the saved key and "
+"account and disconnects. The server keeps listing this device until an "
+"administrator removes it."
 msgstr ""
 "De controleserver heeft het afmelden niet bevestigd: {error}\n"
 "\n"
-"Je kunt je toch op deze computer afmelden: BigLace vergeet de opgeslagen sleutel en het account en verbreekt de verbinding. De server blijft dit apparaat tonen totdat een beheerder het verwijdert."
+"Je kunt je toch op deze computer afmelden: BigLace vergeet de opgeslagen "
+"sleutel en het account en verbreekt de verbinding. De server blijft dit "
+"apparaat tonen totdat een beheerder het verwijdert."
 
 msgid "Sign out on this computer"
 msgstr "Afmelden op deze computer"
@@ -1864,11 +1622,11 @@ msgid "Panel URL"
 msgstr "Panel-URL"
 
 msgid ""
-"Address of your BigScale panel (e.g. panel.example.org). The https:// scheme"
-" is added automatically if you omit it."
+"Address of your BigScale panel (e.g. panel.example.org). The https:// scheme "
+"is added automatically if you omit it."
 msgstr ""
-"Adres van uw BigScale-paneel (bijv. panel.voorbeeld.org). Het "
-"https://-schema wordt automatisch toegevoegd als u dit weglaat."
+"Adres van uw BigScale-paneel (bijv. panel.voorbeeld.org). Het https://-"
+"schema wordt automatisch toegevoegd als u dit weglaat."
 
 msgid "Panel admin username"
 msgstr "Beheerdersgebruikersnaam van het paneel"
@@ -1887,8 +1645,8 @@ msgstr ""
 "Keychain op macOS, Credential Manager op Windows)."
 
 msgid ""
-"The name this device shows to other peers on the VPN — this is the Tailscale"
-" hostname, NOT your computer's name and NOT your user. Lowercase letters, "
+"The name this device shows to other peers on the VPN — this is the Tailscale "
+"hostname, NOT your computer's name and NOT your user. Lowercase letters, "
 "digits and hyphens. Example: 'tales-laptop', 'francois', 'office-pc'. Pick "
 "something other peers will recognise."
 msgstr ""
@@ -1954,8 +1712,8 @@ msgstr ""
 "waarop je het gebruikte, of vraag de beheerder om de naam vrij te geven."
 
 msgid ""
-"That name already belongs to an account on this network. Try another one, or"
-" ask the administrator to free it."
+"That name already belongs to an account on this network. Try another one, or "
+"ask the administrator to free it."
 msgstr ""
 "Die naam hoort al bij een account op dit netwerk. Probeer een andere, of "
 "vraag de beheerder om hem vrij te geven."
@@ -1974,8 +1732,7 @@ msgid ""
 "once the person who invited you says it was approved."
 msgstr ""
 "Deze uitnodiging wacht op goedkeuring van de netwerkbeheerder. Probeer het "
-"opnieuw zodra de persoon die je heeft uitgenodigd zegt dat ze is "
-"goedgekeurd."
+"opnieuw zodra de persoon die je heeft uitgenodigd zegt dat ze is goedgekeurd."
 
 msgid "This invite is not valid. Check the link or ask for a new one."
 msgstr ""
@@ -2018,8 +1775,8 @@ msgid "Joining…"
 msgstr "Lid worden…"
 
 msgid ""
-"That doesn't look like an invite link. It starts with https:// and contains "
-"/join#."
+"That doesn't look like an invite link. It starts with https:// and contains /"
+"join#."
 msgstr ""
 "Dat lijkt geen uitnodigingslink. Die begint met https:// en bevat /join#."
 
@@ -2034,6 +1791,36 @@ msgstr "Welkom, {name}! Je bent lid geworden van de groep {group}. Verbinden…"
 msgid "Welcome, {name}! Connecting…"
 msgstr "Welkom, {name}! Verbinden…"
 
+msgid "Message"
+msgstr "Bericht"
+
+msgid "Bold"
+msgstr "Vet"
+
+msgid "Italic"
+msgstr "Cursief"
+
+msgid "Underline"
+msgstr "Onderstrepen"
+
+msgid "Strikethrough"
+msgstr "Doorhalen"
+
+msgid "Monospace"
+msgstr "Vaste breedte"
+
+msgid "Create link"
+msgstr "Link maken"
+
+msgid "Plain text"
+msgstr "Platte tekst"
+
+msgid "Formatting"
+msgstr "Opmaak"
+
+msgid "Create"
+msgstr "Maken"
+
 msgid "End access"
 msgstr "Toegang beëindigen"
 
@@ -2046,8 +1833,8 @@ msgstr "Toegang op afstand gestart"
 
 #, rust-format
 msgid ""
-"{user} ({device}) is seeing and controlling this screen. Open BigLace to end"
-" the access."
+"{user} ({device}) is seeing and controlling this screen. Open BigLace to end "
+"the access."
 msgstr ""
 "{user} ({device}) ziet en bedient dit scherm. Open BigLace om de toegang te "
 "beëindigen."
@@ -2097,8 +1884,8 @@ msgid "Restart {name}'s computer?"
 msgstr "Computer van {name} herstarten?"
 
 msgid ""
-"It restarts, signs in by itself and locks the screen right away; this window"
-" connects again when it's back. Unsaved work there is lost."
+"It restarts, signs in by itself and locks the screen right away; this window "
+"connects again when it's back. Unsaved work there is lost."
 msgstr ""
 "Hij herstart, meldt zichzelf aan en vergrendelt meteen het scherm; dit "
 "venster maakt opnieuw verbinding zodra hij terug is. Niet-opgeslagen werk "
@@ -2204,8 +1991,8 @@ msgid "{name} didn't allow the access."
 msgstr "{name} heeft de toegang niet toegestaan."
 
 msgid ""
-"That computer couldn't confirm this device. Make sure both run an up-to-date"
-" BigLace."
+"That computer couldn't confirm this device. Make sure both run an up-to-date "
+"BigLace."
 msgstr ""
 "Die computer kon dit apparaat niet bevestigen. Zorg dat op beide een up-to-"
 "date BigLace draait."
@@ -2245,8 +2032,8 @@ msgid ""
 "This window connects again by itself when the computer is back. It takes a "
 "few minutes."
 msgstr ""
-"Dit venster maakt vanzelf opnieuw verbinding zodra de computer terug is. Dat"
-" duurt een paar minuten."
+"Dit venster maakt vanzelf opnieuw verbinding zodra de computer terug is. Dat "
+"duurt een paar minuten."
 
 #, rust-format
 msgid "{latency} ms · {fps} fps · {mbps} Mbit/s"
@@ -2278,6 +2065,36 @@ msgstr "De toegang tot het scherm van {name} is beëindigd: {error}"
 
 msgid "Give back control"
 msgstr "Bediening teruggeven"
+
+msgid "Connected · 1 peer"
+msgstr "Verbonden · 1 peer"
+
+#, rust-format
+msgid "Connected · {n} peers"
+msgstr "Verbonden · {n} peers"
+
+#, rust-format
+msgid "In the room {group} · muted"
+msgstr "In de ruimte {group} · gedempt"
+
+#, rust-format
+msgid "In the room {group}"
+msgstr "In de ruimte {group}"
+
+msgid "Show BigLace"
+msgstr "Toon BigLace"
+
+msgid "Unmute (Ctrl+Alt+M)"
+msgstr "Dempen opheffen (Ctrl+Alt+M)"
+
+msgid "Mute (Ctrl+Alt+M)"
+msgstr "Dempen (Ctrl+Alt+M)"
+
+msgid "Leave the room"
+msgstr "Ruimte verlaten"
+
+msgid "Quit"
+msgstr "Afsluiten"
 
 msgid "direct"
 msgstr "direct"
@@ -2314,6 +2131,9 @@ msgstr "Vastgezet bovenaan"
 
 msgid "Unpinned"
 msgstr "Losgemaakt"
+
+msgid "Copy IP address"
+msgstr "IP-adres kopiëren"
 
 msgid "Open files (SFTP)"
 msgstr "Bestanden openen (SFTP)"
@@ -2362,6 +2182,207 @@ msgstr "Exit-node bijwerken mislukt"
 
 msgid "Copy"
 msgstr "Kopiëren"
+
+msgid "Search devices"
+msgstr "Apparaten zoeken"
+
+msgid "Invite someone to your network"
+msgstr "Iemand uitnodigen voor je netwerk"
+
+msgid ""
+"Tailscale cannot write this device's DNS settings, so it can no longer keep "
+"peer names working. They may still resolve for now, from the configuration "
+"left over from before the failure, but that will break the next time the "
+"network changes — and BigLace will fall back to IP addresses. On most "
+"distributions `sudo resolvconf -u` repairs it."
+msgstr ""
+"Tailscale kan de DNS-instellingen van dit apparaat niet schrijven en kan de "
+"namen van peers dus niet langer werkend houden. Voorlopig worden ze "
+"misschien nog opgelost, dankzij de configuratie van vóór de storing, maar "
+"dat gaat mis bij de volgende netwerkwijziging — en dan valt BigLace terug op "
+"IP-adressen. Op de meeste distributies verhelpt `sudo resolvconf -u` dit."
+
+msgid "Not connected"
+msgstr "Niet verbonden"
+
+msgid "Press Connect on the left to join the network."
+msgstr "Druk links op Verbinden om lid te worden van het netwerk."
+
+msgid "The tailscale service is not running"
+msgstr "De tailscale-service draait niet"
+
+msgid "BigLace needs the tailscaled background service to manage the network."
+msgstr ""
+"BigLace heeft de tailscaled-achtergrondservice nodig om het netwerk te "
+"beheren."
+
+msgid "Start service"
+msgstr "Service starten"
+
+msgid "Join the network"
+msgstr "Lid worden van het netwerk"
+
+msgid "Choose how you're going to sign in."
+msgstr "Kies hoe je wilt aanmelden."
+
+msgid "Ways to sign in"
+msgstr "Manieren om aan te melden"
+
+msgid "Your account was kept on this computer. No invite needed."
+msgstr "Je account is op deze computer bewaard. Geen uitnodiging nodig."
+
+msgid "I have an invite"
+msgstr "Ik heb een uitnodiging"
+
+msgid "Someone on the network sent you a link or a QR code."
+msgstr "Iemand op het netwerk heeft je een link of QR-code gestuurd."
+
+msgid "I have an access key"
+msgstr "Ik heb een toegangssleutel"
+
+msgid "A key the administrator created for you (starts with hskey-auth-)."
+msgstr ""
+"Een sleutel die de beheerder voor je heeft gemaakt (begint met hskey-auth-)."
+
+msgid "I'm the administrator"
+msgstr "Ik ben de beheerder"
+
+msgid "Sign in with the BigScale panel's admin username and password."
+msgstr ""
+"Meld je aan met de beheerdersgebruikersnaam en het wachtwoord van het "
+"BigScale-paneel."
+
+msgid "This device"
+msgstr "Dit apparaat"
+
+msgid "Devices on the network"
+msgstr "Apparaten in het netwerk"
+
+msgid "No other devices on the network yet."
+msgstr "Nog geen andere apparaten in het netwerk."
+
+msgid "you are not in a room"
+msgstr "je zit niet in een ruimte"
+
+msgid "screen sharing isn't available on this computer"
+msgstr "schermdelen is niet beschikbaar op deze computer"
+
+#, rust-format
+msgid "The computer's sound can't be shared: {error}"
+msgstr "Het geluid van de computer kan niet worden gedeeld: {error}"
+
+#, rust-format
+msgid "The screen share stopped: {error}"
+msgstr "Het delen van het scherm is gestopt: {error}"
+
+msgid "This computer"
+msgstr "Deze computer"
+
+msgid "Who may use this computer remotely"
+msgstr "Wie deze computer op afstand mag gebruiken"
+
+msgid ""
+"Anyone you're connected to can ask to see and control this screen. Choose "
+"who is let in without asking, and who is never let in."
+msgstr ""
+"Iedereen met wie je verbonden bent, kan vragen om dit scherm te zien en te "
+"bedienen. Kies wie zonder te vragen binnen mag en wie nooit."
+
+msgid "History of accesses"
+msgstr "Toegangsgeschiedenis"
+
+msgid "Kept on this computer only."
+msgstr "Alleen op deze computer bewaard."
+
+msgid "Clear"
+msgstr "Wissen"
+
+msgid "Nobody has asked yet."
+msgstr "Nog niemand heeft het gevraagd."
+
+msgid "When someone asks, you can choose to always let them in."
+msgstr ""
+"Als iemand het vraagt, kun je ervoor kiezen die persoon altijd toe te laten."
+
+msgid "Ask every time"
+msgstr "Elke keer vragen"
+
+msgid "Always allow"
+msgstr "Altijd toestaan"
+
+msgid "Never allow"
+msgstr "Nooit toestaan"
+
+msgid "No accesses yet."
+msgstr "Nog geen toegang."
+
+msgid "Remote access"
+msgstr "Toegang op afstand"
+
+msgid "Watched the screen shared with the room"
+msgstr "Heeft het met de ruimte gedeelde scherm bekeken"
+
+msgid "Got control of the shared screen"
+msgstr "Kreeg de bediening van het gedeelde scherm"
+
+msgid "Restarted the computer"
+msgstr "Heeft de computer herstart"
+
+msgid "Restarted the session"
+msgstr "Heeft de sessie herstart"
+
+msgid "Shut down the computer"
+msgstr "Heeft de computer afgesloten"
+
+msgid "allowed"
+msgstr "toegestaan"
+
+msgid "allowed (always)"
+msgstr "toegestaan (altijd)"
+
+msgid "came back after a restart"
+msgstr "terug na een herstart"
+
+msgid "denied"
+msgstr "geweigerd"
+
+msgid "blocked (never allowed)"
+msgstr "geblokkeerd (nooit toegestaan)"
+
+msgid "ended"
+msgstr "beëindigd"
+
+#, rust-format
+msgid "{user} ({device})"
+msgstr "{user} ({device})"
+
+#, rust-format
+msgid "{done} of {total}"
+msgstr "{done} van {total}"
+
+msgid "Play"
+msgstr "Afspelen"
+
+msgid "Download"
+msgstr "Downloaden"
+
+msgid "Open"
+msgstr "Openen"
+
+msgid "Show in folder"
+msgstr "Tonen in map"
+
+msgid "Pause"
+msgstr "Pauzeren"
+
+msgid "Photo"
+msgstr "Foto"
+
+msgid "Video"
+msgstr "Video"
+
+msgid "Voice message"
+msgstr "Spraakbericht"
 
 msgid "Smileys & people"
 msgstr "Smileys & personen"
@@ -2417,12 +2438,12 @@ msgstr "die bestandsnaam kan niet worden verstuurd"
 #, rust-format
 msgid "{user}'s computer is off or offline — try again when it's back"
 msgstr ""
-"de computer van {user} staat uit of is offline — probeer het opnieuw als hij"
-" terug is"
+"de computer van {user} staat uit of is offline — probeer het opnieuw als hij "
+"terug is"
 
 msgid ""
-"the file arrived different from the original (damaged on the way) — download"
-" it again"
+"the file arrived different from the original (damaged on the way) — download "
+"it again"
 msgstr ""
 "het bestand kwam anders aan dan het origineel (onderweg beschadigd) — "
 "download het opnieuw"
@@ -2466,8 +2487,7 @@ msgstr "📌 (heeft het bericht losgemaakt)"
 msgid "nothing was recorded — is a microphone connected?"
 msgstr "er is niets opgenomen — is er een microfoon aangesloten?"
 
-msgid ""
-"this computer can't restart remotely (BigLace's helper isn't installed)"
+msgid "this computer can't restart remotely (BigLace's helper isn't installed)"
 msgstr ""
 "deze computer kan niet op afstand herstarten (de hulpdienst van BigLace is "
 "niet geïnstalleerd)"
@@ -2501,22 +2521,8 @@ msgstr ""
 msgid "access to the camera was refused"
 msgstr "toegang tot de camera is geweigerd"
 
-msgid "you are not in a room"
-msgstr "je zit niet in een ruimte"
-
 msgid "Mute or unmute the microphone in a BigLace room"
 msgstr "De microfoon dempen of het dempen opheffen in een BigLace-ruimte"
-
-msgid "screen sharing isn't available on this computer"
-msgstr "schermdelen is niet beschikbaar op deze computer"
-
-#, rust-format
-msgid "The computer's sound can't be shared: {error}"
-msgstr "Het geluid van de computer kan niet worden gedeeld: {error}"
-
-#, rust-format
-msgid "The screen share stopped: {error}"
-msgstr "Het delen van het scherm is gestopt: {error}"
 
 msgid "BigLace doesn't know that computer's network card yet"
 msgstr "BigLace kent de netwerkkaart van die computer nog niet"
@@ -2527,6 +2533,12 @@ msgstr "deze computer"
 msgid "no computer on its network is on to send the signal"
 msgstr ""
 "geen enkele computer in het netwerk staat aan om het signaal te versturen"
+
+msgid "Open with another app"
+msgstr "Openen met een andere app"
+
+msgid "Close"
+msgstr "Sluiten"
 
 #~ msgid "Panel credentials"
 #~ msgstr "Panelgegevens"
@@ -2619,8 +2631,8 @@ msgstr ""
 #~ msgstr "Uw identiteit in het netwerk"
 
 #~ msgid ""
-#~ "Personal key generated for you in the BigScale panel (\"New key\" in Users)."
-#~ " Each person uses their own — this is not the server's key."
+#~ "Personal key generated for you in the BigScale panel (\"New key\" in "
+#~ "Users). Each person uses their own — this is not the server's key."
 #~ msgstr ""
 #~ "Persoonlijke sleutel voor u gegenereerd in het BigScale-paneel (\"Nieuwe "
 #~ "sleutel\" bij Gebruikers). Iedereen gebruikt zijn eigen sleutel — dit is "

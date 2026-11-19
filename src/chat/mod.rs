@@ -68,7 +68,7 @@ impl ConvId {
 }
 
 /// Account and group names as the panel spells them.
-fn name_ok(s: &str) -> bool {
+pub fn name_ok(s: &str) -> bool {
     !s.is_empty() && s.len() <= 64 && s.bytes().all(|c| c.is_ascii_alphanumeric() || c == b'-' || c == b'_')
 }
 
@@ -438,6 +438,11 @@ pub fn my_user() -> Option<String> {
     me_slot().lock().ok().map(|m| m.user.clone()).filter(|u| !u.is_empty())
 }
 
+/// The members of group `name` (as last learned), if we're in it.
+pub fn group_members(name: &str) -> Vec<String> {
+    me_slot().lock().ok().and_then(|m| m.groups.get(name).cloned()).unwrap_or_default()
+}
+
 /// Groups we're in (names), if known.
 pub fn my_groups() -> Vec<String> {
     let mut g: Vec<String> = me_slot().lock().map(|m| m.groups.keys().cloned().collect()).unwrap_or_default();
@@ -603,8 +608,16 @@ pub fn seed_preview() -> Option<ConvId> {
         m("g2", "maria", false, "Bom dia!! Alguém vai no almoço de domingo?", now - 7_100_000, &[]),
         m("g3", "tales", true, "Eu vou! ~~Levo a sobremesa~~ levo o refri 😅", now - 7_000_000, &["bruno", "maria"]),
         m("g4", "bruno", false, "```\nalmoço: domingo 12h\nlocal: casa da vó\n```", now - 60_000, &[]),
+        m("g5", "maria", false, "@tales traz o violão também 🎸", now - 30_000, &[]),
     ] {
         s.add(&grp, msg, true);
+    }
+    drop(s);
+    // Who's in the group (the panel would say), for "@" in the preview.
+    if let Ok(mut me) = me_slot().lock() {
+        me.user = "tales".into();
+        me.groups.insert("familia".into(), vec!["tales".into(), "bruna".into(), "bruno".into(), "maria".into()]);
+        me.fetched = Some(Instant::now());
     }
     Some(dm)
 }
