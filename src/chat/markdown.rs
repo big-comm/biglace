@@ -203,6 +203,62 @@ fn render(text: &str, underline: bool) -> String {
 const CODE_OPEN: &str = "<span font_family=\"monospace\" bgcolor=\"#808080\" bgalpha=\"22%\">";
 const CODE_CLOSE: &str = "</span>";
 
+/// Emoticons typed as text, and the emoji they become (like Telegram).
+const EMOTICONS: &[(&str, &str)] = &[
+    (":-)", "🙂"), (":)", "🙂"), ("(:", "🙂"),
+    (":-D", "😃"), (":D", "😃"), ("xD", "😆"), ("XD", "😆"),
+    (";-)", "😉"), (";)", "😉"),
+    (":-(", "🙁"), (":(", "🙁"),
+    (":'(", "😢"), (":'-(", "😢"),
+    (":-P", "😛"), (":P", "😛"), (":-p", "😛"), (":p", "😛"),
+    (":-O", "😮"), (":O", "😮"), (":-o", "😮"), (":o", "😮"),
+    (":-*", "😘"), (":*", "😘"),
+    (":-|", "😐"), (":|", "😐"),
+    (":-/", "😕"), (":/", "😕"),
+    ("B-)", "😎"), ("8-)", "😎"),
+    (">:(", "😠"), (">:-(", "😠"),
+    ("<3", "❤️"), ("</3", "💔"),
+    ("o/", "👋"), ("\\o/", "🙌"),
+    (":+1:", "👍"), (":-1:", "👎"),
+];
+
+/// Turn emoticons standing alone (between spaces, or at the ends) into
+/// emoji: ":-)" → 🙂. Nothing inside words, links or code (`…`, ```…```).
+pub fn emoticons_to_emoji(text: &str) -> String {
+    let mut out = String::with_capacity(text.len());
+    let mut in_block = false;
+    for (n, line) in text.split('\n').enumerate() {
+        if n > 0 {
+            out.push('\n');
+        }
+        if line.trim_start().starts_with("```") {
+            in_block = !in_block;
+            out.push_str(line);
+            continue;
+        }
+        if in_block {
+            out.push_str(line);
+            continue;
+        }
+        let mut in_code = false;
+        for (k, word) in line.split(' ').enumerate() {
+            if k > 0 {
+                out.push(' ');
+            }
+            let ticks = word.matches('`').count();
+            let swap = !in_code && ticks == 0;
+            if ticks % 2 == 1 {
+                in_code = !in_code;
+            }
+            match EMOTICONS.iter().find(|(e, _)| swap && *e == word) {
+                Some((_, emoji)) => out.push_str(emoji),
+                None => out.push_str(word),
+            }
+        }
+    }
+    out
+}
+
 /// A character that can be part of a name after "@" (the panel's user
 /// names: letters, digits, "-", "_").
 fn name_char(c: char) -> bool {
@@ -373,5 +429,17 @@ mod tests {
         // Not inside links or code.
         assert!(!to_pango("[@bruno](https://x.y)").contains("mention:"));
         assert!(!to_pango("`@bruno`").contains("mention:"));
+    }
+
+    #[test]
+    fn emoticons_become_emoji() {
+        assert_eq!(emoticons_to_emoji("oi :-) tudo bem? :D"), "oi 🙂 tudo bem? 😃");
+        assert_eq!(emoticons_to_emoji(":)"), "🙂");
+        assert_eq!(emoticons_to_emoji("te amo <3"), "te amo ❤️");
+        // Not inside words, links or code.
+        assert_eq!(emoticons_to_emoji("http://x.y/:)"), "http://x.y/:)");
+        assert_eq!(emoticons_to_emoji("use `:)` aqui"), "use `:)` aqui");
+        assert_eq!(emoticons_to_emoji("```\n:)\n```"), "```\n:)\n```");
+        assert_eq!(emoticons_to_emoji("12:30 :Ponto"), "12:30 :Ponto");
     }
 }

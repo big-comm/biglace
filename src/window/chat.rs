@@ -911,7 +911,7 @@ impl ChatPage {
 
     fn send_typed(&self) {
         let Some(id) = self.state.current.borrow().clone() else { return };
-        let text = self.composer.markdown();
+        let text = markdown::emoticons_to_emoji(&self.composer.markdown());
         if text.trim().is_empty() {
             return;
         }
