@@ -3,7 +3,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: biglace\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-05-01 15:44\n"
+"POT-Creation-Date: 2026-11-19 12:50-0300\n"
 "PO-Revision-Date: 2026-05-01 15:44\n"
 "Last-Translator: Translation Automator <auto@translator.ai>\n"
 "Language-Team: Chinese <zh@li.org>\n"
@@ -12,562 +12,774 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/tray/linux.rs:76
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/tray/windows.rs:136
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/mod.rs:1114
-msgid "Disconnect"
-msgstr "断开连接"
+msgid "Invalid device address."
+msgstr "设备地址无效。"
 
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/content.rs:47
-msgid "Main menu"
-msgstr "主菜单"
+msgid ""
+"No file manager could open the SFTP location. Install one (Dolphin, "
+"Nautilus, Nemo, Thunar…) and try again."
+msgstr "没有文件管理器能打开该 SFTP 位置。请安装一个（Dolphin、Nautilus、Nemo、Thunar…）后重试。"
 
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/mod.rs:590
-msgid "Sign in with panel account"
-msgstr "使用面板账户登录"
+msgid ""
+"No file manager could open the SFTP location. Install WinSCP and try again."
+msgstr "没有文件管理器能打开该 SFTP 位置。请安装 WinSCP 后重试。"
 
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/mod.rs:592
-msgid "Make this user the tailscale operator"
-msgstr "将此用户设为 Tailscale 操作员"
+msgid ""
+"No terminal emulator found. Install one (Konsole, GNOME Terminal, xterm…) "
+"and try again."
+msgstr "未找到终端模拟器。请安装一个（Konsole、GNOME Terminal、xterm…）后重试。"
 
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/mod.rs:594
-msgid "About BigLace"
-msgstr "关于 BigLace"
-
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/dialogs.rs:42
-msgid "Tailscale operator"
-msgstr "Tailscale 操作员"
-
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/dialogs.rs:37
-msgid "Done. You will no longer need a password to connect or disconnect."
-msgstr "完成。您将不再需要密码即可连接或断开连接。"
-
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/dialogs.rs:38
-#, rust-format
-msgid "Failed: {error}"
-msgstr "失败：{error}"
-
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/dialogs.rs:45
-msgid "OK"
-msgstr "确定"
-
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/dialogs.rs:387
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/mod.rs:729
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/mod.rs:962
-#, rust-format
-msgid "Error: {error}"
-msgstr "错误：{error}"
-
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/dialogs.rs:29
-msgid "Mesh VPN client for BigScale/Headscale."
-msgstr "适用于 BigScale/Headscale 的 Mesh VPN 客户端。"
-
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/dialogs.rs:164
-msgid "Panel credentials"
-msgstr "面板凭据"
-
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/dialogs.rs:173
-msgid "Panel URL"
-msgstr "面板 URL"
-
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/dialogs.rs:180
-msgid "Username"
-msgstr "用户名"
-
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/dialogs.rs:184
-msgid "Password"
-msgstr "密码"
-
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/dialogs.rs:75
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/dialogs.rs:247
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/dialogs.rs:448
-msgid "Cancel"
-msgstr "取消"
-
-#. The OK button needs to flip between "Sign in" and "spinner + Connecting…"
-#. while the HTTP call is in flight. Build both children up front and just
-#. swap the button's child — simpler than juggling visibility flags.
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/dialogs.rs:252
-msgid "Sign in"
-msgstr "登录"
-
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/dialogs.rs:309
-msgid "Fill in URL, username and password."
-msgstr "请填写 URL、用户名和密码。"
-
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/content.rs:159
-msgid "Start service"
-msgstr "启动服务"
-
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/sidebar.rs:95
-msgid "Server URL"
-msgstr "服务器地址"
-
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/content.rs:206
-msgid "This device"
-msgstr "本设备"
-
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/tray/linux.rs:83
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/tray/windows.rs:81
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/tray/windows.rs:136
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/mod.rs:1124
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/mod.rs:1129
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/sidebar.rs:240
-msgid "Connect"
-msgstr "连接"
-
-#. ── Devices on the network ──
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/content.rs:223
-msgid "Devices on the network"
-msgstr "网络中的设备"
-
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/tailscale.rs:557
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/tailscale.rs:630
 msgid "Failed to run tailscale"
 msgstr "运行 tailscale 失败"
 
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/tailscale.rs:577
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/tailscale.rs:610
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/tailscale.rs:642
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/tailscale.rs:714
 msgid "Failed to connect — check the server URL and key."
 msgstr "连接失败 — 请检查服务器 URL 和密钥。"
 
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/tailscale.rs:598
 msgid "Failed to run pkexec tailscale"
 msgstr "运行 pkexec tailscale 失败"
 
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/tailscale.rs:781
-msgid "Could not determine the current user."
-msgstr "无法确定当前用户。"
+msgid "Enter the server URL before connecting."
+msgstr "连接前请输入服务器URL。"
 
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/tailscale.rs:787
-msgid "Failed to run pkexec tailscale set"
-msgstr "运行 pkexec tailscale set 失败"
-
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/tailscale.rs:789
-msgid "Failed to set tailscale operator."
-msgstr "设置 tailscale 操作员失败。"
-
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/tailscale.rs:707
 msgid ""
 "The pre-auth key was rejected by the server. Generate a new key in the "
 "BigScale panel and try again."
 msgstr "预身份验证密钥被服务器拒绝。请在 BigScale 面板中生成新密钥并重试。"
 
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/tailscale.rs:710
+msgid "Sign in or paste a pre-auth key first."
+msgstr "请先登录或粘贴预授权密钥。"
+
 #, rust-format
 msgid "Login rejected by server: {detail}"
 msgstr "服务器拒绝了登录：{detail}"
 
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/sidebar.rs:138
-msgid "Apply manual setup"
-msgstr "应用手动设置"
+msgid "Could not determine the current user."
+msgstr "无法确定当前用户。"
 
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/sidebar.rs:140
-msgid "Save"
-msgstr "保存"
+msgid "Failed to run pkexec tailscale set"
+msgstr "运行 pkexec tailscale set 失败"
 
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/sidebar.rs:159
-msgid "Connect automatically"
-msgstr "自动连接"
+msgid "Failed to set tailscale operator."
+msgstr "设置 tailscale 操作员失败。"
 
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/sidebar.rs:160
-msgid "Join the network when BigLace starts"
-msgstr "BigLace 启动时加入网络"
-
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/mod.rs:1079
-msgid "Sign in or paste a pre-auth key"
-msgstr "登录或粘贴预授权密钥"
-
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/mod.rs:1091
-msgid "Server not set"
-msgstr "未设置服务器"
-
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/mod.rs:711
-msgid "Setup saved"
-msgstr "设置已保存"
-
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/tailscale.rs:653
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/mod.rs:805
-msgid "Sign in or paste a pre-auth key first."
-msgstr "请先登录或粘贴预授权密钥。"
-
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/content.rs:96
-msgid "Sign in to connect"
-msgstr "登录以连接"
-
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/content.rs:97
-msgid "Use the panel on the left to sign in or paste a pre-auth key."
-msgstr "使用左侧面板登录或粘贴预授权密钥。"
-
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/content.rs:105
-msgid "Not connected"
-msgstr "未连接"
-
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/content.rs:106
-msgid "Press Connect on the left to join the network."
-msgstr "点击左侧的“连接”以加入网络。"
-
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/content.rs:183
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/dialogs.rs:259
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/mod.rs:1026
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/mod.rs:1119
-msgid "Connecting…"
-msgstr "正在连接…"
-
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/content.rs:232
-msgid "No other devices on the network yet."
-msgstr "网络上尚无其他设备。"
-
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/content.rs:216
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/peer_row.rs:178
-msgid "Copy IP address"
-msgstr "复制 IP 地址"
-
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/mod.rs:888
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/peer_row.rs:186
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/peer_row.rs:271
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/peer_row.rs:280
-msgid "IP address copied"
-msgstr "IP 地址已复制"
-
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/peer_row.rs:231
-msgid "Open files (SFTP)"
-msgstr "打开文件 (SFTP)"
-
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/peer_row.rs:246
-msgid "Open terminal (SSH)"
-msgstr "打开终端 (SSH)"
-
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/peer_row.rs:50
-msgid "offline"
-msgstr "离线"
-
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/mod.rs:1023
-msgid "Service stopped"
-msgstr "服务已停止"
-
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/tray/linux.rs:58
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/tray/windows.rs:172
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/content.rs:40
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/mod.rs:1025
-msgid "Disconnected"
-msgstr "已断开连接"
-
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/tray/linux.rs:53
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/tray/windows.rs:167
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/mod.rs:953
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/mod.rs:1027
 msgid "Connected"
 msgstr "已连接"
 
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/content.rs:59
+msgid "Connected · 1 peer"
+msgstr "已连接 · 1 个对等点"
+
+#, rust-format
+msgid "Connected · {n} peers"
+msgstr "已连接 · {n} 个对等点"
+
+msgid "Disconnected"
+msgstr "已断开连接"
+
+#, rust-format
+msgid "In the room {group} · muted"
+msgstr "在房间 {group} 中 · 已静音"
+
+#, rust-format
+msgid "In the room {group}"
+msgstr "在房间 {group} 中"
+
+msgid "Disconnect"
+msgstr "断开连接"
+
+msgid "Connect"
+msgstr "连接"
+
+msgid "Show BigLace"
+msgstr "显示 BigLace"
+
+#, rust-format
+msgid "Room {group}"
+msgstr "房间 {group}"
+
+msgid "Unmute (Ctrl+Alt+M)"
+msgstr "取消静音 (Ctrl+Alt+M)"
+
+msgid "Mute (Ctrl+Alt+M)"
+msgstr "静音 (Ctrl+Alt+M)"
+
+msgid "Leave the room"
+msgstr "离开房间"
+
+msgid "Quit"
+msgstr "退出"
+
+msgid "This computer"
+msgstr "这台计算机"
+
+msgid "Who may use this computer remotely"
+msgstr "谁可以远程使用这台计算机"
+
+msgid ""
+"Anyone you're connected to can ask to see and control this screen. Choose "
+"who is let in without asking, and who is never let in."
+msgstr "任何与你连接的人都可以请求查看和控制此屏幕。选择哪些人无需询问即可进入，哪些人永远不允许进入。"
+
+msgid "History of accesses"
+msgstr "访问记录"
+
+msgid "Kept on this computer only."
+msgstr "仅保存在这台计算机上。"
+
+msgid "Clear"
+msgstr "清除"
+
+msgid "Nobody has asked yet."
+msgstr "还没有人请求过。"
+
+msgid "When someone asks, you can choose to always let them in."
+msgstr "当有人请求时，你可以选择始终允许他们。"
+
+msgid "Ask every time"
+msgstr "每次询问"
+
+msgid "Always allow"
+msgstr "始终允许"
+
+msgid "Never allow"
+msgstr "永不允许"
+
+msgid "No accesses yet."
+msgstr "暂无访问记录。"
+
+msgid "Remote access"
+msgstr "远程访问"
+
+msgid "Watched the screen shared with the room"
+msgstr "观看了与房间共享的屏幕"
+
+msgid "Got control of the shared screen"
+msgstr "获得了共享屏幕的控制权"
+
+msgid "Restarted the computer"
+msgstr "重启了计算机"
+
+msgid "Restarted the session"
+msgstr "重启了会话"
+
+msgid "Shut down the computer"
+msgstr "关闭了计算机"
+
+msgid "allowed"
+msgstr "已允许"
+
+msgid "allowed (always)"
+msgstr "已允许（始终）"
+
+msgid "came back after a restart"
+msgstr "重启后已恢复"
+
+msgid "denied"
+msgstr "已拒绝"
+
+msgid "blocked (never allowed)"
+msgstr "已阻止（永不允许）"
+
+msgid "ended"
+msgstr "已结束"
+
+#, rust-format
+msgid "{user} ({device})"
+msgstr "{user} ({device})"
+
+#, rust-format
+msgid "{done} of {total}"
+msgstr "{done} / {total}"
+
+msgid "Play"
+msgstr "播放"
+
+msgid "Download"
+msgstr "下载"
+
+msgid "Open"
+msgstr "打开"
+
+msgid "Show in folder"
+msgstr "在文件夹中显示"
+
+msgid "Pause"
+msgstr "暂停"
+
+msgid "Photo"
+msgstr "照片"
+
+msgid "Video"
+msgstr "视频"
+
+msgid "Voice message"
+msgstr "语音消息"
+
+msgid "Chat"
+msgstr "聊天"
+
+msgid "New chat"
+msgstr "新聊天"
+
+msgid "Start a conversation with someone on the network"
+msgstr "与网络中的某人开始对话"
+
+msgid "Main menu"
+msgstr "主菜单"
+
+msgid "Chat theme"
+msgstr "聊天主题"
+
+msgid "Conversations"
+msgstr "对话"
+
+msgid "No conversations yet."
+msgstr "暂无对话。"
+
+msgid "Search in this conversation (Ctrl+F)"
+msgstr "在此对话中搜索 (Ctrl+F)"
+
+msgid "Pinned message"
+msgstr "置顶消息"
+
+msgid "Unpin"
+msgstr "取消置顶"
+
+msgid "Search messages"
+msgstr "搜索消息"
+
+msgid "Older"
+msgstr "更早"
+
+msgid "Newer"
+msgstr "更新"
+
+msgid "Emoji"
+msgstr "表情"
+
+msgid "Send files, pictures or videos"
+msgstr "发送文件、图片或视频"
+
+msgid "Send (Enter) — Shift+Enter for a new line"
+msgstr "发送 (Enter) — Shift+Enter 换行"
+
+msgid "Record a voice message"
+msgstr "录制语音消息"
+
+msgid "Discard"
+msgstr "丢弃"
+
+msgid "Send voice message"
+msgstr "发送语音消息"
+
+msgid "Cancel"
+msgstr "取消"
+
+msgid "Copy text"
+msgstr "复制文本"
+
+msgid "Forward"
+msgstr "转发"
+
+msgid "Delete"
+msgstr "删除"
+
+msgid "Talk with your network"
+msgstr "与你的网络交流"
+
+msgid ""
+"Pick a conversation, or start one. Messages go straight between your "
+"computers — the server never sees them."
+msgstr "选择一个对话，或开始新的对话。消息直接在你的计算机之间传递——服务器永远看不到它们。"
+
+msgid "Group"
+msgstr "群组"
+
+msgid "Direct conversation"
+msgstr "私聊"
+
+msgid "That message is too long."
+msgstr "该消息太长。"
+
+#, rust-format
+msgid "Could not send: {error}"
+msgstr "无法发送：{error}"
+
+#, rust-format
+msgid "Could not download: {error}"
+msgstr "无法下载：{error}"
+
+#, rust-format
+msgid "{user} in {group}"
+msgstr "{user} 在 {group}"
+
+msgid "Send files"
+msgstr "发送文件"
+
+msgid "Drop to send"
+msgstr "拖放到此处发送"
+
+#, rust-format
+msgid "Could not record: {error}"
+msgstr "无法录制：{error}"
+
+msgid "Too short — record for at least a second."
+msgstr "太短了——请至少录制一秒钟。"
+
+msgid "Search people and groups"
+msgstr "搜索联系人和群组"
+
+msgid "Loading…"
+msgstr "正在加载…"
+
+msgid "Nobody you can reach yet."
+msgstr "暂时没有你能联系到的人。"
+
+msgid "online"
+msgstr "在线"
+
+msgid "offline"
+msgstr "离线"
+
+#, rust-format
+msgid "You: {text}"
+msgstr "你：{text}"
+
+msgid "Group conversation"
+msgstr "群组对话"
+
+#, rust-format
+msgid "Delivered to {people}"
+msgstr "已送达 {people}"
+
+msgid "Waiting to be delivered"
+msgstr "等待送达"
+
+msgid "Today"
+msgstr "今天"
+
+msgid "Yesterday"
+msgstr "昨天"
+
+msgid "🗑 Message deleted"
+msgstr "🗑 消息已删除"
+
+#, rust-format
+msgid "Forwarded from {name}"
+msgstr "转发自 {name}"
+
+msgid "edited"
+msgstr "已编辑"
+
+msgid "More reactions"
+msgstr "更多回应"
+
+msgid "Reply"
+msgstr "回复"
+
+msgid "Edit"
+msgstr "编辑"
+
+msgid "Pin"
+msgstr "置顶"
+
+msgid "Select"
+msgstr "选择"
+
+#, rust-format
+msgid "Could not react: {error}"
+msgstr "无法回应：{error}"
+
+#, rust-format
+msgid "Reply to {name}"
+msgstr "回复 {name}"
+
+msgid "Editing message"
+msgstr "正在编辑消息"
+
+msgid "Copied."
+msgstr "已复制。"
+
+msgid "Forward to…"
+msgstr "转发给…"
+
+msgid "Forwarded."
+msgstr "已转发。"
+
+#, rust-format
+msgid "Could not forward: {error}"
+msgstr "无法转发：{error}"
+
+msgid "Delete the message?"
+msgstr "删除这条消息？"
+
+#, rust-format
+msgid "Delete {count} messages?"
+msgstr "删除 {count} 条消息？"
+
+msgid "“For everyone” removes it from the other computers too."
+msgstr "“为所有人删除”也会将其从其他计算机上移除。"
+
+msgid "It's removed from this computer only."
+msgstr "仅从这台计算机上移除。"
+
+msgid "Delete for me"
+msgstr "为我删除"
+
+msgid "Delete for everyone"
+msgstr "为所有人删除"
+
+#, rust-format
+msgid "Could not delete: {error}"
+msgstr "无法删除：{error}"
+
+msgid "1 selected"
+msgstr "已选择 1 项"
+
+#, rust-format
+msgid "{count} selected"
+msgstr "已选择 {count} 项"
+
+msgid "That message isn't here anymore."
+msgstr "该消息已不存在。"
+
+msgid "No results"
+msgstr "无结果"
+
+#, rust-format
+msgid "{n} of {total}"
+msgstr "{n} / {total}"
+
+#, rust-format
+msgid "{user} is typing…"
+msgstr "{user} 正在输入…"
+
+msgid "typing…"
+msgstr "正在输入…"
+
+msgid "System accent"
+msgstr "系统强调色"
+
+msgid "Blue"
+msgstr "蓝色"
+
+msgid "Teal"
+msgstr "青色"
+
+msgid "Green"
+msgstr "绿色"
+
+msgid "Purple"
+msgstr "紫色"
+
+msgid "Pink"
+msgstr "粉色"
+
+msgid "Orange"
+msgstr "橙色"
+
+msgid "Red"
+msgstr "红色"
+
+msgid "Graphite"
+msgstr "石墨色"
+
+msgid "Default"
+msgstr "默认"
+
+msgid "Plain"
+msgstr "纯色"
+
+msgid "Dots"
+msgstr "圆点"
+
+msgid "Ocean"
+msgstr "海洋"
+
+msgid "Sunset"
+msgstr "日落"
+
+msgid "Forest"
+msgstr "森林"
+
+msgid "Lavender"
+msgstr "薰衣草"
+
+msgid "Night"
+msgstr "夜晚"
+
+msgid "Hi! How does this look? 😊"
+msgstr "嗨！看起来怎么样？😊"
+
+msgid "Looks great!"
+msgstr "看起来很棒！"
+
+msgid "Appearance"
+msgstr "外观"
+
+msgid "System"
+msgstr "系统"
+
+msgid "Light"
+msgstr "浅色"
+
+msgid "Dark"
+msgstr "深色"
+
+msgid "Your messages"
+msgstr "你的消息"
+
+msgid "Background"
+msgstr "背景"
+
+msgid "Picture…"
+msgstr "图片…"
+
+msgid "Pictures"
+msgstr "图片"
+
+msgid "Choose a background picture"
+msgstr "选择背景图片"
+
+msgid "Message"
+msgstr "消息"
+
+msgid "Bold"
+msgstr "粗体"
+
+msgid "Italic"
+msgstr "斜体"
+
+msgid "Underline"
+msgstr "下划线"
+
+msgid "Strikethrough"
+msgstr "删除线"
+
+msgid "Monospace"
+msgstr "等宽"
+
+msgid "Create link"
+msgstr "创建链接"
+
+msgid "Plain text"
+msgstr "纯文本"
+
+msgid "Formatting"
+msgstr "格式"
+
+msgid "Create"
+msgstr "创建"
+
+msgid "Search devices"
+msgstr "搜索设备"
+
 msgid "Refresh"
 msgstr "刷新"
 
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/dialogs.rs:373
-msgid "Signed in. Press Connect to join the network."
-msgstr "已登录。点击“连接”以加入网络。"
+msgid "Invite"
+msgstr "邀请"
 
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/mod.rs:1240
-msgid "no other devices"
-msgstr "无其他设备"
+msgid "Invite someone to your network"
+msgstr "邀请某人加入你的网络"
 
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/mod.rs:1242
-#, rust-format
-msgid "{online} online"
-msgstr "{online} 在线"
+msgid ""
+"Tailscale cannot write this device's DNS settings, so it can no longer keep "
+"peer names working. They may still resolve for now, from the configuration "
+"left over from before the failure, but that will break the next time the "
+"network changes — and BigLace will fall back to IP addresses. On most "
+"distributions `sudo resolvconf -u` repairs it."
+msgstr ""
+"Tailscale 无法写入此设备的 DNS "
+"设置，因此无法继续让对等设备名称正常工作。目前它们可能仍能依靠故障前遗留的配置进行解析，但下次网络变化时就会失效——BigLace 将改用 IP "
+"地址。在大多数发行版上，运行 `sudo resolvconf -u` 即可修复。"
 
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/mod.rs:1244
-#, rust-format
-msgid "{online} online · {offline} offline"
-msgstr "{online} 在线 · {offline} 离线"
+msgid "Not connected"
+msgstr "未连接"
 
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/content.rs:153
+msgid "Press Connect on the left to join the network."
+msgstr "点击左侧的“连接”以加入网络。"
+
 msgid "The tailscale service is not running"
 msgstr "Tailscale 服务未运行"
 
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/content.rs:155
 msgid "BigLace needs the tailscaled background service to manage the network."
 msgstr "BigLace 需要 tailscaled 后台服务来管理网络。"
 
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/sidebar.rs:108
-msgid "Pre-auth key"
-msgstr "预授权密钥"
+msgid "Start service"
+msgstr "启动服务"
 
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/mod.rs:1024
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/mod.rs:1078
-msgid "Not signed in"
-msgstr "未登录"
+msgid "Join the network"
+msgstr "加入网络"
 
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/sidebar.rs:81
-msgid "Advanced: use a pre-auth key"
-msgstr "高级：使用预授权密钥"
+msgid "Choose how you're going to sign in."
+msgstr "选择你的登录方式。"
 
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/sidebar.rs:82
-msgid "Already have a key from your administrator? Paste it here."
-msgstr "已有管理员提供的密钥？请在此粘贴。"
+msgid "Ways to sign in"
+msgstr "登录方式"
 
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/dialogs.rs:68
+msgid "Your account was kept on this computer. No invite needed."
+msgstr "你的账户已保存在这台计算机上。无需邀请。"
+
+msgid "I have an invite"
+msgstr "我有邀请"
+
+msgid "Someone on the network sent you a link or a QR code."
+msgstr "网络中的某人给你发送了链接或二维码 (QR)。"
+
+msgid "I have an access key"
+msgstr "我有访问密钥"
+
+msgid "A key the administrator created for you (starts with hskey-auth-)."
+msgstr "管理员为你创建的密钥（以 hskey-auth- 开头）。"
+
+msgid "I'm the administrator"
+msgstr "我是管理员"
+
+msgid "Sign in with the BigScale panel's admin username and password."
+msgstr "使用 BigScale 面板的管理员用户名和密码登录。"
+
+msgid "Connecting…"
+msgstr "正在连接…"
+
+msgid "This device"
+msgstr "本设备"
+
+msgid "Copy IP address"
+msgstr "复制 IP 地址"
+
+msgid "Devices on the network"
+msgstr "网络中的设备"
+
+msgid "No other devices on the network yet."
+msgstr "网络上尚无其他设备。"
+
+msgid "Mesh VPN client for BigScale/Headscale."
+msgstr "适用于 BigScale/Headscale 的 Mesh VPN 客户端。"
+
+msgid "Done. You will no longer need a password to connect or disconnect."
+msgstr "完成。您将不再需要密码即可连接或断开连接。"
+
+#, rust-format
+msgid "Failed: {error}"
+msgstr "失败：{error}"
+
+msgid "Tailscale operator"
+msgstr "Tailscale 操作员"
+
+msgid "OK"
+msgstr "确定"
+
 msgid "Sign out of current account?"
 msgstr "退出当前账户？"
 
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/dialogs.rs:70
 msgid ""
 "This will disconnect from the network, sign this device out of the current "
 "control server, and forget the saved password. You'll then be able to sign "
 "in with a different account."
 msgstr "这将断开网络连接，使本设备退出当前控制服务器，并忘记已保存的密码。之后您可以使用其他账户登录。"
 
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/dialogs.rs:76
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/mod.rs:591
 msgid "Sign out"
 msgstr "退出登录"
 
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/dialogs.rs:134
+msgid "Leave the network?"
+msgstr "离开网络？"
+
+#, rust-format
+msgid ""
+"This device leaves the network and its name becomes free. Your account {user} is kept: you can come back later from this computer, without an invite.\n"
+"\n"
+"If you won't come back, delete the account and the name {user} becomes free too."
+msgstr ""
+"此设备将离开网络，其名称将被释放。你的账户 {user} 会保留：之后你可以从这台计算机重新加入，无需邀请。\n"
+"\n"
+"如果你不会再回来，请删除账户，名称 {user} 也将被释放。"
+
+msgid "Leave and delete account"
+msgstr "离开并删除账户"
+
+msgid "Leave"
+msgstr "离开"
+
+msgid "Connect first to delete the account."
+msgstr "请先连接，然后再删除账户。"
+
+msgid "Signing out…"
+msgstr "正在退出登录…"
+
+#, rust-format
+msgid ""
+"Signed out. Your account was kept: {count} other device(s) still use it."
+msgstr "已退出登录。你的账户已保留：还有 {count} 台其他设备在使用它。"
+
+msgid ""
+"Couldn't delete the account: the panel can't be reached. Connect and try "
+"again."
+msgstr "无法删除账户：无法连接到面板。请连接后重试。"
+
+#, rust-format
+msgid "Error: {error}"
+msgstr "错误：{error}"
+
+msgid "Signed out and account deleted."
+msgstr "已退出登录并删除账户。"
+
 msgid "Signed out."
 msgstr "已退出登录。"
 
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/dialogs.rs:153
-msgid "Connect via panel account"
-msgstr "通过面板账户连接"
+msgid "Couldn't reach the server"
+msgstr "无法连接到服务器"
 
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/dialogs.rs:166
-msgid ""
-"Sign in with your BigScale panel username and password. A device identity "
-"will be created on the network automatically — no manual key needed."
-msgstr "使用您的 BigScale 面板用户名和密码登录。设备身份将自动在网络中创建——无需手动输入密钥。"
-
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/peer_row.rs:446
-msgid "Copy"
-msgstr "复制"
-
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/sidebar.rs:197
-msgid "Reconnect on drop"
-msgstr "断线重连"
-
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/sidebar.rs:198
-msgid "Retry with backoff when the connection is lost"
-msgstr "连接断开时启用退避重试"
-
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/sidebar.rs:217
-msgid "Notify on peer changes"
-msgstr "节点变更通知"
-
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/sidebar.rs:218
-msgid "Show a desktop notification when peers go online/offline"
-msgstr "当节点上线/离线时显示桌面通知"
-
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/mod.rs:593
-msgid "View tailscaled logs"
-msgstr "查看 tailscaled 日志"
-
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/mod.rs:1044
-msgid "Server unreachable"
-msgstr "服务器不可达"
-
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/mod.rs:1054
 #, rust-format
-msgid "Update available: v{version}"
-msgstr "有可用更新：v{version}"
-
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/mod.rs:1398
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/mod.rs:1461
-msgid "is online"
-msgstr "已上线"
-
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/mod.rs:1399
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/mod.rs:1463
-msgid "went offline"
-msgstr "已离线"
-
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/peer_row.rs:124
-msgid "Unpin from top"
-msgstr "取消置顶"
-
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/peer_row.rs:124
-msgid "Pin to top"
-msgstr "置顶"
-
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/peer_row.rs:259
-msgid "DNS name"
-msgstr "DNS 名称"
-
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/peer_row.rs:262
-msgid "DNS name copied"
-msgstr "DNS 名称已复制"
-
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/peer_row.rs:284
-msgid "Owner"
-msgstr "所有者"
-
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/peer_row.rs:346
-msgid "Tags"
-msgstr "标签"
-
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/peer_row.rs:351
-msgid "Last seen"
-msgstr "上次在线"
-
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/peer_row.rs:358
-msgid "Use as exit node"
-msgstr "用作出口节点"
-
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/peer_row.rs:359
-msgid "Route all traffic through this peer"
-msgstr "将所有流量通过此节点路由"
-
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/peer_row.rs:401
-msgid "Exit node enabled"
-msgstr "出口节点已启用"
-
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/peer_row.rs:401
-msgid "Exit node disabled"
-msgstr "出口节点已禁用"
-
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/peer_row.rs:403
-msgid "Failed to update exit node"
-msgstr "更新出口节点失败"
-
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/peer_row.rs:146
-msgid "Pinned to top"
-msgstr "置顶"
-
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/peer_row.rs:148
-msgid "Unpinned"
-msgstr "取消置顶"
-
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/tray/linux.rs:54
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/tray/windows.rs:168
-msgid "Connected · 1 peer"
-msgstr "已连接 · 1 个对等点"
-
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/tray/linux.rs:55
-#, rust-format
-msgid "Connected · {n} peers"
-msgstr "已连接 · {n} 个对等点"
-
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/tray/linux.rs:92
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/tray/windows.rs:80
-msgid "Show BigLace"
-msgstr "显示 BigLace"
-
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/tray/linux.rs:101
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/tray/windows.rs:82
-msgid "Quit"
-msgstr "退出"
-
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/tray/windows.rs:169
-msgid "Connected ·"
-msgstr "已连接 ·"
-
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/sidebar.rs:54
 msgid ""
-"Your identity on this mesh — the device name shown to other peers and the "
-"network you're connected to."
-msgstr "您在此网格中的身份——向其他对等节点显示的设备名称以及您所连接的网络。"
-
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/sidebar.rs:71
-msgid "Rename this device on the network"
-msgstr "重命名此设备在网络上的名称"
-
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/sidebar.rs:86
-msgid ""
-"Manual setup — expand to paste a server URL and pre-auth key when you "
-"already received them from your administrator. Most users should sign in "
-"through the panel button above instead."
-msgstr "手动设置——展开以粘贴您已从管理员处收到的服务器 URL 和预授权密钥。大多数用户应改为通过上方面板按钮登录。"
-
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/sidebar.rs:99
-msgid ""
-"Address of the coordination server (e.g. vpn.example.org). The https:// "
-"scheme is added automatically if you omit it."
-msgstr "协调服务器的地址（例如 vpn.example.org）。如果您省略，系统会自动添加 https:// 方案。"
-
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/sidebar.rs:111
-msgid ""
-"One-time or reusable key created on the server (starts with 'hskey-auth-'). "
-"Used to register this device automatically without opening a browser."
-msgstr "在服务器上创建的一次性或可重复使用的密钥（以 'hskey-auth-' 开头）。用于无需打开浏览器即可自动注册此设备。"
-
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/dialogs.rs:190
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/dialogs.rs:418
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/sidebar.rs:124
-msgid "Device name on the network"
-msgstr "设备在网络上的名称"
-
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/sidebar.rs:127
-msgid ""
-"The name this device shows to other peers on the VPN — this is the Tailscale"
-" hostname, NOT your computer's name and NOT your user. Lowercase letters, "
-"digits and hyphens. Example: 'tales-laptop', 'francois', 'office-pc'."
+"The control server didn't confirm the sign-out: {error}\n"
+"\n"
+"You can still sign out on this computer: BigLace forgets the saved key and account and disconnects. The server keeps listing this device until an administrator removes it."
 msgstr ""
-"此设备向 VPN 上其他对等节点显示的名称——这是 Tailscale "
-"主机名，不是您计算机的名称，也不是您的用户名。小写字母、数字和连字符。例如：'tales-laptop'、'francois'、'office-pc'。"
+"控制服务器未确认退出登录：{error}\n"
+"\n"
+"你仍可以在这台计算机上退出登录：BigLace 会清除保存的密钥和账户并断开连接。在管理员将其移除之前，服务器仍会列出此设备。"
 
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/sidebar.rs:144
+msgid "Sign out on this computer"
+msgstr "在这台计算机上退出登录"
+
+msgid "Sign in as administrator"
+msgstr "以管理员身份登录"
+
+msgid "Panel administrator"
+msgstr "面板管理员"
+
 msgid ""
-"Persist the server, key and device name above. Won't connect — press Connect"
-" afterwards."
-msgstr "持久化保存上述服务器、密钥和设备名称。不会自动连接——请随后点击“连接”。"
+"Only for whoever administers the BigScale panel: use the panel's admin "
+"username and password. This device joins the network under the name below. "
+"Everyone else joins with an invite or an access key."
+msgstr "仅供管理 BigScale 面板的人使用：请使用面板的管理员用户名和密码。此设备将以下方的名称加入网络。其他人请通过邀请或访问密钥加入。"
 
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/sidebar.rs:163
-msgid ""
-"When on, BigLace runs 'tailscale up' as soon as it launches, so you join the"
-" mesh without clicking Connect every time."
-msgstr "开启后，BigLace 会在启动时立即运行 'tailscale up'，这样您无需每次都点击“连接”即可加入网格。"
+msgid "Panel URL"
+msgstr "面板 URL"
 
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/sidebar.rs:171
-msgid "Toggle auto-connect on startup"
-msgstr "切换启动时自动连接"
-
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/sidebar.rs:201
-msgid ""
-"If the tunnel drops (network change, sleep, server hiccup), BigLace silently"
-" retries with growing delays instead of leaving you offline until you "
-"notice."
-msgstr "如果隧道断开（网络变更、休眠、服务器故障），BigLace 会静默重试，且重试间隔逐渐增加，而不会让您离线直到您注意到。"
-
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/sidebar.rs:210
-msgid "Toggle auto-reconnect"
-msgstr "切换自动重连"
-
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/sidebar.rs:221
-msgid ""
-"Send a desktop toast when another device on your network goes online or "
-"offline. Rapid bursts are coalesced into a single notification so you don't "
-"get spammed during reconnects."
-msgstr "当您网络上的另一设备上线或离线时，发送桌面通知。快速爆发的事件会合并为一条通知，以免在重连期间被频繁打扰。"
-
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/sidebar.rs:230
-msgid "Toggle peer-change notifications"
-msgstr "切换对等节点变更通知"
-
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/sidebar.rs:245
-msgid ""
-"Join or leave the mesh network. When connected, this device becomes "
-"reachable by the other peers in your account."
-msgstr "加入或离开网状网络。连接后，此设备将可被您账户中的其他对等节点访问。"
-
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/dialogs.rs:177
 msgid ""
 "Address of your BigScale panel (e.g. panel.example.org). The https:// scheme"
 " is added automatically if you omit it."
 msgstr "您的 BigScale 面板地址（例如 panel.example.org）。如果省略，系统会自动添加 https:// 协议前缀。"
 
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/dialogs.rs:182
+msgid "Panel admin username"
+msgstr "面板管理员用户名"
+
 msgid "Your panel username — the one you use to sign in to the web panel."
 msgstr "您的面板用户名——即您登录网页版面板时使用的用户名。"
 
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/dialogs.rs:186
+msgid "Password"
+msgstr "密码"
+
 msgid ""
 "Your panel password. Stored in the OS keyring (libsecret on Linux, Keychain "
 "on macOS, Credential Manager on Windows)."
 msgstr ""
 "您的面板密码。密码存储在操作系统密钥环中（Linux 使用 libsecret，macOS 使用 Keychain，Windows 使用凭据管理器）。"
 
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/dialogs.rs:193
+msgid "Device name on the network"
+msgstr "设备在网络上的名称"
+
 msgid ""
 "The name this device shows to other peers on the VPN — this is the Tailscale"
 " hostname, NOT your computer's name and NOT your user. Lowercase letters, "
@@ -578,106 +790,1436 @@ msgstr ""
 "主机名，不是您的计算机名，也不是您的用户名。仅限小写字母、数字和连字符。示例：'tales-laptop'、'francois'、'office-"
 "pc'。请选择一个其他对等节点能识别的名称。"
 
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/dialogs.rs:442
+msgid "Sign in"
+msgstr "登录"
+
+msgid "Fill in URL, username and password."
+msgstr "请填写 URL、用户名和密码。"
+
+msgid "Signed in. Press Connect to join the network."
+msgstr "已登录。点击“连接”以加入网络。"
+
 msgid "Rename this device"
 msgstr "重命名此设备"
 
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/dialogs.rs:444
 msgid ""
 "The name this device shows to other peers on the VPN. Lowercase letters, "
 "digits and hyphens. Example: tales-laptop."
 msgstr "此设备在 VPN 上向其他对等节点显示的名称。仅限小写字母、数字和连字符。示例：tales-laptop。"
 
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/dialogs.rs:449
 msgid "Save & apply"
 msgstr "保存并应用"
 
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/dialogs.rs:502
 msgid "Saved. The new name will take effect the next time you connect."
 msgstr "已保存。新名称将在您下次连接时生效。"
 
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/dialogs.rs:526
 msgid "Device renamed."
 msgstr "设备已重命名。"
 
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/dialogs.rs:536
 #, rust-format
 msgid "Rename failed: {error}"
 msgstr "重命名失败：{error}"
 
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/dialogs.rs:553
 msgid "The device name can't be empty."
 msgstr "设备名称不能为空。"
 
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/dialogs.rs:556
 msgid "Use 63 characters or fewer."
 msgstr "请使用 63 个或更少字符。"
 
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/dialogs.rs:560
 msgid "The device name can't start or end with a hyphen."
 msgstr "设备名称不能以连字符开头或结尾。"
 
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/dialogs.rs:564
 msgid "Only lowercase letters, digits and hyphens are allowed."
 msgstr "仅允许使用小写字母、数字和连字符。"
 
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/peer_row.rs:306
-msgid "SSH login (override)"
-msgstr "SSH 登录（覆盖）"
+msgid "Smileys & people"
+msgstr "笑脸与人物"
 
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/peer_row.rs:336
-msgid "Saved"
-msgstr "已保存"
+msgid "Animals & nature"
+msgstr "动物与自然"
 
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/mod.rs:1086
+msgid "Food & drink"
+msgstr "食物与饮料"
+
+msgid "Travel & places"
+msgstr "旅行与地点"
+
+msgid "Activities"
+msgstr "活动"
+
+msgid "Objects"
+msgstr "物品"
+
+msgid "Symbols"
+msgstr "符号"
+
+msgid "Flags"
+msgstr "旗帜"
+
+msgid "Search emoji"
+msgstr "搜索表情"
+
+msgid "Recently used"
+msgstr "最近使用"
+
+msgid "Search results"
+msgstr "搜索结果"
+
+msgid ""
+"Groups from BigLace need a newer BigScale server. Ask your administrator to "
+"update it."
+msgstr "BigLace 的群组功能需要更新版本的 BigScale 服务器。请联系管理员进行更新。"
+
+msgid "This device isn't linked to a person's account, so it has no groups."
+msgstr "此设备未关联到个人账户，因此没有群组。"
+
+msgid ""
+"The panel knows this device by a different key (BigLace was reinstalled?). "
+"Leave the network and join again to fix it."
+msgstr "面板通过另一个密钥识别此设备（BigLace 是否重新安装过？）。请离开网络后重新加入以修复。"
+
+msgid ""
+"The panel couldn't confirm this device. Make sure BigLace is up to date and "
+"stays open while connected, then try again."
+msgstr "面板无法确认此设备。请确保 BigLace 为最新版本，并在连接期间保持打开，然后重试。"
+
+msgid ""
+"On this network everyone already reaches everyone, so groups aren't needed. "
+"The administrator can set access rules first."
+msgstr "在此网络中所有人已经可以互相访问，因此不需要群组。管理员可以先设置访问规则。"
+
+msgid "You already created the maximum number of groups."
+msgstr "你创建的群组已达到上限。"
+
+msgid "You are no longer in that group."
+msgstr "你已不在该群组中。"
+
+msgid "A group with that name already exists. Choose another name."
+msgstr "已存在同名群组。请选择其他名称。"
+
+msgid ""
+"Use lowercase letters, digits and hyphens, starting with a letter or digit."
+msgstr "请使用小写字母、数字和连字符，并以字母或数字开头。"
+
+msgid ""
+"The administrator uses this group in the network's rules, so it can't be "
+"deleted. Ask the administrator."
+msgstr "管理员在网络规则中使用了此群组，因此无法删除。请联系管理员。"
+
+msgid "Only the person who created the group can do that."
+msgstr "只有群组的创建者才能执行此操作。"
+
+msgid "You created this group: delete it instead of leaving."
+msgstr "此群组由你创建：请删除它，而不是离开。"
+
+msgid "This group belongs to the administrator; only they can change it."
+msgstr "此群组属于管理员；只有管理员可以更改。"
+
+msgid "That person is no longer in the group."
+msgstr "该成员已不在群组中。"
+
+msgid "That group no longer exists, or whoever invited you left it."
+msgstr "该群组已不存在，或邀请你的人已离开该群组。"
+
+msgid "That person is no longer on the network."
+msgstr "该用户已不在网络中。"
+
+msgid "You're already in that group."
+msgstr "你已在该群组中。"
+
+msgid ""
+"This invite only brings new people into the network, and you're already in "
+"it."
+msgstr "此邀请仅用于邀请新成员加入网络，而你已在网络中。"
+
+msgid "This invite was already used. Ask for a new one."
+msgstr "此邀请已被使用。请索取新的邀请。"
+
+msgid "This invite expired. Ask for a new one."
+msgstr "此邀请已过期。请索取新的邀请。"
+
+msgid "This invite is no longer valid. Ask for a new one."
+msgstr "此邀请已失效。请索取新的邀请。"
+
+msgid "This invite is still waiting for an administrator's approval."
+msgstr "此邀请仍在等待管理员批准。"
+
+msgid "Too many attempts. Wait a minute and try again."
+msgstr "尝试次数过多。请等待一分钟后重试。"
+
+#, rust-format
+msgid "Could not reach the panel: {error}"
+msgstr "无法连接到面板：{error}"
+
+msgid "Groups"
+msgstr "群组"
+
+msgid "New group"
+msgstr "新建群组"
+
+msgid "Create a group"
+msgstr "创建群组"
+
+msgid ""
+"People in the same group reach each other's devices. Create groups for "
+"family, work or friends, and invite people into them."
+msgstr "同一群组中的成员可以互相访问对方的设备。为家人、工作或朋友创建群组，并邀请他们加入。"
+
+msgid "Invitations for you"
+msgstr "给你的邀请"
+
+msgid "Your groups"
+msgstr "你的群组"
+
+msgid "No groups yet"
+msgstr "暂无群组"
+
+msgid ""
+"A group lets several people reach each other at once — the family, the "
+"office, a class."
+msgstr "群组让多个人可以同时互相访问——家人、办公室、班级。"
+
+msgid "Groups unavailable"
+msgstr "群组不可用"
+
+msgid "Invitation to a group"
+msgstr "群组邀请"
+
+#, rust-format
+msgid ""
+"{user} invites you to the group {group}. Open BigLace to accept or decline."
+msgstr "{user} 邀请你加入群组 {group}。打开 BigLace 以接受或拒绝。"
+
+#, rust-format
+msgid "{user} invites you to {group}"
+msgstr "{user} 邀请你加入 {group}"
+
+msgid "Joining lets you and the group's members reach each other's devices."
+msgstr "加入后，你和群组成员可以互相访问对方的设备。"
+
+msgid "Decline"
+msgstr "拒绝"
+
+msgid "Accept"
+msgstr "接受"
+
+#, rust-format
+msgid "You joined {group}."
+msgstr "你已加入 {group}。"
+
+msgid "Invitation declined."
+msgstr "已拒绝邀请。"
+
+msgid "1 person"
+msgstr "1 人"
+
+#, rust-format
+msgid "{count} people"
+msgstr "{count} 人"
+
+msgid "Created by you"
+msgstr "由你创建"
+
+#, rust-format
+msgid "Created by {user}"
+msgstr "由 {user} 创建"
+
+msgid "Network group (administrator)"
+msgstr "网络群组（管理员）"
+
+msgid "you"
+msgstr "你"
+
+msgid "owner"
+msgstr "所有者"
+
+#, rust-format
+msgid "Remove {user} from the group"
+msgstr "将 {user} 移出群组"
+
+msgid "Invite to this group"
+msgstr "邀请加入此群组"
+
+msgid "Delete group"
+msgstr "删除群组"
+
+msgid "Leave group"
+msgstr "离开群组"
+
+#, rust-format
+msgid "Remove {user}?"
+msgstr "移除 {user}？"
+
+#, rust-format
+msgid ""
+"{user} leaves the group {group} and no longer reaches its members through "
+"it."
+msgstr "{user} 将离开群组 {group}，并且无法再通过该群组访问其成员。"
+
+msgid "Remove"
+msgstr "移除"
+
+#, rust-format
+msgid "{user} was removed from the group."
+msgstr "已将 {user} 移出群组。"
+
+#, rust-format
+msgid "Leave {group}?"
+msgstr "离开 {group}？"
+
+msgid ""
+"You stop reaching the group's members through it. To come back, someone has "
+"to invite you again."
+msgstr "你将无法再通过该群组访问其成员。若要重新加入，需要有人再次邀请你。"
+
+msgid "You left the group."
+msgstr "你已离开群组。"
+
+#, rust-format
+msgid "Delete {group}?"
+msgstr "删除 {group}？"
+
+msgid ""
+"Its members stop reaching each other through this group. People stay on the "
+"network."
+msgstr "其成员将无法再通过此群组互相访问。成员仍会留在网络中。"
+
+msgid "Group deleted."
+msgstr "群组已删除。"
+
+#, rust-format
+msgid "Join {group}?"
+msgstr "加入 {group}？"
+
+#, rust-format
+msgid ""
+"{user} invited you. You and the group's members will reach each other's "
+"devices."
+msgstr "{user} 邀请了你。你和群组成员将可以互相访问对方的设备。"
+
+msgid "You and the group's members will reach each other's devices."
+msgstr "你和群组成员将可以互相访问对方的设备。"
+
+#, rust-format
+msgid "Connect with {user}?"
+msgstr "与 {user} 连接？"
+
+#, rust-format
+msgid "You and {user} will reach each other's devices."
+msgstr "你和 {user} 将可以互相访问对方的设备。"
+
+msgid "Join"
+msgstr "加入"
+
+msgid "Done. You can now reach each other's devices."
+msgstr "完成。现在你们可以互相访问对方的设备了。"
+
+#, rust-format
+msgid "Invite to {group}"
+msgstr "邀请加入 {group}"
+
+msgid ""
+"Choose people on your network. Each one gets the invitation in BigLace and "
+"decides whether to join."
+msgstr "选择你网络中的人。每个人都会在 BigLace 中收到邀请，并自行决定是否加入。"
+
+msgid "Search people"
+msgstr "搜索联系人"
+
+msgid ""
+"If someone on the network has exactly this name, they get the invitation."
+msgstr "如果网络中有人恰好使用此名称，对方将收到邀请。"
+
+msgid "People on the network"
+msgstr "网络中的人"
+
+#, rust-format
+msgid "Invite \"{name}\""
+msgstr "邀请“{name}”"
+
+msgid "Send invitations"
+msgstr "发送邀请"
+
+msgid "Someone not on the network yet? Share an invite link"
+msgstr "有人还不在网络中？分享邀请链接"
+
+msgid "Invitation sent. You'll see the person in the group once they accept."
+msgstr "邀请已发送。对方接受后，你将在群组中看到他。"
+
+#, rust-format
+msgid "{count} invitations sent. People show up in the group as they accept."
+msgstr "已发送 {count} 份邀请。对方接受后会出现在群组中。"
+
+msgid ""
+"Listed are the people you're already connected to. To invite someone else on"
+" the network, type their exact name. Each one gets the invitation in BigLace"
+" and decides whether to join."
+msgstr "列出的是你已连接的人。要邀请网络中的其他人，请输入其确切名称。每个人都会在 BigLace 中收到邀请，并自行决定是否加入。"
+
+msgid ""
+"Nobody you're connected to yet. Type someone's exact name to invite them."
+msgstr "你还没有连接任何人。输入某人的确切名称即可邀请。"
+
+msgid "Nobody else is on the network yet."
+msgstr "网络中还没有其他人。"
+
+msgid ""
+"You'll be the group's owner: you invite people into it and can remove them. "
+"Everyone in the group reaches each other's devices."
+msgstr "你将成为群组的所有者：你可以邀请他人加入，也可以将其移除。群组中的所有人都可以互相访问对方的设备。"
+
+msgid "Group name"
+msgstr "群组名称"
+
+msgid "Create group"
+msgstr "创建群组"
+
+msgid "For example: family, work, friends."
+msgstr "例如：family、work、friends。"
+
+#, rust-format
+msgid "It will be called \"{name}\"."
+msgstr "它将被命名为“{name}”。"
+
+#, rust-format
+msgid "Group {group} created. Now invite people into it."
+msgstr "群组 {group} 已创建。现在邀请成员加入吧。"
+
+msgid "typed name"
+msgstr "输入的名称"
+
+msgid "already in the group"
+msgstr "已在群组中"
+
+msgid "invitation sent, waiting"
+msgstr "邀请已发送，等待中"
+
+#, rust-format
+msgid "Invite {user}"
+msgstr "邀请 {user}"
+
+msgid ""
+"Invites from BigLace need a BigScale server that supports them. Ask your "
+"administrator to update the server, or to create the invite in the panel."
+msgstr "BigLace 的邀请功能需要支持邀请的 BigScale 服务器。请联系管理员更新服务器，或在面板中创建邀请。"
+
+msgid ""
+"This device can't send invites (it isn't linked to a person's account)."
+msgstr "此设备无法发送邀请（未关联到个人账户）。"
+
+msgid ""
+"On this network everyone can reach everyone, so only the administrator can "
+"invite people."
+msgstr "在此网络中所有人都可以互相访问，因此只有管理员可以邀请他人。"
+
+msgid "You have too many pending invites. Cancel some or try again tomorrow."
+msgstr "你的待处理邀请过多。请取消一些或明天再试。"
+
+msgid ""
+"On this network only administrators invite new people. You can still invite "
+"people already on the network into your groups."
+msgstr "在此网络中只有管理员可以邀请新成员。你仍可以邀请已在网络中的人加入你的群组。"
+
+msgid "Waiting to be used"
+msgstr "等待使用"
+
+msgid "Used"
+msgstr "已使用"
+
+msgid "Expired"
+msgstr "已过期"
+
+msgid "Cancelled"
+msgstr "已取消"
+
+msgid "Waiting for an administrator's approval"
+msgstr "等待管理员批准"
+
+msgid "Invites"
+msgstr "邀请"
+
+msgid "Bring someone to your network"
+msgstr "带某人加入你的网络"
+
+msgid ""
+"Create a link or QR code and send it to the person. When they join, you two "
+"can reach each other's devices — no administrator needed. The link works "
+"once and stays valid until it's used or you cancel it."
+msgstr ""
+"创建一个链接或二维码 (QR) 并发送给对方。对方加入后，你们就可以互相访问对方的设备——无需管理员。链接仅可使用一次，在被使用或你取消之前一直有效。"
+
+msgid "Invites you sent"
+msgstr "你发送的邀请"
+
+msgid "No invites yet"
+msgstr "暂无邀请"
+
+msgid "Invites unavailable"
+msgstr "邀请不可用"
+
+#, rust-format
+msgid "{user} joined"
+msgstr "{user} 已加入"
+
+#, rust-format
+msgid "group {group}"
+msgstr "群组 {group}"
+
+msgid "Cancel this invite: the link stops working"
+msgstr "取消此邀请：链接将失效"
+
+msgid "Invite someone"
+msgstr "邀请某人"
+
+msgid "The person you invite will reach your devices, and you theirs."
+msgstr "你邀请的人将可以访问你的设备，你也可以访问他们的设备。"
+
+msgid "Who is it for? (optional)"
+msgstr "邀请给谁？（可选）"
+
+msgid "Access"
+msgstr "访问权限"
+
+msgid "Just the two of us"
+msgstr "仅限我们两人"
+
+msgid "You see each other's devices, nobody else"
+msgstr "你们可以看到彼此的设备，其他人看不到"
+
+#, rust-format
+msgid "Also the group {group}"
+msgstr "同时加入群组 {group}"
+
+msgid "They join the group and see everyone in it"
+msgstr "对方加入该群组，并可以看到群组中的所有人"
+
+msgid "A network of their own"
+msgstr "独立的网络"
+
+msgid ""
+"No link to you: they see only their own devices and whoever they invite "
+"(you're the administrator)"
+msgstr "与你没有关联：对方只能看到自己的设备以及他邀请的人（你是管理员）"
+
+msgid "Create invite"
+msgstr "创建邀请"
+
+msgid "QR code of the invite link"
+msgstr "邀请链接的二维码 (QR)"
+
+msgid ""
+"Send the link or let the person scan the code with their phone. It works "
+"once and stays valid until used or cancelled."
+msgstr "发送链接，或让对方用手机扫描二维码。仅可使用一次，在被使用或取消之前一直有效。"
+
+msgid "Copy link"
+msgstr "复制链接"
+
+msgid "Done"
+msgstr "完成"
+
+msgid "Copied!"
+msgstr "已复制！"
+
+msgid ""
+"This network asks an administrator to approve each invite: the link starts "
+"working once they do. Its status shows in Invites."
+msgstr "此网络要求管理员批准每个邀请：批准后链接才会生效。其状态显示在“邀请”中。"
+
+#, rust-format
+msgid ""
+"That name already belongs to an account on this network, so we suggested "
+"\"{name}\". If the account is yours, sign in again from the computer where "
+"you used it, or ask the administrator to free the name."
+msgstr ""
+"该名称已属于此网络中的某个账户，因此我们建议使用“{name}”。如果该账户是你的，请在之前使用它的计算机上重新登录，或请管理员释放该名称。"
+
+msgid ""
+"That name already belongs to an account on this network. Try another one, or"
+" ask the administrator to free it."
+msgstr "该名称已属于此网络中的某个账户。请尝试其他名称，或请管理员释放该名称。"
+
+msgid "Type your name using at least two letters or digits."
+msgstr "请输入至少包含两个字母或数字的名称。"
+
+msgid "This invite has expired. Ask for a new one."
+msgstr "此邀请已过期。请索取新的邀请。"
+
+msgid "This invite was cancelled. Ask for a new one."
+msgstr "此邀请已被取消。请索取新的邀请。"
+
+msgid ""
+"This invite is waiting for the network administrator's approval. Try again "
+"once the person who invited you says it was approved."
+msgstr "此邀请正在等待网络管理员批准。请在邀请你的人告知已批准后重试。"
+
+msgid "This invite is not valid. Check the link or ask for a new one."
+msgstr "此邀请无效。请检查链接或索取新的邀请。"
+
+msgid ""
+"This server doesn't support invites yet. Sign in with a panel account "
+"instead."
+msgstr "此服务器尚不支持邀请。请改用面板账户登录。"
+
+msgid "Join with an invite"
+msgstr "通过邀请加入"
+
+msgid ""
+"Paste the invite link you received and type your name. Your account is "
+"created and this device joins the network."
+msgstr "粘贴你收到的邀请链接并输入你的名称。系统将创建你的账户，并让此设备加入网络。"
+
+msgid "Invite link"
+msgstr "邀请链接"
+
+msgid "Your name"
+msgstr "你的名称"
+
+msgid "How others will see you on the network, e.g. 'Maria' or 'Office PC'."
+msgstr "其他人在网络中看到的你的名称，例如“Maria”或“办公室电脑”。"
+
+msgid ""
+"The name this device shows to other peers. Lowercase letters, digits and "
+"hyphens. Example: 'maria-laptop'."
+msgstr "此设备向其他对等设备显示的名称。可使用小写字母、数字和连字符。例如：“maria-laptop”。"
+
+msgid "Network"
+msgstr "网络"
+
+msgid "Joining…"
+msgstr "正在加入…"
+
+msgid ""
+"That doesn't look like an invite link. It starts with https:// and contains "
+"/join#."
+msgstr "这看起来不像邀请链接。邀请链接以 https:// 开头，并包含 /join#。"
+
+msgid "Type your name."
+msgstr "请输入你的名称。"
+
+#, rust-format
+msgid "Welcome, {name}! You joined the group {group}. Connecting…"
+msgstr "欢迎，{name}！你已加入群组 {group}。正在连接…"
+
+#, rust-format
+msgid "Welcome, {name}! Connecting…"
+msgstr "欢迎，{name}！正在连接…"
+
+msgid "Open admin panel"
+msgstr "打开管理面板"
+
+msgid "Devices"
+msgstr "设备"
+
+msgid "Rooms"
+msgstr "房间"
+
+msgid "Choose your photo"
+msgstr "选择你的照片"
+
+msgid "Photo updated. Everyone you're connected to will see it."
+msgstr "照片已更新。所有与你连接的人都会看到它。"
+
+#, rust-format
+msgid "Could not change the photo: {error}"
+msgstr "无法更改照片：{error}"
+
+msgid "Sign in with an access key"
+msgstr "使用访问密钥登录"
+
+msgid ""
+"Paste the key the administrator gave you. It's used once, to register this "
+"device."
+msgstr "粘贴管理员给你的密钥。它仅使用一次，用于注册此设备。"
+
+msgid "Server URL"
+msgstr "服务器地址"
+
+msgid "Access key"
+msgstr "访问密钥"
+
+msgid ""
+"The key to this account is no longer on this computer. Join with a new "
+"invite."
+msgstr "此账户的密钥已不在这台计算机上。请使用新的邀请加入。"
+
+#, rust-format
+msgid "Welcome back, {name}! Connecting…"
+msgstr "欢迎回来，{name}！正在连接…"
+
+#, rust-format
+msgid ""
+"The account {user} no longer exists on this network. Join with a new invite."
+msgstr "账户 {user} 在此网络中已不存在。请使用新的邀请加入。"
+
+msgid "Preferences"
+msgstr "首选项"
+
+msgid "General"
+msgstr "常规"
+
+msgid "Behaviour"
+msgstr "行为"
+
+msgid "Make this user the tailscale operator"
+msgstr "将此用户设为 Tailscale 操作员"
+
+msgid ""
+"Lets BigLace manage the connection without asking for a password each time"
+msgstr "允许 BigLace 管理连接，而无需每次都输入密码"
+
+msgid "Account"
+msgstr "账户"
+
+msgid ""
+"Signing out removes this device's identity from BigLace. You will need a new"
+" invite or key to join again."
+msgstr "退出登录会从 BigLace 中移除此设备的身份。你需要新的邀请或密钥才能重新加入。"
+
+msgid "Change profile photo…"
+msgstr "更改头像…"
+
+msgid "Sign in with panel account"
+msgstr "使用面板账户登录"
+
+msgid "Leave the network…"
+msgstr "离开网络…"
+
+msgid "View tailscaled logs"
+msgstr "查看 tailscaled 日志"
+
+msgid "About BigLace"
+msgstr "关于 BigLace"
+
+msgid "Connect to the network first, then open the invite link again."
+msgstr "请先连接到网络，然后再次打开邀请链接。"
+
+#, rust-format
+msgid ""
+"This invite is for another network ({host}). Sign out first to join it."
+msgstr "此邀请属于另一个网络 ({host})。请先退出登录再加入。"
+
+msgid ""
+"This device is already signed in. Sign out first to join with an invite."
+msgstr "此设备已登录。请先退出登录，再通过邀请加入。"
+
+msgid "Photo removed."
+msgstr "照片已移除。"
+
+#, rust-format
+msgid "Could not remove the photo: {error}"
+msgstr "无法移除照片：{error}"
+
+#, rust-format
+msgid "Could not open the browser: {error}"
+msgstr "无法打开浏览器：{error}"
+
+msgid ""
+"You can't open the admin panel: you're not an administrator of this network,"
+" or the panel can't be reached."
+msgstr "你无法打开管理面板：你不是此网络的管理员，或无法连接到面板。"
+
+msgid "Enter the server URL before saving."
+msgstr "保存前请输入服务器URL。"
+
+msgid "Enter the pre-auth key before saving."
+msgstr "保存前请输入预授权密钥。"
+
+msgid "Setup saved"
+msgstr "设置已保存"
+
+msgid "Could not start the Tailscale service."
+msgstr "无法启动 Tailscale 服务。"
+
+msgid "IP address copied"
+msgstr "IP 地址已复制"
+
+#, rust-format
+msgid ""
+"Saved, but the pre-auth key could not be stored in the system keyring "
+"({error}). This device can still reconnect; the key is only needed again to "
+"register it anew."
+msgstr "已保存，但无法将预授权密钥存储到系统密钥环中 ({error})。此设备仍可重新连接；只有重新注册时才需要该密钥。"
+
+msgid "Service stopped"
+msgstr "服务已停止"
+
+msgid "Not signed in"
+msgstr "未登录"
+
+msgid "Server unreachable"
+msgstr "服务器不可达"
+
+msgid "Tailscale can't set DNS"
+msgstr "Tailscale 无法设置 DNS"
+
+#, rust-format
+msgid "Update available: v{version}"
+msgstr "有可用更新：v{version}"
+
+#, rust-format
+msgid "Sign in again as {user}"
+msgstr "以 {user} 身份重新登录"
+
 msgid "(no device name)"
 msgstr "（无设备名称）"
 
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/mod.rs:1400
+msgid "Sign in or paste a pre-auth key"
+msgstr "登录或粘贴预授权密钥"
+
+msgid "Server not set"
+msgstr "未设置服务器"
+
+msgid "no other devices"
+msgstr "无其他设备"
+
+#, rust-format
+msgid "{online} online"
+msgstr "{online} 在线"
+
+#, rust-format
+msgid "{online} online · {offline} offline"
+msgstr "{online} 在线 · {offline} 离线"
+
+msgid "is online"
+msgstr "已上线"
+
+msgid "went offline"
+msgstr "已离线"
+
 #, rust-format
 msgid "{count} devices are online"
 msgstr "{count} 台设备在线"
 
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/mod.rs:1401
 #, rust-format
 msgid "{count} devices went offline"
 msgstr "{count} 台设备离线"
 
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/mod.rs:1403
 #, rust-format
 msgid "{on_count} online · {off_count} offline"
 msgstr "{on_count} 在线 · {off_count} 离线"
 
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/tailscale.rs:650
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/mod.rs:814
-msgid "Enter the server URL before connecting."
-msgstr "连接前请输入服务器URL。"
+msgid "direct"
+msgstr "直连"
 
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/mod.rs:682
-msgid "Enter the server URL before saving."
-msgstr "保存前请输入服务器URL。"
+msgid "via relay"
+msgstr "经由中继"
 
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/mod.rs:691
-msgid "Enter the pre-auth key before saving."
-msgstr "保存前请输入预授权密钥。"
+msgid "Turn on over the network (Wake-on-LAN)"
+msgstr "通过网络开机 (Wake-on-LAN)"
 
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/sidebar.rs:178
+msgid "Turn on over the network"
+msgstr "通过网络开机"
+
+#, rust-format
+msgid ""
+"Signal sent to {name} (by {via}). If it's set to turn on over the network, "
+"it shows up in a minute or two."
+msgstr "已向 {name} 发送信号（经由 {via}）。如果它已设置为可通过网络开机，一两分钟后就会上线。"
+
+#, rust-format
+msgid "Could not turn on {name}: {error}"
+msgstr "无法开启 {name}：{error}"
+
+msgid "Unpin from top"
+msgstr "取消置顶"
+
+msgid "Pin to top"
+msgstr "置顶"
+
+msgid "Pinned to top"
+msgstr "置顶"
+
+msgid "Unpinned"
+msgstr "取消置顶"
+
+msgid "Open files (SFTP)"
+msgstr "打开文件 (SFTP)"
+
+msgid "Open terminal (SSH)"
+msgstr "打开终端 (SSH)"
+
+msgid "See and control the screen"
+msgstr "查看并控制屏幕"
+
+msgid "DNS name"
+msgstr "DNS 名称"
+
+msgid "DNS name copied"
+msgstr "DNS 名称已复制"
+
+msgid "Owner"
+msgstr "所有者"
+
+msgid "SSH login (override)"
+msgstr "SSH 登录（覆盖）"
+
+msgid "Saved"
+msgstr "已保存"
+
+msgid "Tags"
+msgstr "标签"
+
+msgid "Last seen"
+msgstr "上次在线"
+
+msgid "Use as exit node"
+msgstr "用作出口节点"
+
+msgid "Route all traffic through this peer"
+msgstr "将所有流量通过此节点路由"
+
+msgid "Exit node enabled"
+msgstr "出口节点已启用"
+
+msgid "Exit node disabled"
+msgstr "出口节点已禁用"
+
+msgid "Failed to update exit node"
+msgstr "更新出口节点失败"
+
+msgid "Copy"
+msgstr "复制"
+
+msgid "End access"
+msgstr "结束访问"
+
+#, rust-format
+msgid "{who} is seeing and controlling this screen"
+msgstr "{who} 正在查看并控制此屏幕"
+
+msgid "Remote access started"
+msgstr "远程访问已开始"
+
+#, rust-format
+msgid ""
+"{user} ({device}) is seeing and controlling this screen. Open BigLace to end"
+" the access."
+msgstr "{user} ({device}) 正在查看并控制此屏幕。打开 BigLace 可结束访问。"
+
+#, rust-format
+msgid "Always allow {user} (no more asking)"
+msgstr "始终允许 {user}（不再询问）"
+
+msgid "Deny"
+msgstr "拒绝"
+
+msgid "Allow access"
+msgstr "允许访问"
+
+msgid "Allow remote access?"
+msgstr "允许远程访问？"
+
+#, rust-format
+msgid "<b>{user}</b> wants to <b>see and control</b> this screen."
+msgstr "<b>{user}</b> 想要<b>查看并控制</b>此屏幕。"
+
+msgid "Person"
+msgstr "用户"
+
+msgid "Device"
+msgstr "设备"
+
+msgid "See everything on your screen"
+msgstr "查看你屏幕上的所有内容"
+
+msgid "Move the mouse and type on this computer"
+msgstr "在这台计算机上移动鼠标和输入"
+
+msgid "Hear this computer's sound"
+msgstr "听到这台计算机的声音"
+
+msgid ""
+"<b>Only allow it if you know this person and are expecting it.</b> You can "
+"end the access at any time from BigLace."
+msgstr "<b>仅在你认识此人且正在等待时才允许。</b>你可以随时在 BigLace 中结束访问。"
+
+#, rust-format
+msgid "Denied automatically in {seconds} s"
+msgstr "{seconds} 秒后自动拒绝"
+
+#, rust-format
+msgid "Restart {name}'s computer?"
+msgstr "重启 {name} 的计算机？"
+
+msgid ""
+"It restarts, signs in by itself and locks the screen right away; this window"
+" connects again when it's back. Unsaved work there is lost."
+msgstr "计算机将重启、自动登录并立即锁定屏幕；恢复后此窗口会重新连接。那里未保存的工作将会丢失。"
+
+msgid "Restart"
+msgstr "重启"
+
+#, rust-format
+msgid "Restart {name}'s session?"
+msgstr "重启 {name} 的会话？"
+
+msgid ""
+"The open programs there close, the computer signs out and back in by itself "
+"(without restarting) and locks the screen; this window connects again. "
+"Unsaved work there is lost."
+msgstr "那里打开的程序将被关闭，计算机将自动注销并重新登录（不重启）并锁定屏幕；此窗口会重新连接。那里未保存的工作将会丢失。"
+
+msgid "Restart the session"
+msgstr "重启会话"
+
+#, rust-format
+msgid "Shut down {name}'s computer?"
+msgstr "关闭 {name} 的计算机？"
+
+msgid ""
+"You won't be able to reach it again until someone turns it on. Unsaved work "
+"there is lost."
+msgstr "在有人重新开机之前，你将无法再访问它。那里未保存的工作将会丢失。"
+
+msgid "Shut Down"
+msgstr "关机"
+
+#, rust-format
+msgid "Screen of {name}"
+msgstr "{name} 的屏幕"
+
+msgid "Full screen (F11)"
+msgstr "全屏 (F11)"
+
+msgid "Mute the remote sound"
+msgstr "静音远程声音"
+
+#, rust-format
+msgid "Fit {name}'s resolution to this window"
+msgstr "将 {name} 的分辨率适配到此窗口"
+
+msgid "LIVE"
+msgstr "直播"
+
+msgid "You are watching this screen right now"
+msgstr "你正在观看此屏幕"
+
+msgid "You are seeing and controlling this screen right now"
+msgstr "你正在查看并控制此屏幕"
+
+msgid "Request control"
+msgstr "请求控制"
+
+#, rust-format
+msgid "Ask {name} to let you use the mouse and keyboard"
+msgstr "请求 {name} 允许你使用鼠标和键盘"
+
+#, rust-format
+msgid "Waiting for {name}…"
+msgstr "正在等待 {name}…"
+
+msgid "Connecting to the screen shared with the room."
+msgstr "正在连接到与房间共享的屏幕。"
+
+msgid "The person at that computer needs to allow the access."
+msgstr "那台计算机前的人需要允许访问。"
+
+#, rust-format
+msgid "Asked {name} for control…"
+msgstr "已向 {name} 请求控制…"
+
+#, rust-format
+msgid "Restart or shut down {name}'s computer"
+msgstr "重启或关闭 {name} 的计算机"
+
+msgid "Restart and reconnect"
+msgstr "重启并重新连接"
+
+msgid "Shut down"
+msgstr "关机"
+
+#, rust-format
+msgid "{name} is back."
+msgstr "{name} 已恢复。"
+
+#, rust-format
+msgid "{name}'s computer didn't come back after the restart."
+msgstr "{name} 的计算机重启后未能恢复。"
+
+#, rust-format
+msgid "{name} didn't allow the access."
+msgstr "{name} 未允许访问。"
+
+msgid ""
+"That computer couldn't confirm this device. Make sure both run an up-to-date"
+" BigLace."
+msgstr "那台计算机无法确认此设备。请确保双方都运行最新版本的 BigLace。"
+
+#, rust-format
+msgid ""
+"{name}'s computer can't share its screen (screen sharing isn't available "
+"there)."
+msgstr "{name} 的计算机无法共享屏幕（那里不支持屏幕共享）。"
+
+#, rust-format
+msgid "Could not connect: {error}"
+msgstr "无法连接：{error}"
+
+#, rust-format
+msgid "{name}'s computer said: {error}"
+msgstr "{name} 的计算机返回：{error}"
+
+#, rust-format
+msgid "Restarting {name}'s session…"
+msgstr "正在重启 {name} 的会话…"
+
+msgid ""
+"This window connects again by itself when the session is back. It takes a "
+"few seconds."
+msgstr "会话恢复后，此窗口会自动重新连接。这需要几秒钟。"
+
+#, rust-format
+msgid "Restarting {name}…"
+msgstr "正在重启 {name}…"
+
+msgid ""
+"This window connects again by itself when the computer is back. It takes a "
+"few minutes."
+msgstr "计算机恢复后，此窗口会自动重新连接。这需要几分钟。"
+
+#, rust-format
+msgid "{latency} ms · {fps} fps · {mbps} Mbit/s"
+msgstr "{latency} ms · {fps} fps · {mbps} Mbit/s"
+
+#, rust-format
+msgid "You're controlling {name}'s screen now."
+msgstr "你现在正在控制 {name} 的屏幕。"
+
+#, rust-format
+msgid "{name} didn't give you control."
+msgstr "{name} 没有给你控制权。"
+
+#, rust-format
+msgid "{name} took control back."
+msgstr "{name} 收回了控制权。"
+
+#, rust-format
+msgid "{name}'s computer is shutting down."
+msgstr "{name} 的计算机正在关机。"
+
+#, rust-format
+msgid "The access to {name}'s screen ended."
+msgstr "对 {name} 屏幕的访问已结束。"
+
+#, rust-format
+msgid "The access to {name}'s screen ended: {error}"
+msgstr "对 {name} 屏幕的访问已结束：{error}"
+
+msgid "Give back control"
+msgstr "交还控制权"
+
+msgid ""
+"Each of your groups has a voice room. Join it and talk with whoever is there"
+" — the sound goes straight between you, through the network."
+msgstr "你的每个群组都有一个语音房间。加入后即可与房间里的人交谈——声音通过网络直接在你们之间传输。"
+
+msgid "You're not in any group yet. Create one in Groups."
+msgstr "你还不在任何群组中。请在“群组”中创建一个。"
+
+msgid "People in the room"
+msgstr "房间中的人"
+
+msgid "Everyone"
+msgstr "所有人"
+
+msgid "Who's speaking"
+msgstr "正在说话的人"
+
+msgid "Mute"
+msgstr "静音"
+
+msgid "Mute your microphone for everyone"
+msgstr "为所有人静音你的麦克风"
+
+msgid "Which camera"
+msgstr "选择摄像头"
+
+msgid "Include the computer's sound when sharing the screen"
+msgstr "共享屏幕时包含计算机声音"
+
+msgid ""
+"Videos and music playing here go to the room too; the room's voices don't "
+"(no echo)"
+msgstr "此处播放的视频和音乐也会传到房间；房间里的语音则不会（无回声）"
+
+msgid "Rooms unavailable"
+msgstr "房间不可用"
+
+#, rust-format
+msgid "Could not turn on the camera: {error}"
+msgstr "无法打开摄像头：{error}"
+
+#, rust-format
+msgid "Could not share the screen: {error}"
+msgstr "无法共享屏幕：{error}"
+
+msgid "Nobody here right now"
+msgstr "目前这里没有人"
+
+#, rust-format
+msgid "In the room: {people}"
+msgstr "房间中：{people}"
+
+#, rust-format
+msgid "Join the room {group}"
+msgstr "加入房间 {group}"
+
+#, rust-format
+msgid "Could not join {group}: {error}"
+msgstr "无法加入 {group}：{error}"
+
+msgid "📺 You're showing your screen to the room"
+msgstr "📺 你正在向房间展示你的屏幕"
+
+msgid "📺 You're showing your screen · 1 person watching"
+msgstr "📺 你正在展示你的屏幕 · 1 人正在观看"
+
+#, rust-format
+msgid "📺 You're showing your screen · {count} people watching"
+msgstr "📺 你正在展示你的屏幕 · {count} 人正在观看"
+
+#, rust-format
+msgid "{people} · {talking} talking"
+msgstr "{people} · {talking} 人正在说话"
+
+msgid "connecting…"
+msgstr "正在连接…"
+
+msgid "muted"
+msgstr "已静音"
+
+msgid "talking"
+msgstr "正在说话"
+
+msgid "quiet"
+msgstr "安静"
+
+msgid "Sharing screen"
+msgstr "正在共享屏幕"
+
+msgid "In control"
+msgstr "控制中"
+
+msgid "Controls your screen now"
+msgstr "正在控制你的屏幕"
+
+msgid "Watching"
+msgstr "观看中"
+
+msgid "Watching your screen"
+msgstr "正在观看你的屏幕"
+
+#, rust-format
+msgid "{user} is showing their screen"
+msgstr "{user} 正在展示其屏幕"
+
+msgid "Watch"
+msgstr "观看"
+
+#, rust-format
+msgid "{user} asks to control your screen"
+msgstr "{user} 请求控制你的屏幕"
+
+msgid ""
+"They'll be able to use your mouse and keyboard. You can take control back at"
+" any time."
+msgstr "对方将能够使用你的鼠标和键盘。你可以随时收回控制权。"
+
+msgid "Allow"
+msgstr "允许"
+
+msgid "Turn off camera"
+msgstr "关闭摄像头"
+
+msgid "Turn on camera"
+msgstr "打开摄像头"
+
+msgid "No camera found on this computer"
+msgstr "此电脑上未找到摄像头"
+
+msgid "Stop sharing"
+msgstr "停止共享"
+
+msgid "Share screen"
+msgstr "共享屏幕"
+
+msgid "Stop showing your screen to the room"
+msgstr "停止向房间展示你的屏幕"
+
+msgid "Show your screen to everyone in the room"
+msgstr "向房间中的所有人展示你的屏幕"
+
+msgid "Take back control"
+msgstr "收回控制权"
+
+msgid "Give control"
+msgstr "交出控制权"
+
+msgid "Stop them from using your mouse and keyboard"
+msgstr "阻止对方使用你的鼠标和键盘"
+
+msgid "Let them use your mouse and keyboard"
+msgstr "让对方使用你的鼠标和键盘"
+
+msgid "Sound level"
+msgstr "音量"
+
+msgid "Unmute"
+msgstr "取消静音"
+
+msgid "Sections"
+msgstr "分区"
+
+msgid ""
+"Your identity on this mesh — the device name shown to other peers and the "
+"network you're connected to."
+msgstr "您在此网格中的身份——向其他对等节点显示的设备名称以及您所连接的网络。"
+
+msgid "Change photo…"
+msgstr "更改照片…"
+
+msgid "Remove photo"
+msgstr "移除照片"
+
+msgid "Change your photo"
+msgstr "更改你的照片"
+
+msgid "Rename this device on the network"
+msgstr "重命名此设备在网络上的名称"
+
+msgid "Advanced: use a pre-auth key"
+msgstr "高级：使用预授权密钥"
+
+msgid "Already have a key from your administrator? Paste it here."
+msgstr "已有管理员提供的密钥？请在此粘贴。"
+
+msgid ""
+"Manual setup — expand to paste a server URL and pre-auth key when you "
+"already received them from your administrator. Most users should sign in "
+"through the panel button above instead."
+msgstr "手动设置——展开以粘贴您已从管理员处收到的服务器 URL 和预授权密钥。大多数用户应改为通过上方面板按钮登录。"
+
+msgid ""
+"Address of the coordination server (e.g. vpn.example.org). The https:// "
+"scheme is added automatically if you omit it."
+msgstr "协调服务器的地址（例如 vpn.example.org）。如果您省略，系统会自动添加 https:// 方案。"
+
+msgid "Pre-auth key"
+msgstr "预授权密钥"
+
+msgid ""
+"One-time or reusable key created on the server (starts with 'hskey-auth-'). "
+"Used to register this device automatically without opening a browser."
+msgstr "在服务器上创建的一次性或可重复使用的密钥（以 'hskey-auth-' 开头）。用于无需打开浏览器即可自动注册此设备。"
+
+msgid ""
+"The name this device shows to other peers on the VPN — this is the Tailscale"
+" hostname, NOT your computer's name and NOT your user. Lowercase letters, "
+"digits and hyphens. Example: 'tales-laptop', 'francois', 'office-pc'."
+msgstr ""
+"此设备向 VPN 上其他对等节点显示的名称——这是 Tailscale "
+"主机名，不是您计算机的名称，也不是您的用户名。小写字母、数字和连字符。例如：'tales-laptop'、'francois'、'office-pc'。"
+
+msgid "Apply manual setup"
+msgstr "应用手动设置"
+
+msgid "Save"
+msgstr "保存"
+
+msgid ""
+"Persist the server, key and device name above. Won't connect — press Connect"
+" afterwards."
+msgstr "持久化保存上述服务器、密钥和设备名称。不会自动连接——请随后点击“连接”。"
+
+msgid "Connect automatically"
+msgstr "自动连接"
+
+msgid "Join the network when BigLace starts"
+msgstr "BigLace 启动时加入网络"
+
+msgid ""
+"When on, BigLace runs 'tailscale up' as soon as it launches, so you join the"
+" mesh without clicking Connect every time."
+msgstr "开启后，BigLace 会在启动时立即运行 'tailscale up'，这样您无需每次都点击“连接”即可加入网格。"
+
+msgid "Toggle auto-connect on startup"
+msgstr "切换启动时自动连接"
+
 msgid "Start BigLace with the session"
 msgstr "随会话启动 BigLace"
 
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/sidebar.rs:179
 msgid "Open BigLace after you sign in to the desktop"
 msgstr "登录桌面后打开 BigLace"
 
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/sidebar.rs:182
 msgid ""
 "Turn this on to add BigLace to your desktop session startup. Turn it off to "
 "remove it."
 msgstr "开启此选项可将 BigLace 添加到桌面会话启动项中。关闭则可将其移除。"
 
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/sidebar.rs:190
 msgid "Toggle start with session"
 msgstr "切换随会话启动"
+
+msgid "Reconnect on drop"
+msgstr "断线重连"
+
+msgid "Retry with backoff when the connection is lost"
+msgstr "连接断开时启用退避重试"
+
+msgid ""
+"If the tunnel drops (network change, sleep, server hiccup), BigLace silently"
+" retries with growing delays instead of leaving you offline until you "
+"notice."
+msgstr "如果隧道断开（网络变更、休眠、服务器故障），BigLace 会静默重试，且重试间隔逐渐增加，而不会让您离线直到您注意到。"
+
+msgid "Toggle auto-reconnect"
+msgstr "切换自动重连"
+
+msgid "Notify on peer changes"
+msgstr "节点变更通知"
+
+msgid "Show a desktop notification when peers go online/offline"
+msgstr "当节点上线/离线时显示桌面通知"
+
+msgid ""
+"Send a desktop toast when another device on your network goes online or "
+"offline. Rapid bursts are coalesced into a single notification so you don't "
+"get spammed during reconnects."
+msgstr "当您网络上的另一设备上线或离线时，发送桌面通知。快速爆发的事件会合并为一条通知，以免在重连期间被频繁打扰。"
+
+msgid "Toggle peer-change notifications"
+msgstr "切换对等节点变更通知"
+
+msgid ""
+"Join or leave the mesh network. When connected, this device becomes "
+"reachable by the other peers in your account."
+msgstr "加入或离开网状网络。连接后，此设备将可被您账户中的其他对等节点访问。"
+
+msgid "Your photo"
+msgstr "你的照片"
+
+#~ msgid "Panel credentials"
+#~ msgstr "面板凭据"
+
+#~ msgid "Username"
+#~ msgstr "用户名"
+
+#~ msgid "Sign in to connect"
+#~ msgstr "登录以连接"
+
+#~ msgid "Use the panel on the left to sign in or paste a pre-auth key."
+#~ msgstr "使用左侧面板登录或粘贴预授权密钥。"
+
+#~ msgid "Connect via panel account"
+#~ msgstr "通过面板账户连接"
+
+#~ msgid ""
+#~ "Sign in with your BigScale panel username and password. A device identity "
+#~ "will be created on the network automatically — no manual key needed."
+#~ msgstr "使用您的 BigScale 面板用户名和密码登录。设备身份将自动在网络中创建——无需手动输入密钥。"
+
+#~ msgid "Connected ·"
+#~ msgstr "已连接 ·"
 
 #~ msgid "Device name"
 #~ msgstr "设备名称"
@@ -716,9 +2258,6 @@ msgstr "切换随会话启动"
 
 #~ msgid "Terminal"
 #~ msgstr "终端"
-
-#~ msgid "Copied!"
-#~ msgstr "已复制！"
 
 #~ msgid "Key generated successfully."
 #~ msgstr "密钥生成成功。"

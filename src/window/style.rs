@@ -293,6 +293,26 @@ popover.emoji-picker > contents { padding: 0; border-radius: 16px; }
 .emoji-tabs button { min-height: 30px; }
 
 /* ── Voice rooms ── */
+/* Video stage: grid or speaker view. */
+.room-stage { min-height: 140px; }
+.stage-tile {
+    border-radius: 14px;
+    background-color: alpha(@view_fg_color, 0.08);
+    box-shadow: inset 0 0 0 1px alpha(@view_fg_color, 0.08);
+    transition: box-shadow 150ms ease;
+}
+.stage-tile.speaking { box-shadow: inset 0 0 0 3px @accent_color, 0 0 12px alpha(@accent_color, 0.5); }
+.stage-tile-back { background-color: alpha(black, 0.25); }
+.stage-name {
+    margin: 8px;
+    padding: 2px 8px;
+    border-radius: 8px;
+    background-color: alpha(black, 0.55);
+    color: white;
+    font-size: 0.85em;
+    font-weight: 600;
+}
+.stage-big .stage-tile { min-height: 270px; }
 /* Showing your screen to the room. */
 .share-banner {
     padding: 6px 16px;

@@ -3,7 +3,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: biglace\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-05-01 15:36\n"
+"POT-Creation-Date: 2026-11-19 12:50-0300\n"
 "PO-Revision-Date: 2026-05-01 15:36\n"
 "Last-Translator: Translation Automator <auto@translator.ai>\n"
 "Language-Team: Croatian <hr@li.org>\n"
@@ -12,145 +12,41 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/tray/linux.rs:76
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/tray/windows.rs:136
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/mod.rs:1114
-msgid "Disconnect"
-msgstr "Prekini vezu"
+msgid "Invalid device address."
+msgstr "Nevažeća adresa uređaja."
 
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/content.rs:47
-msgid "Main menu"
-msgstr "Glavni izbornik"
-
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/mod.rs:590
-msgid "Sign in with panel account"
-msgstr "Prijavi se s računom panela"
-
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/mod.rs:592
-msgid "Make this user the tailscale operator"
-msgstr "Postavi ovog korisnika kao tailscale operatera"
-
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/mod.rs:594
-msgid "About BigLace"
-msgstr "O BigLaceu"
-
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/dialogs.rs:42
-msgid "Tailscale operator"
-msgstr "Tailscale operater"
-
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/dialogs.rs:37
-msgid "Done. You will no longer need a password to connect or disconnect."
+msgid ""
+"No file manager could open the SFTP location. Install one (Dolphin, "
+"Nautilus, Nemo, Thunar…) and try again."
 msgstr ""
-"Gotovo. Više vam neće trebati lozinka za spajanje ili prekidanje veze."
+"Nijedan upravitelj datoteka nije mogao otvoriti SFTP lokaciju. Instalirajte "
+"jedan (Dolphin, Nautilus, Nemo, Thunar…) i pokušajte ponovno."
 
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/dialogs.rs:38
-#, rust-format
-msgid "Failed: {error}"
-msgstr "Neuspješno: {error}"
+msgid ""
+"No file manager could open the SFTP location. Install WinSCP and try again."
+msgstr ""
+"Nijedan upravitelj datoteka nije mogao otvoriti SFTP lokaciju. Instalirajte "
+"WinSCP i pokušajte ponovno."
 
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/dialogs.rs:45
-msgid "OK"
-msgstr "U redu"
+msgid ""
+"No terminal emulator found. Install one (Konsole, GNOME Terminal, xterm…) "
+"and try again."
+msgstr ""
+"Nije pronađen emulator terminala. Instalirajte jedan (Konsole, GNOME "
+"Terminal, xterm…) i pokušajte ponovno."
 
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/dialogs.rs:387
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/mod.rs:729
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/mod.rs:962
-#, rust-format
-msgid "Error: {error}"
-msgstr "Greška: {error}"
-
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/dialogs.rs:29
-msgid "Mesh VPN client for BigScale/Headscale."
-msgstr "Mesh VPN klijent za BigScale/Headscale."
-
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/dialogs.rs:164
-msgid "Panel credentials"
-msgstr "Podaci za prijavu na panel"
-
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/dialogs.rs:173
-msgid "Panel URL"
-msgstr "URL panela"
-
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/dialogs.rs:180
-msgid "Username"
-msgstr "Korisničko ime"
-
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/dialogs.rs:184
-msgid "Password"
-msgstr "Lozinka"
-
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/dialogs.rs:75
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/dialogs.rs:247
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/dialogs.rs:448
-msgid "Cancel"
-msgstr "Odustani"
-
-#. The OK button needs to flip between "Sign in" and "spinner + Connecting…"
-#. while the HTTP call is in flight. Build both children up front and just
-#. swap the button's child — simpler than juggling visibility flags.
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/dialogs.rs:252
-msgid "Sign in"
-msgstr "Prijava"
-
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/dialogs.rs:309
-msgid "Fill in URL, username and password."
-msgstr "Ispunite URL, korisničko ime i lozinku."
-
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/content.rs:159
-msgid "Start service"
-msgstr "Pokreni uslugu"
-
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/sidebar.rs:95
-msgid "Server URL"
-msgstr "URL poslužitelja"
-
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/content.rs:206
-msgid "This device"
-msgstr "Ovaj uređaj"
-
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/tray/linux.rs:83
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/tray/windows.rs:81
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/tray/windows.rs:136
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/mod.rs:1124
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/mod.rs:1129
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/sidebar.rs:240
-msgid "Connect"
-msgstr "Poveži se"
-
-#. ── Devices on the network ──
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/content.rs:223
-msgid "Devices on the network"
-msgstr "Uređaji na mreži"
-
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/tailscale.rs:557
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/tailscale.rs:630
 msgid "Failed to run tailscale"
 msgstr "Neuspjelo pokretanje tailscale"
 
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/tailscale.rs:577
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/tailscale.rs:610
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/tailscale.rs:642
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/tailscale.rs:714
 msgid "Failed to connect — check the server URL and key."
 msgstr "Neuspjelo povezivanje — provjerite URL poslužitelja i ključ."
 
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/tailscale.rs:598
 msgid "Failed to run pkexec tailscale"
 msgstr "Neuspjelo pokretanje pkexec tailscale"
 
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/tailscale.rs:781
-msgid "Could not determine the current user."
-msgstr "Nije moguće odrediti trenutnog korisnika."
+msgid "Enter the server URL before connecting."
+msgstr "Unesite URL poslužitelja prije povezivanja."
 
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/tailscale.rs:787
-msgid "Failed to run pkexec tailscale set"
-msgstr "Neuspjelo pokretanje pkexec tailscale set"
-
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/tailscale.rs:789
-msgid "Failed to set tailscale operator."
-msgstr "Neuspjelo postavljanje tailscale operatora."
-
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/tailscale.rs:707
 msgid ""
 "The pre-auth key was rejected by the server. Generate a new key in the "
 "BigScale panel and try again."
@@ -158,166 +54,640 @@ msgstr ""
 "Poslužitelj je odbio pred-autorizacijski ključ. Generirajte novi ključ u "
 "BigScale panelu i pokušajte ponovo."
 
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/tailscale.rs:710
+msgid "Sign in or paste a pre-auth key first."
+msgstr "Prvo se prijavite ili zalijepite pre-auth ključ."
+
 #, rust-format
 msgid "Login rejected by server: {detail}"
 msgstr "Poslužitelj je odbio prijavu: {detail}"
 
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/sidebar.rs:138
-msgid "Apply manual setup"
-msgstr "Primijeni ručno postavljanje"
+msgid "Could not determine the current user."
+msgstr "Nije moguće odrediti trenutnog korisnika."
 
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/sidebar.rs:140
-msgid "Save"
-msgstr "Spremi"
+msgid "Failed to run pkexec tailscale set"
+msgstr "Neuspjelo pokretanje pkexec tailscale set"
 
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/sidebar.rs:159
-msgid "Connect automatically"
-msgstr "Automatski se poveži"
+msgid "Failed to set tailscale operator."
+msgstr "Neuspjelo postavljanje tailscale operatora."
 
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/sidebar.rs:160
-msgid "Join the network when BigLace starts"
-msgstr "Pridruži se mreži kada BigLace pokrene"
-
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/mod.rs:1079
-msgid "Sign in or paste a pre-auth key"
-msgstr "Prijavi se ili zalijepi pre-auth ključ"
-
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/mod.rs:1091
-msgid "Server not set"
-msgstr "Poslužitelj nije postavljen"
-
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/mod.rs:711
-msgid "Setup saved"
-msgstr "Postavljanje spremljeno"
-
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/tailscale.rs:653
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/mod.rs:805
-msgid "Sign in or paste a pre-auth key first."
-msgstr "Prvo se prijavite ili zalijepite pre-auth ključ."
-
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/content.rs:96
-msgid "Sign in to connect"
-msgstr "Prijavite se za povezivanje"
-
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/content.rs:97
-msgid "Use the panel on the left to sign in or paste a pre-auth key."
-msgstr ""
-"Koristite ploču s lijeve strane za prijavu ili lijepljenje pre-auth ključa."
-
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/content.rs:105
-msgid "Not connected"
-msgstr "Nije povezano"
-
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/content.rs:106
-msgid "Press Connect on the left to join the network."
-msgstr "Pritisnite Poveži se lijevo za pridruživanje mreži."
-
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/content.rs:183
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/dialogs.rs:259
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/mod.rs:1026
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/mod.rs:1119
-msgid "Connecting…"
-msgstr "Povezivanje…"
-
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/content.rs:232
-msgid "No other devices on the network yet."
-msgstr "Još nema drugih uređaja na mreži."
-
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/content.rs:216
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/peer_row.rs:178
-msgid "Copy IP address"
-msgstr "Kopiraj IP adresu"
-
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/mod.rs:888
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/peer_row.rs:186
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/peer_row.rs:271
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/peer_row.rs:280
-msgid "IP address copied"
-msgstr "IP adresa kopirana"
-
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/peer_row.rs:231
-msgid "Open files (SFTP)"
-msgstr "Otvori datoteke (SFTP)"
-
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/peer_row.rs:246
-msgid "Open terminal (SSH)"
-msgstr "Otvori terminal (SSH)"
-
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/peer_row.rs:50
-msgid "offline"
-msgstr "izvan mreže"
-
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/mod.rs:1023
-msgid "Service stopped"
-msgstr "Usluga zaustavljena"
-
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/tray/linux.rs:58
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/tray/windows.rs:172
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/content.rs:40
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/mod.rs:1025
-msgid "Disconnected"
-msgstr "Prekinuta veza"
-
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/tray/linux.rs:53
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/tray/windows.rs:167
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/mod.rs:953
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/mod.rs:1027
 msgid "Connected"
 msgstr "Povezano"
 
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/content.rs:59
+msgid "Connected · 1 peer"
+msgstr "Povezano · 1 vršnjak"
+
+#, rust-format
+msgid "Connected · {n} peers"
+msgstr "Povezano · {n} vršnjaka"
+
+msgid "Disconnected"
+msgstr "Prekinuta veza"
+
+#, rust-format
+msgid "In the room {group} · muted"
+msgstr "U sobi {group} · utišano"
+
+#, rust-format
+msgid "In the room {group}"
+msgstr "U sobi {group}"
+
+msgid "Disconnect"
+msgstr "Prekini vezu"
+
+msgid "Connect"
+msgstr "Poveži se"
+
+msgid "Show BigLace"
+msgstr "Prikaži BigLace"
+
+#, rust-format
+msgid "Room {group}"
+msgstr "Soba {group}"
+
+msgid "Unmute (Ctrl+Alt+M)"
+msgstr "Uključi zvuk (Ctrl+Alt+M)"
+
+msgid "Mute (Ctrl+Alt+M)"
+msgstr "Utišaj (Ctrl+Alt+M)"
+
+msgid "Leave the room"
+msgstr "Napusti sobu"
+
+msgid "Quit"
+msgstr "Izlaz"
+
+msgid "This computer"
+msgstr "Ovo računalo"
+
+msgid "Who may use this computer remotely"
+msgstr "Tko smije daljinski koristiti ovo računalo"
+
+msgid ""
+"Anyone you're connected to can ask to see and control this screen. Choose "
+"who is let in without asking, and who is never let in."
+msgstr ""
+"Svatko s kim ste povezani može zatražiti da vidi i upravlja ovim zaslonom. "
+"Odaberite koga pustiti bez pitanja, a koga nikada."
+
+msgid "History of accesses"
+msgstr "Povijest pristupa"
+
+msgid "Kept on this computer only."
+msgstr "Čuva se samo na ovom računalu."
+
+msgid "Clear"
+msgstr "Očisti"
+
+msgid "Nobody has asked yet."
+msgstr "Još nitko nije tražio."
+
+msgid "When someone asks, you can choose to always let them in."
+msgstr "Kad netko zatraži, možete odabrati da ga uvijek pustite."
+
+msgid "Ask every time"
+msgstr "Pitaj svaki put"
+
+msgid "Always allow"
+msgstr "Uvijek dopusti"
+
+msgid "Never allow"
+msgstr "Nikad ne dopusti"
+
+msgid "No accesses yet."
+msgstr "Još nema pristupa."
+
+msgid "Remote access"
+msgstr "Daljinski pristup"
+
+msgid "Watched the screen shared with the room"
+msgstr "Gledao/la zaslon dijeljen sa sobom"
+
+msgid "Got control of the shared screen"
+msgstr "Preuzeo/la upravljanje dijeljenim zaslonom"
+
+msgid "Restarted the computer"
+msgstr "Ponovno pokrenuo/la računalo"
+
+msgid "Restarted the session"
+msgstr "Ponovno pokrenuo/la sesiju"
+
+msgid "Shut down the computer"
+msgstr "Isključio/la računalo"
+
+msgid "allowed"
+msgstr "dopušteno"
+
+msgid "allowed (always)"
+msgstr "dopušteno (uvijek)"
+
+msgid "came back after a restart"
+msgstr "vratilo se nakon ponovnog pokretanja"
+
+msgid "denied"
+msgstr "odbijeno"
+
+msgid "blocked (never allowed)"
+msgstr "blokirano (nikad dopušteno)"
+
+msgid "ended"
+msgstr "završeno"
+
+#, rust-format
+msgid "{user} ({device})"
+msgstr "{user} ({device})"
+
+#, rust-format
+msgid "{done} of {total}"
+msgstr "{done} od {total}"
+
+msgid "Play"
+msgstr "Reproduciraj"
+
+msgid "Download"
+msgstr "Preuzmi"
+
+msgid "Open"
+msgstr "Otvori"
+
+msgid "Show in folder"
+msgstr "Prikaži u mapi"
+
+msgid "Pause"
+msgstr "Pauza"
+
+msgid "Photo"
+msgstr "Fotografija"
+
+msgid "Video"
+msgstr "Video"
+
+msgid "Voice message"
+msgstr "Glasovna poruka"
+
+msgid "Chat"
+msgstr "Chat"
+
+msgid "New chat"
+msgstr "Novi chat"
+
+msgid "Start a conversation with someone on the network"
+msgstr "Započnite razgovor s nekim na mreži"
+
+msgid "Main menu"
+msgstr "Glavni izbornik"
+
+msgid "Chat theme"
+msgstr "Tema chata"
+
+msgid "Conversations"
+msgstr "Razgovori"
+
+msgid "No conversations yet."
+msgstr "Još nema razgovora."
+
+msgid "Search in this conversation (Ctrl+F)"
+msgstr "Pretraži ovaj razgovor (Ctrl+F)"
+
+msgid "Pinned message"
+msgstr "Prikvačena poruka"
+
+msgid "Unpin"
+msgstr "Otkvači"
+
+msgid "Search messages"
+msgstr "Pretraži poruke"
+
+msgid "Older"
+msgstr "Starije"
+
+msgid "Newer"
+msgstr "Novije"
+
+msgid "Emoji"
+msgstr "Emoji"
+
+msgid "Send files, pictures or videos"
+msgstr "Pošalji datoteke, slike ili videozapise"
+
+msgid "Send (Enter) — Shift+Enter for a new line"
+msgstr "Pošalji (Enter) — Shift+Enter za novi redak"
+
+msgid "Record a voice message"
+msgstr "Snimi glasovnu poruku"
+
+msgid "Discard"
+msgstr "Odbaci"
+
+msgid "Send voice message"
+msgstr "Pošalji glasovnu poruku"
+
+msgid "Cancel"
+msgstr "Odustani"
+
+msgid "Copy text"
+msgstr "Kopiraj tekst"
+
+msgid "Forward"
+msgstr "Proslijedi"
+
+msgid "Delete"
+msgstr "Izbriši"
+
+msgid "Talk with your network"
+msgstr "Razgovarajte sa svojom mrežom"
+
+msgid ""
+"Pick a conversation, or start one. Messages go straight between your "
+"computers — the server never sees them."
+msgstr ""
+"Odaberite razgovor ili započnite novi. Poruke idu izravno između vaših "
+"računala — poslužitelj ih nikad ne vidi."
+
+msgid "Group"
+msgstr "Grupa"
+
+msgid "Direct conversation"
+msgstr "Izravni razgovor"
+
+msgid "That message is too long."
+msgstr "Ta je poruka predugačka."
+
+#, rust-format
+msgid "Could not send: {error}"
+msgstr "Slanje nije uspjelo: {error}"
+
+#, rust-format
+msgid "Could not download: {error}"
+msgstr "Preuzimanje nije uspjelo: {error}"
+
+#, rust-format
+msgid "{user} in {group}"
+msgstr "{user} u {group}"
+
+msgid "Send files"
+msgstr "Pošalji datoteke"
+
+msgid "Drop to send"
+msgstr "Ispustite za slanje"
+
+#, rust-format
+msgid "Could not record: {error}"
+msgstr "Snimanje nije uspjelo: {error}"
+
+msgid "Too short — record for at least a second."
+msgstr "Prekratko — snimajte barem jednu sekundu."
+
+msgid "Search people and groups"
+msgstr "Pretraži osobe i grupe"
+
+msgid "Loading…"
+msgstr "Učitavanje…"
+
+msgid "Nobody you can reach yet."
+msgstr "Još nema nikoga koga možete dosegnuti."
+
+msgid "online"
+msgstr "na mreži"
+
+msgid "offline"
+msgstr "izvan mreže"
+
+#, rust-format
+msgid "You: {text}"
+msgstr "Vi: {text}"
+
+msgid "Group conversation"
+msgstr "Grupni razgovor"
+
+#, rust-format
+msgid "Delivered to {people}"
+msgstr "Isporučeno: {people}"
+
+msgid "Waiting to be delivered"
+msgstr "Čeka na isporuku"
+
+msgid "Today"
+msgstr "Danas"
+
+msgid "Yesterday"
+msgstr "Jučer"
+
+msgid "🗑 Message deleted"
+msgstr "🗑 Poruka izbrisana"
+
+#, rust-format
+msgid "Forwarded from {name}"
+msgstr "Proslijeđeno od {name}"
+
+msgid "edited"
+msgstr "uređeno"
+
+msgid "More reactions"
+msgstr "Više reakcija"
+
+msgid "Reply"
+msgstr "Odgovori"
+
+msgid "Edit"
+msgstr "Uredi"
+
+msgid "Pin"
+msgstr "Prikvači"
+
+msgid "Select"
+msgstr "Odaberi"
+
+#, rust-format
+msgid "Could not react: {error}"
+msgstr "Reakcija nije uspjela: {error}"
+
+#, rust-format
+msgid "Reply to {name}"
+msgstr "Odgovor za {name}"
+
+msgid "Editing message"
+msgstr "Uređivanje poruke"
+
+msgid "Copied."
+msgstr "Kopirano."
+
+msgid "Forward to…"
+msgstr "Proslijedi…"
+
+msgid "Forwarded."
+msgstr "Proslijeđeno."
+
+#, rust-format
+msgid "Could not forward: {error}"
+msgstr "Prosljeđivanje nije uspjelo: {error}"
+
+msgid "Delete the message?"
+msgstr "Izbrisati poruku?"
+
+#, rust-format
+msgid "Delete {count} messages?"
+msgstr "Izbrisati poruke ({count})?"
+
+msgid "“For everyone” removes it from the other computers too."
+msgstr "„Za sve” je uklanja i s ostalih računala."
+
+msgid "It's removed from this computer only."
+msgstr "Uklanja se samo s ovog računala."
+
+msgid "Delete for me"
+msgstr "Izbriši za mene"
+
+msgid "Delete for everyone"
+msgstr "Izbriši za sve"
+
+#, rust-format
+msgid "Could not delete: {error}"
+msgstr "Brisanje nije uspjelo: {error}"
+
+msgid "1 selected"
+msgstr "1 odabrano"
+
+#, rust-format
+msgid "{count} selected"
+msgstr "Odabrano: {count}"
+
+msgid "That message isn't here anymore."
+msgstr "Te poruke više nema."
+
+msgid "No results"
+msgstr "Nema rezultata"
+
+#, rust-format
+msgid "{n} of {total}"
+msgstr "{n} od {total}"
+
+#, rust-format
+msgid "{user} is typing…"
+msgstr "{user} piše…"
+
+msgid "typing…"
+msgstr "piše…"
+
+msgid "System accent"
+msgstr "Naglasna boja sustava"
+
+msgid "Blue"
+msgstr "Plava"
+
+msgid "Teal"
+msgstr "Tirkizna"
+
+msgid "Green"
+msgstr "Zelena"
+
+msgid "Purple"
+msgstr "Ljubičasta"
+
+msgid "Pink"
+msgstr "Ružičasta"
+
+msgid "Orange"
+msgstr "Narančasta"
+
+msgid "Red"
+msgstr "Crvena"
+
+msgid "Graphite"
+msgstr "Grafitna"
+
+msgid "Default"
+msgstr "Zadano"
+
+msgid "Plain"
+msgstr "Obično"
+
+msgid "Dots"
+msgstr "Točkice"
+
+msgid "Ocean"
+msgstr "Ocean"
+
+msgid "Sunset"
+msgstr "Zalazak sunca"
+
+msgid "Forest"
+msgstr "Šuma"
+
+msgid "Lavender"
+msgstr "Lavanda"
+
+msgid "Night"
+msgstr "Noć"
+
+msgid "Hi! How does this look? 😊"
+msgstr "Bok! Kako ti se ovo čini? 😊"
+
+msgid "Looks great!"
+msgstr "Izgleda odlično!"
+
+msgid "Appearance"
+msgstr "Izgled"
+
+msgid "System"
+msgstr "Sustav"
+
+msgid "Light"
+msgstr "Svijetlo"
+
+msgid "Dark"
+msgstr "Tamno"
+
+msgid "Your messages"
+msgstr "Vaše poruke"
+
+msgid "Background"
+msgstr "Pozadina"
+
+msgid "Picture…"
+msgstr "Slika…"
+
+msgid "Pictures"
+msgstr "Slike"
+
+msgid "Choose a background picture"
+msgstr "Odaberite sliku pozadine"
+
+msgid "Message"
+msgstr "Poruka"
+
+msgid "Bold"
+msgstr "Podebljano"
+
+msgid "Italic"
+msgstr "Kurziv"
+
+msgid "Underline"
+msgstr "Podcrtano"
+
+msgid "Strikethrough"
+msgstr "Precrtano"
+
+msgid "Monospace"
+msgstr "Jednaki razmak"
+
+msgid "Create link"
+msgstr "Stvori poveznicu"
+
+msgid "Plain text"
+msgstr "Običan tekst"
+
+msgid "Formatting"
+msgstr "Oblikovanje"
+
+msgid "Create"
+msgstr "Stvori"
+
+msgid "Search devices"
+msgstr "Pretraži uređaje"
+
 msgid "Refresh"
 msgstr "Osvježi"
 
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/dialogs.rs:373
-msgid "Signed in. Press Connect to join the network."
-msgstr "Prijavljeni ste. Pritisnite Poveži se za pridruživanje mreži."
+msgid "Invite"
+msgstr "Pozovi"
 
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/mod.rs:1240
-msgid "no other devices"
-msgstr "nema drugih uređaja"
+msgid "Invite someone to your network"
+msgstr "Pozovite nekoga u svoju mrežu"
 
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/mod.rs:1242
-#, rust-format
-msgid "{online} online"
-msgstr "{online} na mreži"
+msgid ""
+"Tailscale cannot write this device's DNS settings, so it can no longer keep "
+"peer names working. They may still resolve for now, from the configuration "
+"left over from before the failure, but that will break the next time the "
+"network changes — and BigLace will fall back to IP addresses. On most "
+"distributions `sudo resolvconf -u` repairs it."
+msgstr ""
+"Tailscale ne može zapisati DNS postavke ovog uređaja, pa više ne može "
+"održavati nazive peerova. Možda će se zasad još razrješavati iz "
+"konfiguracije zaostale od prije kvara, ali to će prestati pri sljedećoj "
+"promjeni mreže — i BigLace će se vratiti na IP adrese. Na većini "
+"distribucija `sudo resolvconf -u` to popravlja."
 
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/mod.rs:1244
-#, rust-format
-msgid "{online} online · {offline} offline"
-msgstr "{online} na mreži · {offline} izvan mreže"
+msgid "Not connected"
+msgstr "Nije povezano"
 
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/content.rs:153
+msgid "Press Connect on the left to join the network."
+msgstr "Pritisnite Poveži se lijevo za pridruživanje mreži."
+
 msgid "The tailscale service is not running"
 msgstr "Tailscale usluga nije pokrenuta"
 
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/content.rs:155
 msgid "BigLace needs the tailscaled background service to manage the network."
 msgstr "BigLace zahtijeva pozadinsku uslugu tailscaled za upravljanje mrežom."
 
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/sidebar.rs:108
-msgid "Pre-auth key"
-msgstr "Pre-auth ključ"
+msgid "Start service"
+msgstr "Pokreni uslugu"
 
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/mod.rs:1024
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/mod.rs:1078
-msgid "Not signed in"
-msgstr "Niste prijavljeni"
+msgid "Join the network"
+msgstr "Pridruži se mreži"
 
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/sidebar.rs:81
-msgid "Advanced: use a pre-auth key"
-msgstr "Napredno: upotrijebite unaprijed ovjereni ključ"
+msgid "Choose how you're going to sign in."
+msgstr "Odaberite kako ćete se prijaviti."
 
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/sidebar.rs:82
-msgid "Already have a key from your administrator? Paste it here."
-msgstr "Već imate ključ od administratora? Zalijepite ga ovdje."
+msgid "Ways to sign in"
+msgstr "Načini prijave"
 
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/dialogs.rs:68
+msgid "Your account was kept on this computer. No invite needed."
+msgstr "Vaš je račun sačuvan na ovom računalu. Pozivnica nije potrebna."
+
+msgid "I have an invite"
+msgstr "Imam pozivnicu"
+
+msgid "Someone on the network sent you a link or a QR code."
+msgstr "Netko s mreže poslao vam je poveznicu ili QR kôd."
+
+msgid "I have an access key"
+msgstr "Imam pristupni ključ"
+
+msgid "A key the administrator created for you (starts with hskey-auth-)."
+msgstr "Ključ koji je administrator stvorio za vas (počinje s hskey-auth-)."
+
+msgid "I'm the administrator"
+msgstr "Ja sam administrator"
+
+msgid "Sign in with the BigScale panel's admin username and password."
+msgstr ""
+"Prijavite se administratorskim korisničkim imenom i lozinkom BigScale ploče."
+
+msgid "Connecting…"
+msgstr "Povezivanje…"
+
+msgid "This device"
+msgstr "Ovaj uređaj"
+
+msgid "Copy IP address"
+msgstr "Kopiraj IP adresu"
+
+msgid "Devices on the network"
+msgstr "Uređaji na mreži"
+
+msgid "No other devices on the network yet."
+msgstr "Još nema drugih uređaja na mreži."
+
+msgid "Mesh VPN client for BigScale/Headscale."
+msgstr "Mesh VPN klijent za BigScale/Headscale."
+
+msgid "Done. You will no longer need a password to connect or disconnect."
+msgstr ""
+"Gotovo. Više vam neće trebati lozinka za spajanje ili prekidanje veze."
+
+#, rust-format
+msgid "Failed: {error}"
+msgstr "Neuspješno: {error}"
+
+msgid "Tailscale operator"
+msgstr "Tailscale operater"
+
+msgid "OK"
+msgstr "U redu"
+
 msgid "Sign out of current account?"
 msgstr "Odjaviti se s trenutnog računa?"
 
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/dialogs.rs:70
 msgid ""
 "This will disconnect from the network, sign this device out of the current "
 "control server, and forget the saved password. You'll then be able to sign "
@@ -327,264 +697,92 @@ msgstr ""
 "poslužitelja i zaboraviti spremljenu lozinku. Tada ćete se moći prijaviti s "
 "drugim računom."
 
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/dialogs.rs:76
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/mod.rs:591
 msgid "Sign out"
 msgstr "Odjavi se"
 
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/dialogs.rs:134
+msgid "Leave the network?"
+msgstr "Napustiti mrežu?"
+
+#, rust-format
+msgid ""
+"This device leaves the network and its name becomes free. Your account {user} is kept: you can come back later from this computer, without an invite.\n"
+"\n"
+"If you won't come back, delete the account and the name {user} becomes free too."
+msgstr ""
+"Ovaj uređaj napušta mrežu i njegov naziv postaje slobodan. Vaš račun {user} ostaje sačuvan: kasnije se možete vratiti s ovog računala, bez pozivnice.\n"
+"\n"
+"Ako se nećete vraćati, izbrišite račun i naziv {user} također postaje slobodan."
+
+msgid "Leave and delete account"
+msgstr "Napusti i izbriši račun"
+
+msgid "Leave"
+msgstr "Napusti"
+
+msgid "Connect first to delete the account."
+msgstr "Najprije se povežite kako biste izbrisali račun."
+
+msgid "Signing out…"
+msgstr "Odjavljivanje…"
+
+#, rust-format
+msgid ""
+"Signed out. Your account was kept: {count} other device(s) still use it."
+msgstr ""
+"Odjavljeni ste. Vaš je račun sačuvan: još ga koristi drugih uređaja: "
+"{count}."
+
+msgid ""
+"Couldn't delete the account: the panel can't be reached. Connect and try "
+"again."
+msgstr ""
+"Brisanje računa nije uspjelo: ploča nije dostupna. Povežite se i pokušajte "
+"ponovno."
+
+#, rust-format
+msgid "Error: {error}"
+msgstr "Greška: {error}"
+
+msgid "Signed out and account deleted."
+msgstr "Odjavljeni ste i račun je izbrisan."
+
 msgid "Signed out."
 msgstr "Odjavljeni ste."
 
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/dialogs.rs:153
-msgid "Connect via panel account"
-msgstr "Poveži se putem računa na panelu"
+msgid "Couldn't reach the server"
+msgstr "Poslužitelj nije dostupan"
 
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/dialogs.rs:166
-msgid ""
-"Sign in with your BigScale panel username and password. A device identity "
-"will be created on the network automatically — no manual key needed."
-msgstr ""
-"Prijavite se s korisničkim imenom i lozinkom s BigScale panela. Identitet "
-"uređaja automatski će se stvoriti na mreži – nije potreban ručni ključ."
-
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/peer_row.rs:446
-msgid "Copy"
-msgstr "Kopiraj"
-
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/sidebar.rs:197
-msgid "Reconnect on drop"
-msgstr "Ponovno povezivanje pri prekidu"
-
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/sidebar.rs:198
-msgid "Retry with backoff when the connection is lost"
-msgstr "Ponovni pokušaj s odgodom kada se veza izgubi"
-
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/sidebar.rs:217
-msgid "Notify on peer changes"
-msgstr "Obavijesti o promjenama peerova"
-
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/sidebar.rs:218
-msgid "Show a desktop notification when peers go online/offline"
-msgstr ""
-"Prikaži obavijest na radnoj površini kada peerovi postanu online/offline"
-
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/mod.rs:593
-msgid "View tailscaled logs"
-msgstr "Pregledaj tailscaled zapise"
-
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/mod.rs:1044
-msgid "Server unreachable"
-msgstr "Poslužitelj nedostupan"
-
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/mod.rs:1054
 #, rust-format
-msgid "Update available: v{version}"
-msgstr "Dostupno ažuriranje: v{version}"
-
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/mod.rs:1398
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/mod.rs:1461
-msgid "is online"
-msgstr "je online"
-
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/mod.rs:1399
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/mod.rs:1463
-msgid "went offline"
-msgstr "je offline"
-
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/peer_row.rs:124
-msgid "Unpin from top"
-msgstr "Otkači s vrha"
-
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/peer_row.rs:124
-msgid "Pin to top"
-msgstr "Prikači na vrh"
-
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/peer_row.rs:259
-msgid "DNS name"
-msgstr "DNS naziv"
-
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/peer_row.rs:262
-msgid "DNS name copied"
-msgstr "DNS naziv kopiran"
-
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/peer_row.rs:284
-msgid "Owner"
-msgstr "Vlasnik"
-
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/peer_row.rs:346
-msgid "Tags"
-msgstr "Oznake"
-
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/peer_row.rs:351
-msgid "Last seen"
-msgstr "Zadnji put viđen"
-
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/peer_row.rs:358
-msgid "Use as exit node"
-msgstr "Koristi kao izlazni čvor"
-
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/peer_row.rs:359
-msgid "Route all traffic through this peer"
-msgstr "Usmjeri sav promet kroz ovog peer-a"
-
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/peer_row.rs:401
-msgid "Exit node enabled"
-msgstr "Izlazni čvor omogućen"
-
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/peer_row.rs:401
-msgid "Exit node disabled"
-msgstr "Izlazni čvor onemogućen"
-
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/peer_row.rs:403
-msgid "Failed to update exit node"
-msgstr "Neuspješno ažuriranje izlaznog čvora"
-
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/peer_row.rs:146
-msgid "Pinned to top"
-msgstr "Prikvačeno na vrh"
-
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/peer_row.rs:148
-msgid "Unpinned"
-msgstr "Otkvačeno"
-
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/tray/linux.rs:54
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/tray/windows.rs:168
-msgid "Connected · 1 peer"
-msgstr "Povezano · 1 vršnjak"
-
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/tray/linux.rs:55
-#, rust-format
-msgid "Connected · {n} peers"
-msgstr "Povezano · {n} vršnjaka"
-
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/tray/linux.rs:92
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/tray/windows.rs:80
-msgid "Show BigLace"
-msgstr "Prikaži BigLace"
-
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/tray/linux.rs:101
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/tray/windows.rs:82
-msgid "Quit"
-msgstr "Izlaz"
-
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/tray/windows.rs:169
-msgid "Connected ·"
-msgstr "Povezano ·"
-
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/sidebar.rs:54
 msgid ""
-"Your identity on this mesh — the device name shown to other peers and the "
-"network you're connected to."
+"The control server didn't confirm the sign-out: {error}\n"
+"\n"
+"You can still sign out on this computer: BigLace forgets the saved key and account and disconnects. The server keeps listing this device until an administrator removes it."
 msgstr ""
-"Vaš identitet na ovoj mreži — naziv uređaja koji se prikazuje drugim "
-"korisnicima i mreža na koju ste povezani."
+"Upravljački poslužitelj nije potvrdio odjavu: {error}\n"
+"\n"
+"Ipak se možete odjaviti na ovom računalu: BigLace zaboravlja spremljeni ključ i račun te prekida vezu. Poslužitelj će i dalje navoditi ovaj uređaj dok ga administrator ne ukloni."
 
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/sidebar.rs:71
-msgid "Rename this device on the network"
-msgstr "Preimenuj ovaj uređaj na mreži"
+msgid "Sign out on this computer"
+msgstr "Odjavi se na ovom računalu"
 
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/sidebar.rs:86
+msgid "Sign in as administrator"
+msgstr "Prijava kao administrator"
+
+msgid "Panel administrator"
+msgstr "Administrator ploče"
+
 msgid ""
-"Manual setup — expand to paste a server URL and pre-auth key when you "
-"already received them from your administrator. Most users should sign in "
-"through the panel button above instead."
+"Only for whoever administers the BigScale panel: use the panel's admin "
+"username and password. This device joins the network under the name below. "
+"Everyone else joins with an invite or an access key."
 msgstr ""
-"Ručno postavljanje — proširite da biste zalijepili URL poslužitelja i pred-"
-"autentifikacijski ključ ako ste ih već primili od administratora. Većina "
-"korisnika trebala bi se prijaviti putem gumba na ploči iznad."
+"Samo za onoga tko upravlja BigScale pločom: koristite administratorsko "
+"korisničko ime i lozinku ploče. Ovaj se uređaj pridružuje mreži pod nazivom "
+"ispod. Svi ostali pridružuju se pozivnicom ili pristupnim ključem."
 
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/sidebar.rs:99
-msgid ""
-"Address of the coordination server (e.g. vpn.example.org). The https:// "
-"scheme is added automatically if you omit it."
-msgstr ""
-"Adresa koordinacijskog poslužitelja (npr. vpn.example.org). Shema https:// "
-"dodaje se automatski ako je izostavite."
+msgid "Panel URL"
+msgstr "URL panela"
 
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/sidebar.rs:111
-msgid ""
-"One-time or reusable key created on the server (starts with 'hskey-auth-'). "
-"Used to register this device automatically without opening a browser."
-msgstr ""
-"Jednokratni ili višekratni ključ kreiran na poslužitelju (počinje s 'hskey-"
-"auth-'). Koristi se za automatsku registraciju ovog uređaja bez otvaranja "
-"preglednika."
-
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/dialogs.rs:190
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/dialogs.rs:418
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/sidebar.rs:124
-msgid "Device name on the network"
-msgstr "Naziv uređaja na mreži"
-
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/sidebar.rs:127
-msgid ""
-"The name this device shows to other peers on the VPN — this is the Tailscale"
-" hostname, NOT your computer's name and NOT your user. Lowercase letters, "
-"digits and hyphens. Example: 'tales-laptop', 'francois', 'office-pc'."
-msgstr ""
-"Naziv pod kojim se ovaj uređaj prikazuje drugim korisnicima na VPN-u — ovo "
-"je Tailscale hostname, a NE naziv vašeg računala i NE vaše korisničko ime. "
-"Mala slova, znamenke i crtice. Primjer: 'tales-laptop', 'francois', 'office-"
-"pc'."
-
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/sidebar.rs:144
-msgid ""
-"Persist the server, key and device name above. Won't connect — press Connect"
-" afterwards."
-msgstr ""
-"Trajno spremi gornji poslužitelj, ključ i naziv uređaja. Neće se povezati — "
-"nakon toga pritisnite Poveži se."
-
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/sidebar.rs:163
-msgid ""
-"When on, BigLace runs 'tailscale up' as soon as it launches, so you join the"
-" mesh without clicking Connect every time."
-msgstr ""
-"Kada je uključeno, BigLace pokreće 'tailscale up' čim se pokrene, tako da se"
-" pridružujete mreži bez klikanja na Poveži se svaki put."
-
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/sidebar.rs:171
-msgid "Toggle auto-connect on startup"
-msgstr "Uključi/isključi automatsko povezivanje pri pokretanju"
-
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/sidebar.rs:201
-msgid ""
-"If the tunnel drops (network change, sleep, server hiccup), BigLace silently"
-" retries with growing delays instead of leaving you offline until you "
-"notice."
-msgstr ""
-"Ako tunel padne (promjena mreže, stanje mirovanja, problem s poslužiteljem),"
-" BigLace tiho ponavlja pokušaj s rastućim odgodama umjesto da vas ostavi "
-"izvan mreže dok ne primijetite."
-
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/sidebar.rs:210
-msgid "Toggle auto-reconnect"
-msgstr "Uključi/isključi automatsko ponovno povezivanje"
-
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/sidebar.rs:221
-msgid ""
-"Send a desktop toast when another device on your network goes online or "
-"offline. Rapid bursts are coalesced into a single notification so you don't "
-"get spammed during reconnects."
-msgstr ""
-"Pošalji obavijest na radnoj površini kada drugi uređaj na vašoj mreži "
-"postane online ili offline. Brza ponavljanja se spajaju u jednu obavijest "
-"kako ne biste bili zatrpani tijekom ponovnih povezivanja."
-
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/sidebar.rs:230
-msgid "Toggle peer-change notifications"
-msgstr "Uključi/isključi obavijesti o promjenama korisnika"
-
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/sidebar.rs:245
-msgid ""
-"Join or leave the mesh network. When connected, this device becomes "
-"reachable by the other peers in your account."
-msgstr ""
-"Pridružite se ili napustite mesh mrežu. Kada ste povezani, ovaj uređaj "
-"postaje dostupan ostalim peerovima na vašem računu."
-
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/dialogs.rs:177
 msgid ""
 "Address of your BigScale panel (e.g. panel.example.org). The https:// scheme"
 " is added automatically if you omit it."
@@ -592,12 +790,16 @@ msgstr ""
 "Adresa vaše BigScale ploče (npr. panel.example.org). https:// shema se "
 "dodaje automatski ako je izostavite."
 
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/dialogs.rs:182
+msgid "Panel admin username"
+msgstr "Administratorsko korisničko ime ploče"
+
 msgid "Your panel username — the one you use to sign in to the web panel."
 msgstr ""
 "Vaše korisničko ime za ploču — ono kojim se prijavljujete na web ploču."
 
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/dialogs.rs:186
+msgid "Password"
+msgstr "Lozinka"
+
 msgid ""
 "Your panel password. Stored in the OS keyring (libsecret on Linux, Keychain "
 "on macOS, Credential Manager on Windows)."
@@ -605,7 +807,9 @@ msgstr ""
 "Vaša lozinka za ploču. Pohranjuje se u sistemski spremište ključeva "
 "(libsecret na Linuxu, Keychain na macOS-u, Credential Manager na Windowsu)."
 
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/dialogs.rs:193
+msgid "Device name on the network"
+msgstr "Naziv uređaja na mreži"
+
 msgid ""
 "The name this device shows to other peers on the VPN — this is the Tailscale"
 " hostname, NOT your computer's name and NOT your user. Lowercase letters, "
@@ -617,11 +821,18 @@ msgstr ""
 "Mala slova, znamenke i crtice. Primjer: 'tales-laptop', 'francois', 'office-"
 "pc'. Odaberite nešto što će ostali peerovi prepoznati."
 
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/dialogs.rs:442
+msgid "Sign in"
+msgstr "Prijava"
+
+msgid "Fill in URL, username and password."
+msgstr "Ispunite URL, korisničko ime i lozinku."
+
+msgid "Signed in. Press Connect to join the network."
+msgstr "Prijavljeni ste. Pritisnite Poveži se za pridruživanje mreži."
+
 msgid "Rename this device"
 msgstr "Preimenuj ovaj uređaj"
 
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/dialogs.rs:444
 msgid ""
 "The name this device shows to other peers on the VPN. Lowercase letters, "
 "digits and hyphens. Example: tales-laptop."
@@ -629,88 +840,1478 @@ msgstr ""
 "Naziv pod kojim se ovaj uređaj prikazuje ostalim peerovima na VPN-u. Mala "
 "slova, znamenke i crtice. Primjer: tales-laptop."
 
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/dialogs.rs:449
 msgid "Save & apply"
 msgstr "Spremi i primijeni"
 
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/dialogs.rs:502
 msgid "Saved. The new name will take effect the next time you connect."
 msgstr "Spremljeno. Novi naziv stupa na snagu sljedeći put kada se povežete."
 
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/dialogs.rs:526
 msgid "Device renamed."
 msgstr "Uređaj preimenovan."
 
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/dialogs.rs:536
 #, rust-format
 msgid "Rename failed: {error}"
 msgstr "Preimenovanje nije uspjelo: {error}"
 
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/dialogs.rs:553
 msgid "The device name can't be empty."
 msgstr "Naziv uređaja ne može biti prazan."
 
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/dialogs.rs:556
 msgid "Use 63 characters or fewer."
 msgstr "Koristite 63 znaka ili manje."
 
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/dialogs.rs:560
 msgid "The device name can't start or end with a hyphen."
 msgstr "Naziv uređaja ne može započinjati niti završavati crticom."
 
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/dialogs.rs:564
 msgid "Only lowercase letters, digits and hyphens are allowed."
 msgstr "Dopuštena su samo mala slova, znamenke i crtice."
 
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/peer_row.rs:306
-msgid "SSH login (override)"
-msgstr "SSH prijava (zamjena)"
+msgid "Smileys & people"
+msgstr "Smajlići i ljudi"
 
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/peer_row.rs:336
-msgid "Saved"
-msgstr "Spremljeno"
+msgid "Animals & nature"
+msgstr "Životinje i priroda"
 
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/mod.rs:1086
+msgid "Food & drink"
+msgstr "Hrana i piće"
+
+msgid "Travel & places"
+msgstr "Putovanja i mjesta"
+
+msgid "Activities"
+msgstr "Aktivnosti"
+
+msgid "Objects"
+msgstr "Predmeti"
+
+msgid "Symbols"
+msgstr "Simboli"
+
+msgid "Flags"
+msgstr "Zastave"
+
+msgid "Search emoji"
+msgstr "Pretraži emoji"
+
+msgid "Recently used"
+msgstr "Nedavno korišteno"
+
+msgid "Search results"
+msgstr "Rezultati pretraživanja"
+
+msgid ""
+"Groups from BigLace need a newer BigScale server. Ask your administrator to "
+"update it."
+msgstr ""
+"Grupe iz BigLacea zahtijevaju noviji BigScale poslužitelj. Zamolite "
+"administratora da ga ažurira."
+
+msgid "This device isn't linked to a person's account, so it has no groups."
+msgstr "Ovaj uređaj nije povezan s računom osobe, pa nema grupa."
+
+msgid ""
+"The panel knows this device by a different key (BigLace was reinstalled?). "
+"Leave the network and join again to fix it."
+msgstr ""
+"Ploča poznaje ovaj uređaj po drugom ključu (je li BigLace ponovno "
+"instaliran?). Napustite mrežu i ponovno se pridružite da biste to popravili."
+
+msgid ""
+"The panel couldn't confirm this device. Make sure BigLace is up to date and "
+"stays open while connected, then try again."
+msgstr ""
+"Ploča nije mogla potvrditi ovaj uređaj. Provjerite je li BigLace ažuran i "
+"ostaje li otvoren dok ste povezani, zatim pokušajte ponovno."
+
+msgid ""
+"On this network everyone already reaches everyone, so groups aren't needed. "
+"The administrator can set access rules first."
+msgstr ""
+"Na ovoj mreži svatko već dopire do svakoga, pa grupe nisu potrebne. "
+"Administrator najprije može postaviti pravila pristupa."
+
+msgid "You already created the maximum number of groups."
+msgstr "Već ste stvorili najveći dopušteni broj grupa."
+
+msgid "You are no longer in that group."
+msgstr "Više niste u toj grupi."
+
+msgid "A group with that name already exists. Choose another name."
+msgstr "Grupa s tim nazivom već postoji. Odaberite drugi naziv."
+
+msgid ""
+"Use lowercase letters, digits and hyphens, starting with a letter or digit."
+msgstr ""
+"Koristite mala slova, znamenke i crtice, počevši slovom ili znamenkom."
+
+msgid ""
+"The administrator uses this group in the network's rules, so it can't be "
+"deleted. Ask the administrator."
+msgstr ""
+"Administrator koristi ovu grupu u pravilima mreže, pa se ne može izbrisati. "
+"Obratite se administratoru."
+
+msgid "Only the person who created the group can do that."
+msgstr "To može učiniti samo osoba koja je stvorila grupu."
+
+msgid "You created this group: delete it instead of leaving."
+msgstr "Vi ste stvorili ovu grupu: izbrišite je umjesto da je napustite."
+
+msgid "This group belongs to the administrator; only they can change it."
+msgstr "Ova grupa pripada administratoru; samo je on može mijenjati."
+
+msgid "That person is no longer in the group."
+msgstr "Ta osoba više nije u grupi."
+
+msgid "That group no longer exists, or whoever invited you left it."
+msgstr "Ta grupa više ne postoji ili ju je napustio onaj tko vas je pozvao."
+
+msgid "That person is no longer on the network."
+msgstr "Ta osoba više nije na mreži."
+
+msgid "You're already in that group."
+msgstr "Već ste u toj grupi."
+
+msgid ""
+"This invite only brings new people into the network, and you're already in "
+"it."
+msgstr "Ova pozivnica dovodi samo nove osobe u mrežu, a vi ste već u njoj."
+
+msgid "This invite was already used. Ask for a new one."
+msgstr "Ova je pozivnica već iskorištena. Zatražite novu."
+
+msgid "This invite expired. Ask for a new one."
+msgstr "Ova je pozivnica istekla. Zatražite novu."
+
+msgid "This invite is no longer valid. Ask for a new one."
+msgstr "Ova pozivnica više nije važeća. Zatražite novu."
+
+msgid "This invite is still waiting for an administrator's approval."
+msgstr "Ova pozivnica još čeka odobrenje administratora."
+
+msgid "Too many attempts. Wait a minute and try again."
+msgstr "Previše pokušaja. Pričekajte minutu i pokušajte ponovno."
+
+#, rust-format
+msgid "Could not reach the panel: {error}"
+msgstr "Ploča nije dostupna: {error}"
+
+msgid "Groups"
+msgstr "Grupe"
+
+msgid "New group"
+msgstr "Nova grupa"
+
+msgid "Create a group"
+msgstr "Stvori grupu"
+
+msgid ""
+"People in the same group reach each other's devices. Create groups for "
+"family, work or friends, and invite people into them."
+msgstr ""
+"Osobe u istoj grupi dopiru do međusobnih uređaja. Stvorite grupe za obitelj,"
+" posao ili prijatelje i pozovite ljude u njih."
+
+msgid "Invitations for you"
+msgstr "Pozivnice za vas"
+
+msgid "Your groups"
+msgstr "Vaše grupe"
+
+msgid "No groups yet"
+msgstr "Još nema grupa"
+
+msgid ""
+"A group lets several people reach each other at once — the family, the "
+"office, a class."
+msgstr ""
+"Grupa omogućuje da više osoba odjednom dopire jedna do druge — obitelj, "
+"ured, razred."
+
+msgid "Groups unavailable"
+msgstr "Grupe nisu dostupne"
+
+msgid "Invitation to a group"
+msgstr "Pozivnica u grupu"
+
+#, rust-format
+msgid ""
+"{user} invites you to the group {group}. Open BigLace to accept or decline."
+msgstr ""
+"{user} vas poziva u grupu {group}. Otvorite BigLace da biste prihvatili ili "
+"odbili."
+
+#, rust-format
+msgid "{user} invites you to {group}"
+msgstr "{user} vas poziva u {group}"
+
+msgid "Joining lets you and the group's members reach each other's devices."
+msgstr "Pridruživanjem vi i članovi grupe dopirete do međusobnih uređaja."
+
+msgid "Decline"
+msgstr "Odbij"
+
+msgid "Accept"
+msgstr "Prihvati"
+
+#, rust-format
+msgid "You joined {group}."
+msgstr "Pridružili ste se grupi {group}."
+
+msgid "Invitation declined."
+msgstr "Pozivnica odbijena."
+
+msgid "1 person"
+msgstr "1 osoba"
+
+#, rust-format
+msgid "{count} people"
+msgstr "Osoba: {count}"
+
+msgid "Created by you"
+msgstr "Stvorili ste vi"
+
+#, rust-format
+msgid "Created by {user}"
+msgstr "Stvorio/la {user}"
+
+msgid "Network group (administrator)"
+msgstr "Mrežna grupa (administrator)"
+
+msgid "you"
+msgstr "vi"
+
+msgid "owner"
+msgstr "vlasnik"
+
+#, rust-format
+msgid "Remove {user} from the group"
+msgstr "Ukloni {user} iz grupe"
+
+msgid "Invite to this group"
+msgstr "Pozovi u ovu grupu"
+
+msgid "Delete group"
+msgstr "Izbriši grupu"
+
+msgid "Leave group"
+msgstr "Napusti grupu"
+
+#, rust-format
+msgid "Remove {user}?"
+msgstr "Ukloniti {user}?"
+
+#, rust-format
+msgid ""
+"{user} leaves the group {group} and no longer reaches its members through "
+"it."
+msgstr ""
+"{user} napušta grupu {group} i više kroz nju ne dopire do njezinih članova."
+
+msgid "Remove"
+msgstr "Ukloni"
+
+#, rust-format
+msgid "{user} was removed from the group."
+msgstr "{user} je uklonjen/a iz grupe."
+
+#, rust-format
+msgid "Leave {group}?"
+msgstr "Napustiti {group}?"
+
+msgid ""
+"You stop reaching the group's members through it. To come back, someone has "
+"to invite you again."
+msgstr ""
+"Kroz nju više nećete dopirati do članova grupe. Da biste se vratili, netko "
+"vas mora ponovno pozvati."
+
+msgid "You left the group."
+msgstr "Napustili ste grupu."
+
+#, rust-format
+msgid "Delete {group}?"
+msgstr "Izbrisati {group}?"
+
+msgid ""
+"Its members stop reaching each other through this group. People stay on the "
+"network."
+msgstr ""
+"Njezini članovi više neće dopirati jedni do drugih kroz ovu grupu. Osobe "
+"ostaju na mreži."
+
+msgid "Group deleted."
+msgstr "Grupa izbrisana."
+
+#, rust-format
+msgid "Join {group}?"
+msgstr "Pridružiti se grupi {group}?"
+
+#, rust-format
+msgid ""
+"{user} invited you. You and the group's members will reach each other's "
+"devices."
+msgstr ""
+"{user} vas je pozvao/la. Vi i članovi grupe dopirat ćete do međusobnih "
+"uređaja."
+
+msgid "You and the group's members will reach each other's devices."
+msgstr "Vi i članovi grupe dopirat ćete do međusobnih uređaja."
+
+#, rust-format
+msgid "Connect with {user}?"
+msgstr "Povezati se s {user}?"
+
+#, rust-format
+msgid "You and {user} will reach each other's devices."
+msgstr "Vi i {user} dopirat ćete do međusobnih uređaja."
+
+msgid "Join"
+msgstr "Pridruži se"
+
+msgid "Done. You can now reach each other's devices."
+msgstr "Gotovo. Sada možete dopirati do međusobnih uređaja."
+
+#, rust-format
+msgid "Invite to {group}"
+msgstr "Pozovi u {group}"
+
+msgid ""
+"Choose people on your network. Each one gets the invitation in BigLace and "
+"decides whether to join."
+msgstr ""
+"Odaberite osobe na svojoj mreži. Svaka dobiva pozivnicu u BigLaceu i "
+"odlučuje hoće li se pridružiti."
+
+msgid "Search people"
+msgstr "Pretraži osobe"
+
+msgid ""
+"If someone on the network has exactly this name, they get the invitation."
+msgstr "Ako netko na mreži ima točno ovaj naziv, dobit će pozivnicu."
+
+msgid "People on the network"
+msgstr "Osobe na mreži"
+
+#, rust-format
+msgid "Invite \"{name}\""
+msgstr "Pozovi „{name}”"
+
+msgid "Send invitations"
+msgstr "Pošalji pozivnice"
+
+msgid "Someone not on the network yet? Share an invite link"
+msgstr "Netko još nije na mreži? Podijelite poveznicu za pozivnicu"
+
+msgid "Invitation sent. You'll see the person in the group once they accept."
+msgstr "Pozivnica poslana. Osobu ćete vidjeti u grupi kad prihvati."
+
+#, rust-format
+msgid "{count} invitations sent. People show up in the group as they accept."
+msgstr ""
+"Poslano pozivnica: {count}. Osobe se pojavljuju u grupi kako prihvaćaju."
+
+msgid ""
+"Listed are the people you're already connected to. To invite someone else on"
+" the network, type their exact name. Each one gets the invitation in BigLace"
+" and decides whether to join."
+msgstr ""
+"Navedene su osobe s kojima ste već povezani. Da biste pozvali nekog drugog s"
+" mreže, upišite njegov točan naziv. Svaka osoba dobiva pozivnicu u BigLaceu "
+"i odlučuje hoće li se pridružiti."
+
+msgid ""
+"Nobody you're connected to yet. Type someone's exact name to invite them."
+msgstr ""
+"Još niste povezani ni s kim. Upišite nečiji točan naziv da biste ga pozvali."
+
+msgid "Nobody else is on the network yet."
+msgstr "Na mreži još nema nikoga drugog."
+
+msgid ""
+"You'll be the group's owner: you invite people into it and can remove them. "
+"Everyone in the group reaches each other's devices."
+msgstr ""
+"Bit ćete vlasnik grupe: pozivate osobe u nju i možete ih ukloniti. Svi u "
+"grupi dopiru do međusobnih uređaja."
+
+msgid "Group name"
+msgstr "Naziv grupe"
+
+msgid "Create group"
+msgstr "Stvori grupu"
+
+msgid "For example: family, work, friends."
+msgstr "Na primjer: obitelj, posao, prijatelji."
+
+#, rust-format
+msgid "It will be called \"{name}\"."
+msgstr "Zvat će se „{name}”."
+
+#, rust-format
+msgid "Group {group} created. Now invite people into it."
+msgstr "Grupa {group} stvorena. Sada pozovite osobe u nju."
+
+msgid "typed name"
+msgstr "upisani naziv"
+
+msgid "already in the group"
+msgstr "već u grupi"
+
+msgid "invitation sent, waiting"
+msgstr "pozivnica poslana, čeka se"
+
+#, rust-format
+msgid "Invite {user}"
+msgstr "Pozovi {user}"
+
+msgid ""
+"Invites from BigLace need a BigScale server that supports them. Ask your "
+"administrator to update the server, or to create the invite in the panel."
+msgstr ""
+"Pozivnice iz BigLacea zahtijevaju BigScale poslužitelj koji ih podržava. "
+"Zamolite administratora da ažurira poslužitelj ili da stvori pozivnicu na "
+"ploči."
+
+msgid ""
+"This device can't send invites (it isn't linked to a person's account)."
+msgstr "Ovaj uređaj ne može slati pozivnice (nije povezan s računom osobe)."
+
+msgid ""
+"On this network everyone can reach everyone, so only the administrator can "
+"invite people."
+msgstr ""
+"Na ovoj mreži svatko dopire do svakoga, pa samo administrator može pozivati "
+"osobe."
+
+msgid "You have too many pending invites. Cancel some or try again tomorrow."
+msgstr ""
+"Imate previše pozivnica na čekanju. Otkažite neke ili pokušajte ponovno "
+"sutra."
+
+msgid ""
+"On this network only administrators invite new people. You can still invite "
+"people already on the network into your groups."
+msgstr ""
+"Na ovoj mreži samo administratori pozivaju nove osobe. I dalje možete "
+"pozivati osobe koje su već na mreži u svoje grupe."
+
+msgid "Waiting to be used"
+msgstr "Čeka na korištenje"
+
+msgid "Used"
+msgstr "Iskorišteno"
+
+msgid "Expired"
+msgstr "Isteklo"
+
+msgid "Cancelled"
+msgstr "Otkazano"
+
+msgid "Waiting for an administrator's approval"
+msgstr "Čeka odobrenje administratora"
+
+msgid "Invites"
+msgstr "Pozivnice"
+
+msgid "Bring someone to your network"
+msgstr "Dovedite nekoga u svoju mrežu"
+
+msgid ""
+"Create a link or QR code and send it to the person. When they join, you two "
+"can reach each other's devices — no administrator needed. The link works "
+"once and stays valid until it's used or you cancel it."
+msgstr ""
+"Stvorite poveznicu ili QR kôd i pošaljite ga osobi. Kad se pridruži, vas "
+"dvoje dopirete do međusobnih uređaja — administrator nije potreban. "
+"Poveznica radi jednom i vrijedi dok se ne iskoristi ili je ne otkažete."
+
+msgid "Invites you sent"
+msgstr "Pozivnice koje ste poslali"
+
+msgid "No invites yet"
+msgstr "Još nema pozivnica"
+
+msgid "Invites unavailable"
+msgstr "Pozivnice nisu dostupne"
+
+#, rust-format
+msgid "{user} joined"
+msgstr "{user} se pridružio/la"
+
+#, rust-format
+msgid "group {group}"
+msgstr "grupa {group}"
+
+msgid "Cancel this invite: the link stops working"
+msgstr "Otkaži ovu pozivnicu: poveznica prestaje raditi"
+
+msgid "Invite someone"
+msgstr "Pozovi nekoga"
+
+msgid "The person you invite will reach your devices, and you theirs."
+msgstr "Osoba koju pozovete dopirat će do vaših uređaja, a vi do njezinih."
+
+msgid "Who is it for? (optional)"
+msgstr "Za koga je? (neobavezno)"
+
+msgid "Access"
+msgstr "Pristup"
+
+msgid "Just the two of us"
+msgstr "Samo nas dvoje"
+
+msgid "You see each other's devices, nobody else"
+msgstr "Vidite međusobne uređaje, nikoga drugog"
+
+#, rust-format
+msgid "Also the group {group}"
+msgstr "Također grupa {group}"
+
+msgid "They join the group and see everyone in it"
+msgstr "Pridružuje se grupi i vidi sve u njoj"
+
+msgid "A network of their own"
+msgstr "Vlastita mreža"
+
+msgid ""
+"No link to you: they see only their own devices and whoever they invite "
+"(you're the administrator)"
+msgstr ""
+"Bez veze s vama: vidi samo svoje uređaje i one koje pozove (vi ste "
+"administrator)"
+
+msgid "Create invite"
+msgstr "Stvori pozivnicu"
+
+msgid "QR code of the invite link"
+msgstr "QR kôd poveznice za pozivnicu"
+
+msgid ""
+"Send the link or let the person scan the code with their phone. It works "
+"once and stays valid until used or cancelled."
+msgstr ""
+"Pošaljite poveznicu ili neka osoba skenira kôd telefonom. Radi jednom i "
+"vrijedi dok se ne iskoristi ili otkaže."
+
+msgid "Copy link"
+msgstr "Kopiraj poveznicu"
+
+msgid "Done"
+msgstr "Gotovo"
+
+msgid "Copied!"
+msgstr "Kopirano!"
+
+msgid ""
+"This network asks an administrator to approve each invite: the link starts "
+"working once they do. Its status shows in Invites."
+msgstr ""
+"Ova mreža traži da administrator odobri svaku pozivnicu: poveznica počinje "
+"raditi kad je odobri. Njezin status vidi se u Pozivnicama."
+
+#, rust-format
+msgid ""
+"That name already belongs to an account on this network, so we suggested "
+"\"{name}\". If the account is yours, sign in again from the computer where "
+"you used it, or ask the administrator to free the name."
+msgstr ""
+"Taj naziv već pripada računu na ovoj mreži, pa smo predložili „{name}”. Ako "
+"je račun vaš, ponovno se prijavite s računala na kojem ste ga koristili ili "
+"zamolite administratora da oslobodi naziv."
+
+msgid ""
+"That name already belongs to an account on this network. Try another one, or"
+" ask the administrator to free it."
+msgstr ""
+"Taj naziv već pripada računu na ovoj mreži. Pokušajte s drugim ili zamolite "
+"administratora da ga oslobodi."
+
+msgid "Type your name using at least two letters or digits."
+msgstr "Upišite svoje ime s barem dva slova ili znamenke."
+
+msgid "This invite has expired. Ask for a new one."
+msgstr "Ova je pozivnica istekla. Zatražite novu."
+
+msgid "This invite was cancelled. Ask for a new one."
+msgstr "Ova je pozivnica otkazana. Zatražite novu."
+
+msgid ""
+"This invite is waiting for the network administrator's approval. Try again "
+"once the person who invited you says it was approved."
+msgstr ""
+"Ova pozivnica čeka odobrenje administratora mreže. Pokušajte ponovno kad vam"
+" osoba koja vas je pozvala javi da je odobrena."
+
+msgid "This invite is not valid. Check the link or ask for a new one."
+msgstr "Ova pozivnica nije važeća. Provjerite poveznicu ili zatražite novu."
+
+msgid ""
+"This server doesn't support invites yet. Sign in with a panel account "
+"instead."
+msgstr ""
+"Ovaj poslužitelj još ne podržava pozivnice. Umjesto toga prijavite se "
+"računom ploče."
+
+msgid "Join with an invite"
+msgstr "Pridruživanje pozivnicom"
+
+msgid ""
+"Paste the invite link you received and type your name. Your account is "
+"created and this device joins the network."
+msgstr ""
+"Zalijepite primljenu poveznicu za pozivnicu i upišite svoje ime. Vaš se "
+"račun stvara i ovaj se uređaj pridružuje mreži."
+
+msgid "Invite link"
+msgstr "Poveznica za pozivnicu"
+
+msgid "Your name"
+msgstr "Vaše ime"
+
+msgid "How others will see you on the network, e.g. 'Maria' or 'Office PC'."
+msgstr ""
+"Kako će vas drugi vidjeti na mreži, npr. 'Marija' ili 'Uredsko računalo'."
+
+msgid ""
+"The name this device shows to other peers. Lowercase letters, digits and "
+"hyphens. Example: 'maria-laptop'."
+msgstr ""
+"Naziv koji ovaj uređaj prikazuje drugim peerovima. Mala slova, znamenke i "
+"crtice. Primjer: 'marija-laptop'."
+
+msgid "Network"
+msgstr "Mreža"
+
+msgid "Joining…"
+msgstr "Pridruživanje…"
+
+msgid ""
+"That doesn't look like an invite link. It starts with https:// and contains "
+"/join#."
+msgstr ""
+"To ne izgleda kao poveznica za pozivnicu. Počinje s https:// i sadrži "
+"/join#."
+
+msgid "Type your name."
+msgstr "Upišite svoje ime."
+
+#, rust-format
+msgid "Welcome, {name}! You joined the group {group}. Connecting…"
+msgstr "Dobro došli, {name}! Pridružili ste se grupi {group}. Povezivanje…"
+
+#, rust-format
+msgid "Welcome, {name}! Connecting…"
+msgstr "Dobro došli, {name}! Povezivanje…"
+
+msgid "Open admin panel"
+msgstr "Otvori administratorsku ploču"
+
+msgid "Devices"
+msgstr "Uređaji"
+
+msgid "Rooms"
+msgstr "Sobe"
+
+msgid "Choose your photo"
+msgstr "Odaberite svoju fotografiju"
+
+msgid "Photo updated. Everyone you're connected to will see it."
+msgstr "Fotografija ažurirana. Vidjet će je svi s kojima ste povezani."
+
+#, rust-format
+msgid "Could not change the photo: {error}"
+msgstr "Promjena fotografije nije uspjela: {error}"
+
+msgid "Sign in with an access key"
+msgstr "Prijava pristupnim ključem"
+
+msgid ""
+"Paste the key the administrator gave you. It's used once, to register this "
+"device."
+msgstr ""
+"Zalijepite ključ koji vam je dao administrator. Koristi se jednom, za "
+"registraciju ovog uređaja."
+
+msgid "Server URL"
+msgstr "URL poslužitelja"
+
+msgid "Access key"
+msgstr "Pristupni ključ"
+
+msgid ""
+"The key to this account is no longer on this computer. Join with a new "
+"invite."
+msgstr ""
+"Ključ ovog računa više nije na ovom računalu. Pridružite se novom "
+"pozivnicom."
+
+#, rust-format
+msgid "Welcome back, {name}! Connecting…"
+msgstr "Dobro došli natrag, {name}! Povezivanje…"
+
+#, rust-format
+msgid ""
+"The account {user} no longer exists on this network. Join with a new invite."
+msgstr ""
+"Račun {user} više ne postoji na ovoj mreži. Pridružite se novom pozivnicom."
+
+msgid "Preferences"
+msgstr "Postavke"
+
+msgid "General"
+msgstr "Općenito"
+
+msgid "Behaviour"
+msgstr "Ponašanje"
+
+msgid "Make this user the tailscale operator"
+msgstr "Postavi ovog korisnika kao tailscale operatera"
+
+msgid ""
+"Lets BigLace manage the connection without asking for a password each time"
+msgstr "Omogućuje BigLaceu upravljanje vezom bez traženja lozinke svaki put"
+
+msgid "Account"
+msgstr "Račun"
+
+msgid ""
+"Signing out removes this device's identity from BigLace. You will need a new"
+" invite or key to join again."
+msgstr ""
+"Odjava uklanja identitet ovog uređaja iz BigLacea. Za ponovno pridruživanje "
+"trebat će vam nova pozivnica ili ključ."
+
+msgid "Change profile photo…"
+msgstr "Promijeni profilnu fotografiju…"
+
+msgid "Sign in with panel account"
+msgstr "Prijavi se s računom panela"
+
+msgid "Leave the network…"
+msgstr "Napusti mrežu…"
+
+msgid "View tailscaled logs"
+msgstr "Pregledaj tailscaled zapise"
+
+msgid "About BigLace"
+msgstr "O BigLaceu"
+
+msgid "Connect to the network first, then open the invite link again."
+msgstr ""
+"Najprije se povežite s mrežom, a zatim ponovno otvorite poveznicu za "
+"pozivnicu."
+
+#, rust-format
+msgid ""
+"This invite is for another network ({host}). Sign out first to join it."
+msgstr ""
+"Ova je pozivnica za drugu mrežu ({host}). Najprije se odjavite da biste joj "
+"se pridružili."
+
+msgid ""
+"This device is already signed in. Sign out first to join with an invite."
+msgstr ""
+"Ovaj je uređaj već prijavljen. Najprije se odjavite da biste se pridružili "
+"pozivnicom."
+
+msgid "Photo removed."
+msgstr "Fotografija uklonjena."
+
+#, rust-format
+msgid "Could not remove the photo: {error}"
+msgstr "Uklanjanje fotografije nije uspjelo: {error}"
+
+#, rust-format
+msgid "Could not open the browser: {error}"
+msgstr "Otvaranje preglednika nije uspjelo: {error}"
+
+msgid ""
+"You can't open the admin panel: you're not an administrator of this network,"
+" or the panel can't be reached."
+msgstr ""
+"Ne možete otvoriti administratorsku ploču: niste administrator ove mreže ili"
+" ploča nije dostupna."
+
+msgid "Enter the server URL before saving."
+msgstr "Unesite URL poslužitelja prije spremanja."
+
+msgid "Enter the pre-auth key before saving."
+msgstr "Unesite ključ za prethodnu autentifikaciju prije spremanja."
+
+msgid "Setup saved"
+msgstr "Postavljanje spremljeno"
+
+msgid "Could not start the Tailscale service."
+msgstr "Pokretanje usluge Tailscale nije uspjelo."
+
+msgid "IP address copied"
+msgstr "IP adresa kopirana"
+
+#, rust-format
+msgid ""
+"Saved, but the pre-auth key could not be stored in the system keyring "
+"({error}). This device can still reconnect; the key is only needed again to "
+"register it anew."
+msgstr ""
+"Spremljeno, ali ključ za predautentifikaciju nije moguće pohraniti u "
+"privjesak ključeva sustava ({error}). Ovaj se uređaj i dalje može ponovno "
+"povezati; ključ je potreban samo za ponovnu registraciju."
+
+msgid "Service stopped"
+msgstr "Usluga zaustavljena"
+
+msgid "Not signed in"
+msgstr "Niste prijavljeni"
+
+msgid "Server unreachable"
+msgstr "Poslužitelj nedostupan"
+
+msgid "Tailscale can't set DNS"
+msgstr "Tailscale ne može postaviti DNS"
+
+#, rust-format
+msgid "Update available: v{version}"
+msgstr "Dostupno ažuriranje: v{version}"
+
+#, rust-format
+msgid "Sign in again as {user}"
+msgstr "Ponovno se prijavite kao {user}"
+
 msgid "(no device name)"
 msgstr "(bez naziva uređaja)"
 
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/mod.rs:1400
+msgid "Sign in or paste a pre-auth key"
+msgstr "Prijavi se ili zalijepi pre-auth ključ"
+
+msgid "Server not set"
+msgstr "Poslužitelj nije postavljen"
+
+msgid "no other devices"
+msgstr "nema drugih uređaja"
+
+#, rust-format
+msgid "{online} online"
+msgstr "{online} na mreži"
+
+#, rust-format
+msgid "{online} online · {offline} offline"
+msgstr "{online} na mreži · {offline} izvan mreže"
+
+msgid "is online"
+msgstr "je online"
+
+msgid "went offline"
+msgstr "je offline"
+
 #, rust-format
 msgid "{count} devices are online"
 msgstr "{count} uređaja je online"
 
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/mod.rs:1401
 #, rust-format
 msgid "{count} devices went offline"
 msgstr "{count} uređaja je offline"
 
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/mod.rs:1403
 #, rust-format
 msgid "{on_count} online · {off_count} offline"
 msgstr "{on_count} online · {off_count} offline"
 
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/tailscale.rs:650
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/mod.rs:814
-msgid "Enter the server URL before connecting."
-msgstr "Unesite URL poslužitelja prije povezivanja."
+msgid "direct"
+msgstr "izravno"
 
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/mod.rs:682
-msgid "Enter the server URL before saving."
-msgstr "Unesite URL poslužitelja prije spremanja."
+msgid "via relay"
+msgstr "preko releja"
 
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/mod.rs:691
-msgid "Enter the pre-auth key before saving."
-msgstr "Unesite ključ za prethodnu autentifikaciju prije spremanja."
+msgid "Turn on over the network (Wake-on-LAN)"
+msgstr "Uključi preko mreže (Wake-on-LAN)"
 
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/sidebar.rs:178
+msgid "Turn on over the network"
+msgstr "Uključi preko mreže"
+
+#, rust-format
+msgid ""
+"Signal sent to {name} (by {via}). If it's set to turn on over the network, "
+"it shows up in a minute or two."
+msgstr ""
+"Signal poslan uređaju {name} (preko {via}). Ako je postavljen za "
+"uključivanje preko mreže, pojavit će se za minutu-dvije."
+
+#, rust-format
+msgid "Could not turn on {name}: {error}"
+msgstr "Uključivanje {name} nije uspjelo: {error}"
+
+msgid "Unpin from top"
+msgstr "Otkači s vrha"
+
+msgid "Pin to top"
+msgstr "Prikači na vrh"
+
+msgid "Pinned to top"
+msgstr "Prikvačeno na vrh"
+
+msgid "Unpinned"
+msgstr "Otkvačeno"
+
+msgid "Open files (SFTP)"
+msgstr "Otvori datoteke (SFTP)"
+
+msgid "Open terminal (SSH)"
+msgstr "Otvori terminal (SSH)"
+
+msgid "See and control the screen"
+msgstr "Gledaj i upravljaj zaslonom"
+
+msgid "DNS name"
+msgstr "DNS naziv"
+
+msgid "DNS name copied"
+msgstr "DNS naziv kopiran"
+
+msgid "Owner"
+msgstr "Vlasnik"
+
+msgid "SSH login (override)"
+msgstr "SSH prijava (zamjena)"
+
+msgid "Saved"
+msgstr "Spremljeno"
+
+msgid "Tags"
+msgstr "Oznake"
+
+msgid "Last seen"
+msgstr "Zadnji put viđen"
+
+msgid "Use as exit node"
+msgstr "Koristi kao izlazni čvor"
+
+msgid "Route all traffic through this peer"
+msgstr "Usmjeri sav promet kroz ovog peer-a"
+
+msgid "Exit node enabled"
+msgstr "Izlazni čvor omogućen"
+
+msgid "Exit node disabled"
+msgstr "Izlazni čvor onemogućen"
+
+msgid "Failed to update exit node"
+msgstr "Neuspješno ažuriranje izlaznog čvora"
+
+msgid "Copy"
+msgstr "Kopiraj"
+
+msgid "End access"
+msgstr "Završi pristup"
+
+#, rust-format
+msgid "{who} is seeing and controlling this screen"
+msgstr "{who} gleda i upravlja ovim zaslonom"
+
+msgid "Remote access started"
+msgstr "Daljinski pristup započet"
+
+#, rust-format
+msgid ""
+"{user} ({device}) is seeing and controlling this screen. Open BigLace to end"
+" the access."
+msgstr ""
+"{user} ({device}) gleda i upravlja ovim zaslonom. Otvorite BigLace da biste "
+"završili pristup."
+
+#, rust-format
+msgid "Always allow {user} (no more asking)"
+msgstr "Uvijek dopusti {user} (bez daljnjeg pitanja)"
+
+msgid "Deny"
+msgstr "Odbij"
+
+msgid "Allow access"
+msgstr "Dopusti pristup"
+
+msgid "Allow remote access?"
+msgstr "Dopustiti daljinski pristup?"
+
+#, rust-format
+msgid "<b>{user}</b> wants to <b>see and control</b> this screen."
+msgstr "<b>{user}</b> želi <b>gledati i upravljati</b> ovim zaslonom."
+
+msgid "Person"
+msgstr "Osoba"
+
+msgid "Device"
+msgstr "Uređaj"
+
+msgid "See everything on your screen"
+msgstr "Vidjeti sve na vašem zaslonu"
+
+msgid "Move the mouse and type on this computer"
+msgstr "Pomicati miš i tipkati na ovom računalu"
+
+msgid "Hear this computer's sound"
+msgstr "Čuti zvuk ovog računala"
+
+msgid ""
+"<b>Only allow it if you know this person and are expecting it.</b> You can "
+"end the access at any time from BigLace."
+msgstr ""
+"<b>Dopustite samo ako poznajete ovu osobu i očekujete to.</b> Pristup možete"
+" završiti u bilo kojem trenutku iz BigLacea."
+
+#, rust-format
+msgid "Denied automatically in {seconds} s"
+msgstr "Automatski odbijeno za {seconds} s"
+
+#, rust-format
+msgid "Restart {name}'s computer?"
+msgstr "Ponovno pokrenuti računalo korisnika {name}?"
+
+msgid ""
+"It restarts, signs in by itself and locks the screen right away; this window"
+" connects again when it's back. Unsaved work there is lost."
+msgstr ""
+"Ponovno se pokreće, sam se prijavljuje i odmah zaključava zaslon; ovaj se "
+"prozor ponovno povezuje kad se vrati. Nespremljeni rad na njemu bit će "
+"izgubljen."
+
+msgid "Restart"
+msgstr "Ponovno pokreni"
+
+#, rust-format
+msgid "Restart {name}'s session?"
+msgstr "Ponovno pokrenuti sesiju korisnika {name}?"
+
+msgid ""
+"The open programs there close, the computer signs out and back in by itself "
+"(without restarting) and locks the screen; this window connects again. "
+"Unsaved work there is lost."
+msgstr ""
+"Otvoreni programi na njemu se zatvaraju, računalo se odjavljuje i samo "
+"ponovno prijavljuje (bez ponovnog pokretanja) te zaključava zaslon; ovaj se "
+"prozor ponovno povezuje. Nespremljeni rad na njemu bit će izgubljen."
+
+msgid "Restart the session"
+msgstr "Ponovno pokreni sesiju"
+
+#, rust-format
+msgid "Shut down {name}'s computer?"
+msgstr "Isključiti računalo korisnika {name}?"
+
+msgid ""
+"You won't be able to reach it again until someone turns it on. Unsaved work "
+"there is lost."
+msgstr ""
+"Nećete mu moći ponovno pristupiti dok ga netko ne uključi. Nespremljeni rad "
+"na njemu bit će izgubljen."
+
+msgid "Shut Down"
+msgstr "Isključi"
+
+#, rust-format
+msgid "Screen of {name}"
+msgstr "Zaslon korisnika {name}"
+
+msgid "Full screen (F11)"
+msgstr "Cijeli zaslon (F11)"
+
+msgid "Mute the remote sound"
+msgstr "Utišaj udaljeni zvuk"
+
+#, rust-format
+msgid "Fit {name}'s resolution to this window"
+msgstr "Prilagodi razlučivost korisnika {name} ovom prozoru"
+
+msgid "LIVE"
+msgstr "UŽIVO"
+
+msgid "You are watching this screen right now"
+msgstr "Upravo gledate ovaj zaslon"
+
+msgid "You are seeing and controlling this screen right now"
+msgstr "Upravo gledate i upravljate ovim zaslonom"
+
+msgid "Request control"
+msgstr "Zatraži upravljanje"
+
+#, rust-format
+msgid "Ask {name} to let you use the mouse and keyboard"
+msgstr "Zamolite korisnika {name} da vam dopusti korištenje miša i tipkovnice"
+
+#, rust-format
+msgid "Waiting for {name}…"
+msgstr "Čekanje na {name}…"
+
+msgid "Connecting to the screen shared with the room."
+msgstr "Povezivanje sa zaslonom dijeljenim sa sobom."
+
+msgid "The person at that computer needs to allow the access."
+msgstr "Osoba za tim računalom mora dopustiti pristup."
+
+#, rust-format
+msgid "Asked {name} for control…"
+msgstr "Upravljanje zatraženo od {name}…"
+
+#, rust-format
+msgid "Restart or shut down {name}'s computer"
+msgstr "Ponovno pokreni ili isključi računalo korisnika {name}"
+
+msgid "Restart and reconnect"
+msgstr "Ponovno pokreni i poveži"
+
+msgid "Shut down"
+msgstr "Isključi"
+
+#, rust-format
+msgid "{name} is back."
+msgstr "{name} se vratio/la."
+
+#, rust-format
+msgid "{name}'s computer didn't come back after the restart."
+msgstr "Računalo korisnika {name} nije se vratilo nakon ponovnog pokretanja."
+
+#, rust-format
+msgid "{name} didn't allow the access."
+msgstr "{name} nije dopustio/la pristup."
+
+msgid ""
+"That computer couldn't confirm this device. Make sure both run an up-to-date"
+" BigLace."
+msgstr ""
+"To računalo nije moglo potvrditi ovaj uređaj. Provjerite rade li na oba "
+"ažurni BigLace."
+
+#, rust-format
+msgid ""
+"{name}'s computer can't share its screen (screen sharing isn't available "
+"there)."
+msgstr ""
+"Računalo korisnika {name} ne može dijeliti zaslon (dijeljenje zaslona tamo "
+"nije dostupno)."
+
+#, rust-format
+msgid "Could not connect: {error}"
+msgstr "Povezivanje nije uspjelo: {error}"
+
+#, rust-format
+msgid "{name}'s computer said: {error}"
+msgstr "Računalo korisnika {name} javlja: {error}"
+
+#, rust-format
+msgid "Restarting {name}'s session…"
+msgstr "Ponovno pokretanje sesije korisnika {name}…"
+
+msgid ""
+"This window connects again by itself when the session is back. It takes a "
+"few seconds."
+msgstr ""
+"Ovaj se prozor sam ponovno povezuje kad se sesija vrati. To traje nekoliko "
+"sekundi."
+
+#, rust-format
+msgid "Restarting {name}…"
+msgstr "Ponovno pokretanje {name}…"
+
+msgid ""
+"This window connects again by itself when the computer is back. It takes a "
+"few minutes."
+msgstr ""
+"Ovaj se prozor sam ponovno povezuje kad se računalo vrati. To traje nekoliko"
+" minuta."
+
+#, rust-format
+msgid "{latency} ms · {fps} fps · {mbps} Mbit/s"
+msgstr "{latency} ms · {fps} fps · {mbps} Mbit/s"
+
+#, rust-format
+msgid "You're controlling {name}'s screen now."
+msgstr "Sada upravljate zaslonom korisnika {name}."
+
+#, rust-format
+msgid "{name} didn't give you control."
+msgstr "{name} vam nije dao/la upravljanje."
+
+#, rust-format
+msgid "{name} took control back."
+msgstr "{name} je preuzeo/la upravljanje natrag."
+
+#, rust-format
+msgid "{name}'s computer is shutting down."
+msgstr "Računalo korisnika {name} se isključuje."
+
+#, rust-format
+msgid "The access to {name}'s screen ended."
+msgstr "Pristup zaslonu korisnika {name} je završen."
+
+#, rust-format
+msgid "The access to {name}'s screen ended: {error}"
+msgstr "Pristup zaslonu korisnika {name} je završen: {error}"
+
+msgid "Give back control"
+msgstr "Vrati upravljanje"
+
+msgid ""
+"Each of your groups has a voice room. Join it and talk with whoever is there"
+" — the sound goes straight between you, through the network."
+msgstr ""
+"Svaka vaša grupa ima glasovnu sobu. Uđite i razgovarajte s onima koji su "
+"ondje — zvuk ide izravno između vas, kroz mrežu."
+
+msgid "You're not in any group yet. Create one in Groups."
+msgstr "Još niste ni u jednoj grupi. Stvorite je u Grupama."
+
+msgid "People in the room"
+msgstr "Osobe u sobi"
+
+msgid "Everyone"
+msgstr "Svi"
+
+msgid "Who's speaking"
+msgstr "Tko govori"
+
+msgid "Mute"
+msgstr "Utišaj"
+
+msgid "Mute your microphone for everyone"
+msgstr "Utišaj svoj mikrofon za sve"
+
+msgid "Which camera"
+msgstr "Koja kamera"
+
+msgid "Include the computer's sound when sharing the screen"
+msgstr "Uključi zvuk računala pri dijeljenju zaslona"
+
+msgid ""
+"Videos and music playing here go to the room too; the room's voices don't "
+"(no echo)"
+msgstr ""
+"Videozapisi i glazba koji se ovdje reproduciraju također idu u sobu; glasovi"
+" iz sobe ne idu (bez jeke)"
+
+msgid "Rooms unavailable"
+msgstr "Sobe nisu dostupne"
+
+#, rust-format
+msgid "Could not turn on the camera: {error}"
+msgstr "Kamera se ne može uključiti: {error}"
+
+#, rust-format
+msgid "Could not share the screen: {error}"
+msgstr "Dijeljenje zaslona nije uspjelo: {error}"
+
+msgid "Nobody here right now"
+msgstr "Trenutačno nema nikoga"
+
+#, rust-format
+msgid "In the room: {people}"
+msgstr "U sobi: {people}"
+
+#, rust-format
+msgid "Join the room {group}"
+msgstr "Uđi u sobu {group}"
+
+#, rust-format
+msgid "Could not join {group}: {error}"
+msgstr "Ulazak u {group} nije uspio: {error}"
+
+msgid "📺 You're showing your screen to the room"
+msgstr "📺 Pokazujete svoj zaslon sobi"
+
+msgid "📺 You're showing your screen · 1 person watching"
+msgstr "📺 Pokazujete svoj zaslon · gleda 1 osoba"
+
+#, rust-format
+msgid "📺 You're showing your screen · {count} people watching"
+msgstr "📺 Pokazujete svoj zaslon · gleda osoba: {count}"
+
+#, rust-format
+msgid "{people} · {talking} talking"
+msgstr "{people} · govori: {talking}"
+
+msgid "connecting…"
+msgstr "povezivanje…"
+
+msgid "muted"
+msgstr "utišano"
+
+msgid "talking"
+msgstr "govori"
+
+msgid "quiet"
+msgstr "tiho"
+
+msgid "Sharing screen"
+msgstr "Dijeli zaslon"
+
+msgid "In control"
+msgstr "Upravlja"
+
+msgid "Controls your screen now"
+msgstr "Sada upravlja vašim zaslonom"
+
+msgid "Watching"
+msgstr "Gleda"
+
+msgid "Watching your screen"
+msgstr "Gleda vaš zaslon"
+
+#, rust-format
+msgid "{user} is showing their screen"
+msgstr "{user} pokazuje svoj zaslon"
+
+msgid "Watch"
+msgstr "Gledaj"
+
+#, rust-format
+msgid "{user} asks to control your screen"
+msgstr "{user} traži upravljanje vašim zaslonom"
+
+msgid ""
+"They'll be able to use your mouse and keyboard. You can take control back at"
+" any time."
+msgstr ""
+"Moći će koristiti vaš miš i tipkovnicu. Upravljanje možete preuzeti natrag u"
+" bilo kojem trenutku."
+
+msgid "Allow"
+msgstr "Dopusti"
+
+msgid "Turn off camera"
+msgstr "Isključi kameru"
+
+msgid "Turn on camera"
+msgstr "Uključi kameru"
+
+msgid "No camera found on this computer"
+msgstr "Na ovom računalu nije pronađena kamera"
+
+msgid "Stop sharing"
+msgstr "Zaustavi dijeljenje"
+
+msgid "Share screen"
+msgstr "Dijeli zaslon"
+
+msgid "Stop showing your screen to the room"
+msgstr "Prestani pokazivati svoj zaslon sobi"
+
+msgid "Show your screen to everyone in the room"
+msgstr "Pokaži svoj zaslon svima u sobi"
+
+msgid "Take back control"
+msgstr "Preuzmi upravljanje natrag"
+
+msgid "Give control"
+msgstr "Predaj upravljanje"
+
+msgid "Stop them from using your mouse and keyboard"
+msgstr "Spriječi ih da koriste vaš miš i tipkovnicu"
+
+msgid "Let them use your mouse and keyboard"
+msgstr "Dopusti im korištenje vašeg miša i tipkovnice"
+
+msgid "Sound level"
+msgstr "Razina zvuka"
+
+msgid "Unmute"
+msgstr "Uključi zvuk"
+
+msgid "Sections"
+msgstr "Odjeljci"
+
+msgid ""
+"Your identity on this mesh — the device name shown to other peers and the "
+"network you're connected to."
+msgstr ""
+"Vaš identitet na ovoj mreži — naziv uređaja koji se prikazuje drugim "
+"korisnicima i mreža na koju ste povezani."
+
+msgid "Change photo…"
+msgstr "Promijeni fotografiju…"
+
+msgid "Remove photo"
+msgstr "Ukloni fotografiju"
+
+msgid "Change your photo"
+msgstr "Promijenite svoju fotografiju"
+
+msgid "Rename this device on the network"
+msgstr "Preimenuj ovaj uređaj na mreži"
+
+msgid "Advanced: use a pre-auth key"
+msgstr "Napredno: upotrijebite unaprijed ovjereni ključ"
+
+msgid "Already have a key from your administrator? Paste it here."
+msgstr "Već imate ključ od administratora? Zalijepite ga ovdje."
+
+msgid ""
+"Manual setup — expand to paste a server URL and pre-auth key when you "
+"already received them from your administrator. Most users should sign in "
+"through the panel button above instead."
+msgstr ""
+"Ručno postavljanje — proširite da biste zalijepili URL poslužitelja i pred-"
+"autentifikacijski ključ ako ste ih već primili od administratora. Većina "
+"korisnika trebala bi se prijaviti putem gumba na ploči iznad."
+
+msgid ""
+"Address of the coordination server (e.g. vpn.example.org). The https:// "
+"scheme is added automatically if you omit it."
+msgstr ""
+"Adresa koordinacijskog poslužitelja (npr. vpn.example.org). Shema https:// "
+"dodaje se automatski ako je izostavite."
+
+msgid "Pre-auth key"
+msgstr "Pre-auth ključ"
+
+msgid ""
+"One-time or reusable key created on the server (starts with 'hskey-auth-'). "
+"Used to register this device automatically without opening a browser."
+msgstr ""
+"Jednokratni ili višekratni ključ kreiran na poslužitelju (počinje s 'hskey-"
+"auth-'). Koristi se za automatsku registraciju ovog uređaja bez otvaranja "
+"preglednika."
+
+msgid ""
+"The name this device shows to other peers on the VPN — this is the Tailscale"
+" hostname, NOT your computer's name and NOT your user. Lowercase letters, "
+"digits and hyphens. Example: 'tales-laptop', 'francois', 'office-pc'."
+msgstr ""
+"Naziv pod kojim se ovaj uređaj prikazuje drugim korisnicima na VPN-u — ovo "
+"je Tailscale hostname, a NE naziv vašeg računala i NE vaše korisničko ime. "
+"Mala slova, znamenke i crtice. Primjer: 'tales-laptop', 'francois', 'office-"
+"pc'."
+
+msgid "Apply manual setup"
+msgstr "Primijeni ručno postavljanje"
+
+msgid "Save"
+msgstr "Spremi"
+
+msgid ""
+"Persist the server, key and device name above. Won't connect — press Connect"
+" afterwards."
+msgstr ""
+"Trajno spremi gornji poslužitelj, ključ i naziv uređaja. Neće se povezati — "
+"nakon toga pritisnite Poveži se."
+
+msgid "Connect automatically"
+msgstr "Automatski se poveži"
+
+msgid "Join the network when BigLace starts"
+msgstr "Pridruži se mreži kada BigLace pokrene"
+
+msgid ""
+"When on, BigLace runs 'tailscale up' as soon as it launches, so you join the"
+" mesh without clicking Connect every time."
+msgstr ""
+"Kada je uključeno, BigLace pokreće 'tailscale up' čim se pokrene, tako da se"
+" pridružujete mreži bez klikanja na Poveži se svaki put."
+
+msgid "Toggle auto-connect on startup"
+msgstr "Uključi/isključi automatsko povezivanje pri pokretanju"
+
 msgid "Start BigLace with the session"
 msgstr "Pokreni BigLace sa sesijom"
 
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/sidebar.rs:179
 msgid "Open BigLace after you sign in to the desktop"
 msgstr "Otvori BigLace nakon prijave na radnu površinu"
 
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/sidebar.rs:182
 msgid ""
 "Turn this on to add BigLace to your desktop session startup. Turn it off to "
 "remove it."
@@ -718,9 +2319,81 @@ msgstr ""
 "Uključite ovo da biste dodali BigLace u pokretanje sesije radne površine. "
 "Isključite ga da biste ga uklonili."
 
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/sidebar.rs:190
 msgid "Toggle start with session"
 msgstr "Uključi/isključi pokretanje sa sesijom"
+
+msgid "Reconnect on drop"
+msgstr "Ponovno povezivanje pri prekidu"
+
+msgid "Retry with backoff when the connection is lost"
+msgstr "Ponovni pokušaj s odgodom kada se veza izgubi"
+
+msgid ""
+"If the tunnel drops (network change, sleep, server hiccup), BigLace silently"
+" retries with growing delays instead of leaving you offline until you "
+"notice."
+msgstr ""
+"Ako tunel padne (promjena mreže, stanje mirovanja, problem s poslužiteljem),"
+" BigLace tiho ponavlja pokušaj s rastućim odgodama umjesto da vas ostavi "
+"izvan mreže dok ne primijetite."
+
+msgid "Toggle auto-reconnect"
+msgstr "Uključi/isključi automatsko ponovno povezivanje"
+
+msgid "Notify on peer changes"
+msgstr "Obavijesti o promjenama peerova"
+
+msgid "Show a desktop notification when peers go online/offline"
+msgstr ""
+"Prikaži obavijest na radnoj površini kada peerovi postanu online/offline"
+
+msgid ""
+"Send a desktop toast when another device on your network goes online or "
+"offline. Rapid bursts are coalesced into a single notification so you don't "
+"get spammed during reconnects."
+msgstr ""
+"Pošalji obavijest na radnoj površini kada drugi uređaj na vašoj mreži "
+"postane online ili offline. Brza ponavljanja se spajaju u jednu obavijest "
+"kako ne biste bili zatrpani tijekom ponovnih povezivanja."
+
+msgid "Toggle peer-change notifications"
+msgstr "Uključi/isključi obavijesti o promjenama korisnika"
+
+msgid ""
+"Join or leave the mesh network. When connected, this device becomes "
+"reachable by the other peers in your account."
+msgstr ""
+"Pridružite se ili napustite mesh mrežu. Kada ste povezani, ovaj uređaj "
+"postaje dostupan ostalim peerovima na vašem računu."
+
+msgid "Your photo"
+msgstr "Vaša fotografija"
+
+#~ msgid "Panel credentials"
+#~ msgstr "Podaci za prijavu na panel"
+
+#~ msgid "Username"
+#~ msgstr "Korisničko ime"
+
+#~ msgid "Sign in to connect"
+#~ msgstr "Prijavite se za povezivanje"
+
+#~ msgid "Use the panel on the left to sign in or paste a pre-auth key."
+#~ msgstr ""
+#~ "Koristite ploču s lijeve strane za prijavu ili lijepljenje pre-auth ključa."
+
+#~ msgid "Connect via panel account"
+#~ msgstr "Poveži se putem računa na panelu"
+
+#~ msgid ""
+#~ "Sign in with your BigScale panel username and password. A device identity "
+#~ "will be created on the network automatically — no manual key needed."
+#~ msgstr ""
+#~ "Prijavite se s korisničkim imenom i lozinkom s BigScale panela. Identitet "
+#~ "uređaja automatski će se stvoriti na mreži – nije potreban ručni ključ."
+
+#~ msgid "Connected ·"
+#~ msgstr "Povezano ·"
 
 #~ msgid "Device name"
 #~ msgstr "Naziv uređaja"
@@ -761,9 +2434,6 @@ msgstr "Uključi/isključi pokretanje sa sesijom"
 
 #~ msgid "Terminal"
 #~ msgstr "Terminal"
-
-#~ msgid "Copied!"
-#~ msgstr "Kopirano!"
 
 #~ msgid "Key generated successfully."
 #~ msgstr "Ključ je uspješno generiran."

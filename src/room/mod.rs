@@ -24,6 +24,7 @@ use crate::invite::{self, Participant};
 use crate::remote::{now_us, read_frame, write_frame, Kind};
 use crate::tailscale::{self, Identity};
 
+pub mod camera;
 pub mod share_audio;
 pub mod shortcut;
 pub mod stage;
@@ -74,6 +75,8 @@ pub struct MemberView {
     pub watching: Option<u64>,
     /// Controls our screen right now.
     pub controlling: bool,
+    /// Their camera is on.
+    pub camera: bool,
 }
 
 /// What the window learns about the room.
@@ -115,6 +118,7 @@ struct Peer {
     stream: TcpStream,
     muted: Arc<AtomicBool>,
     sharing: Arc<AtomicBool>,
+    camera: Arc<AtomicBool>,
     last_voice_us: Arc<AtomicU64>,
 }
 
@@ -135,6 +139,8 @@ struct Room {
     my_last_voice_us: AtomicU64,
     /// Loudness (0–1) and when it was measured, per address (ours too).
     levels: Mutex<HashMap<String, (f32, u64)>>,
+    /// Our camera, while on.
+    camera: Mutex<Option<camera::Capture>>,
 }
 
 fn current() -> &'static Mutex<Option<Arc<Room>>> {
@@ -164,6 +170,7 @@ impl Room {
                             peer.muted.load(Ordering::Relaxed),
                             peer.last_voice_us.load(Ordering::Relaxed),
                             peer.sharing.load(Ordering::Relaxed),
+                            peer.camera.load(Ordering::Relaxed),
                         ),
                     )
                 })
@@ -187,6 +194,7 @@ impl Room {
                     sharing: if me { presenting } else { live.is_some_and(|l| l.2) },
                     watching: watching.map(|w| w.0),
                     controlling: watching.is_some_and(|w| w.1),
+                    camera: if me { self.camera_on() } else { live.is_some_and(|l| l.3) },
                     me,
                     muted: if me { me_muted } else { live.map_or(p.muted, |l| l.0) },
                     connected: me || live.is_some(),
@@ -242,6 +250,7 @@ impl Room {
         let writer = Arc::new(Mutex::new(writer));
         let muted = Arc::new(AtomicBool::new(false));
         let sharing = Arc::new(AtomicBool::new(false));
+        let cam = Arc::new(AtomicBool::new(false));
         let last_voice = Arc::new(AtomicU64::new(0));
         // Tell them our state right away.
         if let Ok(mut w) = writer.lock() {
@@ -256,6 +265,7 @@ impl Room {
                     stream: stream_for_peer,
                     muted: muted.clone(),
                     sharing: sharing.clone(),
+                    camera: cam.clone(),
                     last_voice_us: last_voice.clone(),
                 },
             );
@@ -270,11 +280,23 @@ impl Room {
                 Ok((p, _)) => watch_levels(p, Arc::downgrade(&room), ip.clone(), playing.clone()),
                 Err(e) => tailscale::dbg(&format!("room: can't play {ip}'s sound: {e}")),
             }
+            // Their camera, decoded while it's on.
+            let mut decoder: Option<camera::Decoder> = None;
             loop {
                 if room.stop.load(Ordering::Acquire) {
                     break;
                 }
                 match read_frame(&mut reader) {
+                    Ok((Kind::CamVideo, payload)) => {
+                        if decoder.is_none() {
+                            decoder = camera::Decoder::new(&ip)
+                                .map_err(|e| tailscale::dbg(&format!("room: can't show {ip}'s camera: {e}")))
+                                .ok();
+                        }
+                        if let Some(d) = &decoder {
+                            d.push(&payload);
+                        }
+                    }
                     Ok((Kind::Audio, payload)) if payload.len() > 8 => {
                         let packet = &payload[8..];
                         if packet.len() > VOICE_PACKET {
@@ -288,6 +310,12 @@ impl Room {
                         if let Ok(v) = serde_json::from_slice::<serde_json::Value>(&payload) {
                             muted.store(v.get("muted").and_then(|m| m.as_bool()).unwrap_or(false), Ordering::Relaxed);
                             sharing.store(v.get("sharing").and_then(|m| m.as_bool()).unwrap_or(false), Ordering::Relaxed);
+                            let on = v.get("camera").and_then(|m| m.as_bool()).unwrap_or(false);
+                            if !cam.swap(on, Ordering::Relaxed) == on && !on {
+                                decoder = None;
+                                camera::forget(&ip);
+                            }
+                            cam.store(on, Ordering::Relaxed);
                             emit(room.view());
                         }
                     }
@@ -308,6 +336,25 @@ impl Room {
             }
             emit(room.view());
         });
+    }
+
+    fn camera_on(&self) -> bool {
+        self.camera.lock().is_ok_and(|c| c.is_some())
+    }
+
+    /// Send one camera picture to everyone.
+    fn broadcast_camera(&self, payload: &[u8]) {
+        let writers: Vec<Arc<Mutex<TcpStream>>> = self
+            .peers
+            .lock()
+            .map(|p| p.values().map(|peer| peer.writer.clone()).collect())
+            .unwrap_or_default();
+        for w in writers {
+            // A slow connection skips pictures rather than delaying voices.
+            if let Ok(mut w) = w.try_lock() {
+                let _ = write_frame(&mut *w, Kind::CamVideo, payload);
+            }
+        }
     }
 
     /// Send one encoded microphone packet to everyone.
@@ -334,7 +381,12 @@ impl Room {
 
     /// What the others need to know about us.
     fn state_json(&self) -> String {
-        serde_json::json!({ "muted": self.muted.load(Ordering::Relaxed), "sharing": stage::presenting() }).to_string()
+        serde_json::json!({
+            "muted": self.muted.load(Ordering::Relaxed),
+            "sharing": stage::presenting(),
+            "camera": self.camera_on(),
+        })
+        .to_string()
     }
 
     fn send_state(&self) {
@@ -515,6 +567,7 @@ pub fn join_with(group: &str, mic_desc: &str) -> Result<(), String> {
         dialing: Mutex::new(HashSet::new()),
         my_last_voice_us: AtomicU64::new(0),
         levels: Mutex::new(HashMap::new()),
+        camera: Mutex::new(None),
     });
     let mic = start_mic(&room, mic_desc);
     match &mic {
@@ -566,12 +619,45 @@ pub fn leave() {
     let Some(room) = current().lock().ok().and_then(|mut c| c.take()) else {
         return;
     };
+    if let Ok(mut c) = room.camera.lock() {
+        c.take();
+    }
+    camera::forget(&room.my_ip);
     room.stop.store(true, Ordering::Release);
     if let Ok(mut peers) = room.peers.lock() {
         peers.clear();
     }
     let _ = invite::room_leave(&room.group);
     emit(RoomEvent::State { group: None, muted: false, presenting: false, members: vec![] });
+}
+
+/// Turn our camera on (`path`: which one; None: the first) or off.
+pub fn set_camera(on: bool, path: Option<String>) -> Result<(), String> {
+    let room = room().ok_or_else(|| crate::tr!("you are not in a room"))?;
+    if on {
+        let weak = Arc::downgrade(&room);
+        let capture = camera::start(path.as_deref(), &room.my_ip, move |payload| {
+            if let Some(r) = weak.upgrade() {
+                r.broadcast_camera(payload);
+            }
+        })?;
+        if let Ok(mut c) = room.camera.lock() {
+            *c = Some(capture);
+        }
+    } else {
+        if let Ok(mut c) = room.camera.lock() {
+            c.take();
+        }
+        camera::forget(&room.my_ip);
+    }
+    room.send_state();
+    emit(room.view());
+    Ok(())
+}
+
+/// Our tailnet address in the room (whose picture is our camera's).
+pub fn my_ip() -> Option<String> {
+    room().map(|r| r.my_ip.clone())
 }
 
 /// Mute if speaking, unmute if muted (tray, global shortcut).

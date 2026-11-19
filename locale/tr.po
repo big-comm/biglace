@@ -3,7 +3,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: biglace\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-05-01 15:43\n"
+"POT-Creation-Date: 2026-11-19 12:50-0300\n"
 "PO-Revision-Date: 2026-05-01 15:43\n"
 "Last-Translator: Translation Automator <auto@translator.ai>\n"
 "Language-Team: Turkish <tr@li.org>\n"
@@ -12,146 +12,41 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/tray/linux.rs:76
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/tray/windows.rs:136
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/mod.rs:1114
-msgid "Disconnect"
-msgstr "Bağlantıyı Kes"
+msgid "Invalid device address."
+msgstr "Geçersiz cihaz adresi."
 
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/content.rs:47
-msgid "Main menu"
-msgstr "Ana Menü"
-
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/mod.rs:590
-msgid "Sign in with panel account"
-msgstr "Panel hesabıyla oturum aç"
-
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/mod.rs:592
-msgid "Make this user the tailscale operator"
-msgstr "Bu kullanıcıyı tailscale operatörü yap"
-
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/mod.rs:594
-msgid "About BigLace"
-msgstr "BigLace Hakkında"
-
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/dialogs.rs:42
-msgid "Tailscale operator"
-msgstr "Tailscale operatörü"
-
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/dialogs.rs:37
-msgid "Done. You will no longer need a password to connect or disconnect."
+msgid ""
+"No file manager could open the SFTP location. Install one (Dolphin, "
+"Nautilus, Nemo, Thunar…) and try again."
 msgstr ""
-"Tamam. Artık bağlanmak veya bağlantıyı kesmek için bir parolaya ihtiyacınız "
-"olmayacak."
+"Hiçbir dosya yöneticisi SFTP konumunu açamadı. Bir tane kurun (Dolphin, "
+"Nautilus, Nemo, Thunar…) ve tekrar deneyin."
 
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/dialogs.rs:38
-#, rust-format
-msgid "Failed: {error}"
-msgstr "Başarısız: {error}"
+msgid ""
+"No file manager could open the SFTP location. Install WinSCP and try again."
+msgstr ""
+"Hiçbir dosya yöneticisi SFTP konumunu açamadı. WinSCP kurun ve tekrar "
+"deneyin."
 
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/dialogs.rs:45
-msgid "OK"
-msgstr "Tamam"
+msgid ""
+"No terminal emulator found. Install one (Konsole, GNOME Terminal, xterm…) "
+"and try again."
+msgstr ""
+"Terminal öykünücüsü bulunamadı. Bir tane kurun (Konsole, GNOME Terminal, "
+"xterm…) ve tekrar deneyin."
 
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/dialogs.rs:387
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/mod.rs:729
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/mod.rs:962
-#, rust-format
-msgid "Error: {error}"
-msgstr "Hata: {error}"
-
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/dialogs.rs:29
-msgid "Mesh VPN client for BigScale/Headscale."
-msgstr "BigScale/Headscale için Mesh VPN istemcisi."
-
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/dialogs.rs:164
-msgid "Panel credentials"
-msgstr "Panel kimlik bilgileri"
-
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/dialogs.rs:173
-msgid "Panel URL"
-msgstr "Panel URL'si"
-
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/dialogs.rs:180
-msgid "Username"
-msgstr "Kullanıcı adı"
-
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/dialogs.rs:184
-msgid "Password"
-msgstr "Şifre"
-
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/dialogs.rs:75
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/dialogs.rs:247
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/dialogs.rs:448
-msgid "Cancel"
-msgstr "İptal"
-
-#. The OK button needs to flip between "Sign in" and "spinner + Connecting…"
-#. while the HTTP call is in flight. Build both children up front and just
-#. swap the button's child — simpler than juggling visibility flags.
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/dialogs.rs:252
-msgid "Sign in"
-msgstr "Oturum aç"
-
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/dialogs.rs:309
-msgid "Fill in URL, username and password."
-msgstr "URL, kullanıcı adı ve şifreyi doldurun."
-
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/content.rs:159
-msgid "Start service"
-msgstr "Hizmeti başlat"
-
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/sidebar.rs:95
-msgid "Server URL"
-msgstr "Sunucu URL'si"
-
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/content.rs:206
-msgid "This device"
-msgstr "Bu cihaz"
-
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/tray/linux.rs:83
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/tray/windows.rs:81
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/tray/windows.rs:136
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/mod.rs:1124
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/mod.rs:1129
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/sidebar.rs:240
-msgid "Connect"
-msgstr "Bağlan"
-
-#. ── Devices on the network ──
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/content.rs:223
-msgid "Devices on the network"
-msgstr "Ağdaki cihazlar"
-
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/tailscale.rs:557
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/tailscale.rs:630
 msgid "Failed to run tailscale"
 msgstr "Tailscale çalıştırılamadı"
 
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/tailscale.rs:577
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/tailscale.rs:610
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/tailscale.rs:642
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/tailscale.rs:714
 msgid "Failed to connect — check the server URL and key."
 msgstr "Bağlantı kurulamadı — sunucu URL'sini ve anahtarı kontrol edin."
 
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/tailscale.rs:598
 msgid "Failed to run pkexec tailscale"
 msgstr "pkexec tailscale çalıştırılamadı"
 
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/tailscale.rs:781
-msgid "Could not determine the current user."
-msgstr "Geçerli kullanıcı belirlenemedi."
+msgid "Enter the server URL before connecting."
+msgstr "Bağlanmadan önce sunucu URL'sini girin."
 
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/tailscale.rs:787
-msgid "Failed to run pkexec tailscale set"
-msgstr "pkexec tailscale set çalıştırılamadı"
-
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/tailscale.rs:789
-msgid "Failed to set tailscale operator."
-msgstr "Tailscale operatörü ayarlanamadı."
-
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/tailscale.rs:707
 msgid ""
 "The pre-auth key was rejected by the server. Generate a new key in the "
 "BigScale panel and try again."
@@ -159,168 +54,642 @@ msgstr ""
 "Ön kimlik doğrulama anahtarı sunucu tarafından reddedildi. BigScale "
 "panelinde yeni bir anahtar oluşturun ve yeniden deneyin."
 
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/tailscale.rs:710
+msgid "Sign in or paste a pre-auth key first."
+msgstr "Önce oturum açın veya ön yetkilendirme anahtarı yapıştırın."
+
 #, rust-format
 msgid "Login rejected by server: {detail}"
 msgstr "Sunucu girişi reddetti: {detail}"
 
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/sidebar.rs:138
-msgid "Apply manual setup"
-msgstr "Manuel kurulumu uygula"
+msgid "Could not determine the current user."
+msgstr "Geçerli kullanıcı belirlenemedi."
 
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/sidebar.rs:140
-msgid "Save"
-msgstr "Kaydet"
+msgid "Failed to run pkexec tailscale set"
+msgstr "pkexec tailscale set çalıştırılamadı"
 
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/sidebar.rs:159
-msgid "Connect automatically"
-msgstr "Otomatik bağlan"
+msgid "Failed to set tailscale operator."
+msgstr "Tailscale operatörü ayarlanamadı."
 
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/sidebar.rs:160
-msgid "Join the network when BigLace starts"
-msgstr "BigLace başladığında ağa katıl"
-
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/mod.rs:1079
-msgid "Sign in or paste a pre-auth key"
-msgstr "Oturum açın veya ön yetkilendirme anahtarı yapıştırın"
-
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/mod.rs:1091
-msgid "Server not set"
-msgstr "Sunucu ayarlanmamış"
-
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/mod.rs:711
-msgid "Setup saved"
-msgstr "Kurulum kaydedildi"
-
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/tailscale.rs:653
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/mod.rs:805
-msgid "Sign in or paste a pre-auth key first."
-msgstr "Önce oturum açın veya ön yetkilendirme anahtarı yapıştırın."
-
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/content.rs:96
-msgid "Sign in to connect"
-msgstr "Bağlanmak için oturum açın"
-
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/content.rs:97
-msgid "Use the panel on the left to sign in or paste a pre-auth key."
-msgstr ""
-"Bağlanmak için soldaki paneli kullanarak oturum açın veya ön yetkilendirme "
-"anahtarı yapıştırın."
-
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/content.rs:105
-msgid "Not connected"
-msgstr "Bağlı değil"
-
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/content.rs:106
-msgid "Press Connect on the left to join the network."
-msgstr "Ağa katılmak için soldaki Bağlan düğmesine basın."
-
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/content.rs:183
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/dialogs.rs:259
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/mod.rs:1026
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/mod.rs:1119
-msgid "Connecting…"
-msgstr "Bağlanıyor…"
-
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/content.rs:232
-msgid "No other devices on the network yet."
-msgstr "Ağda henüz başka cihaz yok."
-
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/content.rs:216
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/peer_row.rs:178
-msgid "Copy IP address"
-msgstr "IP adresini kopyala"
-
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/mod.rs:888
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/peer_row.rs:186
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/peer_row.rs:271
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/peer_row.rs:280
-msgid "IP address copied"
-msgstr "IP adresi kopyalandı"
-
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/peer_row.rs:231
-msgid "Open files (SFTP)"
-msgstr "Dosyaları aç (SFTP)"
-
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/peer_row.rs:246
-msgid "Open terminal (SSH)"
-msgstr "Terminal aç (SSH)"
-
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/peer_row.rs:50
-msgid "offline"
-msgstr "çevrimdışı"
-
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/mod.rs:1023
-msgid "Service stopped"
-msgstr "Hizmet durduruldu"
-
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/tray/linux.rs:58
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/tray/windows.rs:172
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/content.rs:40
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/mod.rs:1025
-msgid "Disconnected"
-msgstr "Bağlantı kesildi"
-
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/tray/linux.rs:53
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/tray/windows.rs:167
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/mod.rs:953
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/mod.rs:1027
 msgid "Connected"
 msgstr "Bağlandı"
 
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/content.rs:59
+msgid "Connected · 1 peer"
+msgstr "Bağlandı · 1 eş"
+
+#, rust-format
+msgid "Connected · {n} peers"
+msgstr "Bağlandı · {n} eş"
+
+msgid "Disconnected"
+msgstr "Bağlantı kesildi"
+
+#, rust-format
+msgid "In the room {group} · muted"
+msgstr "{group} odasında · sessizde"
+
+#, rust-format
+msgid "In the room {group}"
+msgstr "{group} odasında"
+
+msgid "Disconnect"
+msgstr "Bağlantıyı Kes"
+
+msgid "Connect"
+msgstr "Bağlan"
+
+msgid "Show BigLace"
+msgstr "BigLace'i Göster"
+
+#, rust-format
+msgid "Room {group}"
+msgstr "{group} odası"
+
+msgid "Unmute (Ctrl+Alt+M)"
+msgstr "Sesi aç (Ctrl+Alt+M)"
+
+msgid "Mute (Ctrl+Alt+M)"
+msgstr "Sessize al (Ctrl+Alt+M)"
+
+msgid "Leave the room"
+msgstr "Odadan ayrıl"
+
+msgid "Quit"
+msgstr "Çık"
+
+msgid "This computer"
+msgstr "Bu bilgisayar"
+
+msgid "Who may use this computer remotely"
+msgstr "Bu bilgisayarı uzaktan kimler kullanabilir"
+
+msgid ""
+"Anyone you're connected to can ask to see and control this screen. Choose "
+"who is let in without asking, and who is never let in."
+msgstr ""
+"Bağlı olduğunuz herkes bu ekranı görmek ve denetlemek için izin isteyebilir."
+" Kimin sormadan içeri alınacağını, kimin asla alınmayacağını seçin."
+
+msgid "History of accesses"
+msgstr "Erişim geçmişi"
+
+msgid "Kept on this computer only."
+msgstr "Yalnızca bu bilgisayarda tutulur."
+
+msgid "Clear"
+msgstr "Temizle"
+
+msgid "Nobody has asked yet."
+msgstr "Henüz kimse istemedi."
+
+msgid "When someone asks, you can choose to always let them in."
+msgstr "Biri istediğinde, ona her zaman izin vermeyi seçebilirsiniz."
+
+msgid "Ask every time"
+msgstr "Her seferinde sor"
+
+msgid "Always allow"
+msgstr "Her zaman izin ver"
+
+msgid "Never allow"
+msgstr "Asla izin verme"
+
+msgid "No accesses yet."
+msgstr "Henüz erişim yok."
+
+msgid "Remote access"
+msgstr "Uzaktan erişim"
+
+msgid "Watched the screen shared with the room"
+msgstr "Odayla paylaşılan ekranı izledi"
+
+msgid "Got control of the shared screen"
+msgstr "Paylaşılan ekranın denetimini aldı"
+
+msgid "Restarted the computer"
+msgstr "Bilgisayarı yeniden başlattı"
+
+msgid "Restarted the session"
+msgstr "Oturumu yeniden başlattı"
+
+msgid "Shut down the computer"
+msgstr "Bilgisayarı kapattı"
+
+msgid "allowed"
+msgstr "izin verildi"
+
+msgid "allowed (always)"
+msgstr "izin verildi (her zaman)"
+
+msgid "came back after a restart"
+msgstr "yeniden başlatmadan sonra geri döndü"
+
+msgid "denied"
+msgstr "reddedildi"
+
+msgid "blocked (never allowed)"
+msgstr "engellendi (asla izin verilmez)"
+
+msgid "ended"
+msgstr "sona erdi"
+
+#, rust-format
+msgid "{user} ({device})"
+msgstr "{user} ({device})"
+
+#, rust-format
+msgid "{done} of {total}"
+msgstr "{done} / {total}"
+
+msgid "Play"
+msgstr "Oynat"
+
+msgid "Download"
+msgstr "İndir"
+
+msgid "Open"
+msgstr "Aç"
+
+msgid "Show in folder"
+msgstr "Klasörde göster"
+
+msgid "Pause"
+msgstr "Duraklat"
+
+msgid "Photo"
+msgstr "Fotoğraf"
+
+msgid "Video"
+msgstr "Video"
+
+msgid "Voice message"
+msgstr "Sesli mesaj"
+
+msgid "Chat"
+msgstr "Sohbet"
+
+msgid "New chat"
+msgstr "Yeni sohbet"
+
+msgid "Start a conversation with someone on the network"
+msgstr "Ağdaki biriyle sohbet başlatın"
+
+msgid "Main menu"
+msgstr "Ana Menü"
+
+msgid "Chat theme"
+msgstr "Sohbet teması"
+
+msgid "Conversations"
+msgstr "Sohbetler"
+
+msgid "No conversations yet."
+msgstr "Henüz sohbet yok."
+
+msgid "Search in this conversation (Ctrl+F)"
+msgstr "Bu sohbette ara (Ctrl+F)"
+
+msgid "Pinned message"
+msgstr "Sabitlenmiş mesaj"
+
+msgid "Unpin"
+msgstr "Sabitlemeyi kaldır"
+
+msgid "Search messages"
+msgstr "Mesajlarda ara"
+
+msgid "Older"
+msgstr "Daha eski"
+
+msgid "Newer"
+msgstr "Daha yeni"
+
+msgid "Emoji"
+msgstr "Emoji"
+
+msgid "Send files, pictures or videos"
+msgstr "Dosya, resim veya video gönder"
+
+msgid "Send (Enter) — Shift+Enter for a new line"
+msgstr "Gönder (Enter) — yeni satır için Shift+Enter"
+
+msgid "Record a voice message"
+msgstr "Sesli mesaj kaydet"
+
+msgid "Discard"
+msgstr "Vazgeç"
+
+msgid "Send voice message"
+msgstr "Sesli mesajı gönder"
+
+msgid "Cancel"
+msgstr "İptal"
+
+msgid "Copy text"
+msgstr "Metni kopyala"
+
+msgid "Forward"
+msgstr "İlet"
+
+msgid "Delete"
+msgstr "Sil"
+
+msgid "Talk with your network"
+msgstr "Ağınızla konuşun"
+
+msgid ""
+"Pick a conversation, or start one. Messages go straight between your "
+"computers — the server never sees them."
+msgstr ""
+"Bir sohbet seçin ya da yeni bir tane başlatın. Mesajlar doğrudan "
+"bilgisayarlarınız arasında gider — sunucu onları asla görmez."
+
+msgid "Group"
+msgstr "Grup"
+
+msgid "Direct conversation"
+msgstr "Doğrudan sohbet"
+
+msgid "That message is too long."
+msgstr "Bu mesaj çok uzun."
+
+#, rust-format
+msgid "Could not send: {error}"
+msgstr "Gönderilemedi: {error}"
+
+#, rust-format
+msgid "Could not download: {error}"
+msgstr "İndirilemedi: {error}"
+
+#, rust-format
+msgid "{user} in {group}"
+msgstr "{user}, {group} içinde"
+
+msgid "Send files"
+msgstr "Dosya gönder"
+
+msgid "Drop to send"
+msgstr "Göndermek için bırakın"
+
+#, rust-format
+msgid "Could not record: {error}"
+msgstr "Kaydedilemedi: {error}"
+
+msgid "Too short — record for at least a second."
+msgstr "Çok kısa — en az bir saniye kaydedin."
+
+msgid "Search people and groups"
+msgstr "Kişi ve grup ara"
+
+msgid "Loading…"
+msgstr "Yükleniyor…"
+
+msgid "Nobody you can reach yet."
+msgstr "Henüz ulaşabileceğiniz kimse yok."
+
+msgid "online"
+msgstr "çevrimiçi"
+
+msgid "offline"
+msgstr "çevrimdışı"
+
+#, rust-format
+msgid "You: {text}"
+msgstr "Siz: {text}"
+
+msgid "Group conversation"
+msgstr "Grup sohbeti"
+
+#, rust-format
+msgid "Delivered to {people}"
+msgstr "{people} kişisine iletildi"
+
+msgid "Waiting to be delivered"
+msgstr "İletilmeyi bekliyor"
+
+msgid "Today"
+msgstr "Bugün"
+
+msgid "Yesterday"
+msgstr "Dün"
+
+msgid "🗑 Message deleted"
+msgstr "🗑 Mesaj silindi"
+
+#, rust-format
+msgid "Forwarded from {name}"
+msgstr "{name} kişisinden iletildi"
+
+msgid "edited"
+msgstr "düzenlendi"
+
+msgid "More reactions"
+msgstr "Daha fazla tepki"
+
+msgid "Reply"
+msgstr "Yanıtla"
+
+msgid "Edit"
+msgstr "Düzenle"
+
+msgid "Pin"
+msgstr "Sabitle"
+
+msgid "Select"
+msgstr "Seç"
+
+#, rust-format
+msgid "Could not react: {error}"
+msgstr "Tepki verilemedi: {error}"
+
+#, rust-format
+msgid "Reply to {name}"
+msgstr "{name} kişisine yanıt"
+
+msgid "Editing message"
+msgstr "Mesaj düzenleniyor"
+
+msgid "Copied."
+msgstr "Kopyalandı."
+
+msgid "Forward to…"
+msgstr "Şuraya ilet…"
+
+msgid "Forwarded."
+msgstr "İletildi."
+
+#, rust-format
+msgid "Could not forward: {error}"
+msgstr "İletilemedi: {error}"
+
+msgid "Delete the message?"
+msgstr "Mesaj silinsin mi?"
+
+#, rust-format
+msgid "Delete {count} messages?"
+msgstr "{count} mesaj silinsin mi?"
+
+msgid "“For everyone” removes it from the other computers too."
+msgstr "“Herkes için” seçeneği mesajı diğer bilgisayarlardan da kaldırır."
+
+msgid "It's removed from this computer only."
+msgstr "Yalnızca bu bilgisayardan kaldırılır."
+
+msgid "Delete for me"
+msgstr "Benim için sil"
+
+msgid "Delete for everyone"
+msgstr "Herkes için sil"
+
+#, rust-format
+msgid "Could not delete: {error}"
+msgstr "Silinemedi: {error}"
+
+msgid "1 selected"
+msgstr "1 seçildi"
+
+#, rust-format
+msgid "{count} selected"
+msgstr "{count} seçildi"
+
+msgid "That message isn't here anymore."
+msgstr "Bu mesaj artık burada değil."
+
+msgid "No results"
+msgstr "Sonuç yok"
+
+#, rust-format
+msgid "{n} of {total}"
+msgstr "{n} / {total}"
+
+#, rust-format
+msgid "{user} is typing…"
+msgstr "{user} yazıyor…"
+
+msgid "typing…"
+msgstr "yazıyor…"
+
+msgid "System accent"
+msgstr "Sistem vurgu rengi"
+
+msgid "Blue"
+msgstr "Mavi"
+
+msgid "Teal"
+msgstr "Deniz mavisi"
+
+msgid "Green"
+msgstr "Yeşil"
+
+msgid "Purple"
+msgstr "Mor"
+
+msgid "Pink"
+msgstr "Pembe"
+
+msgid "Orange"
+msgstr "Turuncu"
+
+msgid "Red"
+msgstr "Kırmızı"
+
+msgid "Graphite"
+msgstr "Grafit"
+
+msgid "Default"
+msgstr "Varsayılan"
+
+msgid "Plain"
+msgstr "Düz"
+
+msgid "Dots"
+msgstr "Noktalar"
+
+msgid "Ocean"
+msgstr "Okyanus"
+
+msgid "Sunset"
+msgstr "Gün batımı"
+
+msgid "Forest"
+msgstr "Orman"
+
+msgid "Lavender"
+msgstr "Lavanta"
+
+msgid "Night"
+msgstr "Gece"
+
+msgid "Hi! How does this look? 😊"
+msgstr "Merhaba! Bu nasıl görünüyor? 😊"
+
+msgid "Looks great!"
+msgstr "Harika görünüyor!"
+
+msgid "Appearance"
+msgstr "Görünüm"
+
+msgid "System"
+msgstr "Sistem"
+
+msgid "Light"
+msgstr "Açık"
+
+msgid "Dark"
+msgstr "Koyu"
+
+msgid "Your messages"
+msgstr "Mesajlarınız"
+
+msgid "Background"
+msgstr "Arka plan"
+
+msgid "Picture…"
+msgstr "Resim…"
+
+msgid "Pictures"
+msgstr "Resimler"
+
+msgid "Choose a background picture"
+msgstr "Bir arka plan resmi seçin"
+
+msgid "Message"
+msgstr "Mesaj"
+
+msgid "Bold"
+msgstr "Kalın"
+
+msgid "Italic"
+msgstr "İtalik"
+
+msgid "Underline"
+msgstr "Altı çizili"
+
+msgid "Strikethrough"
+msgstr "Üstü çizili"
+
+msgid "Monospace"
+msgstr "Eş aralıklı"
+
+msgid "Create link"
+msgstr "Bağlantı oluştur"
+
+msgid "Plain text"
+msgstr "Düz metin"
+
+msgid "Formatting"
+msgstr "Biçimlendirme"
+
+msgid "Create"
+msgstr "Oluştur"
+
+msgid "Search devices"
+msgstr "Cihaz ara"
+
 msgid "Refresh"
 msgstr "Yenile"
 
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/dialogs.rs:373
-msgid "Signed in. Press Connect to join the network."
-msgstr "Oturum açıldı. Ağa katılmak için Bağlan'a basın."
+msgid "Invite"
+msgstr "Davet et"
 
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/mod.rs:1240
-msgid "no other devices"
-msgstr "başka cihaz yok"
+msgid "Invite someone to your network"
+msgstr "Ağınıza birini davet edin"
 
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/mod.rs:1242
-#, rust-format
-msgid "{online} online"
-msgstr "{online} çevrimiçi"
+msgid ""
+"Tailscale cannot write this device's DNS settings, so it can no longer keep "
+"peer names working. They may still resolve for now, from the configuration "
+"left over from before the failure, but that will break the next time the "
+"network changes — and BigLace will fall back to IP addresses. On most "
+"distributions `sudo resolvconf -u` repairs it."
+msgstr ""
+"Tailscale bu cihazın DNS ayarlarını yazamıyor, bu yüzden eş adlarının "
+"çalışmasını artık sağlayamıyor. Arızadan önce kalan yapılandırma sayesinde "
+"adlar şimdilik çözümlenebilir, ancak ağ bir sonraki değiştiğinde bu "
+"bozulacak — ve BigLace IP adreslerine geri dönecek. Çoğu dağıtımda `sudo "
+"resolvconf -u` bunu onarır."
 
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/mod.rs:1244
-#, rust-format
-msgid "{online} online · {offline} offline"
-msgstr "{online} çevrimiçi · {offline} çevrimdışı"
+msgid "Not connected"
+msgstr "Bağlı değil"
 
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/content.rs:153
+msgid "Press Connect on the left to join the network."
+msgstr "Ağa katılmak için soldaki Bağlan düğmesine basın."
+
 msgid "The tailscale service is not running"
 msgstr "Tailscale hizmeti çalışmıyor"
 
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/content.rs:155
 msgid "BigLace needs the tailscaled background service to manage the network."
 msgstr ""
 "BigLace, ağı yönetmek için tailscaled arka plan hizmetine ihtiyaç duyar."
 
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/sidebar.rs:108
-msgid "Pre-auth key"
-msgstr "Ön yetkilendirme anahtarı"
+msgid "Start service"
+msgstr "Hizmeti başlat"
 
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/mod.rs:1024
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/mod.rs:1078
-msgid "Not signed in"
-msgstr "Oturum açılmadı"
+msgid "Join the network"
+msgstr "Ağa katıl"
 
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/sidebar.rs:81
-msgid "Advanced: use a pre-auth key"
-msgstr "Gelişmiş: bir ön yetkilendirme anahtarı kullanın"
+msgid "Choose how you're going to sign in."
+msgstr "Nasıl oturum açacağınızı seçin."
 
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/sidebar.rs:82
-msgid "Already have a key from your administrator? Paste it here."
-msgstr "Yöneticinizden bir anahtarınız var mı? Buraya yapıştırın."
+msgid "Ways to sign in"
+msgstr "Oturum açma yolları"
 
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/dialogs.rs:68
+msgid "Your account was kept on this computer. No invite needed."
+msgstr "Hesabınız bu bilgisayarda tutuldu. Davet gerekmez."
+
+msgid "I have an invite"
+msgstr "Davetim var"
+
+msgid "Someone on the network sent you a link or a QR code."
+msgstr "Ağdaki biri size bir bağlantı veya QR kodu gönderdi."
+
+msgid "I have an access key"
+msgstr "Erişim anahtarım var"
+
+msgid "A key the administrator created for you (starts with hskey-auth-)."
+msgstr ""
+"Yöneticinin sizin için oluşturduğu bir anahtar (hskey-auth- ile başlar)."
+
+msgid "I'm the administrator"
+msgstr "Yöneticiyim"
+
+msgid "Sign in with the BigScale panel's admin username and password."
+msgstr "BigScale panelinin yönetici kullanıcı adı ve parolasıyla oturum açın."
+
+msgid "Connecting…"
+msgstr "Bağlanıyor…"
+
+msgid "This device"
+msgstr "Bu cihaz"
+
+msgid "Copy IP address"
+msgstr "IP adresini kopyala"
+
+msgid "Devices on the network"
+msgstr "Ağdaki cihazlar"
+
+msgid "No other devices on the network yet."
+msgstr "Ağda henüz başka cihaz yok."
+
+msgid "Mesh VPN client for BigScale/Headscale."
+msgstr "BigScale/Headscale için Mesh VPN istemcisi."
+
+msgid "Done. You will no longer need a password to connect or disconnect."
+msgstr ""
+"Tamam. Artık bağlanmak veya bağlantıyı kesmek için bir parolaya ihtiyacınız "
+"olmayacak."
+
+#, rust-format
+msgid "Failed: {error}"
+msgstr "Başarısız: {error}"
+
+msgid "Tailscale operator"
+msgstr "Tailscale operatörü"
+
+msgid "OK"
+msgstr "Tamam"
+
 msgid "Sign out of current account?"
 msgstr "Mevcut hesaptan çıkış yapılsın mı?"
 
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/dialogs.rs:70
 msgid ""
 "This will disconnect from the network, sign this device out of the current "
 "control server, and forget the saved password. You'll then be able to sign "
@@ -330,262 +699,89 @@ msgstr ""
 "çıkaracak ve kayıtlı parolayı unutacaktır. Ardından farklı bir hesapla "
 "oturum açabilirsiniz."
 
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/dialogs.rs:76
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/mod.rs:591
 msgid "Sign out"
 msgstr "Çıkış yap"
 
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/dialogs.rs:134
+msgid "Leave the network?"
+msgstr "Ağdan ayrılınsın mı?"
+
+#, rust-format
+msgid ""
+"This device leaves the network and its name becomes free. Your account {user} is kept: you can come back later from this computer, without an invite.\n"
+"\n"
+"If you won't come back, delete the account and the name {user} becomes free too."
+msgstr ""
+"Bu cihaz ağdan ayrılır ve adı serbest kalır. {user} hesabınız korunur: daha sonra bu bilgisayardan davet olmadan geri dönebilirsiniz.\n"
+"\n"
+"Geri dönmeyecekseniz hesabı silin; {user} adı da serbest kalır."
+
+msgid "Leave and delete account"
+msgstr "Ayrıl ve hesabı sil"
+
+msgid "Leave"
+msgstr "Ayrıl"
+
+msgid "Connect first to delete the account."
+msgstr "Hesabı silmek için önce bağlanın."
+
+msgid "Signing out…"
+msgstr "Oturum kapatılıyor…"
+
+#, rust-format
+msgid ""
+"Signed out. Your account was kept: {count} other device(s) still use it."
+msgstr ""
+"Oturum kapatıldı. Hesabınız korundu: {count} başka cihaz hâlâ kullanıyor."
+
+msgid ""
+"Couldn't delete the account: the panel can't be reached. Connect and try "
+"again."
+msgstr "Hesap silinemedi: panele ulaşılamıyor. Bağlanın ve tekrar deneyin."
+
+#, rust-format
+msgid "Error: {error}"
+msgstr "Hata: {error}"
+
+msgid "Signed out and account deleted."
+msgstr "Oturum kapatıldı ve hesap silindi."
+
 msgid "Signed out."
 msgstr "Çıkış yapıldı."
 
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/dialogs.rs:153
-msgid "Connect via panel account"
-msgstr "Panel hesabıyla bağlan"
+msgid "Couldn't reach the server"
+msgstr "Sunucuya ulaşılamadı"
 
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/dialogs.rs:166
-msgid ""
-"Sign in with your BigScale panel username and password. A device identity "
-"will be created on the network automatically — no manual key needed."
-msgstr ""
-"BigScale panel kullanıcı adınız ve parolanızla oturum açın. Ağda otomatik "
-"olarak bir cihaz kimliği oluşturulacaktır — manuel anahtar gerekmez."
-
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/peer_row.rs:446
-msgid "Copy"
-msgstr "Kopyala"
-
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/sidebar.rs:197
-msgid "Reconnect on drop"
-msgstr "Bağlantı koptuğunda yeniden bağlan"
-
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/sidebar.rs:198
-msgid "Retry with backoff when the connection is lost"
-msgstr "Bağlantı kesildiğinde gecikmeli olarak yeniden dene"
-
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/sidebar.rs:217
-msgid "Notify on peer changes"
-msgstr "Eş değişikliklerinde bildirim göster"
-
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/sidebar.rs:218
-msgid "Show a desktop notification when peers go online/offline"
-msgstr "Eşler çevrimiçi/çevrimdışı olduğunda masaüstü bildirimi göster"
-
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/mod.rs:593
-msgid "View tailscaled logs"
-msgstr "tailscaled günlüklerini görüntüle"
-
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/mod.rs:1044
-msgid "Server unreachable"
-msgstr "Sunucuya ulaşılamıyor"
-
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/mod.rs:1054
 #, rust-format
-msgid "Update available: v{version}"
-msgstr "Güncelleme mevcut: v{version}"
-
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/mod.rs:1398
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/mod.rs:1461
-msgid "is online"
-msgstr "çevrimiçi"
-
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/mod.rs:1399
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/mod.rs:1463
-msgid "went offline"
-msgstr "çevrimdışı oldu"
-
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/peer_row.rs:124
-msgid "Unpin from top"
-msgstr "Üstten sabitlemeyi kaldır"
-
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/peer_row.rs:124
-msgid "Pin to top"
-msgstr "Üste sabitle"
-
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/peer_row.rs:259
-msgid "DNS name"
-msgstr "DNS adı"
-
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/peer_row.rs:262
-msgid "DNS name copied"
-msgstr "DNS adı kopyalandı"
-
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/peer_row.rs:284
-msgid "Owner"
-msgstr "Sahip"
-
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/peer_row.rs:346
-msgid "Tags"
-msgstr "Etiketler"
-
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/peer_row.rs:351
-msgid "Last seen"
-msgstr "Son görülme"
-
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/peer_row.rs:358
-msgid "Use as exit node"
-msgstr "Çıkış düğümü olarak kullan"
-
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/peer_row.rs:359
-msgid "Route all traffic through this peer"
-msgstr "Tüm trafiği bu eş üzerinden yönlendir"
-
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/peer_row.rs:401
-msgid "Exit node enabled"
-msgstr "Çıkış düğümü etkin"
-
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/peer_row.rs:401
-msgid "Exit node disabled"
-msgstr "Çıkış düğümü devre dışı"
-
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/peer_row.rs:403
-msgid "Failed to update exit node"
-msgstr "Çıkış düğümü güncellenemedi"
-
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/peer_row.rs:146
-msgid "Pinned to top"
-msgstr "Sabitlendi"
-
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/peer_row.rs:148
-msgid "Unpinned"
-msgstr "Sabitlenmedi"
-
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/tray/linux.rs:54
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/tray/windows.rs:168
-msgid "Connected · 1 peer"
-msgstr "Bağlandı · 1 eş"
-
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/tray/linux.rs:55
-#, rust-format
-msgid "Connected · {n} peers"
-msgstr "Bağlandı · {n} eş"
-
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/tray/linux.rs:92
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/tray/windows.rs:80
-msgid "Show BigLace"
-msgstr "BigLace'i Göster"
-
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/tray/linux.rs:101
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/tray/windows.rs:82
-msgid "Quit"
-msgstr "Çık"
-
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/tray/windows.rs:169
-msgid "Connected ·"
-msgstr "Bağlandı ·"
-
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/sidebar.rs:54
 msgid ""
-"Your identity on this mesh — the device name shown to other peers and the "
-"network you're connected to."
+"The control server didn't confirm the sign-out: {error}\n"
+"\n"
+"You can still sign out on this computer: BigLace forgets the saved key and account and disconnects. The server keeps listing this device until an administrator removes it."
 msgstr ""
-"Bu ağdaki kimliğiniz — diğer eşlere gösterilen cihaz adı ve bağlı olduğunuz "
-"ağ."
+"Denetim sunucusu oturumun kapatıldığını onaylamadı: {error}\n"
+"\n"
+"Yine de bu bilgisayarda oturumu kapatabilirsiniz: BigLace kayıtlı anahtarı ve hesabı unutur ve bağlantıyı keser. Sunucu, bir yönetici kaldırana kadar bu cihazı listelemeye devam eder."
 
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/sidebar.rs:71
-msgid "Rename this device on the network"
-msgstr "Bu cihazı ağda yeniden adlandır"
+msgid "Sign out on this computer"
+msgstr "Bu bilgisayarda oturumu kapat"
 
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/sidebar.rs:86
+msgid "Sign in as administrator"
+msgstr "Yönetici olarak oturum aç"
+
+msgid "Panel administrator"
+msgstr "Panel yöneticisi"
+
 msgid ""
-"Manual setup — expand to paste a server URL and pre-auth key when you "
-"already received them from your administrator. Most users should sign in "
-"through the panel button above instead."
+"Only for whoever administers the BigScale panel: use the panel's admin "
+"username and password. This device joins the network under the name below. "
+"Everyone else joins with an invite or an access key."
 msgstr ""
-"Manuel kurulum — yöneticinizden zaten aldıysanız, bir sunucu URL'si ve ön "
-"yetkilendirme anahtarı yapıştırmak için genişletin. Çoğu kullanıcı bunun "
-"yerine yukarıdaki panel düğmesi aracılığıyla oturum açmalıdır."
+"Yalnızca BigScale panelini yöneten kişi için: panelin yönetici kullanıcı "
+"adını ve parolasını kullanın. Bu cihaz ağa aşağıdaki adla katılır. Diğer "
+"herkes bir davet veya erişim anahtarıyla katılır."
 
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/sidebar.rs:99
-msgid ""
-"Address of the coordination server (e.g. vpn.example.org). The https:// "
-"scheme is added automatically if you omit it."
-msgstr ""
-"Koordinasyon sunucusunun adresi (ör. vpn.example.org). Atlarsanız https:// "
-"şeması otomatik olarak eklenir."
+msgid "Panel URL"
+msgstr "Panel URL'si"
 
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/sidebar.rs:111
-msgid ""
-"One-time or reusable key created on the server (starts with 'hskey-auth-'). "
-"Used to register this device automatically without opening a browser."
-msgstr ""
-"Sunucuda oluşturulan tek kullanımlık veya yeniden kullanılabilir anahtar "
-"('hskey-auth-' ile başlar). Bir tarayıcı açmadan bu cihazı otomatik olarak "
-"kaydetmek için kullanılır."
-
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/dialogs.rs:190
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/dialogs.rs:418
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/sidebar.rs:124
-msgid "Device name on the network"
-msgstr "Ağdaki cihaz adı"
-
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/sidebar.rs:127
-msgid ""
-"The name this device shows to other peers on the VPN — this is the Tailscale"
-" hostname, NOT your computer's name and NOT your user. Lowercase letters, "
-"digits and hyphens. Example: 'tales-laptop', 'francois', 'office-pc'."
-msgstr ""
-"Bu cihazın VPN'deki diğer eşlere gösterdiği ad — bu Tailscale ana bilgisayar"
-" adıdır, bilgisayarınızın adı VEYA kullanıcı adınız DEĞİLDİR. Küçük harfler,"
-" rakamlar ve tireler. Örnek: 'tales-dizustu', 'francois', 'ofis-pc'."
-
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/sidebar.rs:144
-msgid ""
-"Persist the server, key and device name above. Won't connect — press Connect"
-" afterwards."
-msgstr ""
-"Yukarıdaki sunucuyu, anahtarı ve cihaz adını kaydedin. Bağlanmayacak — "
-"ardından Bağlan'a basın."
-
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/sidebar.rs:163
-msgid ""
-"When on, BigLace runs 'tailscale up' as soon as it launches, so you join the"
-" mesh without clicking Connect every time."
-msgstr ""
-"Açıkken, BigLace başlatıldığında 'tailscale up' komutunu çalıştırır, böylece"
-" her seferinde Bağlan'a tıklamadan ağa katılırsınız."
-
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/sidebar.rs:171
-msgid "Toggle auto-connect on startup"
-msgstr "Başlangıçta otomatik bağlanmayı aç/kapat"
-
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/sidebar.rs:201
-msgid ""
-"If the tunnel drops (network change, sleep, server hiccup), BigLace silently"
-" retries with growing delays instead of leaving you offline until you "
-"notice."
-msgstr ""
-"Tünel kesilirse (ağ değişikliği, uyku, sunucu takılması), BigLace sizi fark "
-"edene kadar çevrimdışı bırakmak yerine artan gecikmelerle sessizce yeniden "
-"dener."
-
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/sidebar.rs:210
-msgid "Toggle auto-reconnect"
-msgstr "Otomatik yeniden bağlanmayı aç/kapat"
-
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/sidebar.rs:221
-msgid ""
-"Send a desktop toast when another device on your network goes online or "
-"offline. Rapid bursts are coalesced into a single notification so you don't "
-"get spammed during reconnects."
-msgstr ""
-"Ağınızdaki başka bir cihaz çevrimiçi veya çevrimdışı olduğunda bir masaüstü "
-"bildirimi gönderin. Hızlı patlamalar, yeniden bağlanmalar sırasında spam "
-"almamanız için tek bir bildirimde birleştirilir."
-
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/sidebar.rs:230
-msgid "Toggle peer-change notifications"
-msgstr "Eş değişiklik bildirimlerini aç/kapat"
-
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/sidebar.rs:245
-msgid ""
-"Join or leave the mesh network. When connected, this device becomes "
-"reachable by the other peers in your account."
-msgstr ""
-"Mesh ağına katılın veya ağdan ayrılın. Bağlandığınızda bu cihaz, "
-"hesabınızdaki diğer eşler tarafından erişilebilir hale gelir."
-
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/dialogs.rs:177
 msgid ""
 "Address of your BigScale panel (e.g. panel.example.org). The https:// scheme"
 " is added automatically if you omit it."
@@ -593,11 +789,15 @@ msgstr ""
 "BigScale panelinizin adresi (ör. panel.example.org). https:// şemasını "
 "belirtmezseniz otomatik olarak eklenir."
 
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/dialogs.rs:182
+msgid "Panel admin username"
+msgstr "Panel yöneticisi kullanıcı adı"
+
 msgid "Your panel username — the one you use to sign in to the web panel."
 msgstr "Web paneline giriş yapmak için kullandığınız panel kullanıcı adınız."
 
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/dialogs.rs:186
+msgid "Password"
+msgstr "Şifre"
+
 msgid ""
 "Your panel password. Stored in the OS keyring (libsecret on Linux, Keychain "
 "on macOS, Credential Manager on Windows)."
@@ -605,7 +805,9 @@ msgstr ""
 "Panel şifreniz. İşletim sistemi anahtar zincirinde saklanır (Linux'ta "
 "libsecret, macOS'ta Keychain, Windows'ta Kimlik Bilgisi Yöneticisi)."
 
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/dialogs.rs:193
+msgid "Device name on the network"
+msgstr "Ağdaki cihaz adı"
+
 msgid ""
 "The name this device shows to other peers on the VPN — this is the Tailscale"
 " hostname, NOT your computer's name and NOT your user. Lowercase letters, "
@@ -617,11 +819,18 @@ msgstr ""
 " rakamlar ve tireler. Örnek: 'tales-laptop', 'francois', 'office-pc'. Diğer "
 "eşlerin tanıyacağı bir ad seçin."
 
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/dialogs.rs:442
+msgid "Sign in"
+msgstr "Oturum aç"
+
+msgid "Fill in URL, username and password."
+msgstr "URL, kullanıcı adı ve şifreyi doldurun."
+
+msgid "Signed in. Press Connect to join the network."
+msgstr "Oturum açıldı. Ağa katılmak için Bağlan'a basın."
+
 msgid "Rename this device"
 msgstr "Bu cihazı yeniden adlandır"
 
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/dialogs.rs:444
 msgid ""
 "The name this device shows to other peers on the VPN. Lowercase letters, "
 "digits and hyphens. Example: tales-laptop."
@@ -629,88 +838,1474 @@ msgstr ""
 "Bu cihazın VPN'deki diğer eşlere gösterdiği ad. Küçük harfler, rakamlar ve "
 "tireler. Örnek: tales-laptop."
 
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/dialogs.rs:449
 msgid "Save & apply"
 msgstr "Kaydet ve uygula"
 
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/dialogs.rs:502
 msgid "Saved. The new name will take effect the next time you connect."
 msgstr "Kaydedildi. Yeni ad, bir sonraki bağlantınızda geçerli olacak."
 
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/dialogs.rs:526
 msgid "Device renamed."
 msgstr "Cihaz yeniden adlandırıldı."
 
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/dialogs.rs:536
 #, rust-format
 msgid "Rename failed: {error}"
 msgstr "Yeniden adlandırma başarısız: {error}"
 
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/dialogs.rs:553
 msgid "The device name can't be empty."
 msgstr "Cihaz adı boş olamaz."
 
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/dialogs.rs:556
 msgid "Use 63 characters or fewer."
 msgstr "63 karakter veya daha az kullanın."
 
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/dialogs.rs:560
 msgid "The device name can't start or end with a hyphen."
 msgstr "Cihaz adı tire ile başlayamaz veya bitemez."
 
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/dialogs.rs:564
 msgid "Only lowercase letters, digits and hyphens are allowed."
 msgstr "Yalnızca küçük harfler, rakamlar ve tirelere izin verilir."
 
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/peer_row.rs:306
-msgid "SSH login (override)"
-msgstr "SSH girişi (geçersiz kıl)"
+msgid "Smileys & people"
+msgstr "İfadeler ve insanlar"
 
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/peer_row.rs:336
-msgid "Saved"
-msgstr "Kaydedildi"
+msgid "Animals & nature"
+msgstr "Hayvanlar ve doğa"
 
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/mod.rs:1086
+msgid "Food & drink"
+msgstr "Yiyecek ve içecek"
+
+msgid "Travel & places"
+msgstr "Seyahat ve yerler"
+
+msgid "Activities"
+msgstr "Etkinlikler"
+
+msgid "Objects"
+msgstr "Nesneler"
+
+msgid "Symbols"
+msgstr "Semboller"
+
+msgid "Flags"
+msgstr "Bayraklar"
+
+msgid "Search emoji"
+msgstr "Emoji ara"
+
+msgid "Recently used"
+msgstr "Son kullanılanlar"
+
+msgid "Search results"
+msgstr "Arama sonuçları"
+
+msgid ""
+"Groups from BigLace need a newer BigScale server. Ask your administrator to "
+"update it."
+msgstr ""
+"BigLace grupları daha yeni bir BigScale sunucusu gerektirir. Yöneticinizden "
+"sunucuyu güncellemesini isteyin."
+
+msgid "This device isn't linked to a person's account, so it has no groups."
+msgstr "Bu cihaz bir kişinin hesabına bağlı değil, bu yüzden grubu yok."
+
+msgid ""
+"The panel knows this device by a different key (BigLace was reinstalled?). "
+"Leave the network and join again to fix it."
+msgstr ""
+"Panel bu cihazı farklı bir anahtarla tanıyor (BigLace yeniden mi kuruldu?). "
+"Düzeltmek için ağdan ayrılın ve yeniden katılın."
+
+msgid ""
+"The panel couldn't confirm this device. Make sure BigLace is up to date and "
+"stays open while connected, then try again."
+msgstr ""
+"Panel bu cihazı doğrulayamadı. BigLace'in güncel olduğundan ve bağlıyken "
+"açık kaldığından emin olun, sonra tekrar deneyin."
+
+msgid ""
+"On this network everyone already reaches everyone, so groups aren't needed. "
+"The administrator can set access rules first."
+msgstr ""
+"Bu ağda herkes zaten herkese ulaşıyor, bu yüzden gruplara gerek yok. "
+"Yönetici önce erişim kuralları belirleyebilir."
+
+msgid "You already created the maximum number of groups."
+msgstr "Zaten en fazla sayıda grup oluşturdunuz."
+
+msgid "You are no longer in that group."
+msgstr "Artık o grupta değilsiniz."
+
+msgid "A group with that name already exists. Choose another name."
+msgstr "Bu adda bir grup zaten var. Başka bir ad seçin."
+
+msgid ""
+"Use lowercase letters, digits and hyphens, starting with a letter or digit."
+msgstr ""
+"Küçük harf, rakam ve kısa çizgi kullanın; bir harf veya rakamla başlayın."
+
+msgid ""
+"The administrator uses this group in the network's rules, so it can't be "
+"deleted. Ask the administrator."
+msgstr ""
+"Yönetici bu grubu ağın kurallarında kullanıyor, bu yüzden silinemez. "
+"Yöneticiye danışın."
+
+msgid "Only the person who created the group can do that."
+msgstr "Bunu yalnızca grubu oluşturan kişi yapabilir."
+
+msgid "You created this group: delete it instead of leaving."
+msgstr "Bu grubu siz oluşturdunuz: ayrılmak yerine silin."
+
+msgid "This group belongs to the administrator; only they can change it."
+msgstr "Bu grup yöneticiye ait; yalnızca o değiştirebilir."
+
+msgid "That person is no longer in the group."
+msgstr "Bu kişi artık grupta değil."
+
+msgid "That group no longer exists, or whoever invited you left it."
+msgstr "Bu grup artık yok ya da sizi davet eden kişi gruptan ayrıldı."
+
+msgid "That person is no longer on the network."
+msgstr "Bu kişi artık ağda değil."
+
+msgid "You're already in that group."
+msgstr "Zaten o gruptasınız."
+
+msgid ""
+"This invite only brings new people into the network, and you're already in "
+"it."
+msgstr "Bu davet yalnızca ağa yeni kişileri getirir ve siz zaten ağdasınız."
+
+msgid "This invite was already used. Ask for a new one."
+msgstr "Bu davet zaten kullanıldı. Yeni bir tane isteyin."
+
+msgid "This invite expired. Ask for a new one."
+msgstr "Bu davetin süresi doldu. Yeni bir tane isteyin."
+
+msgid "This invite is no longer valid. Ask for a new one."
+msgstr "Bu davet artık geçerli değil. Yeni bir tane isteyin."
+
+msgid "This invite is still waiting for an administrator's approval."
+msgstr "Bu davet hâlâ bir yöneticinin onayını bekliyor."
+
+msgid "Too many attempts. Wait a minute and try again."
+msgstr "Çok fazla deneme. Bir dakika bekleyip tekrar deneyin."
+
+#, rust-format
+msgid "Could not reach the panel: {error}"
+msgstr "Panele ulaşılamadı: {error}"
+
+msgid "Groups"
+msgstr "Gruplar"
+
+msgid "New group"
+msgstr "Yeni grup"
+
+msgid "Create a group"
+msgstr "Grup oluştur"
+
+msgid ""
+"People in the same group reach each other's devices. Create groups for "
+"family, work or friends, and invite people into them."
+msgstr ""
+"Aynı gruptaki kişiler birbirlerinin cihazlarına ulaşır. Aile, iş veya "
+"arkadaşlar için gruplar oluşturun ve kişileri bunlara davet edin."
+
+msgid "Invitations for you"
+msgstr "Size gelen davetler"
+
+msgid "Your groups"
+msgstr "Gruplarınız"
+
+msgid "No groups yet"
+msgstr "Henüz grup yok"
+
+msgid ""
+"A group lets several people reach each other at once — the family, the "
+"office, a class."
+msgstr ""
+"Bir grup, birkaç kişinin aynı anda birbirine ulaşmasını sağlar — aile, ofis,"
+" bir sınıf."
+
+msgid "Groups unavailable"
+msgstr "Gruplar kullanılamıyor"
+
+msgid "Invitation to a group"
+msgstr "Gruba davet"
+
+#, rust-format
+msgid ""
+"{user} invites you to the group {group}. Open BigLace to accept or decline."
+msgstr ""
+"{user} sizi {group} grubuna davet ediyor. Kabul etmek veya reddetmek için "
+"BigLace'i açın."
+
+#, rust-format
+msgid "{user} invites you to {group}"
+msgstr "{user} sizi {group} grubuna davet ediyor"
+
+msgid "Joining lets you and the group's members reach each other's devices."
+msgstr ""
+"Katıldığınızda siz ve grubun üyeleri birbirinizin cihazlarına "
+"ulaşabilirsiniz."
+
+msgid "Decline"
+msgstr "Reddet"
+
+msgid "Accept"
+msgstr "Kabul et"
+
+#, rust-format
+msgid "You joined {group}."
+msgstr "{group} grubuna katıldınız."
+
+msgid "Invitation declined."
+msgstr "Davet reddedildi."
+
+msgid "1 person"
+msgstr "1 kişi"
+
+#, rust-format
+msgid "{count} people"
+msgstr "{count} kişi"
+
+msgid "Created by you"
+msgstr "Sizin oluşturdunuz"
+
+#, rust-format
+msgid "Created by {user}"
+msgstr "{user} oluşturdu"
+
+msgid "Network group (administrator)"
+msgstr "Ağ grubu (yönetici)"
+
+msgid "you"
+msgstr "siz"
+
+msgid "owner"
+msgstr "sahip"
+
+#, rust-format
+msgid "Remove {user} from the group"
+msgstr "{user} kişisini gruptan çıkar"
+
+msgid "Invite to this group"
+msgstr "Bu gruba davet et"
+
+msgid "Delete group"
+msgstr "Grubu sil"
+
+msgid "Leave group"
+msgstr "Gruptan ayrıl"
+
+#, rust-format
+msgid "Remove {user}?"
+msgstr "{user} çıkarılsın mı?"
+
+#, rust-format
+msgid ""
+"{user} leaves the group {group} and no longer reaches its members through "
+"it."
+msgstr ""
+"{user}, {group} grubundan ayrılır ve artık bu grup üzerinden üyelerine "
+"ulaşamaz."
+
+msgid "Remove"
+msgstr "Çıkar"
+
+#, rust-format
+msgid "{user} was removed from the group."
+msgstr "{user} gruptan çıkarıldı."
+
+#, rust-format
+msgid "Leave {group}?"
+msgstr "{group} grubundan ayrılınsın mı?"
+
+msgid ""
+"You stop reaching the group's members through it. To come back, someone has "
+"to invite you again."
+msgstr ""
+"Artık bu grup üzerinden üyelerine ulaşamazsınız. Geri dönmek için birinin "
+"sizi yeniden davet etmesi gerekir."
+
+msgid "You left the group."
+msgstr "Gruptan ayrıldınız."
+
+#, rust-format
+msgid "Delete {group}?"
+msgstr "{group} silinsin mi?"
+
+msgid ""
+"Its members stop reaching each other through this group. People stay on the "
+"network."
+msgstr ""
+"Üyeleri artık bu grup üzerinden birbirine ulaşamaz. Kişiler ağda kalır."
+
+msgid "Group deleted."
+msgstr "Grup silindi."
+
+#, rust-format
+msgid "Join {group}?"
+msgstr "{group} grubuna katılınsın mı?"
+
+#, rust-format
+msgid ""
+"{user} invited you. You and the group's members will reach each other's "
+"devices."
+msgstr ""
+"{user} sizi davet etti. Siz ve grubun üyeleri birbirinizin cihazlarına "
+"ulaşacaksınız."
+
+msgid "You and the group's members will reach each other's devices."
+msgstr "Siz ve grubun üyeleri birbirinizin cihazlarına ulaşacaksınız."
+
+#, rust-format
+msgid "Connect with {user}?"
+msgstr "{user} ile bağlantı kurulsun mu?"
+
+#, rust-format
+msgid "You and {user} will reach each other's devices."
+msgstr "Siz ve {user} birbirinizin cihazlarına ulaşacaksınız."
+
+msgid "Join"
+msgstr "Katıl"
+
+msgid "Done. You can now reach each other's devices."
+msgstr "Tamam. Artık birbirinizin cihazlarına ulaşabilirsiniz."
+
+#, rust-format
+msgid "Invite to {group}"
+msgstr "{group} grubuna davet et"
+
+msgid ""
+"Choose people on your network. Each one gets the invitation in BigLace and "
+"decides whether to join."
+msgstr ""
+"Ağınızdaki kişileri seçin. Her biri daveti BigLace'te alır ve katılıp "
+"katılmayacağına karar verir."
+
+msgid "Search people"
+msgstr "Kişi ara"
+
+msgid ""
+"If someone on the network has exactly this name, they get the invitation."
+msgstr "Ağda tam olarak bu adı taşıyan biri varsa daveti alır."
+
+msgid "People on the network"
+msgstr "Ağdaki kişiler"
+
+#, rust-format
+msgid "Invite \"{name}\""
+msgstr "\"{name}\" kişisini davet et"
+
+msgid "Send invitations"
+msgstr "Davetleri gönder"
+
+msgid "Someone not on the network yet? Share an invite link"
+msgstr "Henüz ağda olmayan biri mi? Bir davet bağlantısı paylaşın"
+
+msgid "Invitation sent. You'll see the person in the group once they accept."
+msgstr "Davet gönderildi. Kişi kabul ettiğinde onu grupta göreceksiniz."
+
+#, rust-format
+msgid "{count} invitations sent. People show up in the group as they accept."
+msgstr "{count} davet gönderildi. Kişiler kabul ettikçe grupta görünür."
+
+msgid ""
+"Listed are the people you're already connected to. To invite someone else on"
+" the network, type their exact name. Each one gets the invitation in BigLace"
+" and decides whether to join."
+msgstr ""
+"Listelenenler, zaten bağlı olduğunuz kişilerdir. Ağdaki başka birini davet "
+"etmek için tam adını yazın. Her biri daveti BigLace'te alır ve katılıp "
+"katılmayacağına karar verir."
+
+msgid ""
+"Nobody you're connected to yet. Type someone's exact name to invite them."
+msgstr ""
+"Henüz bağlı olduğunuz kimse yok. Davet etmek için birinin tam adını yazın."
+
+msgid "Nobody else is on the network yet."
+msgstr "Ağda henüz başka kimse yok."
+
+msgid ""
+"You'll be the group's owner: you invite people into it and can remove them. "
+"Everyone in the group reaches each other's devices."
+msgstr ""
+"Grubun sahibi siz olacaksınız: kişileri gruba davet eder ve onları "
+"çıkarabilirsiniz. Gruptaki herkes birbirinin cihazlarına ulaşır."
+
+msgid "Group name"
+msgstr "Grup adı"
+
+msgid "Create group"
+msgstr "Grup oluştur"
+
+msgid "For example: family, work, friends."
+msgstr "Örneğin: aile, iş, arkadaşlar."
+
+#, rust-format
+msgid "It will be called \"{name}\"."
+msgstr "Adı \"{name}\" olacak."
+
+#, rust-format
+msgid "Group {group} created. Now invite people into it."
+msgstr "{group} grubu oluşturuldu. Şimdi kişileri davet edin."
+
+msgid "typed name"
+msgstr "yazılan ad"
+
+msgid "already in the group"
+msgstr "zaten grupta"
+
+msgid "invitation sent, waiting"
+msgstr "davet gönderildi, bekleniyor"
+
+#, rust-format
+msgid "Invite {user}"
+msgstr "{user} kişisini davet et"
+
+msgid ""
+"Invites from BigLace need a BigScale server that supports them. Ask your "
+"administrator to update the server, or to create the invite in the panel."
+msgstr ""
+"BigLace davetleri, bunları destekleyen bir BigScale sunucusu gerektirir. "
+"Yöneticinizden sunucuyu güncellemesini ya da daveti panelde oluşturmasını "
+"isteyin."
+
+msgid ""
+"This device can't send invites (it isn't linked to a person's account)."
+msgstr "Bu cihaz davet gönderemez (bir kişinin hesabına bağlı değil)."
+
+msgid ""
+"On this network everyone can reach everyone, so only the administrator can "
+"invite people."
+msgstr ""
+"Bu ağda herkes herkese ulaşabiliyor, bu yüzden yalnızca yönetici kişileri "
+"davet edebilir."
+
+msgid "You have too many pending invites. Cancel some or try again tomorrow."
+msgstr ""
+"Çok fazla bekleyen davetiniz var. Bazılarını iptal edin veya yarın tekrar "
+"deneyin."
+
+msgid ""
+"On this network only administrators invite new people. You can still invite "
+"people already on the network into your groups."
+msgstr ""
+"Bu ağda yeni kişileri yalnızca yöneticiler davet eder. Yine de ağdaki "
+"kişileri gruplarınıza davet edebilirsiniz."
+
+msgid "Waiting to be used"
+msgstr "Kullanılmayı bekliyor"
+
+msgid "Used"
+msgstr "Kullanıldı"
+
+msgid "Expired"
+msgstr "Süresi doldu"
+
+msgid "Cancelled"
+msgstr "İptal edildi"
+
+msgid "Waiting for an administrator's approval"
+msgstr "Bir yöneticinin onayı bekleniyor"
+
+msgid "Invites"
+msgstr "Davetler"
+
+msgid "Bring someone to your network"
+msgstr "Ağınıza birini getirin"
+
+msgid ""
+"Create a link or QR code and send it to the person. When they join, you two "
+"can reach each other's devices — no administrator needed. The link works "
+"once and stays valid until it's used or you cancel it."
+msgstr ""
+"Bir bağlantı veya QR kodu oluşturup kişiye gönderin. Katıldığında ikiniz "
+"birbirinizin cihazlarına ulaşabilirsiniz — yönetici gerekmez. Bağlantı bir "
+"kez çalışır ve kullanılana ya da siz iptal edene kadar geçerli kalır."
+
+msgid "Invites you sent"
+msgstr "Gönderdiğiniz davetler"
+
+msgid "No invites yet"
+msgstr "Henüz davet yok"
+
+msgid "Invites unavailable"
+msgstr "Davetler kullanılamıyor"
+
+#, rust-format
+msgid "{user} joined"
+msgstr "{user} katıldı"
+
+#, rust-format
+msgid "group {group}"
+msgstr "{group} grubu"
+
+msgid "Cancel this invite: the link stops working"
+msgstr "Bu daveti iptal et: bağlantı çalışmayı bırakır"
+
+msgid "Invite someone"
+msgstr "Birini davet et"
+
+msgid "The person you invite will reach your devices, and you theirs."
+msgstr ""
+"Davet ettiğiniz kişi sizin cihazlarınıza, siz de onunkilere ulaşacaksınız."
+
+msgid "Who is it for? (optional)"
+msgstr "Kimin için? (isteğe bağlı)"
+
+msgid "Access"
+msgstr "Erişim"
+
+msgid "Just the two of us"
+msgstr "Yalnızca ikimiz"
+
+msgid "You see each other's devices, nobody else"
+msgstr "Birbirinizin cihazlarını görürsünüz, başka kimse değil"
+
+#, rust-format
+msgid "Also the group {group}"
+msgstr "Ayrıca {group} grubu"
+
+msgid "They join the group and see everyone in it"
+msgstr "Gruba katılır ve içindeki herkesi görür"
+
+msgid "A network of their own"
+msgstr "Kendine ait bir ağ"
+
+msgid ""
+"No link to you: they see only their own devices and whoever they invite "
+"(you're the administrator)"
+msgstr ""
+"Sizinle bağlantı yok: yalnızca kendi cihazlarını ve davet ettiği kişileri "
+"görür (yönetici sizsiniz)"
+
+msgid "Create invite"
+msgstr "Davet oluştur"
+
+msgid "QR code of the invite link"
+msgstr "Davet bağlantısının QR kodu"
+
+msgid ""
+"Send the link or let the person scan the code with their phone. It works "
+"once and stays valid until used or cancelled."
+msgstr ""
+"Bağlantıyı gönderin ya da kişinin kodu telefonuyla taramasına izin verin. "
+"Bir kez çalışır ve kullanılana ya da iptal edilene kadar geçerli kalır."
+
+msgid "Copy link"
+msgstr "Bağlantıyı kopyala"
+
+msgid "Done"
+msgstr "Tamam"
+
+msgid "Copied!"
+msgstr "Kopyalandı!"
+
+msgid ""
+"This network asks an administrator to approve each invite: the link starts "
+"working once they do. Its status shows in Invites."
+msgstr ""
+"Bu ağ her davet için bir yöneticinin onayını istiyor: bağlantı "
+"onaylandığında çalışmaya başlar. Durumu Davetler bölümünde görünür."
+
+#, rust-format
+msgid ""
+"That name already belongs to an account on this network, so we suggested "
+"\"{name}\". If the account is yours, sign in again from the computer where "
+"you used it, or ask the administrator to free the name."
+msgstr ""
+"Bu ad bu ağda zaten bir hesaba ait, bu yüzden \"{name}\" önerdik. Hesap "
+"sizinse, onu kullandığınız bilgisayardan yeniden oturum açın veya "
+"yöneticiden adı serbest bırakmasını isteyin."
+
+msgid ""
+"That name already belongs to an account on this network. Try another one, or"
+" ask the administrator to free it."
+msgstr ""
+"Bu ad bu ağda zaten bir hesaba ait. Başka bir ad deneyin veya yöneticiden "
+"adı serbest bırakmasını isteyin."
+
+msgid "Type your name using at least two letters or digits."
+msgstr "Adınızı en az iki harf veya rakam kullanarak yazın."
+
+msgid "This invite has expired. Ask for a new one."
+msgstr "Bu davetin süresi doldu. Yeni bir tane isteyin."
+
+msgid "This invite was cancelled. Ask for a new one."
+msgstr "Bu davet iptal edildi. Yeni bir tane isteyin."
+
+msgid ""
+"This invite is waiting for the network administrator's approval. Try again "
+"once the person who invited you says it was approved."
+msgstr ""
+"Bu davet ağ yöneticisinin onayını bekliyor. Sizi davet eden kişi "
+"onaylandığını söylediğinde tekrar deneyin."
+
+msgid "This invite is not valid. Check the link or ask for a new one."
+msgstr ""
+"Bu davet geçerli değil. Bağlantıyı kontrol edin veya yeni bir tane isteyin."
+
+msgid ""
+"This server doesn't support invites yet. Sign in with a panel account "
+"instead."
+msgstr ""
+"Bu sunucu henüz davetleri desteklemiyor. Bunun yerine bir panel hesabıyla "
+"oturum açın."
+
+msgid "Join with an invite"
+msgstr "Davetle katıl"
+
+msgid ""
+"Paste the invite link you received and type your name. Your account is "
+"created and this device joins the network."
+msgstr ""
+"Aldığınız davet bağlantısını yapıştırın ve adınızı yazın. Hesabınız "
+"oluşturulur ve bu cihaz ağa katılır."
+
+msgid "Invite link"
+msgstr "Davet bağlantısı"
+
+msgid "Your name"
+msgstr "Adınız"
+
+msgid "How others will see you on the network, e.g. 'Maria' or 'Office PC'."
+msgstr "Ağda başkalarının sizi nasıl göreceği, ör. 'Maria' veya 'Ofis PC'."
+
+msgid ""
+"The name this device shows to other peers. Lowercase letters, digits and "
+"hyphens. Example: 'maria-laptop'."
+msgstr ""
+"Bu cihazın diğer eşlere gösterdiği ad. Küçük harf, rakam ve kısa çizgi. "
+"Örnek: 'maria-laptop'."
+
+msgid "Network"
+msgstr "Ağ"
+
+msgid "Joining…"
+msgstr "Katılınıyor…"
+
+msgid ""
+"That doesn't look like an invite link. It starts with https:// and contains "
+"/join#."
+msgstr ""
+"Bu bir davet bağlantısına benzemiyor. https:// ile başlar ve /join# içerir."
+
+msgid "Type your name."
+msgstr "Adınızı yazın."
+
+#, rust-format
+msgid "Welcome, {name}! You joined the group {group}. Connecting…"
+msgstr "Hoş geldiniz, {name}! {group} grubuna katıldınız. Bağlanılıyor…"
+
+#, rust-format
+msgid "Welcome, {name}! Connecting…"
+msgstr "Hoş geldiniz, {name}! Bağlanılıyor…"
+
+msgid "Open admin panel"
+msgstr "Yönetim panelini aç"
+
+msgid "Devices"
+msgstr "Cihazlar"
+
+msgid "Rooms"
+msgstr "Odalar"
+
+msgid "Choose your photo"
+msgstr "Fotoğrafınızı seçin"
+
+msgid "Photo updated. Everyone you're connected to will see it."
+msgstr "Fotoğraf güncellendi. Bağlı olduğunuz herkes görecek."
+
+#, rust-format
+msgid "Could not change the photo: {error}"
+msgstr "Fotoğraf değiştirilemedi: {error}"
+
+msgid "Sign in with an access key"
+msgstr "Erişim anahtarıyla oturum aç"
+
+msgid ""
+"Paste the key the administrator gave you. It's used once, to register this "
+"device."
+msgstr ""
+"Yöneticinin size verdiği anahtarı yapıştırın. Bu cihazı kaydetmek için bir "
+"kez kullanılır."
+
+msgid "Server URL"
+msgstr "Sunucu URL'si"
+
+msgid "Access key"
+msgstr "Erişim anahtarı"
+
+msgid ""
+"The key to this account is no longer on this computer. Join with a new "
+"invite."
+msgstr ""
+"Bu hesabın anahtarı artık bu bilgisayarda değil. Yeni bir davetle katılın."
+
+#, rust-format
+msgid "Welcome back, {name}! Connecting…"
+msgstr "Tekrar hoş geldiniz, {name}! Bağlanılıyor…"
+
+#, rust-format
+msgid ""
+"The account {user} no longer exists on this network. Join with a new invite."
+msgstr "{user} hesabı artık bu ağda yok. Yeni bir davetle katılın."
+
+msgid "Preferences"
+msgstr "Tercihler"
+
+msgid "General"
+msgstr "Genel"
+
+msgid "Behaviour"
+msgstr "Davranış"
+
+msgid "Make this user the tailscale operator"
+msgstr "Bu kullanıcıyı tailscale operatörü yap"
+
+msgid ""
+"Lets BigLace manage the connection without asking for a password each time"
+msgstr ""
+"BigLace'in bağlantıyı her seferinde parola sormadan yönetmesine izin verir"
+
+msgid "Account"
+msgstr "Hesap"
+
+msgid ""
+"Signing out removes this device's identity from BigLace. You will need a new"
+" invite or key to join again."
+msgstr ""
+"Oturumu kapatmak bu cihazın kimliğini BigLace'ten kaldırır. Yeniden katılmak"
+" için yeni bir davet veya anahtar gerekir."
+
+msgid "Change profile photo…"
+msgstr "Profil fotoğrafını değiştir…"
+
+msgid "Sign in with panel account"
+msgstr "Panel hesabıyla oturum aç"
+
+msgid "Leave the network…"
+msgstr "Ağdan ayrıl…"
+
+msgid "View tailscaled logs"
+msgstr "tailscaled günlüklerini görüntüle"
+
+msgid "About BigLace"
+msgstr "BigLace Hakkında"
+
+msgid "Connect to the network first, then open the invite link again."
+msgstr "Önce ağa bağlanın, sonra davet bağlantısını yeniden açın."
+
+#, rust-format
+msgid ""
+"This invite is for another network ({host}). Sign out first to join it."
+msgstr ""
+"Bu davet başka bir ağ için ({host}). Katılmak için önce oturumu kapatın."
+
+msgid ""
+"This device is already signed in. Sign out first to join with an invite."
+msgstr ""
+"Bu cihazda zaten oturum açık. Davetle katılmak için önce oturumu kapatın."
+
+msgid "Photo removed."
+msgstr "Fotoğraf kaldırıldı."
+
+#, rust-format
+msgid "Could not remove the photo: {error}"
+msgstr "Fotoğraf kaldırılamadı: {error}"
+
+#, rust-format
+msgid "Could not open the browser: {error}"
+msgstr "Tarayıcı açılamadı: {error}"
+
+msgid ""
+"You can't open the admin panel: you're not an administrator of this network,"
+" or the panel can't be reached."
+msgstr ""
+"Yönetim panelini açamazsınız: bu ağın yöneticisi değilsiniz ya da panele "
+"ulaşılamıyor."
+
+msgid "Enter the server URL before saving."
+msgstr "Kaydetmeden önce sunucu URL'sini girin."
+
+msgid "Enter the pre-auth key before saving."
+msgstr "Kaydetmeden önce ön yetkilendirme anahtarını girin."
+
+msgid "Setup saved"
+msgstr "Kurulum kaydedildi"
+
+msgid "Could not start the Tailscale service."
+msgstr "Tailscale hizmeti başlatılamadı."
+
+msgid "IP address copied"
+msgstr "IP adresi kopyalandı"
+
+#, rust-format
+msgid ""
+"Saved, but the pre-auth key could not be stored in the system keyring "
+"({error}). This device can still reconnect; the key is only needed again to "
+"register it anew."
+msgstr ""
+"Kaydedildi, ancak ön yetkilendirme anahtarı sistem anahtarlığına "
+"kaydedilemedi ({error}). Bu cihaz yine de yeniden bağlanabilir; anahtar "
+"yalnızca cihazı yeniden kaydetmek için gerekir."
+
+msgid "Service stopped"
+msgstr "Hizmet durduruldu"
+
+msgid "Not signed in"
+msgstr "Oturum açılmadı"
+
+msgid "Server unreachable"
+msgstr "Sunucuya ulaşılamıyor"
+
+msgid "Tailscale can't set DNS"
+msgstr "Tailscale DNS'i ayarlayamıyor"
+
+#, rust-format
+msgid "Update available: v{version}"
+msgstr "Güncelleme mevcut: v{version}"
+
+#, rust-format
+msgid "Sign in again as {user}"
+msgstr "{user} olarak yeniden oturum aç"
+
 msgid "(no device name)"
 msgstr "(cihaz adı yok)"
 
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/mod.rs:1400
+msgid "Sign in or paste a pre-auth key"
+msgstr "Oturum açın veya ön yetkilendirme anahtarı yapıştırın"
+
+msgid "Server not set"
+msgstr "Sunucu ayarlanmamış"
+
+msgid "no other devices"
+msgstr "başka cihaz yok"
+
+#, rust-format
+msgid "{online} online"
+msgstr "{online} çevrimiçi"
+
+#, rust-format
+msgid "{online} online · {offline} offline"
+msgstr "{online} çevrimiçi · {offline} çevrimdışı"
+
+msgid "is online"
+msgstr "çevrimiçi"
+
+msgid "went offline"
+msgstr "çevrimdışı oldu"
+
 #, rust-format
 msgid "{count} devices are online"
 msgstr "{count} cihaz çevrimiçi"
 
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/mod.rs:1401
 #, rust-format
 msgid "{count} devices went offline"
 msgstr "{count} cihaz çevrimdışı oldu"
 
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/mod.rs:1403
 #, rust-format
 msgid "{on_count} online · {off_count} offline"
 msgstr "{on_count} çevrimiçi · {off_count} çevrimdışı"
 
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/tailscale.rs:650
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/mod.rs:814
-msgid "Enter the server URL before connecting."
-msgstr "Bağlanmadan önce sunucu URL'sini girin."
+msgid "direct"
+msgstr "doğrudan"
 
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/mod.rs:682
-msgid "Enter the server URL before saving."
-msgstr "Kaydetmeden önce sunucu URL'sini girin."
+msgid "via relay"
+msgstr "aktarıcı üzerinden"
 
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/mod.rs:691
-msgid "Enter the pre-auth key before saving."
-msgstr "Kaydetmeden önce ön yetkilendirme anahtarını girin."
+msgid "Turn on over the network (Wake-on-LAN)"
+msgstr "Ağ üzerinden aç (Wake-on-LAN)"
 
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/sidebar.rs:178
+msgid "Turn on over the network"
+msgstr "Ağ üzerinden aç"
+
+#, rust-format
+msgid ""
+"Signal sent to {name} (by {via}). If it's set to turn on over the network, "
+"it shows up in a minute or two."
+msgstr ""
+"{name} cihazına sinyal gönderildi ({via} üzerinden). Ağ üzerinden açılacak "
+"şekilde ayarlıysa bir iki dakika içinde görünür."
+
+#, rust-format
+msgid "Could not turn on {name}: {error}"
+msgstr "{name} açılamadı: {error}"
+
+msgid "Unpin from top"
+msgstr "Üstten sabitlemeyi kaldır"
+
+msgid "Pin to top"
+msgstr "Üste sabitle"
+
+msgid "Pinned to top"
+msgstr "Sabitlendi"
+
+msgid "Unpinned"
+msgstr "Sabitlenmedi"
+
+msgid "Open files (SFTP)"
+msgstr "Dosyaları aç (SFTP)"
+
+msgid "Open terminal (SSH)"
+msgstr "Terminal aç (SSH)"
+
+msgid "See and control the screen"
+msgstr "Ekranı gör ve denetle"
+
+msgid "DNS name"
+msgstr "DNS adı"
+
+msgid "DNS name copied"
+msgstr "DNS adı kopyalandı"
+
+msgid "Owner"
+msgstr "Sahip"
+
+msgid "SSH login (override)"
+msgstr "SSH girişi (geçersiz kıl)"
+
+msgid "Saved"
+msgstr "Kaydedildi"
+
+msgid "Tags"
+msgstr "Etiketler"
+
+msgid "Last seen"
+msgstr "Son görülme"
+
+msgid "Use as exit node"
+msgstr "Çıkış düğümü olarak kullan"
+
+msgid "Route all traffic through this peer"
+msgstr "Tüm trafiği bu eş üzerinden yönlendir"
+
+msgid "Exit node enabled"
+msgstr "Çıkış düğümü etkin"
+
+msgid "Exit node disabled"
+msgstr "Çıkış düğümü devre dışı"
+
+msgid "Failed to update exit node"
+msgstr "Çıkış düğümü güncellenemedi"
+
+msgid "Copy"
+msgstr "Kopyala"
+
+msgid "End access"
+msgstr "Erişimi sonlandır"
+
+#, rust-format
+msgid "{who} is seeing and controlling this screen"
+msgstr "{who} bu ekranı görüyor ve denetliyor"
+
+msgid "Remote access started"
+msgstr "Uzaktan erişim başladı"
+
+#, rust-format
+msgid ""
+"{user} ({device}) is seeing and controlling this screen. Open BigLace to end"
+" the access."
+msgstr ""
+"{user} ({device}) bu ekranı görüyor ve denetliyor. Erişimi sonlandırmak için"
+" BigLace'i açın."
+
+#, rust-format
+msgid "Always allow {user} (no more asking)"
+msgstr "{user} için her zaman izin ver (bir daha sorma)"
+
+msgid "Deny"
+msgstr "Reddet"
+
+msgid "Allow access"
+msgstr "Erişime izin ver"
+
+msgid "Allow remote access?"
+msgstr "Uzaktan erişime izin verilsin mi?"
+
+#, rust-format
+msgid "<b>{user}</b> wants to <b>see and control</b> this screen."
+msgstr "<b>{user}</b> bu ekranı <b>görmek ve denetlemek</b> istiyor."
+
+msgid "Person"
+msgstr "Kişi"
+
+msgid "Device"
+msgstr "Cihaz"
+
+msgid "See everything on your screen"
+msgstr "Ekranınızdaki her şeyi görür"
+
+msgid "Move the mouse and type on this computer"
+msgstr "Bu bilgisayarda fareyi hareket ettirir ve yazı yazar"
+
+msgid "Hear this computer's sound"
+msgstr "Bu bilgisayarın sesini duyar"
+
+msgid ""
+"<b>Only allow it if you know this person and are expecting it.</b> You can "
+"end the access at any time from BigLace."
+msgstr ""
+"<b>Yalnızca bu kişiyi tanıyorsanız ve bunu bekliyorsanız izin verin.</b> "
+"Erişimi istediğiniz zaman BigLace'ten sonlandırabilirsiniz."
+
+#, rust-format
+msgid "Denied automatically in {seconds} s"
+msgstr "{seconds} sn içinde otomatik olarak reddedilecek"
+
+#, rust-format
+msgid "Restart {name}'s computer?"
+msgstr "{name} kişisinin bilgisayarı yeniden başlatılsın mı?"
+
+msgid ""
+"It restarts, signs in by itself and locks the screen right away; this window"
+" connects again when it's back. Unsaved work there is lost."
+msgstr ""
+"Yeniden başlar, kendiliğinden oturum açar ve ekranı hemen kilitler; geri "
+"geldiğinde bu pencere yeniden bağlanır. Oradaki kaydedilmemiş çalışmalar "
+"kaybolur."
+
+msgid "Restart"
+msgstr "Yeniden başlat"
+
+#, rust-format
+msgid "Restart {name}'s session?"
+msgstr "{name} kişisinin oturumu yeniden başlatılsın mı?"
+
+msgid ""
+"The open programs there close, the computer signs out and back in by itself "
+"(without restarting) and locks the screen; this window connects again. "
+"Unsaved work there is lost."
+msgstr ""
+"Oradaki açık programlar kapanır, bilgisayar (yeniden başlamadan) "
+"kendiliğinden oturumu kapatıp yeniden açar ve ekranı kilitler; bu pencere "
+"yeniden bağlanır. Oradaki kaydedilmemiş çalışmalar kaybolur."
+
+msgid "Restart the session"
+msgstr "Oturumu yeniden başlat"
+
+#, rust-format
+msgid "Shut down {name}'s computer?"
+msgstr "{name} kişisinin bilgisayarı kapatılsın mı?"
+
+msgid ""
+"You won't be able to reach it again until someone turns it on. Unsaved work "
+"there is lost."
+msgstr ""
+"Biri açana kadar ona yeniden ulaşamayacaksınız. Oradaki kaydedilmemiş "
+"çalışmalar kaybolur."
+
+msgid "Shut Down"
+msgstr "Kapat"
+
+#, rust-format
+msgid "Screen of {name}"
+msgstr "{name} ekranı"
+
+msgid "Full screen (F11)"
+msgstr "Tam ekran (F11)"
+
+msgid "Mute the remote sound"
+msgstr "Uzak sesi kapat"
+
+#, rust-format
+msgid "Fit {name}'s resolution to this window"
+msgstr "{name} çözünürlüğünü bu pencereye sığdır"
+
+msgid "LIVE"
+msgstr "CANLI"
+
+msgid "You are watching this screen right now"
+msgstr "Şu anda bu ekranı izliyorsunuz"
+
+msgid "You are seeing and controlling this screen right now"
+msgstr "Şu anda bu ekranı görüyor ve denetliyorsunuz"
+
+msgid "Request control"
+msgstr "Denetim iste"
+
+#, rust-format
+msgid "Ask {name} to let you use the mouse and keyboard"
+msgstr ""
+"{name} kişisinden fare ve klavyeyi kullanmanıza izin vermesini isteyin"
+
+#, rust-format
+msgid "Waiting for {name}…"
+msgstr "{name} bekleniyor…"
+
+msgid "Connecting to the screen shared with the room."
+msgstr "Odayla paylaşılan ekrana bağlanılıyor."
+
+msgid "The person at that computer needs to allow the access."
+msgstr "O bilgisayarın başındaki kişinin erişime izin vermesi gerekiyor."
+
+#, rust-format
+msgid "Asked {name} for control…"
+msgstr "{name} kişisinden denetim istendi…"
+
+#, rust-format
+msgid "Restart or shut down {name}'s computer"
+msgstr "{name} kişisinin bilgisayarını yeniden başlat veya kapat"
+
+msgid "Restart and reconnect"
+msgstr "Yeniden başlat ve yeniden bağlan"
+
+msgid "Shut down"
+msgstr "Kapat"
+
+#, rust-format
+msgid "{name} is back."
+msgstr "{name} geri döndü."
+
+#, rust-format
+msgid "{name}'s computer didn't come back after the restart."
+msgstr "{name} kişisinin bilgisayarı yeniden başlatmadan sonra geri dönmedi."
+
+#, rust-format
+msgid "{name} didn't allow the access."
+msgstr "{name} erişime izin vermedi."
+
+msgid ""
+"That computer couldn't confirm this device. Make sure both run an up-to-date"
+" BigLace."
+msgstr ""
+"O bilgisayar bu cihazı doğrulayamadı. Her ikisinde de güncel bir BigLace "
+"çalıştığından emin olun."
+
+#, rust-format
+msgid ""
+"{name}'s computer can't share its screen (screen sharing isn't available "
+"there)."
+msgstr ""
+"{name} kişisinin bilgisayarı ekranını paylaşamıyor (orada ekran paylaşımı "
+"kullanılamıyor)."
+
+#, rust-format
+msgid "Could not connect: {error}"
+msgstr "Bağlanılamadı: {error}"
+
+#, rust-format
+msgid "{name}'s computer said: {error}"
+msgstr "{name} kişisinin bilgisayarı şunu söyledi: {error}"
+
+#, rust-format
+msgid "Restarting {name}'s session…"
+msgstr "{name} kişisinin oturumu yeniden başlatılıyor…"
+
+msgid ""
+"This window connects again by itself when the session is back. It takes a "
+"few seconds."
+msgstr ""
+"Oturum geri geldiğinde bu pencere kendiliğinden yeniden bağlanır. Birkaç "
+"saniye sürer."
+
+#, rust-format
+msgid "Restarting {name}…"
+msgstr "{name} yeniden başlatılıyor…"
+
+msgid ""
+"This window connects again by itself when the computer is back. It takes a "
+"few minutes."
+msgstr ""
+"Bilgisayar geri geldiğinde bu pencere kendiliğinden yeniden bağlanır. Birkaç"
+" dakika sürer."
+
+#, rust-format
+msgid "{latency} ms · {fps} fps · {mbps} Mbit/s"
+msgstr "{latency} ms · {fps} fps · {mbps} Mbit/s"
+
+#, rust-format
+msgid "You're controlling {name}'s screen now."
+msgstr "Artık {name} kişisinin ekranını denetliyorsunuz."
+
+#, rust-format
+msgid "{name} didn't give you control."
+msgstr "{name} size denetim vermedi."
+
+#, rust-format
+msgid "{name} took control back."
+msgstr "{name} denetimi geri aldı."
+
+#, rust-format
+msgid "{name}'s computer is shutting down."
+msgstr "{name} kişisinin bilgisayarı kapanıyor."
+
+#, rust-format
+msgid "The access to {name}'s screen ended."
+msgstr "{name} kişisinin ekranına erişim sona erdi."
+
+#, rust-format
+msgid "The access to {name}'s screen ended: {error}"
+msgstr "{name} kişisinin ekranına erişim sona erdi: {error}"
+
+msgid "Give back control"
+msgstr "Denetimi geri ver"
+
+msgid ""
+"Each of your groups has a voice room. Join it and talk with whoever is there"
+" — the sound goes straight between you, through the network."
+msgstr ""
+"Her grubunuzun bir sesli odası var. Katılın ve orada kim varsa onunla "
+"konuşun — ses ağ üzerinden doğrudan aranızda gider."
+
+msgid "You're not in any group yet. Create one in Groups."
+msgstr "Henüz hiçbir grupta değilsiniz. Gruplar bölümünde bir tane oluşturun."
+
+msgid "People in the room"
+msgstr "Odadaki kişiler"
+
+msgid "Everyone"
+msgstr "Herkes"
+
+msgid "Who's speaking"
+msgstr "Konuşan kişi"
+
+msgid "Mute"
+msgstr "Sessize al"
+
+msgid "Mute your microphone for everyone"
+msgstr "Mikrofonunuzu herkes için kapatın"
+
+msgid "Which camera"
+msgstr "Hangi kamera"
+
+msgid "Include the computer's sound when sharing the screen"
+msgstr "Ekran paylaşırken bilgisayarın sesini de dahil et"
+
+msgid ""
+"Videos and music playing here go to the room too; the room's voices don't "
+"(no echo)"
+msgstr ""
+"Burada çalan videolar ve müzik de odaya gider; odadaki sesler gitmez (yankı "
+"olmaz)"
+
+msgid "Rooms unavailable"
+msgstr "Odalar kullanılamıyor"
+
+#, rust-format
+msgid "Could not turn on the camera: {error}"
+msgstr "Kamera açılamadı: {error}"
+
+#, rust-format
+msgid "Could not share the screen: {error}"
+msgstr "Ekran paylaşılamadı: {error}"
+
+msgid "Nobody here right now"
+msgstr "Şu anda burada kimse yok"
+
+#, rust-format
+msgid "In the room: {people}"
+msgstr "Odada: {people}"
+
+#, rust-format
+msgid "Join the room {group}"
+msgstr "{group} odasına katıl"
+
+#, rust-format
+msgid "Could not join {group}: {error}"
+msgstr "{group} odasına katılınamadı: {error}"
+
+msgid "📺 You're showing your screen to the room"
+msgstr "📺 Ekranınızı odaya gösteriyorsunuz"
+
+msgid "📺 You're showing your screen · 1 person watching"
+msgstr "📺 Ekranınızı gösteriyorsunuz · 1 kişi izliyor"
+
+#, rust-format
+msgid "📺 You're showing your screen · {count} people watching"
+msgstr "📺 Ekranınızı gösteriyorsunuz · {count} kişi izliyor"
+
+#, rust-format
+msgid "{people} · {talking} talking"
+msgstr "{people} · {talking} konuşuyor"
+
+msgid "connecting…"
+msgstr "bağlanılıyor…"
+
+msgid "muted"
+msgstr "sessizde"
+
+msgid "talking"
+msgstr "konuşuyor"
+
+msgid "quiet"
+msgstr "sessiz"
+
+msgid "Sharing screen"
+msgstr "Ekran paylaşılıyor"
+
+msgid "In control"
+msgstr "Denetimde"
+
+msgid "Controls your screen now"
+msgstr "Şu anda ekranınızı denetliyor"
+
+msgid "Watching"
+msgstr "İzliyor"
+
+msgid "Watching your screen"
+msgstr "Ekranınızı izliyor"
+
+#, rust-format
+msgid "{user} is showing their screen"
+msgstr "{user} ekranını gösteriyor"
+
+msgid "Watch"
+msgstr "İzle"
+
+#, rust-format
+msgid "{user} asks to control your screen"
+msgstr "{user} ekranınızı denetlemek istiyor"
+
+msgid ""
+"They'll be able to use your mouse and keyboard. You can take control back at"
+" any time."
+msgstr ""
+"Fare ve klavyenizi kullanabilecek. Denetimi istediğiniz zaman geri "
+"alabilirsiniz."
+
+msgid "Allow"
+msgstr "İzin ver"
+
+msgid "Turn off camera"
+msgstr "Kamerayı kapat"
+
+msgid "Turn on camera"
+msgstr "Kamerayı aç"
+
+msgid "No camera found on this computer"
+msgstr "Bu bilgisayarda kamera bulunamadı"
+
+msgid "Stop sharing"
+msgstr "Paylaşımı durdur"
+
+msgid "Share screen"
+msgstr "Ekranı paylaş"
+
+msgid "Stop showing your screen to the room"
+msgstr "Ekranınızı odaya göstermeyi durdurun"
+
+msgid "Show your screen to everyone in the room"
+msgstr "Ekranınızı odadaki herkese gösterin"
+
+msgid "Take back control"
+msgstr "Denetimi geri al"
+
+msgid "Give control"
+msgstr "Denetimi ver"
+
+msgid "Stop them from using your mouse and keyboard"
+msgstr "Fare ve klavyenizi kullanmalarını engelleyin"
+
+msgid "Let them use your mouse and keyboard"
+msgstr "Fare ve klavyenizi kullanmalarına izin verin"
+
+msgid "Sound level"
+msgstr "Ses düzeyi"
+
+msgid "Unmute"
+msgstr "Sesi aç"
+
+msgid "Sections"
+msgstr "Bölümler"
+
+msgid ""
+"Your identity on this mesh — the device name shown to other peers and the "
+"network you're connected to."
+msgstr ""
+"Bu ağdaki kimliğiniz — diğer eşlere gösterilen cihaz adı ve bağlı olduğunuz "
+"ağ."
+
+msgid "Change photo…"
+msgstr "Fotoğrafı değiştir…"
+
+msgid "Remove photo"
+msgstr "Fotoğrafı kaldır"
+
+msgid "Change your photo"
+msgstr "Fotoğrafınızı değiştirin"
+
+msgid "Rename this device on the network"
+msgstr "Bu cihazı ağda yeniden adlandır"
+
+msgid "Advanced: use a pre-auth key"
+msgstr "Gelişmiş: bir ön yetkilendirme anahtarı kullanın"
+
+msgid "Already have a key from your administrator? Paste it here."
+msgstr "Yöneticinizden bir anahtarınız var mı? Buraya yapıştırın."
+
+msgid ""
+"Manual setup — expand to paste a server URL and pre-auth key when you "
+"already received them from your administrator. Most users should sign in "
+"through the panel button above instead."
+msgstr ""
+"Manuel kurulum — yöneticinizden zaten aldıysanız, bir sunucu URL'si ve ön "
+"yetkilendirme anahtarı yapıştırmak için genişletin. Çoğu kullanıcı bunun "
+"yerine yukarıdaki panel düğmesi aracılığıyla oturum açmalıdır."
+
+msgid ""
+"Address of the coordination server (e.g. vpn.example.org). The https:// "
+"scheme is added automatically if you omit it."
+msgstr ""
+"Koordinasyon sunucusunun adresi (ör. vpn.example.org). Atlarsanız https:// "
+"şeması otomatik olarak eklenir."
+
+msgid "Pre-auth key"
+msgstr "Ön yetkilendirme anahtarı"
+
+msgid ""
+"One-time or reusable key created on the server (starts with 'hskey-auth-'). "
+"Used to register this device automatically without opening a browser."
+msgstr ""
+"Sunucuda oluşturulan tek kullanımlık veya yeniden kullanılabilir anahtar "
+"('hskey-auth-' ile başlar). Bir tarayıcı açmadan bu cihazı otomatik olarak "
+"kaydetmek için kullanılır."
+
+msgid ""
+"The name this device shows to other peers on the VPN — this is the Tailscale"
+" hostname, NOT your computer's name and NOT your user. Lowercase letters, "
+"digits and hyphens. Example: 'tales-laptop', 'francois', 'office-pc'."
+msgstr ""
+"Bu cihazın VPN'deki diğer eşlere gösterdiği ad — bu Tailscale ana bilgisayar"
+" adıdır, bilgisayarınızın adı VEYA kullanıcı adınız DEĞİLDİR. Küçük harfler,"
+" rakamlar ve tireler. Örnek: 'tales-dizustu', 'francois', 'ofis-pc'."
+
+msgid "Apply manual setup"
+msgstr "Manuel kurulumu uygula"
+
+msgid "Save"
+msgstr "Kaydet"
+
+msgid ""
+"Persist the server, key and device name above. Won't connect — press Connect"
+" afterwards."
+msgstr ""
+"Yukarıdaki sunucuyu, anahtarı ve cihaz adını kaydedin. Bağlanmayacak — "
+"ardından Bağlan'a basın."
+
+msgid "Connect automatically"
+msgstr "Otomatik bağlan"
+
+msgid "Join the network when BigLace starts"
+msgstr "BigLace başladığında ağa katıl"
+
+msgid ""
+"When on, BigLace runs 'tailscale up' as soon as it launches, so you join the"
+" mesh without clicking Connect every time."
+msgstr ""
+"Açıkken, BigLace başlatıldığında 'tailscale up' komutunu çalıştırır, böylece"
+" her seferinde Bağlan'a tıklamadan ağa katılırsınız."
+
+msgid "Toggle auto-connect on startup"
+msgstr "Başlangıçta otomatik bağlanmayı aç/kapat"
+
 msgid "Start BigLace with the session"
 msgstr "BigLace'i oturumla birlikte başlat"
 
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/sidebar.rs:179
 msgid "Open BigLace after you sign in to the desktop"
 msgstr "Masaüstüne giriş yaptıktan sonra BigLace'i aç"
 
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/sidebar.rs:182
 msgid ""
 "Turn this on to add BigLace to your desktop session startup. Turn it off to "
 "remove it."
@@ -718,9 +2313,81 @@ msgstr ""
 "Bunu açarak BigLace'i masaüstü oturum başlangıcına ekleyin. Kapatarak "
 "kaldırın."
 
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/sidebar.rs:190
 msgid "Toggle start with session"
 msgstr "Oturumla başlatmayı aç/kapat"
+
+msgid "Reconnect on drop"
+msgstr "Bağlantı koptuğunda yeniden bağlan"
+
+msgid "Retry with backoff when the connection is lost"
+msgstr "Bağlantı kesildiğinde gecikmeli olarak yeniden dene"
+
+msgid ""
+"If the tunnel drops (network change, sleep, server hiccup), BigLace silently"
+" retries with growing delays instead of leaving you offline until you "
+"notice."
+msgstr ""
+"Tünel kesilirse (ağ değişikliği, uyku, sunucu takılması), BigLace sizi fark "
+"edene kadar çevrimdışı bırakmak yerine artan gecikmelerle sessizce yeniden "
+"dener."
+
+msgid "Toggle auto-reconnect"
+msgstr "Otomatik yeniden bağlanmayı aç/kapat"
+
+msgid "Notify on peer changes"
+msgstr "Eş değişikliklerinde bildirim göster"
+
+msgid "Show a desktop notification when peers go online/offline"
+msgstr "Eşler çevrimiçi/çevrimdışı olduğunda masaüstü bildirimi göster"
+
+msgid ""
+"Send a desktop toast when another device on your network goes online or "
+"offline. Rapid bursts are coalesced into a single notification so you don't "
+"get spammed during reconnects."
+msgstr ""
+"Ağınızdaki başka bir cihaz çevrimiçi veya çevrimdışı olduğunda bir masaüstü "
+"bildirimi gönderin. Hızlı patlamalar, yeniden bağlanmalar sırasında spam "
+"almamanız için tek bir bildirimde birleştirilir."
+
+msgid "Toggle peer-change notifications"
+msgstr "Eş değişiklik bildirimlerini aç/kapat"
+
+msgid ""
+"Join or leave the mesh network. When connected, this device becomes "
+"reachable by the other peers in your account."
+msgstr ""
+"Mesh ağına katılın veya ağdan ayrılın. Bağlandığınızda bu cihaz, "
+"hesabınızdaki diğer eşler tarafından erişilebilir hale gelir."
+
+msgid "Your photo"
+msgstr "Fotoğrafınız"
+
+#~ msgid "Panel credentials"
+#~ msgstr "Panel kimlik bilgileri"
+
+#~ msgid "Username"
+#~ msgstr "Kullanıcı adı"
+
+#~ msgid "Sign in to connect"
+#~ msgstr "Bağlanmak için oturum açın"
+
+#~ msgid "Use the panel on the left to sign in or paste a pre-auth key."
+#~ msgstr ""
+#~ "Bağlanmak için soldaki paneli kullanarak oturum açın veya ön yetkilendirme "
+#~ "anahtarı yapıştırın."
+
+#~ msgid "Connect via panel account"
+#~ msgstr "Panel hesabıyla bağlan"
+
+#~ msgid ""
+#~ "Sign in with your BigScale panel username and password. A device identity "
+#~ "will be created on the network automatically — no manual key needed."
+#~ msgstr ""
+#~ "BigScale panel kullanıcı adınız ve parolanızla oturum açın. Ağda otomatik "
+#~ "olarak bir cihaz kimliği oluşturulacaktır — manuel anahtar gerekmez."
+
+#~ msgid "Connected ·"
+#~ msgstr "Bağlandı ·"
 
 #~ msgid "Device name"
 #~ msgstr "Cihaz adı"
@@ -761,9 +2428,6 @@ msgstr "Oturumla başlatmayı aç/kapat"
 
 #~ msgid "Terminal"
 #~ msgstr "Terminal"
-
-#~ msgid "Copied!"
-#~ msgstr "Kopyalandı!"
 
 #~ msgid "Key generated successfully."
 #~ msgstr "Anahtar başarıyla oluşturuldu."

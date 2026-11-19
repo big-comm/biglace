@@ -28,6 +28,13 @@ pub struct RoomsPage {
     share_banner: gtk4::Label,
     /// Share the computer's sound along with the screen.
     share_sound: gtk4::CheckButton,
+    /// Everyone's camera (or photo), grid or speaker view.
+    stage: super::room_stage::Stage,
+    /// Our camera on/off, and which one.
+    btn_camera: gtk4::ToggleButton,
+    camera_pick: gtk4::DropDown,
+    cameras: Rc<RefCell<Vec<room::camera::Device>>>,
+    cameras_loaded: Rc<std::cell::Cell<bool>>,
     error_page: libadwaita::StatusPage,
     toast: libadwaita::ToastOverlay,
     /// Reflects the room state while updating the mute toggle ourselves.
@@ -124,6 +131,23 @@ impl RoomsPage {
         members.add_css_class("boxed-list");
         members.set_selection_mode(gtk4::SelectionMode::None);
         members.update_property(&[gtk4::accessible::Property::Label(&tr!("People in the room"))]);
+        // Grid / speaker view, then the stage.
+        let view_switch = gtk4::Box::new(gtk4::Orientation::Horizontal, 0);
+        view_switch.add_css_class("linked");
+        view_switch.set_halign(gtk4::Align::Center);
+        let btn_grid = gtk4::ToggleButton::builder()
+            .child(&libadwaita::ButtonContent::builder().icon_name("view-grid-symbolic").label(tr!("Everyone")).build())
+            .active(true)
+            .build();
+        let btn_speaker = gtk4::ToggleButton::builder()
+            .child(&libadwaita::ButtonContent::builder().icon_name("view-paged-symbolic").label(tr!("Who's speaking")).build())
+            .group(&btn_grid)
+            .build();
+        view_switch.append(&btn_grid);
+        view_switch.append(&btn_speaker);
+        in_box.append(&view_switch);
+        let stage = super::room_stage::Stage::build();
+        in_box.append(&stage.widget);
         in_box.append(&members);
         let controls = gtk4::Box::new(gtk4::Orientation::Horizontal, 12);
         controls.set_halign(gtk4::Align::Center);
@@ -148,7 +172,13 @@ impl RoomsPage {
             .build();
         let btn_share = gtk4::Button::builder().css_classes(["pill"]).build();
         set_share_look(&btn_share, false);
+        let btn_camera = gtk4::ToggleButton::builder().css_classes(["pill"]).build();
+        set_camera_look(&btn_camera);
+        let camera_pick = gtk4::DropDown::builder().visible(false).valign(gtk4::Align::Center).build();
+        camera_pick.set_tooltip_text(Some(&tr!("Which camera")));
         controls.append(&btn_mute);
+        controls.append(&btn_camera);
+        controls.append(&camera_pick);
         controls.append(&btn_share);
         controls.append(&btn_leave);
         let share_banner = gtk4::Label::new(None);
@@ -163,7 +193,7 @@ impl RoomsPage {
             .tooltip_text(tr!("Videos and music playing here go to the room too; the room's voices don't (no echo)"))
             .build();
         in_box.append(&share_sound);
-        let in_room = libadwaita::Clamp::builder().maximum_size(720).child(&in_box).build();
+        let in_room = libadwaita::Clamp::builder().maximum_size(1200).child(&in_box).build();
         let in_room = gtk4::ScrolledWindow::builder()
             .hscrollbar_policy(gtk4::PolicyType::Never)
             .vexpand(true)
@@ -199,6 +229,11 @@ impl RoomsPage {
             btn_share,
             share_banner,
             share_sound,
+            stage: stage.clone(),
+            btn_camera: btn_camera.clone(),
+            camera_pick: camera_pick.clone(),
+            cameras: Rc::default(),
+            cameras_loaded: Rc::default(),
             error_page,
             toast: toast.clone(),
             syncing: Rc::new(std::cell::Cell::new(false)),
@@ -209,6 +244,56 @@ impl RoomsPage {
             presenting: Rc::default(),
             room_hook: Rc::default(),
         };
+        {
+            let stage = stage.clone();
+            btn_grid.connect_toggled(move |b| {
+                if b.is_active() {
+                    stage.set_layout(super::room_stage::Layout::Grid);
+                }
+            });
+        }
+        {
+            let stage = stage.clone();
+            btn_speaker.connect_toggled(move |b| {
+                if b.is_active() {
+                    stage.set_layout(super::room_stage::Layout::Speaker);
+                }
+            });
+        }
+        {
+            let page = page.clone();
+            btn_camera.connect_toggled(move |b| {
+                set_camera_look(b);
+                if page.syncing.get() {
+                    return;
+                }
+                let on = b.is_active();
+                let path = page.cameras.borrow().get(page.camera_pick.selected() as usize).map(|d| d.path.clone());
+                let (page2, b) = (page.clone(), b.clone());
+                super::run_in_background(move || room::set_camera(on, path), move |r| {
+                    if let Err(e) = r {
+                        page2.syncing.set(true);
+                        b.set_active(false);
+                        page2.syncing.set(false);
+                        set_camera_look(&b);
+                        super::show_toast(&page2.toast, &trf!("Could not turn on the camera: {error}", "error" => e), 6);
+                    }
+                });
+            });
+        }
+        {
+            // Another camera chosen while it's on: switch to it.
+            let page = page.clone();
+            camera_pick.connect_selected_notify(move |d| {
+                if !page.btn_camera.is_active() {
+                    return;
+                }
+                let path = page.cameras.borrow().get(d.selected() as usize).map(|c| c.path.clone());
+                std::thread::spawn(move || {
+                    let _ = room::set_camera(true, path);
+                });
+            });
+        }
         {
             let page = page.clone();
             page.btn_share.clone().connect_clicked(move |b| {
@@ -341,6 +426,7 @@ impl RoomsPage {
             sharing: user == "bruna",
             watching: None,
             controlling: false,
+            camera: false,
         };
         self.on_event(RoomEvent::State {
             group: Some("familia".into()),
@@ -417,6 +503,16 @@ impl RoomsPage {
                 self.syncing.set(false);
                 set_mute_look(&self.btn_mute);
                 self.fill_members(&members);
+                self.stage.update(&members);
+                // Our camera button follows what the room says.
+                let mine = members.iter().find(|m| m.me).is_some_and(|m| m.camera);
+                if self.btn_camera.is_active() != mine {
+                    self.syncing.set(true);
+                    self.btn_camera.set_active(mine);
+                    self.syncing.set(false);
+                    set_camera_look(&self.btn_camera);
+                }
+                self.load_cameras();
                 self.stack.set_visible_child_name("room");
             }
             RoomEvent::ControlRequest { viewer, user } => self.ask_control(viewer, &user),
@@ -537,6 +633,43 @@ impl RoomsPage {
         let d = dlg.clone();
         glib::timeout_add_seconds_local_once(60, move || d.close());
         dlg.present();
+    }
+}
+
+fn set_camera_look(b: &gtk4::ToggleButton) {
+    let (icon, label) = if b.is_active() {
+        ("camera-web-symbolic", tr!("Turn off camera"))
+    } else {
+        ("camera-disabled-symbolic", tr!("Turn on camera"))
+    };
+    b.set_child(Some(&libadwaita::ButtonContent::builder().icon_name(icon).label(label).build()));
+    if b.is_active() {
+        b.add_css_class("suggested-action");
+    } else {
+        b.remove_css_class("suggested-action");
+    }
+}
+
+impl RoomsPage {
+    /// The cameras this computer has (once per room visit); the picker
+    /// shows when there's more than one.
+    fn load_cameras(&self) {
+        if self.cameras_loaded.replace(true) {
+            return;
+        }
+        let page = self.clone();
+        super::run_in_background(room::camera::devices, move |list| {
+            if list.is_empty() && std::env::var_os("BIGLACE_FAKE_CAMERA").is_none() {
+                page.btn_camera.set_sensitive(false);
+                page.btn_camera.set_tooltip_text(Some(&tr!("No camera found on this computer")));
+                return;
+            }
+            page.btn_camera.set_sensitive(true);
+            let names: Vec<&str> = list.iter().map(|d| d.name.as_str()).collect();
+            page.camera_pick.set_model(Some(&gtk4::StringList::new(&names)));
+            page.camera_pick.set_visible(list.len() > 1);
+            *page.cameras.borrow_mut() = list;
+        });
     }
 }
 

@@ -3,7 +3,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: biglace\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-05-01 15:43\n"
+"POT-Creation-Date: 2026-11-19 12:50-0300\n"
 "PO-Revision-Date: 2026-05-01 15:43\n"
 "Last-Translator: Translation Automator <auto@translator.ai>\n"
 "Language-Team: Slovak <sk@li.org>\n"
@@ -12,144 +12,41 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/tray/linux.rs:76
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/tray/windows.rs:136
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/mod.rs:1114
-msgid "Disconnect"
-msgstr "Odpojiť"
+msgid "Invalid device address."
+msgstr "Neplatná adresa zariadenia."
 
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/content.rs:47
-msgid "Main menu"
-msgstr "Hlavné menu"
+msgid ""
+"No file manager could open the SFTP location. Install one (Dolphin, "
+"Nautilus, Nemo, Thunar…) and try again."
+msgstr ""
+"Žiadny správca súborov nedokázal otvoriť umiestnenie SFTP. Nainštalujte "
+"niektorý (Dolphin, Nautilus, Nemo, Thunar…) a skúste to znova."
 
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/mod.rs:590
-msgid "Sign in with panel account"
-msgstr "Prihlásiť sa pomocou účtu panelu"
+msgid ""
+"No file manager could open the SFTP location. Install WinSCP and try again."
+msgstr ""
+"Žiadny správca súborov nedokázal otvoriť umiestnenie SFTP. Nainštalujte "
+"WinSCP a skúste to znova."
 
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/mod.rs:592
-msgid "Make this user the tailscale operator"
-msgstr "Nastaviť tohto používateľa ako operátora Tailscale"
+msgid ""
+"No terminal emulator found. Install one (Konsole, GNOME Terminal, xterm…) "
+"and try again."
+msgstr ""
+"Nenašiel sa žiadny emulátor terminálu. Nainštalujte niektorý (Konsole, GNOME"
+" Terminal, xterm…) a skúste to znova."
 
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/mod.rs:594
-msgid "About BigLace"
-msgstr "O aplikácii BigLace"
-
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/dialogs.rs:42
-msgid "Tailscale operator"
-msgstr "Operátor Tailscale"
-
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/dialogs.rs:37
-msgid "Done. You will no longer need a password to connect or disconnect."
-msgstr "Hotovo. Na pripojenie alebo odpojenie už nebudete potrebovať heslo."
-
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/dialogs.rs:38
-#, rust-format
-msgid "Failed: {error}"
-msgstr "Zlyhalo: {error}"
-
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/dialogs.rs:45
-msgid "OK"
-msgstr "OK"
-
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/dialogs.rs:387
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/mod.rs:729
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/mod.rs:962
-#, rust-format
-msgid "Error: {error}"
-msgstr "Chyba: {error}"
-
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/dialogs.rs:29
-msgid "Mesh VPN client for BigScale/Headscale."
-msgstr "VPN klient pre mesh siete BigScale/Headscale."
-
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/dialogs.rs:164
-msgid "Panel credentials"
-msgstr "Prihlasovacie údaje panela"
-
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/dialogs.rs:173
-msgid "Panel URL"
-msgstr "URL panela"
-
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/dialogs.rs:180
-msgid "Username"
-msgstr "Používateľské meno"
-
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/dialogs.rs:184
-msgid "Password"
-msgstr "Heslo"
-
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/dialogs.rs:75
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/dialogs.rs:247
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/dialogs.rs:448
-msgid "Cancel"
-msgstr "Zrušiť"
-
-#. The OK button needs to flip between "Sign in" and "spinner + Connecting…"
-#. while the HTTP call is in flight. Build both children up front and just
-#. swap the button's child — simpler than juggling visibility flags.
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/dialogs.rs:252
-msgid "Sign in"
-msgstr "Prihlásiť sa"
-
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/dialogs.rs:309
-msgid "Fill in URL, username and password."
-msgstr "Vyplňte URL, používateľské meno a heslo."
-
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/content.rs:159
-msgid "Start service"
-msgstr "Spustiť službu"
-
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/sidebar.rs:95
-msgid "Server URL"
-msgstr "URL servera"
-
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/content.rs:206
-msgid "This device"
-msgstr "Toto zariadenie"
-
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/tray/linux.rs:83
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/tray/windows.rs:81
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/tray/windows.rs:136
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/mod.rs:1124
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/mod.rs:1129
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/sidebar.rs:240
-msgid "Connect"
-msgstr "Pripojiť"
-
-#. ── Devices on the network ──
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/content.rs:223
-msgid "Devices on the network"
-msgstr "Zariadenia v sieti"
-
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/tailscale.rs:557
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/tailscale.rs:630
 msgid "Failed to run tailscale"
 msgstr "Nepodarilo sa spustiť tailscale"
 
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/tailscale.rs:577
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/tailscale.rs:610
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/tailscale.rs:642
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/tailscale.rs:714
 msgid "Failed to connect — check the server URL and key."
 msgstr "Nepodarilo sa pripojiť – skontrolujte URL servera a kľúč."
 
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/tailscale.rs:598
 msgid "Failed to run pkexec tailscale"
 msgstr "Nepodarilo sa spustiť pkexec tailscale"
 
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/tailscale.rs:781
-msgid "Could not determine the current user."
-msgstr "Nepodarilo sa určiť aktuálneho používateľa."
+msgid "Enter the server URL before connecting."
+msgstr "Pred pripojením zadajte URL adresu servera."
 
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/tailscale.rs:787
-msgid "Failed to run pkexec tailscale set"
-msgstr "Nepodarilo sa spustiť pkexec tailscale set"
-
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/tailscale.rs:789
-msgid "Failed to set tailscale operator."
-msgstr "Nepodarilo sa nastaviť operátora tailscale."
-
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/tailscale.rs:707
 msgid ""
 "The pre-auth key was rejected by the server. Generate a new key in the "
 "BigScale panel and try again."
@@ -157,167 +54,638 @@ msgstr ""
 "Predautorizačný kľúč bol serverom zamietnutý. Vygenerujte nový kľúč v paneli"
 " BigScale a skúste to znova."
 
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/tailscale.rs:710
+msgid "Sign in or paste a pre-auth key first."
+msgstr "Najprv sa prihláste alebo vložte pred-autentifikačný kľúč."
+
 #, rust-format
 msgid "Login rejected by server: {detail}"
 msgstr "Prihlásenie zamietnuté serverom: {detail}"
 
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/sidebar.rs:138
-msgid "Apply manual setup"
-msgstr "Použiť manuálne nastavenie"
+msgid "Could not determine the current user."
+msgstr "Nepodarilo sa určiť aktuálneho používateľa."
 
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/sidebar.rs:140
-msgid "Save"
-msgstr "Uložiť"
+msgid "Failed to run pkexec tailscale set"
+msgstr "Nepodarilo sa spustiť pkexec tailscale set"
 
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/sidebar.rs:159
-msgid "Connect automatically"
-msgstr "Pripojiť automaticky"
+msgid "Failed to set tailscale operator."
+msgstr "Nepodarilo sa nastaviť operátora tailscale."
 
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/sidebar.rs:160
-msgid "Join the network when BigLace starts"
-msgstr "Pripojiť sa k sieti pri spustení BigLace"
-
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/mod.rs:1079
-msgid "Sign in or paste a pre-auth key"
-msgstr "Prihlásiť sa alebo vložiť pred-autentifikačný kľúč"
-
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/mod.rs:1091
-msgid "Server not set"
-msgstr "Server nie je nastavený"
-
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/mod.rs:711
-msgid "Setup saved"
-msgstr "Nastavenie uložené"
-
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/tailscale.rs:653
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/mod.rs:805
-msgid "Sign in or paste a pre-auth key first."
-msgstr "Najprv sa prihláste alebo vložte pred-autentifikačný kľúč."
-
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/content.rs:96
-msgid "Sign in to connect"
-msgstr "Prihlásiť sa pre pripojenie"
-
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/content.rs:97
-msgid "Use the panel on the left to sign in or paste a pre-auth key."
-msgstr ""
-"Použite panel naľavo na prihlásenie alebo vloženie pred-autentifikačného "
-"kľúča."
-
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/content.rs:105
-msgid "Not connected"
-msgstr "Nie je pripojené"
-
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/content.rs:106
-msgid "Press Connect on the left to join the network."
-msgstr "Stlačte tlačidlo Pripojiť vľavo a pripojte sa k sieti."
-
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/content.rs:183
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/dialogs.rs:259
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/mod.rs:1026
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/mod.rs:1119
-msgid "Connecting…"
-msgstr "Pripája sa…"
-
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/content.rs:232
-msgid "No other devices on the network yet."
-msgstr "V sieti zatiaľ nie sú žiadne ďalšie zariadenia."
-
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/content.rs:216
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/peer_row.rs:178
-msgid "Copy IP address"
-msgstr "Kopírovať IP adresu"
-
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/mod.rs:888
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/peer_row.rs:186
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/peer_row.rs:271
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/peer_row.rs:280
-msgid "IP address copied"
-msgstr "IP adresa skopírovaná"
-
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/peer_row.rs:231
-msgid "Open files (SFTP)"
-msgstr "Otvoriť súbory (SFTP)"
-
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/peer_row.rs:246
-msgid "Open terminal (SSH)"
-msgstr "Otvoriť terminál (SSH)"
-
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/peer_row.rs:50
-msgid "offline"
-msgstr "offline"
-
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/mod.rs:1023
-msgid "Service stopped"
-msgstr "Služba zastavená"
-
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/tray/linux.rs:58
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/tray/windows.rs:172
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/content.rs:40
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/mod.rs:1025
-msgid "Disconnected"
-msgstr "Odpojené"
-
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/tray/linux.rs:53
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/tray/windows.rs:167
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/mod.rs:953
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/mod.rs:1027
 msgid "Connected"
 msgstr "Pripojené"
 
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/content.rs:59
+msgid "Connected · 1 peer"
+msgstr "Pripojené · 1 zariadenie"
+
+#, rust-format
+msgid "Connected · {n} peers"
+msgstr "Pripojené · {n} zariadení"
+
+msgid "Disconnected"
+msgstr "Odpojené"
+
+#, rust-format
+msgid "In the room {group} · muted"
+msgstr "V miestnosti {group} · stlmené"
+
+#, rust-format
+msgid "In the room {group}"
+msgstr "V miestnosti {group}"
+
+msgid "Disconnect"
+msgstr "Odpojiť"
+
+msgid "Connect"
+msgstr "Pripojiť"
+
+msgid "Show BigLace"
+msgstr "Zobraziť BigLace"
+
+#, rust-format
+msgid "Room {group}"
+msgstr "Miestnosť {group}"
+
+msgid "Unmute (Ctrl+Alt+M)"
+msgstr "Zapnúť zvuk (Ctrl+Alt+M)"
+
+msgid "Mute (Ctrl+Alt+M)"
+msgstr "Stlmiť (Ctrl+Alt+M)"
+
+msgid "Leave the room"
+msgstr "Opustiť miestnosť"
+
+msgid "Quit"
+msgstr "Ukončiť"
+
+msgid "This computer"
+msgstr "Tento počítač"
+
+msgid "Who may use this computer remotely"
+msgstr "Kto môže používať tento počítač na diaľku"
+
+msgid ""
+"Anyone you're connected to can ask to see and control this screen. Choose "
+"who is let in without asking, and who is never let in."
+msgstr ""
+"Ktokoľvek, s kým ste prepojení, môže požiadať o zobrazenie a ovládanie tejto"
+" obrazovky. Vyberte, koho pustiť bez pýtania a koho nikdy."
+
+msgid "History of accesses"
+msgstr "História prístupov"
+
+msgid "Kept on this computer only."
+msgstr "Uchováva sa len na tomto počítači."
+
+msgid "Clear"
+msgstr "Vymazať"
+
+msgid "Nobody has asked yet."
+msgstr "Zatiaľ nikto nežiadal."
+
+msgid "When someone asks, you can choose to always let them in."
+msgstr "Keď niekto požiada, môžete zvoliť, že ho pustíte vždy."
+
+msgid "Ask every time"
+msgstr "Zakaždým sa pýtať"
+
+msgid "Always allow"
+msgstr "Vždy povoliť"
+
+msgid "Never allow"
+msgstr "Nikdy nepovoliť"
+
+msgid "No accesses yet."
+msgstr "Zatiaľ žiadne prístupy."
+
+msgid "Remote access"
+msgstr "Vzdialený prístup"
+
+msgid "Watched the screen shared with the room"
+msgstr "Sledoval(a) obrazovku zdieľanú s miestnosťou"
+
+msgid "Got control of the shared screen"
+msgstr "Získal(a) ovládanie zdieľanej obrazovky"
+
+msgid "Restarted the computer"
+msgstr "Reštartoval(a) počítač"
+
+msgid "Restarted the session"
+msgstr "Reštartoval(a) reláciu"
+
+msgid "Shut down the computer"
+msgstr "Vypol(a) počítač"
+
+msgid "allowed"
+msgstr "povolené"
+
+msgid "allowed (always)"
+msgstr "povolené (vždy)"
+
+msgid "came back after a restart"
+msgstr "vrátil sa po reštarte"
+
+msgid "denied"
+msgstr "zamietnuté"
+
+msgid "blocked (never allowed)"
+msgstr "zablokované (nikdy nepovolené)"
+
+msgid "ended"
+msgstr "ukončené"
+
+#, rust-format
+msgid "{user} ({device})"
+msgstr "{user} ({device})"
+
+#, rust-format
+msgid "{done} of {total}"
+msgstr "{done} z {total}"
+
+msgid "Play"
+msgstr "Prehrať"
+
+msgid "Download"
+msgstr "Stiahnuť"
+
+msgid "Open"
+msgstr "Otvoriť"
+
+msgid "Show in folder"
+msgstr "Zobraziť v priečinku"
+
+msgid "Pause"
+msgstr "Pozastaviť"
+
+msgid "Photo"
+msgstr "Fotka"
+
+msgid "Video"
+msgstr "Video"
+
+msgid "Voice message"
+msgstr "Hlasová správa"
+
+msgid "Chat"
+msgstr "Chat"
+
+msgid "New chat"
+msgstr "Nový chat"
+
+msgid "Start a conversation with someone on the network"
+msgstr "Začnite konverzáciu s niekým v sieti"
+
+msgid "Main menu"
+msgstr "Hlavné menu"
+
+msgid "Chat theme"
+msgstr "Motív chatu"
+
+msgid "Conversations"
+msgstr "Konverzácie"
+
+msgid "No conversations yet."
+msgstr "Zatiaľ žiadne konverzácie."
+
+msgid "Search in this conversation (Ctrl+F)"
+msgstr "Hľadať v tejto konverzácii (Ctrl+F)"
+
+msgid "Pinned message"
+msgstr "Pripnutá správa"
+
+msgid "Unpin"
+msgstr "Odopnúť"
+
+msgid "Search messages"
+msgstr "Hľadať správy"
+
+msgid "Older"
+msgstr "Staršie"
+
+msgid "Newer"
+msgstr "Novšie"
+
+msgid "Emoji"
+msgstr "Emoji"
+
+msgid "Send files, pictures or videos"
+msgstr "Poslať súbory, obrázky alebo videá"
+
+msgid "Send (Enter) — Shift+Enter for a new line"
+msgstr "Odoslať (Enter) — Shift+Enter pre nový riadok"
+
+msgid "Record a voice message"
+msgstr "Nahrať hlasovú správu"
+
+msgid "Discard"
+msgstr "Zahodiť"
+
+msgid "Send voice message"
+msgstr "Odoslať hlasovú správu"
+
+msgid "Cancel"
+msgstr "Zrušiť"
+
+msgid "Copy text"
+msgstr "Kopírovať text"
+
+msgid "Forward"
+msgstr "Preposlať"
+
+msgid "Delete"
+msgstr "Odstrániť"
+
+msgid "Talk with your network"
+msgstr "Rozprávajte sa so svojou sieťou"
+
+msgid ""
+"Pick a conversation, or start one. Messages go straight between your "
+"computers — the server never sees them."
+msgstr ""
+"Vyberte konverzáciu alebo začnite novú. Správy idú priamo medzi vašimi "
+"počítačmi — server ich nikdy nevidí."
+
+msgid "Group"
+msgstr "Skupina"
+
+msgid "Direct conversation"
+msgstr "Priama konverzácia"
+
+msgid "That message is too long."
+msgstr "Táto správa je príliš dlhá."
+
+#, rust-format
+msgid "Could not send: {error}"
+msgstr "Nepodarilo sa odoslať: {error}"
+
+#, rust-format
+msgid "Could not download: {error}"
+msgstr "Nepodarilo sa stiahnuť: {error}"
+
+#, rust-format
+msgid "{user} in {group}"
+msgstr "{user} v {group}"
+
+msgid "Send files"
+msgstr "Poslať súbory"
+
+msgid "Drop to send"
+msgstr "Pustite na odoslanie"
+
+#, rust-format
+msgid "Could not record: {error}"
+msgstr "Nepodarilo sa nahrávať: {error}"
+
+msgid "Too short — record for at least a second."
+msgstr "Príliš krátke — nahrávajte aspoň sekundu."
+
+msgid "Search people and groups"
+msgstr "Hľadať ľudí a skupiny"
+
+msgid "Loading…"
+msgstr "Načítava sa…"
+
+msgid "Nobody you can reach yet."
+msgstr "Zatiaľ nikto, koho by ste zastihli."
+
+msgid "online"
+msgstr "online"
+
+msgid "offline"
+msgstr "offline"
+
+#, rust-format
+msgid "You: {text}"
+msgstr "Vy: {text}"
+
+msgid "Group conversation"
+msgstr "Skupinová konverzácia"
+
+#, rust-format
+msgid "Delivered to {people}"
+msgstr "Doručené: {people}"
+
+msgid "Waiting to be delivered"
+msgstr "Čaká na doručenie"
+
+msgid "Today"
+msgstr "Dnes"
+
+msgid "Yesterday"
+msgstr "Včera"
+
+msgid "🗑 Message deleted"
+msgstr "🗑 Správa odstránená"
+
+#, rust-format
+msgid "Forwarded from {name}"
+msgstr "Preposlané od {name}"
+
+msgid "edited"
+msgstr "upravené"
+
+msgid "More reactions"
+msgstr "Ďalšie reakcie"
+
+msgid "Reply"
+msgstr "Odpovedať"
+
+msgid "Edit"
+msgstr "Upraviť"
+
+msgid "Pin"
+msgstr "Pripnúť"
+
+msgid "Select"
+msgstr "Vybrať"
+
+#, rust-format
+msgid "Could not react: {error}"
+msgstr "Nepodarilo sa reagovať: {error}"
+
+#, rust-format
+msgid "Reply to {name}"
+msgstr "Odpoveď pre {name}"
+
+msgid "Editing message"
+msgstr "Úprava správy"
+
+msgid "Copied."
+msgstr "Skopírované."
+
+msgid "Forward to…"
+msgstr "Preposlať…"
+
+msgid "Forwarded."
+msgstr "Preposlané."
+
+#, rust-format
+msgid "Could not forward: {error}"
+msgstr "Nepodarilo sa preposlať: {error}"
+
+msgid "Delete the message?"
+msgstr "Odstrániť správu?"
+
+#, rust-format
+msgid "Delete {count} messages?"
+msgstr "Odstrániť správy ({count})?"
+
+msgid "“For everyone” removes it from the other computers too."
+msgstr "„Pre všetkých“ ju odstráni aj z ostatných počítačov."
+
+msgid "It's removed from this computer only."
+msgstr "Odstráni sa len z tohto počítača."
+
+msgid "Delete for me"
+msgstr "Odstrániť pre mňa"
+
+msgid "Delete for everyone"
+msgstr "Odstrániť pre všetkých"
+
+#, rust-format
+msgid "Could not delete: {error}"
+msgstr "Nepodarilo sa odstrániť: {error}"
+
+msgid "1 selected"
+msgstr "1 vybraná"
+
+#, rust-format
+msgid "{count} selected"
+msgstr "Vybrané: {count}"
+
+msgid "That message isn't here anymore."
+msgstr "Táto správa tu už nie je."
+
+msgid "No results"
+msgstr "Žiadne výsledky"
+
+#, rust-format
+msgid "{n} of {total}"
+msgstr "{n} z {total}"
+
+#, rust-format
+msgid "{user} is typing…"
+msgstr "{user} píše…"
+
+msgid "typing…"
+msgstr "píše…"
+
+msgid "System accent"
+msgstr "Farba zvýraznenia systému"
+
+msgid "Blue"
+msgstr "Modrá"
+
+msgid "Teal"
+msgstr "Modrozelená"
+
+msgid "Green"
+msgstr "Zelená"
+
+msgid "Purple"
+msgstr "Fialová"
+
+msgid "Pink"
+msgstr "Ružová"
+
+msgid "Orange"
+msgstr "Oranžová"
+
+msgid "Red"
+msgstr "Červená"
+
+msgid "Graphite"
+msgstr "Grafitová"
+
+msgid "Default"
+msgstr "Predvolené"
+
+msgid "Plain"
+msgstr "Jednoduché"
+
+msgid "Dots"
+msgstr "Bodky"
+
+msgid "Ocean"
+msgstr "Oceán"
+
+msgid "Sunset"
+msgstr "Západ slnka"
+
+msgid "Forest"
+msgstr "Les"
+
+msgid "Lavender"
+msgstr "Levanduľa"
+
+msgid "Night"
+msgstr "Noc"
+
+msgid "Hi! How does this look? 😊"
+msgstr "Ahoj! Ako to vyzerá? 😊"
+
+msgid "Looks great!"
+msgstr "Vyzerá to skvele!"
+
+msgid "Appearance"
+msgstr "Vzhľad"
+
+msgid "System"
+msgstr "Systém"
+
+msgid "Light"
+msgstr "Svetlý"
+
+msgid "Dark"
+msgstr "Tmavý"
+
+msgid "Your messages"
+msgstr "Vaše správy"
+
+msgid "Background"
+msgstr "Pozadie"
+
+msgid "Picture…"
+msgstr "Obrázok…"
+
+msgid "Pictures"
+msgstr "Obrázky"
+
+msgid "Choose a background picture"
+msgstr "Vyberte obrázok pozadia"
+
+msgid "Message"
+msgstr "Správa"
+
+msgid "Bold"
+msgstr "Tučné"
+
+msgid "Italic"
+msgstr "Kurzíva"
+
+msgid "Underline"
+msgstr "Podčiarknuté"
+
+msgid "Strikethrough"
+msgstr "Prečiarknuté"
+
+msgid "Monospace"
+msgstr "Neproporcionálne písmo"
+
+msgid "Create link"
+msgstr "Vytvoriť odkaz"
+
+msgid "Plain text"
+msgstr "Obyčajný text"
+
+msgid "Formatting"
+msgstr "Formátovanie"
+
+msgid "Create"
+msgstr "Vytvoriť"
+
+msgid "Search devices"
+msgstr "Hľadať zariadenia"
+
 msgid "Refresh"
 msgstr "Obnoviť"
 
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/dialogs.rs:373
-msgid "Signed in. Press Connect to join the network."
-msgstr "Prihlásené. Stlačte tlačidlo Pripojiť a pripojte sa k sieti."
+msgid "Invite"
+msgstr "Pozvať"
 
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/mod.rs:1240
-msgid "no other devices"
-msgstr "žiadne ďalšie zariadenia"
+msgid "Invite someone to your network"
+msgstr "Pozvite niekoho do svojej siete"
 
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/mod.rs:1242
-#, rust-format
-msgid "{online} online"
-msgstr "{online} online"
+msgid ""
+"Tailscale cannot write this device's DNS settings, so it can no longer keep "
+"peer names working. They may still resolve for now, from the configuration "
+"left over from before the failure, but that will break the next time the "
+"network changes — and BigLace will fall back to IP addresses. On most "
+"distributions `sudo resolvconf -u` repairs it."
+msgstr ""
+"Tailscale nemôže zapisovať nastavenia DNS tohto zariadenia, takže už "
+"nedokáže udržať funkčné názvy partnerov. Zatiaľ sa ešte môžu prekladať z "
+"konfigurácie, ktorá zostala spred chyby, no pri ďalšej zmene siete to "
+"prestane fungovať — a BigLace sa vráti k IP adresám. Na väčšine distribúcií "
+"to opraví `sudo resolvconf -u`."
 
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/mod.rs:1244
-#, rust-format
-msgid "{online} online · {offline} offline"
-msgstr "{online} online · {offline} offline"
+msgid "Not connected"
+msgstr "Nie je pripojené"
 
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/content.rs:153
+msgid "Press Connect on the left to join the network."
+msgstr "Stlačte tlačidlo Pripojiť vľavo a pripojte sa k sieti."
+
 msgid "The tailscale service is not running"
 msgstr "Služba tailscale nie je spustená"
 
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/content.rs:155
 msgid "BigLace needs the tailscaled background service to manage the network."
 msgstr "BigLace potrebuje službu tailscaled na pozadí na správu siete."
 
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/sidebar.rs:108
-msgid "Pre-auth key"
-msgstr "Pred-autentifikačný kľúč"
+msgid "Start service"
+msgstr "Spustiť službu"
 
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/mod.rs:1024
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/mod.rs:1078
-msgid "Not signed in"
-msgstr "Nie ste prihlásený"
+msgid "Join the network"
+msgstr "Pripojiť sa k sieti"
 
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/sidebar.rs:81
-msgid "Advanced: use a pre-auth key"
-msgstr "Rozšírené: použiť predautentizačný kľúč"
+msgid "Choose how you're going to sign in."
+msgstr "Vyberte, ako sa prihlásite."
 
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/sidebar.rs:82
-msgid "Already have a key from your administrator? Paste it here."
-msgstr "Už máte kľúč od svojho administrátora? Vložte ho sem."
+msgid "Ways to sign in"
+msgstr "Spôsoby prihlásenia"
 
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/dialogs.rs:68
+msgid "Your account was kept on this computer. No invite needed."
+msgstr "Váš účet zostal uložený na tomto počítači. Pozvánka nie je potrebná."
+
+msgid "I have an invite"
+msgstr "Mám pozvánku"
+
+msgid "Someone on the network sent you a link or a QR code."
+msgstr "Niekto v sieti vám poslal odkaz alebo QR kód."
+
+msgid "I have an access key"
+msgstr "Mám prístupový kľúč"
+
+msgid "A key the administrator created for you (starts with hskey-auth-)."
+msgstr "Kľúč, ktorý pre vás vytvoril správca (začína na hskey-auth-)."
+
+msgid "I'm the administrator"
+msgstr "Som správca"
+
+msgid "Sign in with the BigScale panel's admin username and password."
+msgstr "Prihláste sa menom a heslom správcu panela BigScale."
+
+msgid "Connecting…"
+msgstr "Pripája sa…"
+
+msgid "This device"
+msgstr "Toto zariadenie"
+
+msgid "Copy IP address"
+msgstr "Kopírovať IP adresu"
+
+msgid "Devices on the network"
+msgstr "Zariadenia v sieti"
+
+msgid "No other devices on the network yet."
+msgstr "V sieti zatiaľ nie sú žiadne ďalšie zariadenia."
+
+msgid "Mesh VPN client for BigScale/Headscale."
+msgstr "VPN klient pre mesh siete BigScale/Headscale."
+
+msgid "Done. You will no longer need a password to connect or disconnect."
+msgstr "Hotovo. Na pripojenie alebo odpojenie už nebudete potrebovať heslo."
+
+#, rust-format
+msgid "Failed: {error}"
+msgstr "Zlyhalo: {error}"
+
+msgid "Tailscale operator"
+msgstr "Operátor Tailscale"
+
+msgid "OK"
+msgstr "OK"
+
 msgid "Sign out of current account?"
 msgstr "Odhlásiť sa z aktuálneho účtu?"
 
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/dialogs.rs:70
 msgid ""
 "This will disconnect from the network, sign this device out of the current "
 "control server, and forget the saved password. You'll then be able to sign "
@@ -327,264 +695,92 @@ msgstr ""
 "riadiaceho servera a zabudnete uložené heslo. Potom sa budete môcť prihlásiť"
 " s iným účtom."
 
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/dialogs.rs:76
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/mod.rs:591
 msgid "Sign out"
 msgstr "Odhlásiť sa"
 
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/dialogs.rs:134
+msgid "Leave the network?"
+msgstr "Opustiť sieť?"
+
+#, rust-format
+msgid ""
+"This device leaves the network and its name becomes free. Your account {user} is kept: you can come back later from this computer, without an invite.\n"
+"\n"
+"If you won't come back, delete the account and the name {user} becomes free too."
+msgstr ""
+"Toto zariadenie opustí sieť a jeho názov sa uvoľní. Váš účet {user} zostane zachovaný: neskôr sa môžete vrátiť z tohto počítača bez pozvánky.\n"
+"\n"
+"Ak sa nevrátite, odstráňte účet a uvoľní sa aj meno {user}."
+
+msgid "Leave and delete account"
+msgstr "Opustiť a odstrániť účet"
+
+msgid "Leave"
+msgstr "Opustiť"
+
+msgid "Connect first to delete the account."
+msgstr "Ak chcete odstrániť účet, najprv sa pripojte."
+
+msgid "Signing out…"
+msgstr "Odhlasuje sa…"
+
+#, rust-format
+msgid ""
+"Signed out. Your account was kept: {count} other device(s) still use it."
+msgstr ""
+"Odhlásené. Váš účet zostal zachovaný: používa ho ešte {count} ďalších "
+"zariadení."
+
+msgid ""
+"Couldn't delete the account: the panel can't be reached. Connect and try "
+"again."
+msgstr ""
+"Účet sa nepodarilo odstrániť: panel je nedostupný. Pripojte sa a skúste to "
+"znova."
+
+#, rust-format
+msgid "Error: {error}"
+msgstr "Chyba: {error}"
+
+msgid "Signed out and account deleted."
+msgstr "Odhlásené a účet odstránený."
+
 msgid "Signed out."
 msgstr "Odhlásené."
 
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/dialogs.rs:153
-msgid "Connect via panel account"
-msgstr "Pripojiť sa cez účet v paneli"
+msgid "Couldn't reach the server"
+msgstr "Server je nedostupný"
 
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/dialogs.rs:166
-msgid ""
-"Sign in with your BigScale panel username and password. A device identity "
-"will be created on the network automatically — no manual key needed."
-msgstr ""
-"Prihláste sa pomocou používateľského mena a hesla z BigScale panela. "
-"Identita zariadenia sa v sieti vytvorí automaticky – nie je potrebný "
-"manuálny kľúč."
-
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/peer_row.rs:446
-msgid "Copy"
-msgstr "Kopírovať"
-
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/sidebar.rs:197
-msgid "Reconnect on drop"
-msgstr "Znovu pripojiť pri výpadku"
-
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/sidebar.rs:198
-msgid "Retry with backoff when the connection is lost"
-msgstr "Opakovať s oneskorením po strate spojenia"
-
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/sidebar.rs:217
-msgid "Notify on peer changes"
-msgstr "Upozorniť na zmeny peerov"
-
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/sidebar.rs:218
-msgid "Show a desktop notification when peers go online/offline"
-msgstr "Zobraziť desktopové upozornenie, keď peeri prejdú online/offline"
-
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/mod.rs:593
-msgid "View tailscaled logs"
-msgstr "Zobraziť logy tailscaled"
-
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/mod.rs:1044
-msgid "Server unreachable"
-msgstr "Server nedostupný"
-
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/mod.rs:1054
 #, rust-format
-msgid "Update available: v{version}"
-msgstr "K dispozícii aktualizácia: v{version}"
-
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/mod.rs:1398
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/mod.rs:1461
-msgid "is online"
-msgstr "je online"
-
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/mod.rs:1399
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/mod.rs:1463
-msgid "went offline"
-msgstr "prešiel do offline režimu"
-
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/peer_row.rs:124
-msgid "Unpin from top"
-msgstr "Odpichnúť z vrchu"
-
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/peer_row.rs:124
-msgid "Pin to top"
-msgstr "Pripichnúť hore"
-
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/peer_row.rs:259
-msgid "DNS name"
-msgstr "DNS názov"
-
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/peer_row.rs:262
-msgid "DNS name copied"
-msgstr "DNS názov skopírovaný"
-
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/peer_row.rs:284
-msgid "Owner"
-msgstr "Vlastník"
-
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/peer_row.rs:346
-msgid "Tags"
-msgstr "Značky"
-
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/peer_row.rs:351
-msgid "Last seen"
-msgstr "Naposledy videný"
-
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/peer_row.rs:358
-msgid "Use as exit node"
-msgstr "Použiť ako výstupný uzol"
-
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/peer_row.rs:359
-msgid "Route all traffic through this peer"
-msgstr "Smerovať všetku prevádzku cez toto zariadenie"
-
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/peer_row.rs:401
-msgid "Exit node enabled"
-msgstr "Výstupný uzol povolený"
-
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/peer_row.rs:401
-msgid "Exit node disabled"
-msgstr "Výstupný uzol zakázaný"
-
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/peer_row.rs:403
-msgid "Failed to update exit node"
-msgstr "Nepodarilo sa aktualizovať výstupný uzol"
-
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/peer_row.rs:146
-msgid "Pinned to top"
-msgstr "Pripnuté na vrch"
-
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/peer_row.rs:148
-msgid "Unpinned"
-msgstr "Odpnuté"
-
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/tray/linux.rs:54
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/tray/windows.rs:168
-msgid "Connected · 1 peer"
-msgstr "Pripojené · 1 zariadenie"
-
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/tray/linux.rs:55
-#, rust-format
-msgid "Connected · {n} peers"
-msgstr "Pripojené · {n} zariadení"
-
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/tray/linux.rs:92
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/tray/windows.rs:80
-msgid "Show BigLace"
-msgstr "Zobraziť BigLace"
-
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/tray/linux.rs:101
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/tray/windows.rs:82
-msgid "Quit"
-msgstr "Ukončiť"
-
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/tray/windows.rs:169
-msgid "Connected ·"
-msgstr "Pripojené ·"
-
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/sidebar.rs:54
 msgid ""
-"Your identity on this mesh — the device name shown to other peers and the "
-"network you're connected to."
+"The control server didn't confirm the sign-out: {error}\n"
+"\n"
+"You can still sign out on this computer: BigLace forgets the saved key and account and disconnects. The server keeps listing this device until an administrator removes it."
 msgstr ""
-"Vaša identita v tejto sieti — názov zariadenia, ktorý sa zobrazuje ostatným "
-"peerom, a sieť, ku ktorej ste pripojený."
+"Riadiaci server nepotvrdil odhlásenie: {error}\n"
+"\n"
+"Na tomto počítači sa môžete aj tak odhlásiť: BigLace zabudne uložený kľúč a účet a odpojí sa. Server bude toto zariadenie uvádzať, kým ho správca neodstráni."
 
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/sidebar.rs:71
-msgid "Rename this device on the network"
-msgstr "Premenovať toto zariadenie v sieti"
+msgid "Sign out on this computer"
+msgstr "Odhlásiť sa na tomto počítači"
 
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/sidebar.rs:86
+msgid "Sign in as administrator"
+msgstr "Prihlásiť sa ako správca"
+
+msgid "Panel administrator"
+msgstr "Správca panela"
+
 msgid ""
-"Manual setup — expand to paste a server URL and pre-auth key when you "
-"already received them from your administrator. Most users should sign in "
-"through the panel button above instead."
+"Only for whoever administers the BigScale panel: use the panel's admin "
+"username and password. This device joins the network under the name below. "
+"Everyone else joins with an invite or an access key."
 msgstr ""
-"Manuálne nastavenie — rozbaľte pre vloženie URL adresy servera a predbežného"
-" kľúča, ak ste ich už dostali od svojho administrátora. Väčšina používateľov"
-" by sa mala prihlásiť pomocou tlačidla panela vyššie."
+"Len pre toho, kto spravuje panel BigScale: použite meno a heslo správcu "
+"panela. Toto zariadenie sa pripojí k sieti pod názvom nižšie. Všetci ostatní"
+" sa pripájajú s pozvánkou alebo prístupovým kľúčom."
 
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/sidebar.rs:99
-msgid ""
-"Address of the coordination server (e.g. vpn.example.org). The https:// "
-"scheme is added automatically if you omit it."
-msgstr ""
-"Adresa koordinačného servera (napr. vpn.example.org). Schéma https:// sa "
-"pridá automaticky, ak ju vynecháte."
+msgid "Panel URL"
+msgstr "URL panela"
 
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/sidebar.rs:111
-msgid ""
-"One-time or reusable key created on the server (starts with 'hskey-auth-'). "
-"Used to register this device automatically without opening a browser."
-msgstr ""
-"Jednorazový alebo opakovane použiteľný kľúč vytvorený na serveri (začína na "
-"'hskey-auth-'). Používa sa na automatickú registráciu tohto zariadenia bez "
-"otvárania prehliadača."
-
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/dialogs.rs:190
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/dialogs.rs:418
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/sidebar.rs:124
-msgid "Device name on the network"
-msgstr "Názov zariadenia v sieti"
-
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/sidebar.rs:127
-msgid ""
-"The name this device shows to other peers on the VPN — this is the Tailscale"
-" hostname, NOT your computer's name and NOT your user. Lowercase letters, "
-"digits and hyphens. Example: 'tales-laptop', 'francois', 'office-pc'."
-msgstr ""
-"Názov, pod ktorým sa toto zariadenie zobrazuje ostatným peerom vo VPN — toto"
-" je hostname Tailscale, NIE názov vášho počítača a NIE vaše používateľské "
-"meno. Malé písmená, číslice a spojovníky. Príklad: 'tales-laptop', "
-"'francois', 'office-pc'."
-
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/sidebar.rs:144
-msgid ""
-"Persist the server, key and device name above. Won't connect — press Connect"
-" afterwards."
-msgstr ""
-"Uložiť server, kľúč a názov zariadenia vyššie. Nespustí pripojenie — po "
-"uložení stlačte Pripojiť."
-
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/sidebar.rs:163
-msgid ""
-"When on, BigLace runs 'tailscale up' as soon as it launches, so you join the"
-" mesh without clicking Connect every time."
-msgstr ""
-"Keď je zapnuté, BigLace spustí 'tailscale up' hneď po svojom štarte, takže "
-"sa pripojíte do siete bez toho, aby ste museli zakaždým kliknúť na Pripojiť."
-
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/sidebar.rs:171
-msgid "Toggle auto-connect on startup"
-msgstr "Prepnúť automatické pripojenie pri štarte"
-
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/sidebar.rs:201
-msgid ""
-"If the tunnel drops (network change, sleep, server hiccup), BigLace silently"
-" retries with growing delays instead of leaving you offline until you "
-"notice."
-msgstr ""
-"Ak tunel spadne (zmena siete, režim spánku, výpadok servera), BigLace ho "
-"ticho opakovane skúša s rastúcimi oneskoreniami, namiesto toho, aby vás "
-"nechal offline, kým si to nevšimnete."
-
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/sidebar.rs:210
-msgid "Toggle auto-reconnect"
-msgstr "Prepnúť automatické opätovné pripojenie"
-
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/sidebar.rs:221
-msgid ""
-"Send a desktop toast when another device on your network goes online or "
-"offline. Rapid bursts are coalesced into a single notification so you don't "
-"get spammed during reconnects."
-msgstr ""
-"Odoslať desktopové upozornenie, keď iné zariadenie vo vašej sieti prejde "
-"online alebo offline. Rýchle výskyty sa zlúčia do jednej notifikácie, aby "
-"ste neboli zahltení počas opätovných pripájaní."
-
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/sidebar.rs:230
-msgid "Toggle peer-change notifications"
-msgstr "Prepnúť upozornenia na zmeny peerov"
-
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/sidebar.rs:245
-msgid ""
-"Join or leave the mesh network. When connected, this device becomes "
-"reachable by the other peers in your account."
-msgstr ""
-"Pripojte sa alebo opustite mesh sieť. Po pripojení bude toto zariadenie "
-"dosiahnuteľné pre ostatných peerov vo vašom účte."
-
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/dialogs.rs:177
 msgid ""
 "Address of your BigScale panel (e.g. panel.example.org). The https:// scheme"
 " is added automatically if you omit it."
@@ -592,13 +788,17 @@ msgstr ""
 "Adresa vášho BigScale panelu (napr. panel.example.org). Schéma https:// sa "
 "pridá automaticky, ak ju vynecháte."
 
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/dialogs.rs:182
+msgid "Panel admin username"
+msgstr "Meno správcu panela"
+
 msgid "Your panel username — the one you use to sign in to the web panel."
 msgstr ""
 "Vaše panelové používateľské meno – to, ktoré používate na prihlásenie do "
 "webového panelu."
 
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/dialogs.rs:186
+msgid "Password"
+msgstr "Heslo"
+
 msgid ""
 "Your panel password. Stored in the OS keyring (libsecret on Linux, Keychain "
 "on macOS, Credential Manager on Windows)."
@@ -606,7 +806,9 @@ msgstr ""
 "Vaše panelové heslo. Uložené v systémovej schránke kľúčov (libsecret na "
 "Linuxe, Keychain na macOS, Credential Manager na Windows)."
 
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/dialogs.rs:193
+msgid "Device name on the network"
+msgstr "Názov zariadenia v sieti"
+
 msgid ""
 "The name this device shows to other peers on the VPN — this is the Tailscale"
 " hostname, NOT your computer's name and NOT your user. Lowercase letters, "
@@ -618,11 +820,18 @@ msgstr ""
 "meno. Malé písmená, číslice a pomlčky. Príklad: 'tales-laptop', 'francois', "
 "'office-pc'. Vyberte niečo, čo ostatní peeri rozpoznajú."
 
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/dialogs.rs:442
+msgid "Sign in"
+msgstr "Prihlásiť sa"
+
+msgid "Fill in URL, username and password."
+msgstr "Vyplňte URL, používateľské meno a heslo."
+
+msgid "Signed in. Press Connect to join the network."
+msgstr "Prihlásené. Stlačte tlačidlo Pripojiť a pripojte sa k sieti."
+
 msgid "Rename this device"
 msgstr "Premenovať toto zariadenie"
 
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/dialogs.rs:444
 msgid ""
 "The name this device shows to other peers on the VPN. Lowercase letters, "
 "digits and hyphens. Example: tales-laptop."
@@ -630,88 +839,1476 @@ msgstr ""
 "Názov, pod ktorým sa toto zariadenie zobrazuje ostatným peerom vo VPN. Malé "
 "písmená, číslice a pomlčky. Príklad: tales-laptop."
 
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/dialogs.rs:449
 msgid "Save & apply"
 msgstr "Uložiť a použiť"
 
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/dialogs.rs:502
 msgid "Saved. The new name will take effect the next time you connect."
 msgstr "Uložené. Nový názov sa prejaví pri najbližšom pripojení."
 
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/dialogs.rs:526
 msgid "Device renamed."
 msgstr "Zariadenie premenované."
 
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/dialogs.rs:536
 #, rust-format
 msgid "Rename failed: {error}"
 msgstr "Premenovanie zlyhalo: {error}"
 
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/dialogs.rs:553
 msgid "The device name can't be empty."
 msgstr "Názov zariadenia nemôže byť prázdny."
 
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/dialogs.rs:556
 msgid "Use 63 characters or fewer."
 msgstr "Použite 63 znakov alebo menej."
 
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/dialogs.rs:560
 msgid "The device name can't start or end with a hyphen."
 msgstr "Názov zariadenia nemôže začínať ani končiť pomlčkou."
 
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/dialogs.rs:564
 msgid "Only lowercase letters, digits and hyphens are allowed."
 msgstr "Povolené sú len malé písmená, číslice a pomlčky."
 
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/peer_row.rs:306
-msgid "SSH login (override)"
-msgstr "SSH prihlásenie (prepísať)"
+msgid "Smileys & people"
+msgstr "Smajlíky a ľudia"
 
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/peer_row.rs:336
-msgid "Saved"
-msgstr "Uložené"
+msgid "Animals & nature"
+msgstr "Zvieratá a príroda"
 
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/mod.rs:1086
+msgid "Food & drink"
+msgstr "Jedlo a nápoje"
+
+msgid "Travel & places"
+msgstr "Cestovanie a miesta"
+
+msgid "Activities"
+msgstr "Aktivity"
+
+msgid "Objects"
+msgstr "Predmety"
+
+msgid "Symbols"
+msgstr "Symboly"
+
+msgid "Flags"
+msgstr "Vlajky"
+
+msgid "Search emoji"
+msgstr "Hľadať emoji"
+
+msgid "Recently used"
+msgstr "Nedávno použité"
+
+msgid "Search results"
+msgstr "Výsledky hľadania"
+
+msgid ""
+"Groups from BigLace need a newer BigScale server. Ask your administrator to "
+"update it."
+msgstr ""
+"Skupiny z BigLace vyžadujú novší server BigScale. Požiadajte správcu o jeho "
+"aktualizáciu."
+
+msgid "This device isn't linked to a person's account, so it has no groups."
+msgstr ""
+"Toto zariadenie nie je prepojené s účtom osoby, takže nemá žiadne skupiny."
+
+msgid ""
+"The panel knows this device by a different key (BigLace was reinstalled?). "
+"Leave the network and join again to fix it."
+msgstr ""
+"Panel pozná toto zariadenie pod iným kľúčom (BigLace bol preinštalovaný?). "
+"Opravíte to opustením siete a opätovným pripojením."
+
+msgid ""
+"The panel couldn't confirm this device. Make sure BigLace is up to date and "
+"stays open while connected, then try again."
+msgstr ""
+"Panel nedokázal overiť toto zariadenie. Uistite sa, že BigLace je aktuálny a"
+" počas pripojenia zostáva otvorený, a skúste to znova."
+
+msgid ""
+"On this network everyone already reaches everyone, so groups aren't needed. "
+"The administrator can set access rules first."
+msgstr ""
+"V tejto sieti sa už každý dostane ku každému, takže skupiny nie sú potrebné."
+" Správca môže najprv nastaviť pravidlá prístupu."
+
+msgid "You already created the maximum number of groups."
+msgstr "Už ste vytvorili maximálny počet skupín."
+
+msgid "You are no longer in that group."
+msgstr "Už nie ste v tejto skupine."
+
+msgid "A group with that name already exists. Choose another name."
+msgstr "Skupina s týmto názvom už existuje. Vyberte iný názov."
+
+msgid ""
+"Use lowercase letters, digits and hyphens, starting with a letter or digit."
+msgstr ""
+"Použite malé písmená, číslice a pomlčky, na začiatku písmeno alebo číslica."
+
+msgid ""
+"The administrator uses this group in the network's rules, so it can't be "
+"deleted. Ask the administrator."
+msgstr ""
+"Správca používa túto skupinu v pravidlách siete, takže ju nemožno odstrániť."
+" Obráťte sa na správcu."
+
+msgid "Only the person who created the group can do that."
+msgstr "To môže urobiť len ten, kto skupinu vytvoril."
+
+msgid "You created this group: delete it instead of leaving."
+msgstr "Túto skupinu ste vytvorili vy: namiesto opustenia ju odstráňte."
+
+msgid "This group belongs to the administrator; only they can change it."
+msgstr "Táto skupina patrí správcovi; meniť ju môže len on."
+
+msgid "That person is no longer in the group."
+msgstr "Táto osoba už nie je v skupine."
+
+msgid "That group no longer exists, or whoever invited you left it."
+msgstr "Táto skupina už neexistuje alebo ju opustil ten, kto vás pozval."
+
+msgid "That person is no longer on the network."
+msgstr "Táto osoba už nie je v sieti."
+
+msgid "You're already in that group."
+msgstr "V tejto skupine už ste."
+
+msgid ""
+"This invite only brings new people into the network, and you're already in "
+"it."
+msgstr "Táto pozvánka privádza do siete len nových ľudí a vy v nej už ste."
+
+msgid "This invite was already used. Ask for a new one."
+msgstr "Táto pozvánka už bola použitá. Požiadajte o novú."
+
+msgid "This invite expired. Ask for a new one."
+msgstr "Platnosť tejto pozvánky vypršala. Požiadajte o novú."
+
+msgid "This invite is no longer valid. Ask for a new one."
+msgstr "Táto pozvánka už nie je platná. Požiadajte o novú."
+
+msgid "This invite is still waiting for an administrator's approval."
+msgstr "Táto pozvánka stále čaká na schválenie správcom."
+
+msgid "Too many attempts. Wait a minute and try again."
+msgstr "Príliš veľa pokusov. Počkajte minútu a skúste to znova."
+
+#, rust-format
+msgid "Could not reach the panel: {error}"
+msgstr "Panel je nedostupný: {error}"
+
+msgid "Groups"
+msgstr "Skupiny"
+
+msgid "New group"
+msgstr "Nová skupina"
+
+msgid "Create a group"
+msgstr "Vytvoriť skupinu"
+
+msgid ""
+"People in the same group reach each other's devices. Create groups for "
+"family, work or friends, and invite people into them."
+msgstr ""
+"Ľudia v rovnakej skupine sa dostanú k zariadeniam ostatných. Vytvorte "
+"skupiny pre rodinu, prácu či priateľov a pozvite do nich ľudí."
+
+msgid "Invitations for you"
+msgstr "Pozvánky pre vás"
+
+msgid "Your groups"
+msgstr "Vaše skupiny"
+
+msgid "No groups yet"
+msgstr "Zatiaľ žiadne skupiny"
+
+msgid ""
+"A group lets several people reach each other at once — the family, the "
+"office, a class."
+msgstr ""
+"Skupina umožní viacerým ľuďom naraz dostať sa k sebe navzájom — rodine, "
+"kancelárii, triede."
+
+msgid "Groups unavailable"
+msgstr "Skupiny nie sú k dispozícii"
+
+msgid "Invitation to a group"
+msgstr "Pozvánka do skupiny"
+
+#, rust-format
+msgid ""
+"{user} invites you to the group {group}. Open BigLace to accept or decline."
+msgstr ""
+"{user} vás pozýva do skupiny {group}. Otvorte BigLace a prijmite alebo "
+"odmietnite."
+
+#, rust-format
+msgid "{user} invites you to {group}"
+msgstr "{user} vás pozýva do {group}"
+
+msgid "Joining lets you and the group's members reach each other's devices."
+msgstr ""
+"Po pripojení sa vy a členovia skupiny dostanete k zariadeniam navzájom."
+
+msgid "Decline"
+msgstr "Odmietnuť"
+
+msgid "Accept"
+msgstr "Prijať"
+
+#, rust-format
+msgid "You joined {group}."
+msgstr "Pripojili ste sa k {group}."
+
+msgid "Invitation declined."
+msgstr "Pozvánka odmietnutá."
+
+msgid "1 person"
+msgstr "1 osoba"
+
+#, rust-format
+msgid "{count} people"
+msgstr "Osoby: {count}"
+
+msgid "Created by you"
+msgstr "Vytvorili ste vy"
+
+#, rust-format
+msgid "Created by {user}"
+msgstr "Vytvoril(a) {user}"
+
+msgid "Network group (administrator)"
+msgstr "Sieťová skupina (správca)"
+
+msgid "you"
+msgstr "vy"
+
+msgid "owner"
+msgstr "vlastník"
+
+#, rust-format
+msgid "Remove {user} from the group"
+msgstr "Odstrániť {user} zo skupiny"
+
+msgid "Invite to this group"
+msgstr "Pozvať do tejto skupiny"
+
+msgid "Delete group"
+msgstr "Odstrániť skupinu"
+
+msgid "Leave group"
+msgstr "Opustiť skupinu"
+
+#, rust-format
+msgid "Remove {user}?"
+msgstr "Odstrániť {user}?"
+
+#, rust-format
+msgid ""
+"{user} leaves the group {group} and no longer reaches its members through "
+"it."
+msgstr "{user} opustí skupinu {group} a cez ňu sa už nedostane k jej členom."
+
+msgid "Remove"
+msgstr "Odstrániť"
+
+#, rust-format
+msgid "{user} was removed from the group."
+msgstr "{user} bol(a) odstránený(á) zo skupiny."
+
+#, rust-format
+msgid "Leave {group}?"
+msgstr "Opustiť {group}?"
+
+msgid ""
+"You stop reaching the group's members through it. To come back, someone has "
+"to invite you again."
+msgstr ""
+"Cez ňu sa už nedostanete k členom skupiny. Ak sa chcete vrátiť, niekto vás "
+"musí znova pozvať."
+
+msgid "You left the group."
+msgstr "Opustili ste skupinu."
+
+#, rust-format
+msgid "Delete {group}?"
+msgstr "Odstrániť {group}?"
+
+msgid ""
+"Its members stop reaching each other through this group. People stay on the "
+"network."
+msgstr ""
+"Jej členovia sa cez túto skupinu už navzájom nedostanú. Ľudia zostanú v "
+"sieti."
+
+msgid "Group deleted."
+msgstr "Skupina odstránená."
+
+#, rust-format
+msgid "Join {group}?"
+msgstr "Pripojiť sa k {group}?"
+
+#, rust-format
+msgid ""
+"{user} invited you. You and the group's members will reach each other's "
+"devices."
+msgstr ""
+"{user} vás pozval(a). Vy a členovia skupiny sa dostanete k zariadeniam "
+"navzájom."
+
+msgid "You and the group's members will reach each other's devices."
+msgstr "Vy a členovia skupiny sa dostanete k zariadeniam navzájom."
+
+#, rust-format
+msgid "Connect with {user}?"
+msgstr "Spojiť sa s {user}?"
+
+#, rust-format
+msgid "You and {user} will reach each other's devices."
+msgstr "Vy a {user} sa dostanete k zariadeniam navzájom."
+
+msgid "Join"
+msgstr "Pripojiť sa"
+
+msgid "Done. You can now reach each other's devices."
+msgstr "Hotovo. Teraz sa dostanete k zariadeniam navzájom."
+
+#, rust-format
+msgid "Invite to {group}"
+msgstr "Pozvať do {group}"
+
+msgid ""
+"Choose people on your network. Each one gets the invitation in BigLace and "
+"decides whether to join."
+msgstr ""
+"Vyberte ľudí vo svojej sieti. Každý dostane pozvánku v BigLace a rozhodne "
+"sa, či sa pripojí."
+
+msgid "Search people"
+msgstr "Hľadať ľudí"
+
+msgid ""
+"If someone on the network has exactly this name, they get the invitation."
+msgstr "Ak má niekto v sieti presne toto meno, dostane pozvánku."
+
+msgid "People on the network"
+msgstr "Ľudia v sieti"
+
+#, rust-format
+msgid "Invite \"{name}\""
+msgstr "Pozvať „{name}“"
+
+msgid "Send invitations"
+msgstr "Odoslať pozvánky"
+
+msgid "Someone not on the network yet? Share an invite link"
+msgstr "Niekto ešte nie je v sieti? Zdieľajte odkaz s pozvánkou"
+
+msgid "Invitation sent. You'll see the person in the group once they accept."
+msgstr "Pozvánka odoslaná. Osobu uvidíte v skupine, keď ju prijme."
+
+#, rust-format
+msgid "{count} invitations sent. People show up in the group as they accept."
+msgstr ""
+"Odoslané pozvánky: {count}. Ľudia sa v skupine zobrazia, keď ich prijmú."
+
+msgid ""
+"Listed are the people you're already connected to. To invite someone else on"
+" the network, type their exact name. Each one gets the invitation in BigLace"
+" and decides whether to join."
+msgstr ""
+"Zobrazení sú ľudia, s ktorými ste už prepojení. Ak chcete pozvať niekoho "
+"iného v sieti, napíšte jeho presné meno. Každý dostane pozvánku v BigLace a "
+"rozhodne sa, či sa pripojí."
+
+msgid ""
+"Nobody you're connected to yet. Type someone's exact name to invite them."
+msgstr ""
+"Zatiaľ nie ste s nikým prepojení. Napíšte presné meno osoby, ktorú chcete "
+"pozvať."
+
+msgid "Nobody else is on the network yet."
+msgstr "V sieti zatiaľ nikto iný nie je."
+
+msgid ""
+"You'll be the group's owner: you invite people into it and can remove them. "
+"Everyone in the group reaches each other's devices."
+msgstr ""
+"Budete vlastníkom skupiny: pozývate do nej ľudí a môžete ich odstrániť. "
+"Všetci v skupine sa dostanú k zariadeniam navzájom."
+
+msgid "Group name"
+msgstr "Názov skupiny"
+
+msgid "Create group"
+msgstr "Vytvoriť skupinu"
+
+msgid "For example: family, work, friends."
+msgstr "Napríklad: rodina, práca, priatelia."
+
+#, rust-format
+msgid "It will be called \"{name}\"."
+msgstr "Bude sa volať „{name}“."
+
+#, rust-format
+msgid "Group {group} created. Now invite people into it."
+msgstr "Skupina {group} bola vytvorená. Teraz do nej pozvite ľudí."
+
+msgid "typed name"
+msgstr "napísané meno"
+
+msgid "already in the group"
+msgstr "už v skupine"
+
+msgid "invitation sent, waiting"
+msgstr "pozvánka odoslaná, čaká sa"
+
+#, rust-format
+msgid "Invite {user}"
+msgstr "Pozvať {user}"
+
+msgid ""
+"Invites from BigLace need a BigScale server that supports them. Ask your "
+"administrator to update the server, or to create the invite in the panel."
+msgstr ""
+"Pozvánky z BigLace vyžadujú server BigScale, ktorý ich podporuje. Požiadajte"
+" správcu o aktualizáciu servera alebo o vytvorenie pozvánky v paneli."
+
+msgid ""
+"This device can't send invites (it isn't linked to a person's account)."
+msgstr ""
+"Toto zariadenie nemôže posielať pozvánky (nie je prepojené s účtom osoby)."
+
+msgid ""
+"On this network everyone can reach everyone, so only the administrator can "
+"invite people."
+msgstr ""
+"V tejto sieti sa každý dostane ku každému, preto ľudí môže pozývať len "
+"správca."
+
+msgid "You have too many pending invites. Cancel some or try again tomorrow."
+msgstr ""
+"Máte príliš veľa čakajúcich pozvánok. Niektoré zrušte alebo to skúste "
+"zajtra."
+
+msgid ""
+"On this network only administrators invite new people. You can still invite "
+"people already on the network into your groups."
+msgstr ""
+"V tejto sieti pozývajú nových ľudí len správcovia. Ľudí, ktorí už v sieti "
+"sú, však môžete pozvať do svojich skupín."
+
+msgid "Waiting to be used"
+msgstr "Čaká na použitie"
+
+msgid "Used"
+msgstr "Použitá"
+
+msgid "Expired"
+msgstr "Vypršaná"
+
+msgid "Cancelled"
+msgstr "Zrušená"
+
+msgid "Waiting for an administrator's approval"
+msgstr "Čaká na schválenie správcom"
+
+msgid "Invites"
+msgstr "Pozvánky"
+
+msgid "Bring someone to your network"
+msgstr "Priveďte niekoho do svojej siete"
+
+msgid ""
+"Create a link or QR code and send it to the person. When they join, you two "
+"can reach each other's devices — no administrator needed. The link works "
+"once and stays valid until it's used or you cancel it."
+msgstr ""
+"Vytvorte odkaz alebo QR kód a pošlite ho osobe. Keď sa pripojí, dostanete sa"
+" k zariadeniam navzájom — bez správcu. Odkaz funguje raz a platí, kým sa "
+"nepoužije alebo ho nezrušíte."
+
+msgid "Invites you sent"
+msgstr "Odoslané pozvánky"
+
+msgid "No invites yet"
+msgstr "Zatiaľ žiadne pozvánky"
+
+msgid "Invites unavailable"
+msgstr "Pozvánky nie sú k dispozícii"
+
+#, rust-format
+msgid "{user} joined"
+msgstr "{user} sa pripojil(a)"
+
+#, rust-format
+msgid "group {group}"
+msgstr "skupina {group}"
+
+msgid "Cancel this invite: the link stops working"
+msgstr "Zrušiť túto pozvánku: odkaz prestane fungovať"
+
+msgid "Invite someone"
+msgstr "Pozvať niekoho"
+
+msgid "The person you invite will reach your devices, and you theirs."
+msgstr "Pozvaná osoba sa dostane k vašim zariadeniam a vy k jej."
+
+msgid "Who is it for? (optional)"
+msgstr "Pre koho je? (voliteľné)"
+
+msgid "Access"
+msgstr "Prístup"
+
+msgid "Just the two of us"
+msgstr "Len my dvaja"
+
+msgid "You see each other's devices, nobody else"
+msgstr "Vidíte zariadenia navzájom, nikto iný"
+
+#, rust-format
+msgid "Also the group {group}"
+msgstr "Aj skupina {group}"
+
+msgid "They join the group and see everyone in it"
+msgstr "Pripojí sa ku skupine a uvidí všetkých v nej"
+
+msgid "A network of their own"
+msgstr "Vlastná sieť"
+
+msgid ""
+"No link to you: they see only their own devices and whoever they invite "
+"(you're the administrator)"
+msgstr ""
+"Bez prepojenia s vami: uvidí len svoje zariadenia a tých, ktorých pozve (vy "
+"ste správca)"
+
+msgid "Create invite"
+msgstr "Vytvoriť pozvánku"
+
+msgid "QR code of the invite link"
+msgstr "QR kód odkazu s pozvánkou"
+
+msgid ""
+"Send the link or let the person scan the code with their phone. It works "
+"once and stays valid until used or cancelled."
+msgstr ""
+"Pošlite odkaz alebo nechajte osobu naskenovať kód telefónom. Funguje raz a "
+"platí, kým sa nepoužije alebo nezruší."
+
+msgid "Copy link"
+msgstr "Kopírovať odkaz"
+
+msgid "Done"
+msgstr "Hotovo"
+
+msgid "Copied!"
+msgstr "Skopírované!"
+
+msgid ""
+"This network asks an administrator to approve each invite: the link starts "
+"working once they do. Its status shows in Invites."
+msgstr ""
+"Táto sieť vyžaduje, aby každú pozvánku schválil správca: odkaz začne "
+"fungovať po schválení. Jej stav sa zobrazuje v Pozvánkach."
+
+#, rust-format
+msgid ""
+"That name already belongs to an account on this network, so we suggested "
+"\"{name}\". If the account is yours, sign in again from the computer where "
+"you used it, or ask the administrator to free the name."
+msgstr ""
+"Toto meno už patrí účtu v tejto sieti, preto sme navrhli „{name}“. Ak je "
+"účet váš, prihláste sa znova z počítača, kde ste ho používali, alebo "
+"požiadajte správcu o uvoľnenie mena."
+
+msgid ""
+"That name already belongs to an account on this network. Try another one, or"
+" ask the administrator to free it."
+msgstr ""
+"Toto meno už patrí účtu v tejto sieti. Skúste iné alebo požiadajte správcu o"
+" jeho uvoľnenie."
+
+msgid "Type your name using at least two letters or digits."
+msgstr "Zadajte meno s aspoň dvoma písmenami alebo číslicami."
+
+msgid "This invite has expired. Ask for a new one."
+msgstr "Platnosť tejto pozvánky vypršala. Požiadajte o novú."
+
+msgid "This invite was cancelled. Ask for a new one."
+msgstr "Táto pozvánka bola zrušená. Požiadajte o novú."
+
+msgid ""
+"This invite is waiting for the network administrator's approval. Try again "
+"once the person who invited you says it was approved."
+msgstr ""
+"Táto pozvánka čaká na schválenie správcom siete. Skúste to znova, keď vám "
+"osoba, ktorá vás pozvala, povie, že bola schválená."
+
+msgid "This invite is not valid. Check the link or ask for a new one."
+msgstr ""
+"Táto pozvánka nie je platná. Skontrolujte odkaz alebo požiadajte o novú."
+
+msgid ""
+"This server doesn't support invites yet. Sign in with a panel account "
+"instead."
+msgstr ""
+"Tento server zatiaľ nepodporuje pozvánky. Prihláste sa namiesto toho účtom "
+"panela."
+
+msgid "Join with an invite"
+msgstr "Pripojiť sa s pozvánkou"
+
+msgid ""
+"Paste the invite link you received and type your name. Your account is "
+"created and this device joins the network."
+msgstr ""
+"Vložte prijatý odkaz s pozvánkou a zadajte svoje meno. Vytvorí sa váš účet a"
+" toto zariadenie sa pripojí k sieti."
+
+msgid "Invite link"
+msgstr "Odkaz s pozvánkou"
+
+msgid "Your name"
+msgstr "Vaše meno"
+
+msgid "How others will see you on the network, e.g. 'Maria' or 'Office PC'."
+msgstr ""
+"Ako vás uvidia ostatní v sieti, napr. 'Mária' alebo 'PC v kancelárii'."
+
+msgid ""
+"The name this device shows to other peers. Lowercase letters, digits and "
+"hyphens. Example: 'maria-laptop'."
+msgstr ""
+"Názov, ktorý toto zariadenie zobrazuje ostatným partnerom. Malé písmená, "
+"číslice a pomlčky. Príklad: 'maria-laptop'."
+
+msgid "Network"
+msgstr "Sieť"
+
+msgid "Joining…"
+msgstr "Pripája sa…"
+
+msgid ""
+"That doesn't look like an invite link. It starts with https:// and contains "
+"/join#."
+msgstr ""
+"Toto nevyzerá ako odkaz s pozvánkou. Začína na https:// a obsahuje /join#."
+
+msgid "Type your name."
+msgstr "Zadajte svoje meno."
+
+#, rust-format
+msgid "Welcome, {name}! You joined the group {group}. Connecting…"
+msgstr "Vitajte, {name}! Pripojili ste sa ku skupine {group}. Pripája sa…"
+
+#, rust-format
+msgid "Welcome, {name}! Connecting…"
+msgstr "Vitajte, {name}! Pripája sa…"
+
+msgid "Open admin panel"
+msgstr "Otvoriť panel správcu"
+
+msgid "Devices"
+msgstr "Zariadenia"
+
+msgid "Rooms"
+msgstr "Miestnosti"
+
+msgid "Choose your photo"
+msgstr "Vyberte svoju fotku"
+
+msgid "Photo updated. Everyone you're connected to will see it."
+msgstr "Fotka aktualizovaná. Uvidia ju všetci, s ktorými ste prepojení."
+
+#, rust-format
+msgid "Could not change the photo: {error}"
+msgstr "Fotku sa nepodarilo zmeniť: {error}"
+
+msgid "Sign in with an access key"
+msgstr "Prihlásiť sa prístupovým kľúčom"
+
+msgid ""
+"Paste the key the administrator gave you. It's used once, to register this "
+"device."
+msgstr ""
+"Vložte kľúč, ktorý vám dal správca. Použije sa raz, na registráciu tohto "
+"zariadenia."
+
+msgid "Server URL"
+msgstr "URL servera"
+
+msgid "Access key"
+msgstr "Prístupový kľúč"
+
+msgid ""
+"The key to this account is no longer on this computer. Join with a new "
+"invite."
+msgstr ""
+"Kľúč k tomuto účtu už na tomto počítači nie je. Pripojte sa s novou "
+"pozvánkou."
+
+#, rust-format
+msgid "Welcome back, {name}! Connecting…"
+msgstr "Vitajte späť, {name}! Pripája sa…"
+
+#, rust-format
+msgid ""
+"The account {user} no longer exists on this network. Join with a new invite."
+msgstr ""
+"Účet {user} už v tejto sieti neexistuje. Pripojte sa s novou pozvánkou."
+
+msgid "Preferences"
+msgstr "Predvoľby"
+
+msgid "General"
+msgstr "Všeobecné"
+
+msgid "Behaviour"
+msgstr "Správanie"
+
+msgid "Make this user the tailscale operator"
+msgstr "Nastaviť tohto používateľa ako operátora Tailscale"
+
+msgid ""
+"Lets BigLace manage the connection without asking for a password each time"
+msgstr "Umožní BigLace spravovať pripojenie bez zakaždým zadávaného hesla"
+
+msgid "Account"
+msgstr "Účet"
+
+msgid ""
+"Signing out removes this device's identity from BigLace. You will need a new"
+" invite or key to join again."
+msgstr ""
+"Odhlásenie odstráni identitu tohto zariadenia z BigLace. Na opätovné "
+"pripojenie budete potrebovať novú pozvánku alebo kľúč."
+
+msgid "Change profile photo…"
+msgstr "Zmeniť profilovú fotku…"
+
+msgid "Sign in with panel account"
+msgstr "Prihlásiť sa pomocou účtu panelu"
+
+msgid "Leave the network…"
+msgstr "Opustiť sieť…"
+
+msgid "View tailscaled logs"
+msgstr "Zobraziť logy tailscaled"
+
+msgid "About BigLace"
+msgstr "O aplikácii BigLace"
+
+msgid "Connect to the network first, then open the invite link again."
+msgstr "Najprv sa pripojte k sieti a potom znova otvorte odkaz s pozvánkou."
+
+#, rust-format
+msgid ""
+"This invite is for another network ({host}). Sign out first to join it."
+msgstr ""
+"Táto pozvánka je pre inú sieť ({host}). Ak sa k nej chcete pripojiť, najprv "
+"sa odhláste."
+
+msgid ""
+"This device is already signed in. Sign out first to join with an invite."
+msgstr ""
+"Toto zariadenie je už prihlásené. Ak sa chcete pripojiť s pozvánkou, najprv "
+"sa odhláste."
+
+msgid "Photo removed."
+msgstr "Fotka odstránená."
+
+#, rust-format
+msgid "Could not remove the photo: {error}"
+msgstr "Fotku sa nepodarilo odstrániť: {error}"
+
+#, rust-format
+msgid "Could not open the browser: {error}"
+msgstr "Nepodarilo sa otvoriť prehliadač: {error}"
+
+msgid ""
+"You can't open the admin panel: you're not an administrator of this network,"
+" or the panel can't be reached."
+msgstr ""
+"Panel správcu nemôžete otvoriť: nie ste správcom tejto siete alebo je panel "
+"nedostupný."
+
+msgid "Enter the server URL before saving."
+msgstr "Pred uložením zadajte URL adresu servera."
+
+msgid "Enter the pre-auth key before saving."
+msgstr "Pred uložením zadajte predbežný autentifikačný kľúč."
+
+msgid "Setup saved"
+msgstr "Nastavenie uložené"
+
+msgid "Could not start the Tailscale service."
+msgstr "Nepodarilo sa spustiť službu Tailscale."
+
+msgid "IP address copied"
+msgstr "IP adresa skopírovaná"
+
+#, rust-format
+msgid ""
+"Saved, but the pre-auth key could not be stored in the system keyring "
+"({error}). This device can still reconnect; the key is only needed again to "
+"register it anew."
+msgstr ""
+"Uložené, ale kľúč pre predbežné overenie sa nepodarilo uložiť do systémovej "
+"kľúčenky ({error}). Toto zariadenie sa stále môže znova pripojiť; kľúč bude "
+"potrebný len pri novej registrácii."
+
+msgid "Service stopped"
+msgstr "Služba zastavená"
+
+msgid "Not signed in"
+msgstr "Nie ste prihlásený"
+
+msgid "Server unreachable"
+msgstr "Server nedostupný"
+
+msgid "Tailscale can't set DNS"
+msgstr "Tailscale nemôže nastaviť DNS"
+
+#, rust-format
+msgid "Update available: v{version}"
+msgstr "K dispozícii aktualizácia: v{version}"
+
+#, rust-format
+msgid "Sign in again as {user}"
+msgstr "Znova sa prihlásiť ako {user}"
+
 msgid "(no device name)"
 msgstr "(bez názvu zariadenia)"
 
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/mod.rs:1400
+msgid "Sign in or paste a pre-auth key"
+msgstr "Prihlásiť sa alebo vložiť pred-autentifikačný kľúč"
+
+msgid "Server not set"
+msgstr "Server nie je nastavený"
+
+msgid "no other devices"
+msgstr "žiadne ďalšie zariadenia"
+
+#, rust-format
+msgid "{online} online"
+msgstr "{online} online"
+
+#, rust-format
+msgid "{online} online · {offline} offline"
+msgstr "{online} online · {offline} offline"
+
+msgid "is online"
+msgstr "je online"
+
+msgid "went offline"
+msgstr "prešiel do offline režimu"
+
 #, rust-format
 msgid "{count} devices are online"
 msgstr "{count} zariadení je online"
 
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/mod.rs:1401
 #, rust-format
 msgid "{count} devices went offline"
 msgstr "{count} zariadení prešlo do offline režimu"
 
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/mod.rs:1403
 #, rust-format
 msgid "{on_count} online · {off_count} offline"
 msgstr "{on_count} online · {off_count} offline"
 
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/tailscale.rs:650
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/mod.rs:814
-msgid "Enter the server URL before connecting."
-msgstr "Pred pripojením zadajte URL adresu servera."
+msgid "direct"
+msgstr "priamo"
 
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/mod.rs:682
-msgid "Enter the server URL before saving."
-msgstr "Pred uložením zadajte URL adresu servera."
+msgid "via relay"
+msgstr "cez relé"
 
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/mod.rs:691
-msgid "Enter the pre-auth key before saving."
-msgstr "Pred uložením zadajte predbežný autentifikačný kľúč."
+msgid "Turn on over the network (Wake-on-LAN)"
+msgstr "Zapnúť cez sieť (Wake-on-LAN)"
 
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/sidebar.rs:178
+msgid "Turn on over the network"
+msgstr "Zapnúť cez sieť"
+
+#, rust-format
+msgid ""
+"Signal sent to {name} (by {via}). If it's set to turn on over the network, "
+"it shows up in a minute or two."
+msgstr ""
+"Signál odoslaný na {name} (cez {via}). Ak je nastavené zapínanie cez sieť, "
+"objaví sa o minútu či dve."
+
+#, rust-format
+msgid "Could not turn on {name}: {error}"
+msgstr "Nepodarilo sa zapnúť {name}: {error}"
+
+msgid "Unpin from top"
+msgstr "Odpichnúť z vrchu"
+
+msgid "Pin to top"
+msgstr "Pripichnúť hore"
+
+msgid "Pinned to top"
+msgstr "Pripnuté na vrch"
+
+msgid "Unpinned"
+msgstr "Odpnuté"
+
+msgid "Open files (SFTP)"
+msgstr "Otvoriť súbory (SFTP)"
+
+msgid "Open terminal (SSH)"
+msgstr "Otvoriť terminál (SSH)"
+
+msgid "See and control the screen"
+msgstr "Zobraziť a ovládať obrazovku"
+
+msgid "DNS name"
+msgstr "DNS názov"
+
+msgid "DNS name copied"
+msgstr "DNS názov skopírovaný"
+
+msgid "Owner"
+msgstr "Vlastník"
+
+msgid "SSH login (override)"
+msgstr "SSH prihlásenie (prepísať)"
+
+msgid "Saved"
+msgstr "Uložené"
+
+msgid "Tags"
+msgstr "Značky"
+
+msgid "Last seen"
+msgstr "Naposledy videný"
+
+msgid "Use as exit node"
+msgstr "Použiť ako výstupný uzol"
+
+msgid "Route all traffic through this peer"
+msgstr "Smerovať všetku prevádzku cez toto zariadenie"
+
+msgid "Exit node enabled"
+msgstr "Výstupný uzol povolený"
+
+msgid "Exit node disabled"
+msgstr "Výstupný uzol zakázaný"
+
+msgid "Failed to update exit node"
+msgstr "Nepodarilo sa aktualizovať výstupný uzol"
+
+msgid "Copy"
+msgstr "Kopírovať"
+
+msgid "End access"
+msgstr "Ukončiť prístup"
+
+#, rust-format
+msgid "{who} is seeing and controlling this screen"
+msgstr "{who} vidí a ovláda túto obrazovku"
+
+msgid "Remote access started"
+msgstr "Vzdialený prístup spustený"
+
+#, rust-format
+msgid ""
+"{user} ({device}) is seeing and controlling this screen. Open BigLace to end"
+" the access."
+msgstr ""
+"{user} ({device}) vidí a ovláda túto obrazovku. Prístup ukončíte v BigLace."
+
+#, rust-format
+msgid "Always allow {user} (no more asking)"
+msgstr "Vždy povoliť {user} (bez ďalšieho pýtania)"
+
+msgid "Deny"
+msgstr "Zamietnuť"
+
+msgid "Allow access"
+msgstr "Povoliť prístup"
+
+msgid "Allow remote access?"
+msgstr "Povoliť vzdialený prístup?"
+
+#, rust-format
+msgid "<b>{user}</b> wants to <b>see and control</b> this screen."
+msgstr "<b>{user}</b> chce <b>vidieť a ovládať</b> túto obrazovku."
+
+msgid "Person"
+msgstr "Osoba"
+
+msgid "Device"
+msgstr "Zariadenie"
+
+msgid "See everything on your screen"
+msgstr "Vidieť všetko na vašej obrazovke"
+
+msgid "Move the mouse and type on this computer"
+msgstr "Hýbať myšou a písať na tomto počítači"
+
+msgid "Hear this computer's sound"
+msgstr "Počuť zvuk tohto počítača"
+
+msgid ""
+"<b>Only allow it if you know this person and are expecting it.</b> You can "
+"end the access at any time from BigLace."
+msgstr ""
+"<b>Povoľte to, len ak túto osobu poznáte a očakávate to.</b> Prístup môžete "
+"kedykoľvek ukončiť v BigLace."
+
+#, rust-format
+msgid "Denied automatically in {seconds} s"
+msgstr "Automaticky zamietnuté o {seconds} s"
+
+#, rust-format
+msgid "Restart {name}'s computer?"
+msgstr "Reštartovať počítač používateľa {name}?"
+
+msgid ""
+"It restarts, signs in by itself and locks the screen right away; this window"
+" connects again when it's back. Unsaved work there is lost."
+msgstr ""
+"Reštartuje sa, sám sa prihlási a hneď zamkne obrazovku; toto okno sa znova "
+"pripojí, keď bude späť. Neuložená práca na ňom sa stratí."
+
+msgid "Restart"
+msgstr "Reštartovať"
+
+#, rust-format
+msgid "Restart {name}'s session?"
+msgstr "Reštartovať reláciu používateľa {name}?"
+
+msgid ""
+"The open programs there close, the computer signs out and back in by itself "
+"(without restarting) and locks the screen; this window connects again. "
+"Unsaved work there is lost."
+msgstr ""
+"Otvorené programy sa tam zatvoria, počítač sa sám odhlási a znova prihlási "
+"(bez reštartu) a zamkne obrazovku; toto okno sa znova pripojí. Neuložená "
+"práca na ňom sa stratí."
+
+msgid "Restart the session"
+msgstr "Reštartovať reláciu"
+
+#, rust-format
+msgid "Shut down {name}'s computer?"
+msgstr "Vypnúť počítač používateľa {name}?"
+
+msgid ""
+"You won't be able to reach it again until someone turns it on. Unsaved work "
+"there is lost."
+msgstr ""
+"Nedostanete sa k nemu, kým ho niekto nezapne. Neuložená práca na ňom sa "
+"stratí."
+
+msgid "Shut Down"
+msgstr "Vypnúť"
+
+#, rust-format
+msgid "Screen of {name}"
+msgstr "Obrazovka: {name}"
+
+msgid "Full screen (F11)"
+msgstr "Celá obrazovka (F11)"
+
+msgid "Mute the remote sound"
+msgstr "Stlmiť vzdialený zvuk"
+
+#, rust-format
+msgid "Fit {name}'s resolution to this window"
+msgstr "Prispôsobiť rozlíšenie {name} tomuto oknu"
+
+msgid "LIVE"
+msgstr "NAŽIVO"
+
+msgid "You are watching this screen right now"
+msgstr "Práve sledujete túto obrazovku"
+
+msgid "You are seeing and controlling this screen right now"
+msgstr "Práve vidíte a ovládate túto obrazovku"
+
+msgid "Request control"
+msgstr "Požiadať o ovládanie"
+
+#, rust-format
+msgid "Ask {name} to let you use the mouse and keyboard"
+msgstr "Požiadať {name} o používanie myši a klávesnice"
+
+#, rust-format
+msgid "Waiting for {name}…"
+msgstr "Čaká sa na {name}…"
+
+msgid "Connecting to the screen shared with the room."
+msgstr "Pripája sa k obrazovke zdieľanej s miestnosťou."
+
+msgid "The person at that computer needs to allow the access."
+msgstr "Osoba pri tom počítači musí prístup povoliť."
+
+#, rust-format
+msgid "Asked {name} for control…"
+msgstr "Požiadali ste {name} o ovládanie…"
+
+#, rust-format
+msgid "Restart or shut down {name}'s computer"
+msgstr "Reštartovať alebo vypnúť počítač používateľa {name}"
+
+msgid "Restart and reconnect"
+msgstr "Reštartovať a znova pripojiť"
+
+msgid "Shut down"
+msgstr "Vypnúť"
+
+#, rust-format
+msgid "{name} is back."
+msgstr "{name} je späť."
+
+#, rust-format
+msgid "{name}'s computer didn't come back after the restart."
+msgstr "Počítač používateľa {name} sa po reštarte nevrátil."
+
+#, rust-format
+msgid "{name} didn't allow the access."
+msgstr "{name} nepovolil(a) prístup."
+
+msgid ""
+"That computer couldn't confirm this device. Make sure both run an up-to-date"
+" BigLace."
+msgstr ""
+"Ten počítač nedokázal overiť toto zariadenie. Uistite sa, že na oboch beží "
+"aktuálny BigLace."
+
+#, rust-format
+msgid ""
+"{name}'s computer can't share its screen (screen sharing isn't available "
+"there)."
+msgstr ""
+"Počítač používateľa {name} nemôže zdieľať obrazovku (zdieľanie obrazovky tam"
+" nie je k dispozícii)."
+
+#, rust-format
+msgid "Could not connect: {error}"
+msgstr "Nepodarilo sa pripojiť: {error}"
+
+#, rust-format
+msgid "{name}'s computer said: {error}"
+msgstr "Počítač používateľa {name} hlási: {error}"
+
+#, rust-format
+msgid "Restarting {name}'s session…"
+msgstr "Reštartuje sa relácia používateľa {name}…"
+
+msgid ""
+"This window connects again by itself when the session is back. It takes a "
+"few seconds."
+msgstr ""
+"Toto okno sa samo znova pripojí, keď bude relácia späť. Trvá to niekoľko "
+"sekúnd."
+
+#, rust-format
+msgid "Restarting {name}…"
+msgstr "Reštartuje sa {name}…"
+
+msgid ""
+"This window connects again by itself when the computer is back. It takes a "
+"few minutes."
+msgstr ""
+"Toto okno sa samo znova pripojí, keď bude počítač späť. Trvá to niekoľko "
+"minút."
+
+#, rust-format
+msgid "{latency} ms · {fps} fps · {mbps} Mbit/s"
+msgstr "{latency} ms · {fps} fps · {mbps} Mbit/s"
+
+#, rust-format
+msgid "You're controlling {name}'s screen now."
+msgstr "Teraz ovládate obrazovku používateľa {name}."
+
+#, rust-format
+msgid "{name} didn't give you control."
+msgstr "{name} vám nedal(a) ovládanie."
+
+#, rust-format
+msgid "{name} took control back."
+msgstr "{name} si vzal(a) ovládanie späť."
+
+#, rust-format
+msgid "{name}'s computer is shutting down."
+msgstr "Počítač používateľa {name} sa vypína."
+
+#, rust-format
+msgid "The access to {name}'s screen ended."
+msgstr "Prístup k obrazovke používateľa {name} sa skončil."
+
+#, rust-format
+msgid "The access to {name}'s screen ended: {error}"
+msgstr "Prístup k obrazovke používateľa {name} sa skončil: {error}"
+
+msgid "Give back control"
+msgstr "Vrátiť ovládanie"
+
+msgid ""
+"Each of your groups has a voice room. Join it and talk with whoever is there"
+" — the sound goes straight between you, through the network."
+msgstr ""
+"Každá vaša skupina má hlasovú miestnosť. Pripojte sa a rozprávajte sa s "
+"tými, ktorí sú tam — zvuk ide priamo medzi vami, cez sieť."
+
+msgid "You're not in any group yet. Create one in Groups."
+msgstr "Zatiaľ nie ste v žiadnej skupine. Vytvorte ju v Skupinách."
+
+msgid "People in the room"
+msgstr "Ľudia v miestnosti"
+
+msgid "Everyone"
+msgstr "Všetci"
+
+msgid "Who's speaking"
+msgstr "Kto hovorí"
+
+msgid "Mute"
+msgstr "Stlmiť"
+
+msgid "Mute your microphone for everyone"
+msgstr "Stlmiť mikrofón pre všetkých"
+
+msgid "Which camera"
+msgstr "Ktorá kamera"
+
+msgid "Include the computer's sound when sharing the screen"
+msgstr "Zahrnúť zvuk počítača pri zdieľaní obrazovky"
+
+msgid ""
+"Videos and music playing here go to the room too; the room's voices don't "
+"(no echo)"
+msgstr ""
+"Videá a hudba, ktoré tu hrajú, idú aj do miestnosti; hlasy z miestnosti nie "
+"(bez ozveny)"
+
+msgid "Rooms unavailable"
+msgstr "Miestnosti nie sú k dispozícii"
+
+#, rust-format
+msgid "Could not turn on the camera: {error}"
+msgstr "Kameru sa nepodarilo zapnúť: {error}"
+
+#, rust-format
+msgid "Could not share the screen: {error}"
+msgstr "Nepodarilo sa zdieľať obrazovku: {error}"
+
+msgid "Nobody here right now"
+msgstr "Momentálne tu nikto nie je"
+
+#, rust-format
+msgid "In the room: {people}"
+msgstr "V miestnosti: {people}"
+
+#, rust-format
+msgid "Join the room {group}"
+msgstr "Pripojiť sa k miestnosti {group}"
+
+#, rust-format
+msgid "Could not join {group}: {error}"
+msgstr "Nepodarilo sa pripojiť k {group}: {error}"
+
+msgid "📺 You're showing your screen to the room"
+msgstr "📺 Ukazujete svoju obrazovku miestnosti"
+
+msgid "📺 You're showing your screen · 1 person watching"
+msgstr "📺 Ukazujete svoju obrazovku · sleduje 1 osoba"
+
+#, rust-format
+msgid "📺 You're showing your screen · {count} people watching"
+msgstr "📺 Ukazujete svoju obrazovku · sledujúci: {count}"
+
+#, rust-format
+msgid "{people} · {talking} talking"
+msgstr "{people} · hovorí: {talking}"
+
+msgid "connecting…"
+msgstr "pripája sa…"
+
+msgid "muted"
+msgstr "stlmené"
+
+msgid "talking"
+msgstr "hovorí"
+
+msgid "quiet"
+msgstr "ticho"
+
+msgid "Sharing screen"
+msgstr "Zdieľa obrazovku"
+
+msgid "In control"
+msgstr "Ovláda"
+
+msgid "Controls your screen now"
+msgstr "Teraz ovláda vašu obrazovku"
+
+msgid "Watching"
+msgstr "Sleduje"
+
+msgid "Watching your screen"
+msgstr "Sleduje vašu obrazovku"
+
+#, rust-format
+msgid "{user} is showing their screen"
+msgstr "{user} ukazuje svoju obrazovku"
+
+msgid "Watch"
+msgstr "Sledovať"
+
+#, rust-format
+msgid "{user} asks to control your screen"
+msgstr "{user} žiada o ovládanie vašej obrazovky"
+
+msgid ""
+"They'll be able to use your mouse and keyboard. You can take control back at"
+" any time."
+msgstr ""
+"Bude môcť používať vašu myš a klávesnicu. Ovládanie si môžete kedykoľvek "
+"vziať späť."
+
+msgid "Allow"
+msgstr "Povoliť"
+
+msgid "Turn off camera"
+msgstr "Vypnúť kameru"
+
+msgid "Turn on camera"
+msgstr "Zapnúť kameru"
+
+msgid "No camera found on this computer"
+msgstr "V tomto počítači sa nenašla žiadna kamera"
+
+msgid "Stop sharing"
+msgstr "Zastaviť zdieľanie"
+
+msgid "Share screen"
+msgstr "Zdieľať obrazovku"
+
+msgid "Stop showing your screen to the room"
+msgstr "Prestať ukazovať obrazovku miestnosti"
+
+msgid "Show your screen to everyone in the room"
+msgstr "Ukázať obrazovku všetkým v miestnosti"
+
+msgid "Take back control"
+msgstr "Vziať ovládanie späť"
+
+msgid "Give control"
+msgstr "Dať ovládanie"
+
+msgid "Stop them from using your mouse and keyboard"
+msgstr "Zabrániť mu používať vašu myš a klávesnicu"
+
+msgid "Let them use your mouse and keyboard"
+msgstr "Nechať ho používať vašu myš a klávesnicu"
+
+msgid "Sound level"
+msgstr "Úroveň zvuku"
+
+msgid "Unmute"
+msgstr "Zapnúť zvuk"
+
+msgid "Sections"
+msgstr "Sekcie"
+
+msgid ""
+"Your identity on this mesh — the device name shown to other peers and the "
+"network you're connected to."
+msgstr ""
+"Vaša identita v tejto sieti — názov zariadenia, ktorý sa zobrazuje ostatným "
+"peerom, a sieť, ku ktorej ste pripojený."
+
+msgid "Change photo…"
+msgstr "Zmeniť fotku…"
+
+msgid "Remove photo"
+msgstr "Odstrániť fotku"
+
+msgid "Change your photo"
+msgstr "Zmeniť svoju fotku"
+
+msgid "Rename this device on the network"
+msgstr "Premenovať toto zariadenie v sieti"
+
+msgid "Advanced: use a pre-auth key"
+msgstr "Rozšírené: použiť predautentizačný kľúč"
+
+msgid "Already have a key from your administrator? Paste it here."
+msgstr "Už máte kľúč od svojho administrátora? Vložte ho sem."
+
+msgid ""
+"Manual setup — expand to paste a server URL and pre-auth key when you "
+"already received them from your administrator. Most users should sign in "
+"through the panel button above instead."
+msgstr ""
+"Manuálne nastavenie — rozbaľte pre vloženie URL adresy servera a predbežného"
+" kľúča, ak ste ich už dostali od svojho administrátora. Väčšina používateľov"
+" by sa mala prihlásiť pomocou tlačidla panela vyššie."
+
+msgid ""
+"Address of the coordination server (e.g. vpn.example.org). The https:// "
+"scheme is added automatically if you omit it."
+msgstr ""
+"Adresa koordinačného servera (napr. vpn.example.org). Schéma https:// sa "
+"pridá automaticky, ak ju vynecháte."
+
+msgid "Pre-auth key"
+msgstr "Pred-autentifikačný kľúč"
+
+msgid ""
+"One-time or reusable key created on the server (starts with 'hskey-auth-'). "
+"Used to register this device automatically without opening a browser."
+msgstr ""
+"Jednorazový alebo opakovane použiteľný kľúč vytvorený na serveri (začína na "
+"'hskey-auth-'). Používa sa na automatickú registráciu tohto zariadenia bez "
+"otvárania prehliadača."
+
+msgid ""
+"The name this device shows to other peers on the VPN — this is the Tailscale"
+" hostname, NOT your computer's name and NOT your user. Lowercase letters, "
+"digits and hyphens. Example: 'tales-laptop', 'francois', 'office-pc'."
+msgstr ""
+"Názov, pod ktorým sa toto zariadenie zobrazuje ostatným peerom vo VPN — toto"
+" je hostname Tailscale, NIE názov vášho počítača a NIE vaše používateľské "
+"meno. Malé písmená, číslice a spojovníky. Príklad: 'tales-laptop', "
+"'francois', 'office-pc'."
+
+msgid "Apply manual setup"
+msgstr "Použiť manuálne nastavenie"
+
+msgid "Save"
+msgstr "Uložiť"
+
+msgid ""
+"Persist the server, key and device name above. Won't connect — press Connect"
+" afterwards."
+msgstr ""
+"Uložiť server, kľúč a názov zariadenia vyššie. Nespustí pripojenie — po "
+"uložení stlačte Pripojiť."
+
+msgid "Connect automatically"
+msgstr "Pripojiť automaticky"
+
+msgid "Join the network when BigLace starts"
+msgstr "Pripojiť sa k sieti pri spustení BigLace"
+
+msgid ""
+"When on, BigLace runs 'tailscale up' as soon as it launches, so you join the"
+" mesh without clicking Connect every time."
+msgstr ""
+"Keď je zapnuté, BigLace spustí 'tailscale up' hneď po svojom štarte, takže "
+"sa pripojíte do siete bez toho, aby ste museli zakaždým kliknúť na Pripojiť."
+
+msgid "Toggle auto-connect on startup"
+msgstr "Prepnúť automatické pripojenie pri štarte"
+
 msgid "Start BigLace with the session"
 msgstr "Spustiť BigLace s reláciou"
 
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/sidebar.rs:179
 msgid "Open BigLace after you sign in to the desktop"
 msgstr "Otvoriť BigLace po prihlásení do pracovnej plochy"
 
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/sidebar.rs:182
 msgid ""
 "Turn this on to add BigLace to your desktop session startup. Turn it off to "
 "remove it."
@@ -719,9 +2316,82 @@ msgstr ""
 "Zapnutím pridáte BigLace do spúšťania relácie pracovnej plochy. Vypnutím ho "
 "odstránite."
 
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/sidebar.rs:190
 msgid "Toggle start with session"
 msgstr "Prepnúť spustenie s reláciou"
+
+msgid "Reconnect on drop"
+msgstr "Znovu pripojiť pri výpadku"
+
+msgid "Retry with backoff when the connection is lost"
+msgstr "Opakovať s oneskorením po strate spojenia"
+
+msgid ""
+"If the tunnel drops (network change, sleep, server hiccup), BigLace silently"
+" retries with growing delays instead of leaving you offline until you "
+"notice."
+msgstr ""
+"Ak tunel spadne (zmena siete, režim spánku, výpadok servera), BigLace ho "
+"ticho opakovane skúša s rastúcimi oneskoreniami, namiesto toho, aby vás "
+"nechal offline, kým si to nevšimnete."
+
+msgid "Toggle auto-reconnect"
+msgstr "Prepnúť automatické opätovné pripojenie"
+
+msgid "Notify on peer changes"
+msgstr "Upozorniť na zmeny peerov"
+
+msgid "Show a desktop notification when peers go online/offline"
+msgstr "Zobraziť desktopové upozornenie, keď peeri prejdú online/offline"
+
+msgid ""
+"Send a desktop toast when another device on your network goes online or "
+"offline. Rapid bursts are coalesced into a single notification so you don't "
+"get spammed during reconnects."
+msgstr ""
+"Odoslať desktopové upozornenie, keď iné zariadenie vo vašej sieti prejde "
+"online alebo offline. Rýchle výskyty sa zlúčia do jednej notifikácie, aby "
+"ste neboli zahltení počas opätovných pripájaní."
+
+msgid "Toggle peer-change notifications"
+msgstr "Prepnúť upozornenia na zmeny peerov"
+
+msgid ""
+"Join or leave the mesh network. When connected, this device becomes "
+"reachable by the other peers in your account."
+msgstr ""
+"Pripojte sa alebo opustite mesh sieť. Po pripojení bude toto zariadenie "
+"dosiahnuteľné pre ostatných peerov vo vašom účte."
+
+msgid "Your photo"
+msgstr "Vaša fotka"
+
+#~ msgid "Panel credentials"
+#~ msgstr "Prihlasovacie údaje panela"
+
+#~ msgid "Username"
+#~ msgstr "Používateľské meno"
+
+#~ msgid "Sign in to connect"
+#~ msgstr "Prihlásiť sa pre pripojenie"
+
+#~ msgid "Use the panel on the left to sign in or paste a pre-auth key."
+#~ msgstr ""
+#~ "Použite panel naľavo na prihlásenie alebo vloženie pred-autentifikačného "
+#~ "kľúča."
+
+#~ msgid "Connect via panel account"
+#~ msgstr "Pripojiť sa cez účet v paneli"
+
+#~ msgid ""
+#~ "Sign in with your BigScale panel username and password. A device identity "
+#~ "will be created on the network automatically — no manual key needed."
+#~ msgstr ""
+#~ "Prihláste sa pomocou používateľského mena a hesla z BigScale panela. "
+#~ "Identita zariadenia sa v sieti vytvorí automaticky – nie je potrebný "
+#~ "manuálny kľúč."
+
+#~ msgid "Connected ·"
+#~ msgstr "Pripojené ·"
 
 #~ msgid "Device name"
 #~ msgstr "Názov zariadenia"
@@ -762,9 +2432,6 @@ msgstr "Prepnúť spustenie s reláciou"
 
 #~ msgid "Terminal"
 #~ msgstr "Terminál"
-
-#~ msgid "Copied!"
-#~ msgstr "Skopírované!"
 
 #~ msgid "Key generated successfully."
 #~ msgstr "Kľúč bol úspešne vygenerovaný."

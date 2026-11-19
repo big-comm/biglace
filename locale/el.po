@@ -3,7 +3,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: biglace\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-05-01 15:34\n"
+"POT-Creation-Date: 2026-11-19 12:50-0300\n"
 "PO-Revision-Date: 2026-05-01 15:34\n"
 "Last-Translator: Translation Automator <auto@translator.ai>\n"
 "Language-Team: Greek <el@li.org>\n"
@@ -12,147 +12,42 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/tray/linux.rs:76
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/tray/windows.rs:136
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/mod.rs:1114
-msgid "Disconnect"
-msgstr "Αποσύνδεση"
+msgid "Invalid device address."
+msgstr "Μη έγκυρη διεύθυνση συσκευής."
 
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/content.rs:47
-msgid "Main menu"
-msgstr "Κύριο μενού"
-
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/mod.rs:590
-msgid "Sign in with panel account"
-msgstr "Σύνδεση με λογαριασμό πίνακα ελέγχου"
-
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/mod.rs:592
-msgid "Make this user the tailscale operator"
-msgstr "Ορισμός αυτού του χρήστη ως χειριστή tailscale"
-
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/mod.rs:594
-msgid "About BigLace"
-msgstr "Σχετικά με το BigLace"
-
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/dialogs.rs:42
-msgid "Tailscale operator"
-msgstr "Χειριστής tailscale"
-
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/dialogs.rs:37
-msgid "Done. You will no longer need a password to connect or disconnect."
+msgid ""
+"No file manager could open the SFTP location. Install one (Dolphin, "
+"Nautilus, Nemo, Thunar…) and try again."
 msgstr ""
-"Ολοκληρώθηκε. Δεν θα χρειάζεστε πλέον κωδικό πρόσβασης για σύνδεση ή "
-"αποσύνδεση."
+"Κανένας διαχειριστής αρχείων δεν μπόρεσε να ανοίξει την τοποθεσία SFTP. "
+"Εγκαταστήστε έναν (Dolphin, Nautilus, Nemo, Thunar…) και δοκιμάστε ξανά."
 
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/dialogs.rs:38
-#, rust-format
-msgid "Failed: {error}"
-msgstr "Αποτυχία: {error}"
+msgid ""
+"No file manager could open the SFTP location. Install WinSCP and try again."
+msgstr ""
+"Κανένας διαχειριστής αρχείων δεν μπόρεσε να ανοίξει την τοποθεσία SFTP. "
+"Εγκαταστήστε το WinSCP και δοκιμάστε ξανά."
 
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/dialogs.rs:45
-msgid "OK"
-msgstr "ΟΚ"
+msgid ""
+"No terminal emulator found. Install one (Konsole, GNOME Terminal, xterm…) "
+"and try again."
+msgstr ""
+"Δεν βρέθηκε εξομοιωτής τερματικού. Εγκαταστήστε έναν (Konsole, GNOME "
+"Terminal, xterm…) και δοκιμάστε ξανά."
 
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/dialogs.rs:387
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/mod.rs:729
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/mod.rs:962
-#, rust-format
-msgid "Error: {error}"
-msgstr "Σφάλμα: {error}"
-
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/dialogs.rs:29
-msgid "Mesh VPN client for BigScale/Headscale."
-msgstr "Πρόγραμμα-πελάτης Mesh VPN για BigScale/Headscale."
-
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/dialogs.rs:164
-msgid "Panel credentials"
-msgstr "Διαπιστευτήρια πίνακα ελέγχου"
-
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/dialogs.rs:173
-msgid "Panel URL"
-msgstr "URL πίνακα ελέγχου"
-
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/dialogs.rs:180
-msgid "Username"
-msgstr "Όνομα χρήστη"
-
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/dialogs.rs:184
-msgid "Password"
-msgstr "Κωδικός πρόσβασης"
-
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/dialogs.rs:75
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/dialogs.rs:247
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/dialogs.rs:448
-msgid "Cancel"
-msgstr "Ακύρωση"
-
-#. The OK button needs to flip between "Sign in" and "spinner + Connecting…"
-#. while the HTTP call is in flight. Build both children up front and just
-#. swap the button's child — simpler than juggling visibility flags.
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/dialogs.rs:252
-msgid "Sign in"
-msgstr "Σύνδεση"
-
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/dialogs.rs:309
-msgid "Fill in URL, username and password."
-msgstr "Συμπληρώστε το URL, το όνομα χρήστη και τον κωδικό πρόσβασης."
-
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/content.rs:159
-msgid "Start service"
-msgstr "Εκκίνηση υπηρεσίας"
-
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/sidebar.rs:95
-msgid "Server URL"
-msgstr "Διεύθυνση URL διακομιστή"
-
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/content.rs:206
-msgid "This device"
-msgstr "Αυτή η συσκευή"
-
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/tray/linux.rs:83
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/tray/windows.rs:81
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/tray/windows.rs:136
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/mod.rs:1124
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/mod.rs:1129
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/sidebar.rs:240
-msgid "Connect"
-msgstr "Σύνδεση"
-
-#. ── Devices on the network ──
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/content.rs:223
-msgid "Devices on the network"
-msgstr "Συσκευές στο δίκτυο"
-
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/tailscale.rs:557
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/tailscale.rs:630
 msgid "Failed to run tailscale"
 msgstr "Αποτυχία εκτέλεσης του tailscale"
 
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/tailscale.rs:577
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/tailscale.rs:610
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/tailscale.rs:642
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/tailscale.rs:714
 msgid "Failed to connect — check the server URL and key."
 msgstr ""
 "Αποτυχία σύνδεσης — ελέγξτε τη διεύθυνση URL του διακομιστή και το κλειδί."
 
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/tailscale.rs:598
 msgid "Failed to run pkexec tailscale"
 msgstr "Αποτυχία εκτέλεσης του pkexec tailscale"
 
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/tailscale.rs:781
-msgid "Could not determine the current user."
-msgstr "Δεν ήταν δυνατός ο προσδιορισμός του τρέχοντος χρήστη."
+msgid "Enter the server URL before connecting."
+msgstr "Εισαγάγετε τη διεύθυνση URL του διακομιστή πριν από τη σύνδεση."
 
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/tailscale.rs:787
-msgid "Failed to run pkexec tailscale set"
-msgstr "Αποτυχία εκτέλεσης του pkexec tailscale set"
-
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/tailscale.rs:789
-msgid "Failed to set tailscale operator."
-msgstr "Αποτυχία ορισμού χειριστή tailscale."
-
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/tailscale.rs:707
 msgid ""
 "The pre-auth key was rejected by the server. Generate a new key in the "
 "BigScale panel and try again."
@@ -160,169 +55,648 @@ msgstr ""
 "Το κλειδί προέγκρισης απορρίφθηκε από τον διακομιστή. Δημιουργήστε ένα νέο "
 "κλειδί στον πίνακα BigScale και δοκιμάστε ξανά."
 
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/tailscale.rs:710
+msgid "Sign in or paste a pre-auth key first."
+msgstr "Πρώτα συνδεθείτε ή επικολλήστε ένα προ-εξουσιοδοτημένο κλειδί."
+
 #, rust-format
 msgid "Login rejected by server: {detail}"
 msgstr "Η σύνδεση απορρίφθηκε από τον διακομιστή: {detail}"
 
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/sidebar.rs:138
-msgid "Apply manual setup"
-msgstr "Εφαρμογή μη αυτόματης ρύθμισης"
+msgid "Could not determine the current user."
+msgstr "Δεν ήταν δυνατός ο προσδιορισμός του τρέχοντος χρήστη."
 
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/sidebar.rs:140
-msgid "Save"
-msgstr "Αποθήκευση"
+msgid "Failed to run pkexec tailscale set"
+msgstr "Αποτυχία εκτέλεσης του pkexec tailscale set"
 
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/sidebar.rs:159
-msgid "Connect automatically"
-msgstr "Αυτόματη σύνδεση"
+msgid "Failed to set tailscale operator."
+msgstr "Αποτυχία ορισμού χειριστή tailscale."
 
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/sidebar.rs:160
-msgid "Join the network when BigLace starts"
-msgstr "Σύνδεση στο δίκτυο κατά την εκκίνηση του BigLace"
-
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/mod.rs:1079
-msgid "Sign in or paste a pre-auth key"
-msgstr "Συνδεθείτε ή επικολλήστε ένα προ-εξουσιοδοτημένο κλειδί"
-
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/mod.rs:1091
-msgid "Server not set"
-msgstr "Ο διακομιστής δεν έχει οριστεί"
-
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/mod.rs:711
-msgid "Setup saved"
-msgstr "Η ρύθμιση αποθηκεύτηκε"
-
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/tailscale.rs:653
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/mod.rs:805
-msgid "Sign in or paste a pre-auth key first."
-msgstr "Πρώτα συνδεθείτε ή επικολλήστε ένα προ-εξουσιοδοτημένο κλειδί."
-
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/content.rs:96
-msgid "Sign in to connect"
-msgstr "Συνδεθείτε για σύνδεση"
-
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/content.rs:97
-msgid "Use the panel on the left to sign in or paste a pre-auth key."
-msgstr ""
-"Χρησιμοποιήστε τον πίνακα στα αριστερά για να συνδεθείτε ή να επικολλήσετε "
-"ένα προ-εξουσιοδοτημένο κλειδί."
-
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/content.rs:105
-msgid "Not connected"
-msgstr "Δεν είστε συνδεδεμένος"
-
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/content.rs:106
-msgid "Press Connect on the left to join the network."
-msgstr "Πατήστε Σύνδεση στα αριστερά για να συμμετάσχετε στο δίκτυο."
-
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/content.rs:183
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/dialogs.rs:259
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/mod.rs:1026
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/mod.rs:1119
-msgid "Connecting…"
-msgstr "Σύνδεση σε εξέλιξη…"
-
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/content.rs:232
-msgid "No other devices on the network yet."
-msgstr "Δεν υπάρχουν ακόμα άλλες συσκευές στο δίκτυο."
-
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/content.rs:216
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/peer_row.rs:178
-msgid "Copy IP address"
-msgstr "Αντιγραφή διεύθυνσης IP"
-
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/mod.rs:888
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/peer_row.rs:186
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/peer_row.rs:271
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/peer_row.rs:280
-msgid "IP address copied"
-msgstr "Η διεύθυνση IP αντιγράφηκε"
-
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/peer_row.rs:231
-msgid "Open files (SFTP)"
-msgstr "Άνοιγμα αρχείων (SFTP)"
-
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/peer_row.rs:246
-msgid "Open terminal (SSH)"
-msgstr "Άνοιγμα τερματικού (SSH)"
-
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/peer_row.rs:50
-msgid "offline"
-msgstr "εκτός σύνδεσης"
-
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/mod.rs:1023
-msgid "Service stopped"
-msgstr "Η υπηρεσία σταμάτησε"
-
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/tray/linux.rs:58
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/tray/windows.rs:172
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/content.rs:40
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/mod.rs:1025
-msgid "Disconnected"
-msgstr "Αποσυνδέθηκε"
-
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/tray/linux.rs:53
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/tray/windows.rs:167
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/mod.rs:953
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/mod.rs:1027
 msgid "Connected"
 msgstr "Συνδεδεμένος"
 
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/content.rs:59
+msgid "Connected · 1 peer"
+msgstr "Συνδεδεμένο · 1 peer"
+
+#, rust-format
+msgid "Connected · {n} peers"
+msgstr "Συνδεδεμένο · {n} peers"
+
+msgid "Disconnected"
+msgstr "Αποσυνδέθηκε"
+
+#, rust-format
+msgid "In the room {group} · muted"
+msgstr "Στο δωμάτιο {group} · σίγαση"
+
+#, rust-format
+msgid "In the room {group}"
+msgstr "Στο δωμάτιο {group}"
+
+msgid "Disconnect"
+msgstr "Αποσύνδεση"
+
+msgid "Connect"
+msgstr "Σύνδεση"
+
+msgid "Show BigLace"
+msgstr "Εμφάνιση BigLace"
+
+#, rust-format
+msgid "Room {group}"
+msgstr "Δωμάτιο {group}"
+
+msgid "Unmute (Ctrl+Alt+M)"
+msgstr "Κατάργηση σίγασης (Ctrl+Alt+M)"
+
+msgid "Mute (Ctrl+Alt+M)"
+msgstr "Σίγαση (Ctrl+Alt+M)"
+
+msgid "Leave the room"
+msgstr "Αποχώρηση από το δωμάτιο"
+
+msgid "Quit"
+msgstr "Έξοδος"
+
+msgid "This computer"
+msgstr "Αυτός ο υπολογιστής"
+
+msgid "Who may use this computer remotely"
+msgstr "Ποιος μπορεί να χρησιμοποιεί αυτόν τον υπολογιστή απομακρυσμένα"
+
+msgid ""
+"Anyone you're connected to can ask to see and control this screen. Choose "
+"who is let in without asking, and who is never let in."
+msgstr ""
+"Όποιος είναι συνδεδεμένος μαζί σας μπορεί να ζητήσει να δει και να ελέγξει "
+"αυτή την οθόνη. Επιλέξτε ποιος γίνεται δεκτός χωρίς ερώτηση και ποιος δεν "
+"γίνεται ποτέ δεκτός."
+
+msgid "History of accesses"
+msgstr "Ιστορικό προσβάσεων"
+
+msgid "Kept on this computer only."
+msgstr "Διατηρείται μόνο σε αυτόν τον υπολογιστή."
+
+msgid "Clear"
+msgstr "Εκκαθάριση"
+
+msgid "Nobody has asked yet."
+msgstr "Κανείς δεν έχει ζητήσει ακόμα."
+
+msgid "When someone asks, you can choose to always let them in."
+msgstr "Όταν κάποιος ζητήσει, μπορείτε να επιλέξετε να τον δέχεστε πάντα."
+
+msgid "Ask every time"
+msgstr "Ερώτηση κάθε φορά"
+
+msgid "Always allow"
+msgstr "Να επιτρέπεται πάντα"
+
+msgid "Never allow"
+msgstr "Να μην επιτρέπεται ποτέ"
+
+msgid "No accesses yet."
+msgstr "Καμία πρόσβαση ακόμα."
+
+msgid "Remote access"
+msgstr "Απομακρυσμένη πρόσβαση"
+
+msgid "Watched the screen shared with the room"
+msgstr "Παρακολούθησε την οθόνη που κοινοποιήθηκε στο δωμάτιο"
+
+msgid "Got control of the shared screen"
+msgstr "Πήρε τον έλεγχο της κοινόχρηστης οθόνης"
+
+msgid "Restarted the computer"
+msgstr "Επανεκκίνησε τον υπολογιστή"
+
+msgid "Restarted the session"
+msgstr "Επανεκκίνησε τη συνεδρία"
+
+msgid "Shut down the computer"
+msgstr "Τερμάτισε τον υπολογιστή"
+
+msgid "allowed"
+msgstr "επιτράπηκε"
+
+msgid "allowed (always)"
+msgstr "επιτράπηκε (πάντα)"
+
+msgid "came back after a restart"
+msgstr "επέστρεψε μετά από επανεκκίνηση"
+
+msgid "denied"
+msgstr "απορρίφθηκε"
+
+msgid "blocked (never allowed)"
+msgstr "αποκλείστηκε (δεν επιτρέπεται ποτέ)"
+
+msgid "ended"
+msgstr "έληξε"
+
+#, rust-format
+msgid "{user} ({device})"
+msgstr "{user} ({device})"
+
+#, rust-format
+msgid "{done} of {total}"
+msgstr "{done} από {total}"
+
+msgid "Play"
+msgstr "Αναπαραγωγή"
+
+msgid "Download"
+msgstr "Λήψη"
+
+msgid "Open"
+msgstr "Άνοιγμα"
+
+msgid "Show in folder"
+msgstr "Εμφάνιση στον φάκελο"
+
+msgid "Pause"
+msgstr "Παύση"
+
+msgid "Photo"
+msgstr "Φωτογραφία"
+
+msgid "Video"
+msgstr "Βίντεο"
+
+msgid "Voice message"
+msgstr "Φωνητικό μήνυμα"
+
+msgid "Chat"
+msgstr "Συνομιλία"
+
+msgid "New chat"
+msgstr "Νέα συνομιλία"
+
+msgid "Start a conversation with someone on the network"
+msgstr "Ξεκινήστε μια συνομιλία με κάποιον στο δίκτυο"
+
+msgid "Main menu"
+msgstr "Κύριο μενού"
+
+msgid "Chat theme"
+msgstr "Θέμα συνομιλίας"
+
+msgid "Conversations"
+msgstr "Συνομιλίες"
+
+msgid "No conversations yet."
+msgstr "Καμία συνομιλία ακόμα."
+
+msgid "Search in this conversation (Ctrl+F)"
+msgstr "Αναζήτηση σε αυτή τη συνομιλία (Ctrl+F)"
+
+msgid "Pinned message"
+msgstr "Καρφιτσωμένο μήνυμα"
+
+msgid "Unpin"
+msgstr "Ξεκαρφίτσωμα"
+
+msgid "Search messages"
+msgstr "Αναζήτηση μηνυμάτων"
+
+msgid "Older"
+msgstr "Παλαιότερο"
+
+msgid "Newer"
+msgstr "Νεότερο"
+
+msgid "Emoji"
+msgstr "Emoji"
+
+msgid "Send files, pictures or videos"
+msgstr "Αποστολή αρχείων, εικόνων ή βίντεο"
+
+msgid "Send (Enter) — Shift+Enter for a new line"
+msgstr "Αποστολή (Enter) — Shift+Enter για νέα γραμμή"
+
+msgid "Record a voice message"
+msgstr "Ηχογράφηση φωνητικού μηνύματος"
+
+msgid "Discard"
+msgstr "Απόρριψη"
+
+msgid "Send voice message"
+msgstr "Αποστολή φωνητικού μηνύματος"
+
+msgid "Cancel"
+msgstr "Ακύρωση"
+
+msgid "Copy text"
+msgstr "Αντιγραφή κειμένου"
+
+msgid "Forward"
+msgstr "Προώθηση"
+
+msgid "Delete"
+msgstr "Διαγραφή"
+
+msgid "Talk with your network"
+msgstr "Μιλήστε με το δίκτυό σας"
+
+msgid ""
+"Pick a conversation, or start one. Messages go straight between your "
+"computers — the server never sees them."
+msgstr ""
+"Επιλέξτε μια συνομιλία ή ξεκινήστε μία. Τα μηνύματα πηγαίνουν απευθείας "
+"μεταξύ των υπολογιστών σας — ο διακομιστής δεν τα βλέπει ποτέ."
+
+msgid "Group"
+msgstr "Ομάδα"
+
+msgid "Direct conversation"
+msgstr "Άμεση συνομιλία"
+
+msgid "That message is too long."
+msgstr "Το μήνυμα είναι πολύ μεγάλο."
+
+#, rust-format
+msgid "Could not send: {error}"
+msgstr "Αδυναμία αποστολής: {error}"
+
+#, rust-format
+msgid "Could not download: {error}"
+msgstr "Αδυναμία λήψης: {error}"
+
+#, rust-format
+msgid "{user} in {group}"
+msgstr "{user} στο {group}"
+
+msgid "Send files"
+msgstr "Αποστολή αρχείων"
+
+msgid "Drop to send"
+msgstr "Αφήστε για αποστολή"
+
+#, rust-format
+msgid "Could not record: {error}"
+msgstr "Αδυναμία ηχογράφησης: {error}"
+
+msgid "Too short — record for at least a second."
+msgstr "Πολύ σύντομο — ηχογραφήστε για τουλάχιστον ένα δευτερόλεπτο."
+
+msgid "Search people and groups"
+msgstr "Αναζήτηση ατόμων και ομάδων"
+
+msgid "Loading…"
+msgstr "Φόρτωση…"
+
+msgid "Nobody you can reach yet."
+msgstr "Δεν υπάρχει ακόμα κανείς που μπορείτε να προσεγγίσετε."
+
+msgid "online"
+msgstr "συνδεδεμένος"
+
+msgid "offline"
+msgstr "εκτός σύνδεσης"
+
+#, rust-format
+msgid "You: {text}"
+msgstr "Εσείς: {text}"
+
+msgid "Group conversation"
+msgstr "Ομαδική συνομιλία"
+
+#, rust-format
+msgid "Delivered to {people}"
+msgstr "Παραδόθηκε σε {people}"
+
+msgid "Waiting to be delivered"
+msgstr "Αναμονή παράδοσης"
+
+msgid "Today"
+msgstr "Σήμερα"
+
+msgid "Yesterday"
+msgstr "Χθες"
+
+msgid "🗑 Message deleted"
+msgstr "🗑 Το μήνυμα διαγράφηκε"
+
+#, rust-format
+msgid "Forwarded from {name}"
+msgstr "Προωθήθηκε από {name}"
+
+msgid "edited"
+msgstr "επεξεργάστηκε"
+
+msgid "More reactions"
+msgstr "Περισσότερες αντιδράσεις"
+
+msgid "Reply"
+msgstr "Απάντηση"
+
+msgid "Edit"
+msgstr "Επεξεργασία"
+
+msgid "Pin"
+msgstr "Καρφίτσωμα"
+
+msgid "Select"
+msgstr "Επιλογή"
+
+#, rust-format
+msgid "Could not react: {error}"
+msgstr "Αδυναμία αντίδρασης: {error}"
+
+#, rust-format
+msgid "Reply to {name}"
+msgstr "Απάντηση σε {name}"
+
+msgid "Editing message"
+msgstr "Επεξεργασία μηνύματος"
+
+msgid "Copied."
+msgstr "Αντιγράφηκε."
+
+msgid "Forward to…"
+msgstr "Προώθηση σε…"
+
+msgid "Forwarded."
+msgstr "Προωθήθηκε."
+
+#, rust-format
+msgid "Could not forward: {error}"
+msgstr "Αδυναμία προώθησης: {error}"
+
+msgid "Delete the message?"
+msgstr "Διαγραφή του μηνύματος;"
+
+#, rust-format
+msgid "Delete {count} messages?"
+msgstr "Διαγραφή {count} μηνυμάτων;"
+
+msgid "“For everyone” removes it from the other computers too."
+msgstr "Το «Για όλους» το αφαιρεί και από τους άλλους υπολογιστές."
+
+msgid "It's removed from this computer only."
+msgstr "Αφαιρείται μόνο από αυτόν τον υπολογιστή."
+
+msgid "Delete for me"
+msgstr "Διαγραφή για μένα"
+
+msgid "Delete for everyone"
+msgstr "Διαγραφή για όλους"
+
+#, rust-format
+msgid "Could not delete: {error}"
+msgstr "Αδυναμία διαγραφής: {error}"
+
+msgid "1 selected"
+msgstr "1 επιλεγμένο"
+
+#, rust-format
+msgid "{count} selected"
+msgstr "{count} επιλεγμένα"
+
+msgid "That message isn't here anymore."
+msgstr "Αυτό το μήνυμα δεν υπάρχει πια εδώ."
+
+msgid "No results"
+msgstr "Κανένα αποτέλεσμα"
+
+#, rust-format
+msgid "{n} of {total}"
+msgstr "{n} από {total}"
+
+#, rust-format
+msgid "{user} is typing…"
+msgstr "{user} πληκτρολογεί…"
+
+msgid "typing…"
+msgstr "πληκτρολογεί…"
+
+msgid "System accent"
+msgstr "Χρώμα έμφασης συστήματος"
+
+msgid "Blue"
+msgstr "Μπλε"
+
+msgid "Teal"
+msgstr "Γαλαζοπράσινο"
+
+msgid "Green"
+msgstr "Πράσινο"
+
+msgid "Purple"
+msgstr "Μωβ"
+
+msgid "Pink"
+msgstr "Ροζ"
+
+msgid "Orange"
+msgstr "Πορτοκαλί"
+
+msgid "Red"
+msgstr "Κόκκινο"
+
+msgid "Graphite"
+msgstr "Γραφίτης"
+
+msgid "Default"
+msgstr "Προεπιλογή"
+
+msgid "Plain"
+msgstr "Απλό"
+
+msgid "Dots"
+msgstr "Κουκκίδες"
+
+msgid "Ocean"
+msgstr "Ωκεανός"
+
+msgid "Sunset"
+msgstr "Ηλιοβασίλεμα"
+
+msgid "Forest"
+msgstr "Δάσος"
+
+msgid "Lavender"
+msgstr "Λεβάντα"
+
+msgid "Night"
+msgstr "Νύχτα"
+
+msgid "Hi! How does this look? 😊"
+msgstr "Γεια! Πώς σου φαίνεται; 😊"
+
+msgid "Looks great!"
+msgstr "Φαίνεται υπέροχο!"
+
+msgid "Appearance"
+msgstr "Εμφάνιση"
+
+msgid "System"
+msgstr "Σύστημα"
+
+msgid "Light"
+msgstr "Φωτεινό"
+
+msgid "Dark"
+msgstr "Σκοτεινό"
+
+msgid "Your messages"
+msgstr "Τα μηνύματά σας"
+
+msgid "Background"
+msgstr "Φόντο"
+
+msgid "Picture…"
+msgstr "Εικόνα…"
+
+msgid "Pictures"
+msgstr "Εικόνες"
+
+msgid "Choose a background picture"
+msgstr "Επιλέξτε εικόνα φόντου"
+
+msgid "Message"
+msgstr "Μήνυμα"
+
+msgid "Bold"
+msgstr "Έντονα"
+
+msgid "Italic"
+msgstr "Πλάγια"
+
+msgid "Underline"
+msgstr "Υπογράμμιση"
+
+msgid "Strikethrough"
+msgstr "Διακριτή διαγραφή"
+
+msgid "Monospace"
+msgstr "Σταθερό πλάτος"
+
+msgid "Create link"
+msgstr "Δημιουργία συνδέσμου"
+
+msgid "Plain text"
+msgstr "Απλό κείμενο"
+
+msgid "Formatting"
+msgstr "Μορφοποίηση"
+
+msgid "Create"
+msgstr "Δημιουργία"
+
+msgid "Search devices"
+msgstr "Αναζήτηση συσκευών"
+
 msgid "Refresh"
 msgstr "Ανανέωση"
 
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/dialogs.rs:373
-msgid "Signed in. Press Connect to join the network."
-msgstr "Έχετε συνδεθεί. Πατήστε Σύνδεση για να συμμετάσχετε στο δίκτυο."
+msgid "Invite"
+msgstr "Πρόσκληση"
 
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/mod.rs:1240
-msgid "no other devices"
-msgstr "καμία άλλη συσκευή"
+msgid "Invite someone to your network"
+msgstr "Προσκαλέστε κάποιον στο δίκτυό σας"
 
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/mod.rs:1242
-#, rust-format
-msgid "{online} online"
-msgstr "{online} συνδεδεμένο"
+msgid ""
+"Tailscale cannot write this device's DNS settings, so it can no longer keep "
+"peer names working. They may still resolve for now, from the configuration "
+"left over from before the failure, but that will break the next time the "
+"network changes — and BigLace will fall back to IP addresses. On most "
+"distributions `sudo resolvconf -u` repairs it."
+msgstr ""
+"Το Tailscale δεν μπορεί να γράψει τις ρυθμίσεις DNS αυτής της συσκευής, "
+"οπότε δεν μπορεί πλέον να διατηρεί λειτουργικά τα ονόματα των ομότιμων. Ίσως"
+" να επιλύονται ακόμα προς το παρόν, από τη διαμόρφωση που απέμεινε πριν από "
+"την αποτυχία, αλλά αυτό θα χαλάσει την επόμενη φορά που θα αλλάξει το δίκτυο"
+" — και το BigLace θα επιστρέψει σε διευθύνσεις IP. Στις περισσότερες "
+"διανομές το `sudo resolvconf -u` το διορθώνει."
 
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/mod.rs:1244
-#, rust-format
-msgid "{online} online · {offline} offline"
-msgstr "{online} συνδεδεμένο · {offline} αποσυνδεδεμένο"
+msgid "Not connected"
+msgstr "Δεν είστε συνδεδεμένος"
 
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/content.rs:153
+msgid "Press Connect on the left to join the network."
+msgstr "Πατήστε Σύνδεση στα αριστερά για να συμμετάσχετε στο δίκτυο."
+
 msgid "The tailscale service is not running"
 msgstr "Η υπηρεσία tailscale δεν εκτελείται"
 
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/content.rs:155
 msgid "BigLace needs the tailscaled background service to manage the network."
 msgstr ""
 "Το BigLace χρειάζεται την υπηρεσία παρασκηνίου tailscaled για τη διαχείριση "
 "του δικτύου."
 
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/sidebar.rs:108
-msgid "Pre-auth key"
-msgstr "Κλειδί προ-εξουσιοδότησης"
+msgid "Start service"
+msgstr "Εκκίνηση υπηρεσίας"
 
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/mod.rs:1024
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/mod.rs:1078
-msgid "Not signed in"
-msgstr "Δεν έχετε συνδεθεί"
+msgid "Join the network"
+msgstr "Συμμετοχή στο δίκτυο"
 
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/sidebar.rs:81
-msgid "Advanced: use a pre-auth key"
-msgstr "Για προχωρημένους: χρήση προ-εξουσιοδοτημένου κλειδιού"
+msgid "Choose how you're going to sign in."
+msgstr "Επιλέξτε πώς θα συνδεθείτε."
 
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/sidebar.rs:82
-msgid "Already have a key from your administrator? Paste it here."
-msgstr "Έχετε ήδη ένα κλειδί από τον διαχειριστή σας; Επικολλήστε το εδώ."
+msgid "Ways to sign in"
+msgstr "Τρόποι σύνδεσης"
 
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/dialogs.rs:68
+msgid "Your account was kept on this computer. No invite needed."
+msgstr ""
+"Ο λογαριασμός σας διατηρήθηκε σε αυτόν τον υπολογιστή. Δεν χρειάζεται "
+"πρόσκληση."
+
+msgid "I have an invite"
+msgstr "Έχω πρόσκληση"
+
+msgid "Someone on the network sent you a link or a QR code."
+msgstr "Κάποιος στο δίκτυο σας έστειλε έναν σύνδεσμο ή έναν κωδικό QR."
+
+msgid "I have an access key"
+msgstr "Έχω κλειδί πρόσβασης"
+
+msgid "A key the administrator created for you (starts with hskey-auth-)."
+msgstr ""
+"Ένα κλειδί που δημιούργησε ο διαχειριστής για εσάς (ξεκινά με hskey-auth-)."
+
+msgid "I'm the administrator"
+msgstr "Είμαι ο διαχειριστής"
+
+msgid "Sign in with the BigScale panel's admin username and password."
+msgstr ""
+"Σύνδεση με το όνομα χρήστη και τον κωδικό διαχειριστή του πίνακα BigScale."
+
+msgid "Connecting…"
+msgstr "Σύνδεση σε εξέλιξη…"
+
+msgid "This device"
+msgstr "Αυτή η συσκευή"
+
+msgid "Copy IP address"
+msgstr "Αντιγραφή διεύθυνσης IP"
+
+msgid "Devices on the network"
+msgstr "Συσκευές στο δίκτυο"
+
+msgid "No other devices on the network yet."
+msgstr "Δεν υπάρχουν ακόμα άλλες συσκευές στο δίκτυο."
+
+msgid "Mesh VPN client for BigScale/Headscale."
+msgstr "Πρόγραμμα-πελάτης Mesh VPN για BigScale/Headscale."
+
+msgid "Done. You will no longer need a password to connect or disconnect."
+msgstr ""
+"Ολοκληρώθηκε. Δεν θα χρειάζεστε πλέον κωδικό πρόσβασης για σύνδεση ή "
+"αποσύνδεση."
+
+#, rust-format
+msgid "Failed: {error}"
+msgstr "Αποτυχία: {error}"
+
+msgid "Tailscale operator"
+msgstr "Χειριστής tailscale"
+
+msgid "OK"
+msgstr "ΟΚ"
+
 msgid "Sign out of current account?"
 msgstr "Αποσύνδεση από τον τρέχοντα λογαριασμό;"
 
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/dialogs.rs:70
 msgid ""
 "This will disconnect from the network, sign this device out of the current "
 "control server, and forget the saved password. You'll then be able to sign "
@@ -333,268 +707,93 @@ msgstr ""
 "αποθηκευμένο κωδικό πρόσβασης. Στη συνέχεια, θα μπορείτε να συνδεθείτε με "
 "έναν διαφορετικό λογαριασμό."
 
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/dialogs.rs:76
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/mod.rs:591
 msgid "Sign out"
 msgstr "Αποσύνδεση"
 
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/dialogs.rs:134
+msgid "Leave the network?"
+msgstr "Αποχώρηση από το δίκτυο;"
+
+#, rust-format
+msgid ""
+"This device leaves the network and its name becomes free. Your account {user} is kept: you can come back later from this computer, without an invite.\n"
+"\n"
+"If you won't come back, delete the account and the name {user} becomes free too."
+msgstr ""
+"Αυτή η συσκευή αποχωρεί από το δίκτυο και το όνομά της γίνεται ελεύθερο. Ο λογαριασμός σας {user} διατηρείται: μπορείτε να επιστρέψετε αργότερα από αυτόν τον υπολογιστή, χωρίς πρόσκληση.\n"
+"\n"
+"Αν δεν θα επιστρέψετε, διαγράψτε τον λογαριασμό και το όνομα {user} θα γίνει επίσης ελεύθερο."
+
+msgid "Leave and delete account"
+msgstr "Αποχώρηση και διαγραφή λογαριασμού"
+
+msgid "Leave"
+msgstr "Αποχώρηση"
+
+msgid "Connect first to delete the account."
+msgstr "Συνδεθείτε πρώτα για να διαγράψετε τον λογαριασμό."
+
+msgid "Signing out…"
+msgstr "Αποσύνδεση…"
+
+#, rust-format
+msgid ""
+"Signed out. Your account was kept: {count} other device(s) still use it."
+msgstr ""
+"Αποσυνδεθήκατε. Ο λογαριασμός σας διατηρήθηκε: {count} άλλη(-ες) "
+"συσκευή(-ές) τον χρησιμοποιούν ακόμα."
+
+msgid ""
+"Couldn't delete the account: the panel can't be reached. Connect and try "
+"again."
+msgstr ""
+"Δεν ήταν δυνατή η διαγραφή του λογαριασμού: ο πίνακας δεν είναι προσβάσιμος."
+" Συνδεθείτε και δοκιμάστε ξανά."
+
+#, rust-format
+msgid "Error: {error}"
+msgstr "Σφάλμα: {error}"
+
+msgid "Signed out and account deleted."
+msgstr "Αποσυνδεθήκατε και ο λογαριασμός διαγράφηκε."
+
 msgid "Signed out."
 msgstr "Αποσυνδεθήκατε."
 
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/dialogs.rs:153
-msgid "Connect via panel account"
-msgstr "Σύνδεση μέσω λογαριασμού πίνακα"
+msgid "Couldn't reach the server"
+msgstr "Δεν ήταν δυνατή η επικοινωνία με τον διακομιστή"
 
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/dialogs.rs:166
-msgid ""
-"Sign in with your BigScale panel username and password. A device identity "
-"will be created on the network automatically — no manual key needed."
-msgstr ""
-"Συνδεθείτε με το όνομα χρήστη και τον κωδικό πρόσβασης του πίνακα BigScale. "
-"Μια ταυτότητα συσκευής θα δημιουργηθεί αυτόματα στο δίκτυο — δεν απαιτείται "
-"χειροκίνητο κλειδί."
-
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/peer_row.rs:446
-msgid "Copy"
-msgstr "Αντιγραφή"
-
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/sidebar.rs:197
-msgid "Reconnect on drop"
-msgstr "Επανασύνδεση σε περίπτωση αποσύνδεσης"
-
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/sidebar.rs:198
-msgid "Retry with backoff when the connection is lost"
-msgstr "Επανάληψη με καθυστέρηση όταν χαθεί η σύνδεση"
-
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/sidebar.rs:217
-msgid "Notify on peer changes"
-msgstr "Ειδοποίηση για αλλαγές σε peers"
-
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/sidebar.rs:218
-msgid "Show a desktop notification when peers go online/offline"
-msgstr ""
-"Εμφάνιση ειδοποίησης στην επιφάνεια εργασίας όταν peers γίνονται "
-"online/offline"
-
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/mod.rs:593
-msgid "View tailscaled logs"
-msgstr "Προβολή αρχείων καταγραφής tailscaled"
-
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/mod.rs:1044
-msgid "Server unreachable"
-msgstr "Ο διακομιστής δεν είναι προσβάσιμος"
-
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/mod.rs:1054
 #, rust-format
-msgid "Update available: v{version}"
-msgstr "Διαθέσιμη ενημέρωση: v{version}"
-
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/mod.rs:1398
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/mod.rs:1461
-msgid "is online"
-msgstr "είναι online"
-
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/mod.rs:1399
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/mod.rs:1463
-msgid "went offline"
-msgstr "έγινε offline"
-
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/peer_row.rs:124
-msgid "Unpin from top"
-msgstr "Αφαίρεση από την κορυφή"
-
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/peer_row.rs:124
-msgid "Pin to top"
-msgstr "Καρφίτσωμα στην κορυφή"
-
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/peer_row.rs:259
-msgid "DNS name"
-msgstr "Όνομα DNS"
-
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/peer_row.rs:262
-msgid "DNS name copied"
-msgstr "Το όνομα DNS αντιγράφηκε"
-
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/peer_row.rs:284
-msgid "Owner"
-msgstr "Κάτοχος"
-
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/peer_row.rs:346
-msgid "Tags"
-msgstr "Ετικέτες"
-
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/peer_row.rs:351
-msgid "Last seen"
-msgstr "Τελευταία εμφάνιση"
-
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/peer_row.rs:358
-msgid "Use as exit node"
-msgstr "Χρήση ως κόμβος εξόδου"
-
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/peer_row.rs:359
-msgid "Route all traffic through this peer"
-msgstr "Δρομολόγηση όλης της κίνησης μέσω αυτού του peer"
-
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/peer_row.rs:401
-msgid "Exit node enabled"
-msgstr "Κόμβος εξόδου ενεργοποιημένος"
-
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/peer_row.rs:401
-msgid "Exit node disabled"
-msgstr "Κόμβος εξόδου απενεργοποιημένος"
-
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/peer_row.rs:403
-msgid "Failed to update exit node"
-msgstr "Αποτυχία ενημέρωσης κόμβου εξόδου"
-
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/peer_row.rs:146
-msgid "Pinned to top"
-msgstr "Καρφιτσωμένο στην κορυφή"
-
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/peer_row.rs:148
-msgid "Unpinned"
-msgstr "Αποκαρφιτσώθηκε"
-
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/tray/linux.rs:54
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/tray/windows.rs:168
-msgid "Connected · 1 peer"
-msgstr "Συνδεδεμένο · 1 peer"
-
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/tray/linux.rs:55
-#, rust-format
-msgid "Connected · {n} peers"
-msgstr "Συνδεδεμένο · {n} peers"
-
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/tray/linux.rs:92
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/tray/windows.rs:80
-msgid "Show BigLace"
-msgstr "Εμφάνιση BigLace"
-
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/tray/linux.rs:101
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/tray/windows.rs:82
-msgid "Quit"
-msgstr "Έξοδος"
-
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/tray/windows.rs:169
-msgid "Connected ·"
-msgstr "Συνδεδεμένο ·"
-
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/sidebar.rs:54
 msgid ""
-"Your identity on this mesh — the device name shown to other peers and the "
-"network you're connected to."
+"The control server didn't confirm the sign-out: {error}\n"
+"\n"
+"You can still sign out on this computer: BigLace forgets the saved key and account and disconnects. The server keeps listing this device until an administrator removes it."
 msgstr ""
-"Η ταυτότητά σας σε αυτό το πλέγμα — το όνομα συσκευής που εμφανίζεται σε "
-"άλλους κόμβους και το δίκτυο στο οποίο είστε συνδεδεμένοι."
+"Ο διακομιστής ελέγχου δεν επιβεβαίωσε την αποσύνδεση: {error}\n"
+"\n"
+"Μπορείτε ακόμα να αποσυνδεθείτε σε αυτόν τον υπολογιστή: το BigLace ξεχνά το αποθηκευμένο κλειδί και τον λογαριασμό και αποσυνδέεται. Ο διακομιστής συνεχίζει να εμφανίζει αυτή τη συσκευή μέχρι να την αφαιρέσει ένας διαχειριστής."
 
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/sidebar.rs:71
-msgid "Rename this device on the network"
-msgstr "Μετονομασία αυτής της συσκευής στο δίκτυο"
+msgid "Sign out on this computer"
+msgstr "Αποσύνδεση σε αυτόν τον υπολογιστή"
 
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/sidebar.rs:86
+msgid "Sign in as administrator"
+msgstr "Σύνδεση ως διαχειριστής"
+
+msgid "Panel administrator"
+msgstr "Διαχειριστής πίνακα"
+
 msgid ""
-"Manual setup — expand to paste a server URL and pre-auth key when you "
-"already received them from your administrator. Most users should sign in "
-"through the panel button above instead."
+"Only for whoever administers the BigScale panel: use the panel's admin "
+"username and password. This device joins the network under the name below. "
+"Everyone else joins with an invite or an access key."
 msgstr ""
-"Μη αυτόματη ρύθμιση — αναπτύξτε για να επικολλήσετε μια διεύθυνση URL "
-"διακομιστή και ένα προ-εξουσιοδοτημένο κλειδί όταν τα έχετε ήδη λάβει από "
-"τον διαχειριστή σας. Οι περισσότεροι χρήστες θα πρέπει να συνδεθούν μέσω του"
-" κουμπιού του πίνακα παραπάνω."
+"Μόνο για όποιον διαχειρίζεται τον πίνακα BigScale: χρησιμοποιήστε το όνομα "
+"χρήστη και τον κωδικό διαχειριστή του πίνακα. Αυτή η συσκευή συμμετέχει στο "
+"δίκτυο με το παρακάτω όνομα. Όλοι οι άλλοι συμμετέχουν με πρόσκληση ή κλειδί"
+" πρόσβασης."
 
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/sidebar.rs:99
-msgid ""
-"Address of the coordination server (e.g. vpn.example.org). The https:// "
-"scheme is added automatically if you omit it."
-msgstr ""
-"Διεύθυνση του διακομιστή συντονισμού (π.χ. vpn.example.org). Το σχήμα "
-"https:// προστίθεται αυτόματα αν το παραλείψετε."
+msgid "Panel URL"
+msgstr "URL πίνακα ελέγχου"
 
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/sidebar.rs:111
-msgid ""
-"One-time or reusable key created on the server (starts with 'hskey-auth-'). "
-"Used to register this device automatically without opening a browser."
-msgstr ""
-"Κλειδί μιας χρήσης ή επαναχρησιμοποιήσιμο που δημιουργήθηκε στον διακομιστή "
-"(ξεκινά με 'hskey-auth-'). Χρησιμοποιείται για την αυτόματη εγγραφή αυτής "
-"της συσκευής χωρίς άνοιγμα προγράμματος περιήγησης."
-
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/dialogs.rs:190
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/dialogs.rs:418
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/sidebar.rs:124
-msgid "Device name on the network"
-msgstr "Όνομα συσκευής στο δίκτυο"
-
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/sidebar.rs:127
-msgid ""
-"The name this device shows to other peers on the VPN — this is the Tailscale"
-" hostname, NOT your computer's name and NOT your user. Lowercase letters, "
-"digits and hyphens. Example: 'tales-laptop', 'francois', 'office-pc'."
-msgstr ""
-"Το όνομα με το οποίο εμφανίζεται αυτή η συσκευή σε άλλους κόμβους στο VPN — "
-"αυτό είναι το όνομα κεντρικού υπολογιστή του Tailscale, ΟΧΙ το όνομα του "
-"υπολογιστή σας και ΟΧΙ το όνομα χρήστη σας. Πεζά γράμματα, ψηφία και παύλες."
-" Παράδειγμα: 'tales-laptop', 'francois', 'office-pc'."
-
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/sidebar.rs:144
-msgid ""
-"Persist the server, key and device name above. Won't connect — press Connect"
-" afterwards."
-msgstr ""
-"Αποθήκευση του διακομιστή, του κλειδιού και του ονόματος συσκευής παραπάνω. "
-"Δεν θα γίνει σύνδεση — πατήστε Σύνδεση στη συνέχεια."
-
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/sidebar.rs:163
-msgid ""
-"When on, BigLace runs 'tailscale up' as soon as it launches, so you join the"
-" mesh without clicking Connect every time."
-msgstr ""
-"Όταν είναι ενεργό, το BigLace εκτελεί 'tailscale up' μόλις ξεκινήσει, ώστε "
-"να συμμετέχετε στο πλέγμα χωρίς να κάνετε κλικ στο Σύνδεση κάθε φορά."
-
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/sidebar.rs:171
-msgid "Toggle auto-connect on startup"
-msgstr "Εναλλαγή αυτόματης σύνδεσης κατά την εκκίνηση"
-
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/sidebar.rs:201
-msgid ""
-"If the tunnel drops (network change, sleep, server hiccup), BigLace silently"
-" retries with growing delays instead of leaving you offline until you "
-"notice."
-msgstr ""
-"Εάν η σήραγγα διακοπεί (αλλαγή δικτύου, αναστολή λειτουργίας, πρόβλημα "
-"διακομιστή), το BigLace επαναλαμβάνει σιωπηλά με αυξανόμενες καθυστερήσεις "
-"αντί να σας αφήνει εκτός σύνδεσης μέχρι να το παρατηρήσετε."
-
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/sidebar.rs:210
-msgid "Toggle auto-reconnect"
-msgstr "Εναλλαγή αυτόματης επανασύνδεσης"
-
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/sidebar.rs:221
-msgid ""
-"Send a desktop toast when another device on your network goes online or "
-"offline. Rapid bursts are coalesced into a single notification so you don't "
-"get spammed during reconnects."
-msgstr ""
-"Αποστολή ειδοποίησης επιφάνειας εργασίας όταν μια άλλη συσκευή στο δίκτυό "
-"σας γίνεται online ή offline. Οι γρήγορες ριπές συγχωνεύονται σε μία μόνο "
-"ειδοποίηση, ώστε να μην λαμβάνετε ανεπιθύμητα μηνύματα κατά τη διάρκεια "
-"επανασυνδέσεων."
-
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/sidebar.rs:230
-msgid "Toggle peer-change notifications"
-msgstr "Εναλλαγή ειδοποιήσεων αλλαγής κόμβων"
-
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/sidebar.rs:245
-msgid ""
-"Join or leave the mesh network. When connected, this device becomes "
-"reachable by the other peers in your account."
-msgstr ""
-"Συνδεθείτε ή αποσυνδεθείτε από το δίκτυο mesh. Όταν είστε συνδεδεμένοι, αυτή"
-" η συσκευή γίνεται προσβάσιμη από τα άλλα μέλη του λογαριασμού σας."
-
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/dialogs.rs:177
 msgid ""
 "Address of your BigScale panel (e.g. panel.example.org). The https:// scheme"
 " is added automatically if you omit it."
@@ -602,13 +801,17 @@ msgstr ""
 "Διεύθυνση του πίνακα BigScale (π.χ. panel.example.org). Το σχήμα https:// "
 "προστίθεται αυτόματα αν το παραλείψετε."
 
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/dialogs.rs:182
+msgid "Panel admin username"
+msgstr "Όνομα χρήστη διαχειριστή πίνακα"
+
 msgid "Your panel username — the one you use to sign in to the web panel."
 msgstr ""
 "Το όνομα χρήστη του πίνακα σας — αυτό που χρησιμοποιείτε για να συνδεθείτε "
 "στον web πίνακα."
 
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/dialogs.rs:186
+msgid "Password"
+msgstr "Κωδικός πρόσβασης"
+
 msgid ""
 "Your panel password. Stored in the OS keyring (libsecret on Linux, Keychain "
 "on macOS, Credential Manager on Windows)."
@@ -617,7 +820,9 @@ msgstr ""
 "λειτουργικού συστήματος (libsecret σε Linux, Keychain σε macOS, Credential "
 "Manager σε Windows)."
 
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/dialogs.rs:193
+msgid "Device name on the network"
+msgstr "Όνομα συσκευής στο δίκτυο"
+
 msgid ""
 "The name this device shows to other peers on the VPN — this is the Tailscale"
 " hostname, NOT your computer's name and NOT your user. Lowercase letters, "
@@ -630,11 +835,18 @@ msgstr ""
 "'tales-laptop', 'francois', 'office-pc'. Επιλέξτε κάτι που θα αναγνωρίζουν "
 "τα άλλα μέλη."
 
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/dialogs.rs:442
+msgid "Sign in"
+msgstr "Σύνδεση"
+
+msgid "Fill in URL, username and password."
+msgstr "Συμπληρώστε το URL, το όνομα χρήστη και τον κωδικό πρόσβασης."
+
+msgid "Signed in. Press Connect to join the network."
+msgstr "Έχετε συνδεθεί. Πατήστε Σύνδεση για να συμμετάσχετε στο δίκτυο."
+
 msgid "Rename this device"
 msgstr "Μετονομασία αυτής της συσκευής"
 
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/dialogs.rs:444
 msgid ""
 "The name this device shows to other peers on the VPN. Lowercase letters, "
 "digits and hyphens. Example: tales-laptop."
@@ -642,90 +854,1520 @@ msgstr ""
 "Το όνομα με το οποίο εμφανίζεται αυτή η συσκευή στα άλλα μέλη του VPN. Πεζά "
 "γράμματα, ψηφία και παύλες. Παράδειγμα: tales-laptop."
 
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/dialogs.rs:449
 msgid "Save & apply"
 msgstr "Αποθήκευση & εφαρμογή"
 
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/dialogs.rs:502
 msgid "Saved. The new name will take effect the next time you connect."
 msgstr ""
 "Αποθηκεύτηκε. Το νέο όνομα θα τεθεί σε ισχύ την επόμενη φορά που θα "
 "συνδεθείτε."
 
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/dialogs.rs:526
 msgid "Device renamed."
 msgstr "Η συσκευή μετονομάστηκε."
 
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/dialogs.rs:536
 #, rust-format
 msgid "Rename failed: {error}"
 msgstr "Η μετονομασία απέτυχε: {error}"
 
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/dialogs.rs:553
 msgid "The device name can't be empty."
 msgstr "Το όνομα της συσκευής δεν μπορεί να είναι κενό."
 
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/dialogs.rs:556
 msgid "Use 63 characters or fewer."
 msgstr "Χρησιμοποιήστε 63 χαρακτήρες ή λιγότερους."
 
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/dialogs.rs:560
 msgid "The device name can't start or end with a hyphen."
 msgstr "Το όνομα της συσκευής δεν μπορεί να ξεκινά ή να τελειώνει με παύλα."
 
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/dialogs.rs:564
 msgid "Only lowercase letters, digits and hyphens are allowed."
 msgstr "Επιτρέπονται μόνο πεζά γράμματα, ψηφία και παύλες."
 
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/peer_row.rs:306
-msgid "SSH login (override)"
-msgstr "Σύνδεση SSH (παράκαμψη)"
+msgid "Smileys & people"
+msgstr "Φατσούλες και άνθρωποι"
 
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/peer_row.rs:336
-msgid "Saved"
-msgstr "Αποθηκεύτηκε"
+msgid "Animals & nature"
+msgstr "Ζώα και φύση"
 
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/mod.rs:1086
+msgid "Food & drink"
+msgstr "Φαγητό και ποτό"
+
+msgid "Travel & places"
+msgstr "Ταξίδια και μέρη"
+
+msgid "Activities"
+msgstr "Δραστηριότητες"
+
+msgid "Objects"
+msgstr "Αντικείμενα"
+
+msgid "Symbols"
+msgstr "Σύμβολα"
+
+msgid "Flags"
+msgstr "Σημαίες"
+
+msgid "Search emoji"
+msgstr "Αναζήτηση emoji"
+
+msgid "Recently used"
+msgstr "Χρησιμοποιήθηκαν πρόσφατα"
+
+msgid "Search results"
+msgstr "Αποτελέσματα αναζήτησης"
+
+msgid ""
+"Groups from BigLace need a newer BigScale server. Ask your administrator to "
+"update it."
+msgstr ""
+"Οι ομάδες από το BigLace χρειάζονται νεότερο διακομιστή BigScale. Ζητήστε "
+"από τον διαχειριστή σας να τον ενημερώσει."
+
+msgid "This device isn't linked to a person's account, so it has no groups."
+msgstr ""
+"Αυτή η συσκευή δεν είναι συνδεδεμένη με λογαριασμό ατόμου, οπότε δεν έχει "
+"ομάδες."
+
+msgid ""
+"The panel knows this device by a different key (BigLace was reinstalled?). "
+"Leave the network and join again to fix it."
+msgstr ""
+"Ο πίνακας γνωρίζει αυτή τη συσκευή με διαφορετικό κλειδί (επανεγκαταστάθηκε "
+"το BigLace;). Αποχωρήστε από το δίκτυο και συμμετάσχετε ξανά για να το "
+"διορθώσετε."
+
+msgid ""
+"The panel couldn't confirm this device. Make sure BigLace is up to date and "
+"stays open while connected, then try again."
+msgstr ""
+"Ο πίνακας δεν μπόρεσε να επιβεβαιώσει αυτή τη συσκευή. Βεβαιωθείτε ότι το "
+"BigLace είναι ενημερωμένο και μένει ανοιχτό όσο είστε συνδεδεμένοι και "
+"δοκιμάστε ξανά."
+
+msgid ""
+"On this network everyone already reaches everyone, so groups aren't needed. "
+"The administrator can set access rules first."
+msgstr ""
+"Σε αυτό το δίκτυο όλοι προσεγγίζουν ήδη όλους, οπότε οι ομάδες δεν "
+"χρειάζονται. Ο διαχειριστής μπορεί πρώτα να ορίσει κανόνες πρόσβασης."
+
+msgid "You already created the maximum number of groups."
+msgstr "Έχετε ήδη δημιουργήσει τον μέγιστο αριθμό ομάδων."
+
+msgid "You are no longer in that group."
+msgstr "Δεν είστε πλέον σε αυτή την ομάδα."
+
+msgid "A group with that name already exists. Choose another name."
+msgstr "Υπάρχει ήδη ομάδα με αυτό το όνομα. Επιλέξτε άλλο όνομα."
+
+msgid ""
+"Use lowercase letters, digits and hyphens, starting with a letter or digit."
+msgstr ""
+"Χρησιμοποιήστε πεζά γράμματα, ψηφία και παύλες, ξεκινώντας με γράμμα ή "
+"ψηφίο."
+
+msgid ""
+"The administrator uses this group in the network's rules, so it can't be "
+"deleted. Ask the administrator."
+msgstr ""
+"Ο διαχειριστής χρησιμοποιεί αυτή την ομάδα στους κανόνες του δικτύου, οπότε "
+"δεν μπορεί να διαγραφεί. Ρωτήστε τον διαχειριστή."
+
+msgid "Only the person who created the group can do that."
+msgstr "Μόνο το άτομο που δημιούργησε την ομάδα μπορεί να το κάνει αυτό."
+
+msgid "You created this group: delete it instead of leaving."
+msgstr ""
+"Εσείς δημιουργήσατε αυτή την ομάδα: διαγράψτε την αντί να αποχωρήσετε."
+
+msgid "This group belongs to the administrator; only they can change it."
+msgstr ""
+"Αυτή η ομάδα ανήκει στον διαχειριστή· μόνο αυτός μπορεί να την αλλάξει."
+
+msgid "That person is no longer in the group."
+msgstr "Αυτό το άτομο δεν είναι πλέον στην ομάδα."
+
+msgid "That group no longer exists, or whoever invited you left it."
+msgstr ""
+"Αυτή η ομάδα δεν υπάρχει πλέον ή όποιος σας προσκάλεσε αποχώρησε από αυτήν."
+
+msgid "That person is no longer on the network."
+msgstr "Αυτό το άτομο δεν είναι πλέον στο δίκτυο."
+
+msgid "You're already in that group."
+msgstr "Είστε ήδη σε αυτή την ομάδα."
+
+msgid ""
+"This invite only brings new people into the network, and you're already in "
+"it."
+msgstr ""
+"Αυτή η πρόσκληση φέρνει μόνο νέα άτομα στο δίκτυο, και εσείς είστε ήδη σε "
+"αυτό."
+
+msgid "This invite was already used. Ask for a new one."
+msgstr "Αυτή η πρόσκληση έχει ήδη χρησιμοποιηθεί. Ζητήστε νέα."
+
+msgid "This invite expired. Ask for a new one."
+msgstr "Αυτή η πρόσκληση έληξε. Ζητήστε νέα."
+
+msgid "This invite is no longer valid. Ask for a new one."
+msgstr "Αυτή η πρόσκληση δεν είναι πλέον έγκυρη. Ζητήστε νέα."
+
+msgid "This invite is still waiting for an administrator's approval."
+msgstr "Αυτή η πρόσκληση περιμένει ακόμα την έγκριση ενός διαχειριστή."
+
+msgid "Too many attempts. Wait a minute and try again."
+msgstr "Πάρα πολλές προσπάθειες. Περιμένετε ένα λεπτό και δοκιμάστε ξανά."
+
+#, rust-format
+msgid "Could not reach the panel: {error}"
+msgstr "Δεν ήταν δυνατή η επικοινωνία με τον πίνακα: {error}"
+
+msgid "Groups"
+msgstr "Ομάδες"
+
+msgid "New group"
+msgstr "Νέα ομάδα"
+
+msgid "Create a group"
+msgstr "Δημιουργία ομάδας"
+
+msgid ""
+"People in the same group reach each other's devices. Create groups for "
+"family, work or friends, and invite people into them."
+msgstr ""
+"Τα άτομα της ίδιας ομάδας προσεγγίζουν τις συσκευές ο ένας του άλλου. "
+"Δημιουργήστε ομάδες για την οικογένεια, τη δουλειά ή τους φίλους και "
+"προσκαλέστε άτομα σε αυτές."
+
+msgid "Invitations for you"
+msgstr "Προσκλήσεις για εσάς"
+
+msgid "Your groups"
+msgstr "Οι ομάδες σας"
+
+msgid "No groups yet"
+msgstr "Καμία ομάδα ακόμα"
+
+msgid ""
+"A group lets several people reach each other at once — the family, the "
+"office, a class."
+msgstr ""
+"Μια ομάδα επιτρέπει σε πολλά άτομα να προσεγγίζουν ο ένας τον άλλον "
+"ταυτόχρονα — την οικογένεια, το γραφείο, μια τάξη."
+
+msgid "Groups unavailable"
+msgstr "Οι ομάδες δεν είναι διαθέσιμες"
+
+msgid "Invitation to a group"
+msgstr "Πρόσκληση σε ομάδα"
+
+#, rust-format
+msgid ""
+"{user} invites you to the group {group}. Open BigLace to accept or decline."
+msgstr ""
+"Ο/Η {user} σας προσκαλεί στην ομάδα {group}. Ανοίξτε το BigLace για αποδοχή "
+"ή απόρριψη."
+
+#, rust-format
+msgid "{user} invites you to {group}"
+msgstr "Ο/Η {user} σας προσκαλεί στο {group}"
+
+msgid "Joining lets you and the group's members reach each other's devices."
+msgstr ""
+"Με τη συμμετοχή, εσείς και τα μέλη της ομάδας προσεγγίζετε τις συσκευές ο "
+"ένας του άλλου."
+
+msgid "Decline"
+msgstr "Απόρριψη"
+
+msgid "Accept"
+msgstr "Αποδοχή"
+
+#, rust-format
+msgid "You joined {group}."
+msgstr "Μπήκατε στο {group}."
+
+msgid "Invitation declined."
+msgstr "Η πρόσκληση απορρίφθηκε."
+
+msgid "1 person"
+msgstr "1 άτομο"
+
+#, rust-format
+msgid "{count} people"
+msgstr "{count} άτομα"
+
+msgid "Created by you"
+msgstr "Δημιουργήθηκε από εσάς"
+
+#, rust-format
+msgid "Created by {user}"
+msgstr "Δημιουργήθηκε από {user}"
+
+msgid "Network group (administrator)"
+msgstr "Ομάδα δικτύου (διαχειριστής)"
+
+msgid "you"
+msgstr "εσείς"
+
+msgid "owner"
+msgstr "κάτοχος"
+
+#, rust-format
+msgid "Remove {user} from the group"
+msgstr "Αφαίρεση του {user} από την ομάδα"
+
+msgid "Invite to this group"
+msgstr "Πρόσκληση σε αυτή την ομάδα"
+
+msgid "Delete group"
+msgstr "Διαγραφή ομάδας"
+
+msgid "Leave group"
+msgstr "Αποχώρηση από την ομάδα"
+
+#, rust-format
+msgid "Remove {user}?"
+msgstr "Αφαίρεση του {user};"
+
+#, rust-format
+msgid ""
+"{user} leaves the group {group} and no longer reaches its members through "
+"it."
+msgstr ""
+"Ο/Η {user} αποχωρεί από την ομάδα {group} και δεν προσεγγίζει πλέον τα μέλη "
+"της μέσω αυτής."
+
+msgid "Remove"
+msgstr "Αφαίρεση"
+
+#, rust-format
+msgid "{user} was removed from the group."
+msgstr "Ο/Η {user} αφαιρέθηκε από την ομάδα."
+
+#, rust-format
+msgid "Leave {group}?"
+msgstr "Αποχώρηση από το {group};"
+
+msgid ""
+"You stop reaching the group's members through it. To come back, someone has "
+"to invite you again."
+msgstr ""
+"Σταματάτε να προσεγγίζετε τα μέλη της ομάδας μέσω αυτής. Για να επιστρέψετε,"
+" κάποιος πρέπει να σας προσκαλέσει ξανά."
+
+msgid "You left the group."
+msgstr "Αποχωρήσατε από την ομάδα."
+
+#, rust-format
+msgid "Delete {group}?"
+msgstr "Διαγραφή του {group};"
+
+msgid ""
+"Its members stop reaching each other through this group. People stay on the "
+"network."
+msgstr ""
+"Τα μέλη της σταματούν να προσεγγίζουν ο ένας τον άλλον μέσω αυτής της "
+"ομάδας. Τα άτομα παραμένουν στο δίκτυο."
+
+msgid "Group deleted."
+msgstr "Η ομάδα διαγράφηκε."
+
+#, rust-format
+msgid "Join {group}?"
+msgstr "Συμμετοχή στο {group};"
+
+#, rust-format
+msgid ""
+"{user} invited you. You and the group's members will reach each other's "
+"devices."
+msgstr ""
+"Ο/Η {user} σας προσκάλεσε. Εσείς και τα μέλη της ομάδας θα προσεγγίζετε τις "
+"συσκευές ο ένας του άλλου."
+
+msgid "You and the group's members will reach each other's devices."
+msgstr ""
+"Εσείς και τα μέλη της ομάδας θα προσεγγίζετε τις συσκευές ο ένας του άλλου."
+
+#, rust-format
+msgid "Connect with {user}?"
+msgstr "Σύνδεση με {user};"
+
+#, rust-format
+msgid "You and {user} will reach each other's devices."
+msgstr "Εσείς και ο/η {user} θα προσεγγίζετε τις συσκευές ο ένας του άλλου."
+
+msgid "Join"
+msgstr "Συμμετοχή"
+
+msgid "Done. You can now reach each other's devices."
+msgstr "Έγινε. Τώρα μπορείτε να προσεγγίζετε τις συσκευές ο ένας του άλλου."
+
+#, rust-format
+msgid "Invite to {group}"
+msgstr "Πρόσκληση στο {group}"
+
+msgid ""
+"Choose people on your network. Each one gets the invitation in BigLace and "
+"decides whether to join."
+msgstr ""
+"Επιλέξτε άτομα στο δίκτυό σας. Το καθένα λαμβάνει την πρόσκληση στο BigLace "
+"και αποφασίζει αν θα συμμετάσχει."
+
+msgid "Search people"
+msgstr "Αναζήτηση ατόμων"
+
+msgid ""
+"If someone on the network has exactly this name, they get the invitation."
+msgstr ""
+"Αν κάποιος στο δίκτυο έχει ακριβώς αυτό το όνομα, λαμβάνει την πρόσκληση."
+
+msgid "People on the network"
+msgstr "Άτομα στο δίκτυο"
+
+#, rust-format
+msgid "Invite \"{name}\""
+msgstr "Πρόσκληση \"{name}\""
+
+msgid "Send invitations"
+msgstr "Αποστολή προσκλήσεων"
+
+msgid "Someone not on the network yet? Share an invite link"
+msgstr ""
+"Κάποιος που δεν είναι ακόμα στο δίκτυο; Μοιραστείτε έναν σύνδεσμο πρόσκλησης"
+
+msgid "Invitation sent. You'll see the person in the group once they accept."
+msgstr ""
+"Η πρόσκληση στάλθηκε. Θα δείτε το άτομο στην ομάδα μόλις την αποδεχτεί."
+
+#, rust-format
+msgid "{count} invitations sent. People show up in the group as they accept."
+msgstr ""
+"Στάλθηκαν {count} προσκλήσεις. Τα άτομα εμφανίζονται στην ομάδα καθώς "
+"αποδέχονται."
+
+msgid ""
+"Listed are the people you're already connected to. To invite someone else on"
+" the network, type their exact name. Each one gets the invitation in BigLace"
+" and decides whether to join."
+msgstr ""
+"Εμφανίζονται τα άτομα με τα οποία είστε ήδη συνδεδεμένοι. Για να "
+"προσκαλέσετε κάποιον άλλον στο δίκτυο, πληκτρολογήστε το ακριβές όνομά του. "
+"Το καθένα λαμβάνει την πρόσκληση στο BigLace και αποφασίζει αν θα "
+"συμμετάσχει."
+
+msgid ""
+"Nobody you're connected to yet. Type someone's exact name to invite them."
+msgstr ""
+"Δεν είστε ακόμα συνδεδεμένοι με κανέναν. Πληκτρολογήστε το ακριβές όνομα "
+"κάποιου για να τον προσκαλέσετε."
+
+msgid "Nobody else is on the network yet."
+msgstr "Δεν υπάρχει ακόμα κανείς άλλος στο δίκτυο."
+
+msgid ""
+"You'll be the group's owner: you invite people into it and can remove them. "
+"Everyone in the group reaches each other's devices."
+msgstr ""
+"Θα είστε ο κάτοχος της ομάδας: προσκαλείτε άτομα σε αυτήν και μπορείτε να τα"
+" αφαιρέσετε. Όλοι στην ομάδα προσεγγίζουν τις συσκευές ο ένας του άλλου."
+
+msgid "Group name"
+msgstr "Όνομα ομάδας"
+
+msgid "Create group"
+msgstr "Δημιουργία ομάδας"
+
+msgid "For example: family, work, friends."
+msgstr "Για παράδειγμα: οικογένεια, δουλειά, φίλοι."
+
+#, rust-format
+msgid "It will be called \"{name}\"."
+msgstr "Θα ονομάζεται \"{name}\"."
+
+#, rust-format
+msgid "Group {group} created. Now invite people into it."
+msgstr "Η ομάδα {group} δημιουργήθηκε. Τώρα προσκαλέστε άτομα σε αυτήν."
+
+msgid "typed name"
+msgstr "πληκτρολογημένο όνομα"
+
+msgid "already in the group"
+msgstr "ήδη στην ομάδα"
+
+msgid "invitation sent, waiting"
+msgstr "η πρόσκληση στάλθηκε, σε αναμονή"
+
+#, rust-format
+msgid "Invite {user}"
+msgstr "Πρόσκληση του {user}"
+
+msgid ""
+"Invites from BigLace need a BigScale server that supports them. Ask your "
+"administrator to update the server, or to create the invite in the panel."
+msgstr ""
+"Οι προσκλήσεις από το BigLace χρειάζονται διακομιστή BigScale που τις "
+"υποστηρίζει. Ζητήστε από τον διαχειριστή σας να ενημερώσει τον διακομιστή ή "
+"να δημιουργήσει την πρόσκληση στον πίνακα."
+
+msgid ""
+"This device can't send invites (it isn't linked to a person's account)."
+msgstr ""
+"Αυτή η συσκευή δεν μπορεί να στείλει προσκλήσεις (δεν είναι συνδεδεμένη με "
+"λογαριασμό ατόμου)."
+
+msgid ""
+"On this network everyone can reach everyone, so only the administrator can "
+"invite people."
+msgstr ""
+"Σε αυτό το δίκτυο όλοι μπορούν να προσεγγίσουν όλους, οπότε μόνο ο "
+"διαχειριστής μπορεί να προσκαλεί άτομα."
+
+msgid "You have too many pending invites. Cancel some or try again tomorrow."
+msgstr ""
+"Έχετε πάρα πολλές εκκρεμείς προσκλήσεις. Ακυρώστε μερικές ή δοκιμάστε ξανά "
+"αύριο."
+
+msgid ""
+"On this network only administrators invite new people. You can still invite "
+"people already on the network into your groups."
+msgstr ""
+"Σε αυτό το δίκτυο μόνο οι διαχειριστές προσκαλούν νέα άτομα. Μπορείτε ακόμα "
+"να προσκαλείτε στις ομάδες σας άτομα που είναι ήδη στο δίκτυο."
+
+msgid "Waiting to be used"
+msgstr "Αναμονή χρήσης"
+
+msgid "Used"
+msgstr "Χρησιμοποιήθηκε"
+
+msgid "Expired"
+msgstr "Έληξε"
+
+msgid "Cancelled"
+msgstr "Ακυρώθηκε"
+
+msgid "Waiting for an administrator's approval"
+msgstr "Αναμονή έγκρισης διαχειριστή"
+
+msgid "Invites"
+msgstr "Προσκλήσεις"
+
+msgid "Bring someone to your network"
+msgstr "Φέρτε κάποιον στο δίκτυό σας"
+
+msgid ""
+"Create a link or QR code and send it to the person. When they join, you two "
+"can reach each other's devices — no administrator needed. The link works "
+"once and stays valid until it's used or you cancel it."
+msgstr ""
+"Δημιουργήστε έναν σύνδεσμο ή κωδικό QR και στείλτε τον στο άτομο. Όταν "
+"συμμετάσχει, οι δυο σας μπορείτε να προσεγγίζετε τις συσκευές ο ένας του "
+"άλλου — χωρίς να χρειάζεται διαχειριστής. Ο σύνδεσμος λειτουργεί μία φορά "
+"και παραμένει έγκυρος μέχρι να χρησιμοποιηθεί ή να τον ακυρώσετε."
+
+msgid "Invites you sent"
+msgstr "Προσκλήσεις που στείλατε"
+
+msgid "No invites yet"
+msgstr "Καμία πρόσκληση ακόμα"
+
+msgid "Invites unavailable"
+msgstr "Οι προσκλήσεις δεν είναι διαθέσιμες"
+
+#, rust-format
+msgid "{user} joined"
+msgstr "Ο/Η {user} συμμετέχει"
+
+#, rust-format
+msgid "group {group}"
+msgstr "ομάδα {group}"
+
+msgid "Cancel this invite: the link stops working"
+msgstr "Ακύρωση αυτής της πρόσκλησης: ο σύνδεσμος σταματά να λειτουργεί"
+
+msgid "Invite someone"
+msgstr "Πρόσκληση ατόμου"
+
+msgid "The person you invite will reach your devices, and you theirs."
+msgstr ""
+"Το άτομο που προσκαλείτε θα προσεγγίζει τις συσκευές σας, και εσείς τις "
+"δικές του."
+
+msgid "Who is it for? (optional)"
+msgstr "Για ποιον είναι; (προαιρετικό)"
+
+msgid "Access"
+msgstr "Πρόσβαση"
+
+msgid "Just the two of us"
+msgstr "Μόνο οι δυο μας"
+
+msgid "You see each other's devices, nobody else"
+msgstr "Βλέπετε ο ένας τις συσκευές του άλλου, κανείς άλλος"
+
+#, rust-format
+msgid "Also the group {group}"
+msgstr "Επίσης η ομάδα {group}"
+
+msgid "They join the group and see everyone in it"
+msgstr "Συμμετέχει στην ομάδα και βλέπει όλους σε αυτήν"
+
+msgid "A network of their own"
+msgstr "Ένα δικό του δίκτυο"
+
+msgid ""
+"No link to you: they see only their own devices and whoever they invite "
+"(you're the administrator)"
+msgstr ""
+"Καμία σύνδεση με εσάς: βλέπει μόνο τις δικές του συσκευές και όποιον "
+"προσκαλεί (εσείς είστε ο διαχειριστής)"
+
+msgid "Create invite"
+msgstr "Δημιουργία πρόσκλησης"
+
+msgid "QR code of the invite link"
+msgstr "Κωδικός QR του συνδέσμου πρόσκλησης"
+
+msgid ""
+"Send the link or let the person scan the code with their phone. It works "
+"once and stays valid until used or cancelled."
+msgstr ""
+"Στείλτε τον σύνδεσμο ή αφήστε το άτομο να σαρώσει τον κωδικό με το τηλέφωνό "
+"του. Λειτουργεί μία φορά και παραμένει έγκυρος μέχρι να χρησιμοποιηθεί ή να "
+"ακυρωθεί."
+
+msgid "Copy link"
+msgstr "Αντιγραφή συνδέσμου"
+
+msgid "Done"
+msgstr "Τέλος"
+
+msgid "Copied!"
+msgstr "Αντιγράφηκε!"
+
+msgid ""
+"This network asks an administrator to approve each invite: the link starts "
+"working once they do. Its status shows in Invites."
+msgstr ""
+"Αυτό το δίκτυο απαιτεί από έναν διαχειριστή να εγκρίνει κάθε πρόσκληση: ο "
+"σύνδεσμος αρχίζει να λειτουργεί μόλις το κάνει. Η κατάστασή της εμφανίζεται "
+"στις Προσκλήσεις."
+
+#, rust-format
+msgid ""
+"That name already belongs to an account on this network, so we suggested "
+"\"{name}\". If the account is yours, sign in again from the computer where "
+"you used it, or ask the administrator to free the name."
+msgstr ""
+"Αυτό το όνομα ανήκει ήδη σε λογαριασμό σε αυτό το δίκτυο, οπότε προτείναμε "
+"το \"{name}\". Αν ο λογαριασμός είναι δικός σας, συνδεθείτε ξανά από τον "
+"υπολογιστή όπου τον χρησιμοποιούσατε ή ζητήστε από τον διαχειριστή να "
+"ελευθερώσει το όνομα."
+
+msgid ""
+"That name already belongs to an account on this network. Try another one, or"
+" ask the administrator to free it."
+msgstr ""
+"Αυτό το όνομα ανήκει ήδη σε λογαριασμό σε αυτό το δίκτυο. Δοκιμάστε άλλο ή "
+"ζητήστε από τον διαχειριστή να το ελευθερώσει."
+
+msgid "Type your name using at least two letters or digits."
+msgstr "Πληκτρολογήστε το όνομά σας με τουλάχιστον δύο γράμματα ή ψηφία."
+
+msgid "This invite has expired. Ask for a new one."
+msgstr "Αυτή η πρόσκληση έχει λήξει. Ζητήστε νέα."
+
+msgid "This invite was cancelled. Ask for a new one."
+msgstr "Αυτή η πρόσκληση ακυρώθηκε. Ζητήστε νέα."
+
+msgid ""
+"This invite is waiting for the network administrator's approval. Try again "
+"once the person who invited you says it was approved."
+msgstr ""
+"Αυτή η πρόσκληση περιμένει την έγκριση του διαχειριστή του δικτύου. "
+"Δοκιμάστε ξανά μόλις το άτομο που σας προσκάλεσε σας πει ότι εγκρίθηκε."
+
+msgid "This invite is not valid. Check the link or ask for a new one."
+msgstr ""
+"Αυτή η πρόσκληση δεν είναι έγκυρη. Ελέγξτε τον σύνδεσμο ή ζητήστε νέα."
+
+msgid ""
+"This server doesn't support invites yet. Sign in with a panel account "
+"instead."
+msgstr ""
+"Αυτός ο διακομιστής δεν υποστηρίζει ακόμα προσκλήσεις. Συνδεθείτε με "
+"λογαριασμό πίνακα."
+
+msgid "Join with an invite"
+msgstr "Συμμετοχή με πρόσκληση"
+
+msgid ""
+"Paste the invite link you received and type your name. Your account is "
+"created and this device joins the network."
+msgstr ""
+"Επικολλήστε τον σύνδεσμο πρόσκλησης που λάβατε και πληκτρολογήστε το όνομά "
+"σας. Ο λογαριασμός σας δημιουργείται και αυτή η συσκευή συμμετέχει στο "
+"δίκτυο."
+
+msgid "Invite link"
+msgstr "Σύνδεσμος πρόσκλησης"
+
+msgid "Your name"
+msgstr "Το όνομά σας"
+
+msgid "How others will see you on the network, e.g. 'Maria' or 'Office PC'."
+msgstr ""
+"Πώς θα σας βλέπουν οι άλλοι στο δίκτυο, π.χ. 'Μαρία' ή 'Υπολογιστής "
+"γραφείου'."
+
+msgid ""
+"The name this device shows to other peers. Lowercase letters, digits and "
+"hyphens. Example: 'maria-laptop'."
+msgstr ""
+"Το όνομα που εμφανίζει αυτή η συσκευή στους άλλους ομότιμους. Πεζά γράμματα,"
+" ψηφία και παύλες. Παράδειγμα: 'maria-laptop'."
+
+msgid "Network"
+msgstr "Δίκτυο"
+
+msgid "Joining…"
+msgstr "Συμμετοχή…"
+
+msgid ""
+"That doesn't look like an invite link. It starts with https:// and contains "
+"/join#."
+msgstr ""
+"Αυτό δεν μοιάζει με σύνδεσμο πρόσκλησης. Ξεκινά με https:// και περιέχει "
+"/join#."
+
+msgid "Type your name."
+msgstr "Πληκτρολογήστε το όνομά σας."
+
+#, rust-format
+msgid "Welcome, {name}! You joined the group {group}. Connecting…"
+msgstr "Καλώς ήρθατε, {name}! Μπήκατε στην ομάδα {group}. Σύνδεση…"
+
+#, rust-format
+msgid "Welcome, {name}! Connecting…"
+msgstr "Καλώς ήρθατε, {name}! Σύνδεση…"
+
+msgid "Open admin panel"
+msgstr "Άνοιγμα πίνακα διαχείρισης"
+
+msgid "Devices"
+msgstr "Συσκευές"
+
+msgid "Rooms"
+msgstr "Δωμάτια"
+
+msgid "Choose your photo"
+msgstr "Επιλέξτε τη φωτογραφία σας"
+
+msgid "Photo updated. Everyone you're connected to will see it."
+msgstr ""
+"Η φωτογραφία ενημερώθηκε. Όλοι όσοι είναι συνδεδεμένοι μαζί σας θα τη δουν."
+
+#, rust-format
+msgid "Could not change the photo: {error}"
+msgstr "Δεν ήταν δυνατή η αλλαγή της φωτογραφίας: {error}"
+
+msgid "Sign in with an access key"
+msgstr "Σύνδεση με κλειδί πρόσβασης"
+
+msgid ""
+"Paste the key the administrator gave you. It's used once, to register this "
+"device."
+msgstr ""
+"Επικολλήστε το κλειδί που σας έδωσε ο διαχειριστής. Χρησιμοποιείται μία "
+"φορά, για την καταχώριση αυτής της συσκευής."
+
+msgid "Server URL"
+msgstr "Διεύθυνση URL διακομιστή"
+
+msgid "Access key"
+msgstr "Κλειδί πρόσβασης"
+
+msgid ""
+"The key to this account is no longer on this computer. Join with a new "
+"invite."
+msgstr ""
+"Το κλειδί αυτού του λογαριασμού δεν βρίσκεται πλέον σε αυτόν τον υπολογιστή."
+" Συμμετάσχετε με νέα πρόσκληση."
+
+#, rust-format
+msgid "Welcome back, {name}! Connecting…"
+msgstr "Καλώς ήρθατε ξανά, {name}! Σύνδεση…"
+
+#, rust-format
+msgid ""
+"The account {user} no longer exists on this network. Join with a new invite."
+msgstr ""
+"Ο λογαριασμός {user} δεν υπάρχει πλέον σε αυτό το δίκτυο. Συμμετάσχετε με "
+"νέα πρόσκληση."
+
+msgid "Preferences"
+msgstr "Προτιμήσεις"
+
+msgid "General"
+msgstr "Γενικά"
+
+msgid "Behaviour"
+msgstr "Συμπεριφορά"
+
+msgid "Make this user the tailscale operator"
+msgstr "Ορισμός αυτού του χρήστη ως χειριστή tailscale"
+
+msgid ""
+"Lets BigLace manage the connection without asking for a password each time"
+msgstr ""
+"Επιτρέπει στο BigLace να διαχειρίζεται τη σύνδεση χωρίς να ζητά κωδικό κάθε "
+"φορά"
+
+msgid "Account"
+msgstr "Λογαριασμός"
+
+msgid ""
+"Signing out removes this device's identity from BigLace. You will need a new"
+" invite or key to join again."
+msgstr ""
+"Η αποσύνδεση αφαιρεί την ταυτότητα αυτής της συσκευής από το BigLace. Θα "
+"χρειαστείτε νέα πρόσκληση ή κλειδί για να συμμετάσχετε ξανά."
+
+msgid "Change profile photo…"
+msgstr "Αλλαγή φωτογραφίας προφίλ…"
+
+msgid "Sign in with panel account"
+msgstr "Σύνδεση με λογαριασμό πίνακα ελέγχου"
+
+msgid "Leave the network…"
+msgstr "Αποχώρηση από το δίκτυο…"
+
+msgid "View tailscaled logs"
+msgstr "Προβολή αρχείων καταγραφής tailscaled"
+
+msgid "About BigLace"
+msgstr "Σχετικά με το BigLace"
+
+msgid "Connect to the network first, then open the invite link again."
+msgstr ""
+"Συνδεθείτε πρώτα στο δίκτυο και μετά ανοίξτε ξανά τον σύνδεσμο πρόσκλησης."
+
+#, rust-format
+msgid ""
+"This invite is for another network ({host}). Sign out first to join it."
+msgstr ""
+"Αυτή η πρόσκληση είναι για άλλο δίκτυο ({host}). Αποσυνδεθείτε πρώτα για να "
+"συμμετάσχετε σε αυτό."
+
+msgid ""
+"This device is already signed in. Sign out first to join with an invite."
+msgstr ""
+"Αυτή η συσκευή είναι ήδη συνδεδεμένη. Αποσυνδεθείτε πρώτα για να "
+"συμμετάσχετε με πρόσκληση."
+
+msgid "Photo removed."
+msgstr "Η φωτογραφία αφαιρέθηκε."
+
+#, rust-format
+msgid "Could not remove the photo: {error}"
+msgstr "Δεν ήταν δυνατή η αφαίρεση της φωτογραφίας: {error}"
+
+#, rust-format
+msgid "Could not open the browser: {error}"
+msgstr "Δεν ήταν δυνατό το άνοιγμα του προγράμματος περιήγησης: {error}"
+
+msgid ""
+"You can't open the admin panel: you're not an administrator of this network,"
+" or the panel can't be reached."
+msgstr ""
+"Δεν μπορείτε να ανοίξετε τον πίνακα διαχείρισης: δεν είστε διαχειριστής "
+"αυτού του δικτύου ή ο πίνακας δεν είναι προσβάσιμος."
+
+msgid "Enter the server URL before saving."
+msgstr "Εισαγάγετε τη διεύθυνση URL του διακομιστή πριν από την αποθήκευση."
+
+msgid "Enter the pre-auth key before saving."
+msgstr "Εισαγάγετε το προ-εξουσιοδοτημένο κλειδί πριν από την αποθήκευση."
+
+msgid "Setup saved"
+msgstr "Η ρύθμιση αποθηκεύτηκε"
+
+msgid "Could not start the Tailscale service."
+msgstr "Δεν ήταν δυνατή η εκκίνηση της υπηρεσίας Tailscale."
+
+msgid "IP address copied"
+msgstr "Η διεύθυνση IP αντιγράφηκε"
+
+#, rust-format
+msgid ""
+"Saved, but the pre-auth key could not be stored in the system keyring "
+"({error}). This device can still reconnect; the key is only needed again to "
+"register it anew."
+msgstr ""
+"Αποθηκεύτηκε, αλλά το κλειδί προεξουσιοδότησης δεν ήταν δυνατό να "
+"αποθηκευτεί στη μπρελόκ κλειδιών του συστήματος ({error}). Αυτή η συσκευή "
+"μπορεί ακόμα να επανασυνδεθεί· το κλειδί χρειάζεται ξανά μόνο για νέα "
+"καταχώρισή της."
+
+msgid "Service stopped"
+msgstr "Η υπηρεσία σταμάτησε"
+
+msgid "Not signed in"
+msgstr "Δεν έχετε συνδεθεί"
+
+msgid "Server unreachable"
+msgstr "Ο διακομιστής δεν είναι προσβάσιμος"
+
+msgid "Tailscale can't set DNS"
+msgstr "Το Tailscale δεν μπορεί να ρυθμίσει το DNS"
+
+#, rust-format
+msgid "Update available: v{version}"
+msgstr "Διαθέσιμη ενημέρωση: v{version}"
+
+#, rust-format
+msgid "Sign in again as {user}"
+msgstr "Συνδεθείτε ξανά ως {user}"
+
 msgid "(no device name)"
 msgstr "(χωρίς όνομα συσκευής)"
 
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/mod.rs:1400
+msgid "Sign in or paste a pre-auth key"
+msgstr "Συνδεθείτε ή επικολλήστε ένα προ-εξουσιοδοτημένο κλειδί"
+
+msgid "Server not set"
+msgstr "Ο διακομιστής δεν έχει οριστεί"
+
+msgid "no other devices"
+msgstr "καμία άλλη συσκευή"
+
+#, rust-format
+msgid "{online} online"
+msgstr "{online} συνδεδεμένο"
+
+#, rust-format
+msgid "{online} online · {offline} offline"
+msgstr "{online} συνδεδεμένο · {offline} αποσυνδεδεμένο"
+
+msgid "is online"
+msgstr "είναι online"
+
+msgid "went offline"
+msgstr "έγινε offline"
+
 #, rust-format
 msgid "{count} devices are online"
 msgstr "{count} συσκευές είναι συνδεδεμένες"
 
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/mod.rs:1401
 #, rust-format
 msgid "{count} devices went offline"
 msgstr "{count} συσκευές αποσυνδέθηκαν"
 
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/mod.rs:1403
 #, rust-format
 msgid "{on_count} online · {off_count} offline"
 msgstr "{on_count} συνδεδεμένες · {off_count} αποσυνδεδεμένες"
 
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/tailscale.rs:650
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/mod.rs:814
-msgid "Enter the server URL before connecting."
-msgstr "Εισαγάγετε τη διεύθυνση URL του διακομιστή πριν από τη σύνδεση."
+msgid "direct"
+msgstr "άμεση"
 
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/mod.rs:682
-msgid "Enter the server URL before saving."
-msgstr "Εισαγάγετε τη διεύθυνση URL του διακομιστή πριν από την αποθήκευση."
+msgid "via relay"
+msgstr "μέσω αναμεταδότη"
 
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/mod.rs:691
-msgid "Enter the pre-auth key before saving."
-msgstr "Εισαγάγετε το προ-εξουσιοδοτημένο κλειδί πριν από την αποθήκευση."
+msgid "Turn on over the network (Wake-on-LAN)"
+msgstr "Ενεργοποίηση μέσω δικτύου (Wake-on-LAN)"
 
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/sidebar.rs:178
+msgid "Turn on over the network"
+msgstr "Ενεργοποίηση μέσω δικτύου"
+
+#, rust-format
+msgid ""
+"Signal sent to {name} (by {via}). If it's set to turn on over the network, "
+"it shows up in a minute or two."
+msgstr ""
+"Το σήμα στάλθηκε στο {name} (μέσω {via}). Αν έχει ρυθμιστεί να "
+"ενεργοποιείται μέσω δικτύου, θα εμφανιστεί σε ένα-δύο λεπτά."
+
+#, rust-format
+msgid "Could not turn on {name}: {error}"
+msgstr "Δεν ήταν δυνατή η ενεργοποίηση του {name}: {error}"
+
+msgid "Unpin from top"
+msgstr "Αφαίρεση από την κορυφή"
+
+msgid "Pin to top"
+msgstr "Καρφίτσωμα στην κορυφή"
+
+msgid "Pinned to top"
+msgstr "Καρφιτσωμένο στην κορυφή"
+
+msgid "Unpinned"
+msgstr "Αποκαρφιτσώθηκε"
+
+msgid "Open files (SFTP)"
+msgstr "Άνοιγμα αρχείων (SFTP)"
+
+msgid "Open terminal (SSH)"
+msgstr "Άνοιγμα τερματικού (SSH)"
+
+msgid "See and control the screen"
+msgstr "Προβολή και έλεγχος της οθόνης"
+
+msgid "DNS name"
+msgstr "Όνομα DNS"
+
+msgid "DNS name copied"
+msgstr "Το όνομα DNS αντιγράφηκε"
+
+msgid "Owner"
+msgstr "Κάτοχος"
+
+msgid "SSH login (override)"
+msgstr "Σύνδεση SSH (παράκαμψη)"
+
+msgid "Saved"
+msgstr "Αποθηκεύτηκε"
+
+msgid "Tags"
+msgstr "Ετικέτες"
+
+msgid "Last seen"
+msgstr "Τελευταία εμφάνιση"
+
+msgid "Use as exit node"
+msgstr "Χρήση ως κόμβος εξόδου"
+
+msgid "Route all traffic through this peer"
+msgstr "Δρομολόγηση όλης της κίνησης μέσω αυτού του peer"
+
+msgid "Exit node enabled"
+msgstr "Κόμβος εξόδου ενεργοποιημένος"
+
+msgid "Exit node disabled"
+msgstr "Κόμβος εξόδου απενεργοποιημένος"
+
+msgid "Failed to update exit node"
+msgstr "Αποτυχία ενημέρωσης κόμβου εξόδου"
+
+msgid "Copy"
+msgstr "Αντιγραφή"
+
+msgid "End access"
+msgstr "Τερματισμός πρόσβασης"
+
+#, rust-format
+msgid "{who} is seeing and controlling this screen"
+msgstr "Ο/Η {who} βλέπει και ελέγχει αυτή την οθόνη"
+
+msgid "Remote access started"
+msgstr "Η απομακρυσμένη πρόσβαση ξεκίνησε"
+
+#, rust-format
+msgid ""
+"{user} ({device}) is seeing and controlling this screen. Open BigLace to end"
+" the access."
+msgstr ""
+"Ο/Η {user} ({device}) βλέπει και ελέγχει αυτή την οθόνη. Ανοίξτε το BigLace "
+"για να τερματίσετε την πρόσβαση."
+
+#, rust-format
+msgid "Always allow {user} (no more asking)"
+msgstr "Να επιτρέπεται πάντα ο/η {user} (χωρίς άλλη ερώτηση)"
+
+msgid "Deny"
+msgstr "Άρνηση"
+
+msgid "Allow access"
+msgstr "Να επιτραπεί η πρόσβαση"
+
+msgid "Allow remote access?"
+msgstr "Να επιτραπεί η απομακρυσμένη πρόσβαση;"
+
+#, rust-format
+msgid "<b>{user}</b> wants to <b>see and control</b> this screen."
+msgstr "Ο/Η <b>{user}</b> θέλει να <b>δει και να ελέγξει</b> αυτή την οθόνη."
+
+msgid "Person"
+msgstr "Άτομο"
+
+msgid "Device"
+msgstr "Συσκευή"
+
+msgid "See everything on your screen"
+msgstr "Να βλέπει ό,τι υπάρχει στην οθόνη σας"
+
+msgid "Move the mouse and type on this computer"
+msgstr "Να κινεί το ποντίκι και να πληκτρολογεί σε αυτόν τον υπολογιστή"
+
+msgid "Hear this computer's sound"
+msgstr "Να ακούει τον ήχο αυτού του υπολογιστή"
+
+msgid ""
+"<b>Only allow it if you know this person and are expecting it.</b> You can "
+"end the access at any time from BigLace."
+msgstr ""
+"<b>Επιτρέψτε το μόνο αν γνωρίζετε αυτό το άτομο και το περιμένετε.</b> "
+"Μπορείτε να τερματίσετε την πρόσβαση οποιαδήποτε στιγμή από το BigLace."
+
+#, rust-format
+msgid "Denied automatically in {seconds} s"
+msgstr "Αυτόματη άρνηση σε {seconds} δ"
+
+#, rust-format
+msgid "Restart {name}'s computer?"
+msgstr "Επανεκκίνηση του υπολογιστή του/της {name};"
+
+msgid ""
+"It restarts, signs in by itself and locks the screen right away; this window"
+" connects again when it's back. Unsaved work there is lost."
+msgstr ""
+"Κάνει επανεκκίνηση, συνδέεται μόνος του και κλειδώνει αμέσως την οθόνη· αυτό"
+" το παράθυρο συνδέεται ξανά όταν επιστρέψει. Η μη αποθηκευμένη εργασία εκεί "
+"χάνεται."
+
+msgid "Restart"
+msgstr "Επανεκκίνηση"
+
+#, rust-format
+msgid "Restart {name}'s session?"
+msgstr "Επανεκκίνηση της συνεδρίας του/της {name};"
+
+msgid ""
+"The open programs there close, the computer signs out and back in by itself "
+"(without restarting) and locks the screen; this window connects again. "
+"Unsaved work there is lost."
+msgstr ""
+"Τα ανοιχτά προγράμματα εκεί κλείνουν, ο υπολογιστής αποσυνδέεται και "
+"συνδέεται ξανά μόνος του (χωρίς επανεκκίνηση) και κλειδώνει την οθόνη· αυτό "
+"το παράθυρο συνδέεται ξανά. Η μη αποθηκευμένη εργασία εκεί χάνεται."
+
+msgid "Restart the session"
+msgstr "Επανεκκίνηση της συνεδρίας"
+
+#, rust-format
+msgid "Shut down {name}'s computer?"
+msgstr "Τερματισμός του υπολογιστή του/της {name};"
+
+msgid ""
+"You won't be able to reach it again until someone turns it on. Unsaved work "
+"there is lost."
+msgstr ""
+"Δεν θα μπορείτε να τον προσεγγίσετε ξανά μέχρι κάποιος να τον ενεργοποιήσει."
+" Η μη αποθηκευμένη εργασία εκεί χάνεται."
+
+msgid "Shut Down"
+msgstr "Τερματισμός"
+
+#, rust-format
+msgid "Screen of {name}"
+msgstr "Οθόνη του/της {name}"
+
+msgid "Full screen (F11)"
+msgstr "Πλήρης οθόνη (F11)"
+
+msgid "Mute the remote sound"
+msgstr "Σίγαση του απομακρυσμένου ήχου"
+
+#, rust-format
+msgid "Fit {name}'s resolution to this window"
+msgstr "Προσαρμογή της ανάλυσης του/της {name} σε αυτό το παράθυρο"
+
+msgid "LIVE"
+msgstr "ΖΩΝΤΑΝΑ"
+
+msgid "You are watching this screen right now"
+msgstr "Παρακολουθείτε αυτή την οθόνη αυτή τη στιγμή"
+
+msgid "You are seeing and controlling this screen right now"
+msgstr "Βλέπετε και ελέγχετε αυτή την οθόνη αυτή τη στιγμή"
+
+msgid "Request control"
+msgstr "Αίτημα ελέγχου"
+
+#, rust-format
+msgid "Ask {name} to let you use the mouse and keyboard"
+msgstr ""
+"Ζητήστε από τον/την {name} να σας αφήσει να χρησιμοποιήσετε το ποντίκι και "
+"το πληκτρολόγιο"
+
+#, rust-format
+msgid "Waiting for {name}…"
+msgstr "Αναμονή για {name}…"
+
+msgid "Connecting to the screen shared with the room."
+msgstr "Σύνδεση στην οθόνη που κοινοποιήθηκε στο δωμάτιο."
+
+msgid "The person at that computer needs to allow the access."
+msgstr "Το άτομο σε εκείνον τον υπολογιστή πρέπει να επιτρέψει την πρόσβαση."
+
+#, rust-format
+msgid "Asked {name} for control…"
+msgstr "Ζητήθηκε έλεγχος από τον/την {name}…"
+
+#, rust-format
+msgid "Restart or shut down {name}'s computer"
+msgstr "Επανεκκίνηση ή τερματισμός του υπολογιστή του/της {name}"
+
+msgid "Restart and reconnect"
+msgstr "Επανεκκίνηση και επανασύνδεση"
+
+msgid "Shut down"
+msgstr "Τερματισμός"
+
+#, rust-format
+msgid "{name} is back."
+msgstr "Ο/Η {name} επέστρεψε."
+
+#, rust-format
+msgid "{name}'s computer didn't come back after the restart."
+msgstr "Ο υπολογιστής του/της {name} δεν επέστρεψε μετά την επανεκκίνηση."
+
+#, rust-format
+msgid "{name} didn't allow the access."
+msgstr "Ο/Η {name} δεν επέτρεψε την πρόσβαση."
+
+msgid ""
+"That computer couldn't confirm this device. Make sure both run an up-to-date"
+" BigLace."
+msgstr ""
+"Εκείνος ο υπολογιστής δεν μπόρεσε να επιβεβαιώσει αυτή τη συσκευή. "
+"Βεβαιωθείτε ότι και οι δύο εκτελούν ενημερωμένο BigLace."
+
+#, rust-format
+msgid ""
+"{name}'s computer can't share its screen (screen sharing isn't available "
+"there)."
+msgstr ""
+"Ο υπολογιστής του/της {name} δεν μπορεί να κοινοποιήσει την οθόνη του (η "
+"κοινή χρήση οθόνης δεν είναι διαθέσιμη εκεί)."
+
+#, rust-format
+msgid "Could not connect: {error}"
+msgstr "Αδυναμία σύνδεσης: {error}"
+
+#, rust-format
+msgid "{name}'s computer said: {error}"
+msgstr "Ο υπολογιστής του/της {name} απάντησε: {error}"
+
+#, rust-format
+msgid "Restarting {name}'s session…"
+msgstr "Επανεκκίνηση της συνεδρίας του/της {name}…"
+
+msgid ""
+"This window connects again by itself when the session is back. It takes a "
+"few seconds."
+msgstr ""
+"Αυτό το παράθυρο συνδέεται ξανά μόνο του όταν επιστρέψει η συνεδρία. "
+"Χρειάζονται λίγα δευτερόλεπτα."
+
+#, rust-format
+msgid "Restarting {name}…"
+msgstr "Επανεκκίνηση του/της {name}…"
+
+msgid ""
+"This window connects again by itself when the computer is back. It takes a "
+"few minutes."
+msgstr ""
+"Αυτό το παράθυρο συνδέεται ξανά μόνο του όταν επιστρέψει ο υπολογιστής. "
+"Χρειάζονται λίγα λεπτά."
+
+#, rust-format
+msgid "{latency} ms · {fps} fps · {mbps} Mbit/s"
+msgstr "{latency} ms · {fps} fps · {mbps} Mbit/s"
+
+#, rust-format
+msgid "You're controlling {name}'s screen now."
+msgstr "Ελέγχετε τώρα την οθόνη του/της {name}."
+
+#, rust-format
+msgid "{name} didn't give you control."
+msgstr "Ο/Η {name} δεν σας έδωσε τον έλεγχο."
+
+#, rust-format
+msgid "{name} took control back."
+msgstr "Ο/Η {name} πήρε πίσω τον έλεγχο."
+
+#, rust-format
+msgid "{name}'s computer is shutting down."
+msgstr "Ο υπολογιστής του/της {name} τερματίζεται."
+
+#, rust-format
+msgid "The access to {name}'s screen ended."
+msgstr "Η πρόσβαση στην οθόνη του/της {name} τερματίστηκε."
+
+#, rust-format
+msgid "The access to {name}'s screen ended: {error}"
+msgstr "Η πρόσβαση στην οθόνη του/της {name} τερματίστηκε: {error}"
+
+msgid "Give back control"
+msgstr "Επιστροφή ελέγχου"
+
+msgid ""
+"Each of your groups has a voice room. Join it and talk with whoever is there"
+" — the sound goes straight between you, through the network."
+msgstr ""
+"Κάθε ομάδα σας έχει ένα φωνητικό δωμάτιο. Μπείτε και μιλήστε με όποιον είναι"
+" εκεί — ο ήχος πηγαίνει απευθείας μεταξύ σας, μέσω του δικτύου."
+
+msgid "You're not in any group yet. Create one in Groups."
+msgstr "Δεν είστε ακόμα σε καμία ομάδα. Δημιουργήστε μία στις Ομάδες."
+
+msgid "People in the room"
+msgstr "Άτομα στο δωμάτιο"
+
+msgid "Everyone"
+msgstr "Όλοι"
+
+msgid "Who's speaking"
+msgstr "Ποιος μιλάει"
+
+msgid "Mute"
+msgstr "Σίγαση"
+
+msgid "Mute your microphone for everyone"
+msgstr "Σίγαση του μικροφώνου σας για όλους"
+
+msgid "Which camera"
+msgstr "Ποια κάμερα"
+
+msgid "Include the computer's sound when sharing the screen"
+msgstr "Συμπερίληψη του ήχου του υπολογιστή κατά την κοινή χρήση οθόνης"
+
+msgid ""
+"Videos and music playing here go to the room too; the room's voices don't "
+"(no echo)"
+msgstr ""
+"Τα βίντεο και η μουσική που παίζουν εδώ πηγαίνουν και στο δωμάτιο· οι φωνές "
+"του δωματίου όχι (χωρίς ηχώ)"
+
+msgid "Rooms unavailable"
+msgstr "Τα δωμάτια δεν είναι διαθέσιμα"
+
+#, rust-format
+msgid "Could not turn on the camera: {error}"
+msgstr "Δεν ήταν δυνατή η ενεργοποίηση της κάμερας: {error}"
+
+#, rust-format
+msgid "Could not share the screen: {error}"
+msgstr "Δεν ήταν δυνατή η κοινή χρήση της οθόνης: {error}"
+
+msgid "Nobody here right now"
+msgstr "Κανείς εδώ αυτή τη στιγμή"
+
+#, rust-format
+msgid "In the room: {people}"
+msgstr "Στο δωμάτιο: {people}"
+
+#, rust-format
+msgid "Join the room {group}"
+msgstr "Μπείτε στο δωμάτιο {group}"
+
+#, rust-format
+msgid "Could not join {group}: {error}"
+msgstr "Δεν ήταν δυνατή η είσοδος στο {group}: {error}"
+
+msgid "📺 You're showing your screen to the room"
+msgstr "📺 Δείχνετε την οθόνη σας στο δωμάτιο"
+
+msgid "📺 You're showing your screen · 1 person watching"
+msgstr "📺 Δείχνετε την οθόνη σας · 1 άτομο παρακολουθεί"
+
+#, rust-format
+msgid "📺 You're showing your screen · {count} people watching"
+msgstr "📺 Δείχνετε την οθόνη σας · {count} άτομα παρακολουθούν"
+
+#, rust-format
+msgid "{people} · {talking} talking"
+msgstr "{people} · {talking} μιλούν"
+
+msgid "connecting…"
+msgstr "σύνδεση…"
+
+msgid "muted"
+msgstr "σίγαση"
+
+msgid "talking"
+msgstr "μιλά"
+
+msgid "quiet"
+msgstr "σιωπηλός"
+
+msgid "Sharing screen"
+msgstr "Κοινή χρήση οθόνης"
+
+msgid "In control"
+msgstr "Έχει τον έλεγχο"
+
+msgid "Controls your screen now"
+msgstr "Ελέγχει τώρα την οθόνη σας"
+
+msgid "Watching"
+msgstr "Παρακολουθεί"
+
+msgid "Watching your screen"
+msgstr "Παρακολουθεί την οθόνη σας"
+
+#, rust-format
+msgid "{user} is showing their screen"
+msgstr "Ο/Η {user} δείχνει την οθόνη του/της"
+
+msgid "Watch"
+msgstr "Παρακολούθηση"
+
+#, rust-format
+msgid "{user} asks to control your screen"
+msgstr "Ο/Η {user} ζητά να ελέγξει την οθόνη σας"
+
+msgid ""
+"They'll be able to use your mouse and keyboard. You can take control back at"
+" any time."
+msgstr ""
+"Θα μπορεί να χρησιμοποιεί το ποντίκι και το πληκτρολόγιό σας. Μπορείτε να "
+"πάρετε πίσω τον έλεγχο οποιαδήποτε στιγμή."
+
+msgid "Allow"
+msgstr "Να επιτραπεί"
+
+msgid "Turn off camera"
+msgstr "Απενεργοποίηση κάμερας"
+
+msgid "Turn on camera"
+msgstr "Ενεργοποίηση κάμερας"
+
+msgid "No camera found on this computer"
+msgstr "Δεν βρέθηκε κάμερα σε αυτόν τον υπολογιστή"
+
+msgid "Stop sharing"
+msgstr "Διακοπή κοινής χρήσης"
+
+msgid "Share screen"
+msgstr "Κοινή χρήση οθόνης"
+
+msgid "Stop showing your screen to the room"
+msgstr "Σταματήστε να δείχνετε την οθόνη σας στο δωμάτιο"
+
+msgid "Show your screen to everyone in the room"
+msgstr "Δείξτε την οθόνη σας σε όλους στο δωμάτιο"
+
+msgid "Take back control"
+msgstr "Ανάκτηση ελέγχου"
+
+msgid "Give control"
+msgstr "Παραχώρηση ελέγχου"
+
+msgid "Stop them from using your mouse and keyboard"
+msgstr ""
+"Σταματήστε τους από το να χρησιμοποιούν το ποντίκι και το πληκτρολόγιό σας"
+
+msgid "Let them use your mouse and keyboard"
+msgstr "Αφήστε τους να χρησιμοποιούν το ποντίκι και το πληκτρολόγιό σας"
+
+msgid "Sound level"
+msgstr "Επίπεδο ήχου"
+
+msgid "Unmute"
+msgstr "Κατάργηση σίγασης"
+
+msgid "Sections"
+msgstr "Ενότητες"
+
+msgid ""
+"Your identity on this mesh — the device name shown to other peers and the "
+"network you're connected to."
+msgstr ""
+"Η ταυτότητά σας σε αυτό το πλέγμα — το όνομα συσκευής που εμφανίζεται σε "
+"άλλους κόμβους και το δίκτυο στο οποίο είστε συνδεδεμένοι."
+
+msgid "Change photo…"
+msgstr "Αλλαγή φωτογραφίας…"
+
+msgid "Remove photo"
+msgstr "Αφαίρεση φωτογραφίας"
+
+msgid "Change your photo"
+msgstr "Αλλάξτε τη φωτογραφία σας"
+
+msgid "Rename this device on the network"
+msgstr "Μετονομασία αυτής της συσκευής στο δίκτυο"
+
+msgid "Advanced: use a pre-auth key"
+msgstr "Για προχωρημένους: χρήση προ-εξουσιοδοτημένου κλειδιού"
+
+msgid "Already have a key from your administrator? Paste it here."
+msgstr "Έχετε ήδη ένα κλειδί από τον διαχειριστή σας; Επικολλήστε το εδώ."
+
+msgid ""
+"Manual setup — expand to paste a server URL and pre-auth key when you "
+"already received them from your administrator. Most users should sign in "
+"through the panel button above instead."
+msgstr ""
+"Μη αυτόματη ρύθμιση — αναπτύξτε για να επικολλήσετε μια διεύθυνση URL "
+"διακομιστή και ένα προ-εξουσιοδοτημένο κλειδί όταν τα έχετε ήδη λάβει από "
+"τον διαχειριστή σας. Οι περισσότεροι χρήστες θα πρέπει να συνδεθούν μέσω του"
+" κουμπιού του πίνακα παραπάνω."
+
+msgid ""
+"Address of the coordination server (e.g. vpn.example.org). The https:// "
+"scheme is added automatically if you omit it."
+msgstr ""
+"Διεύθυνση του διακομιστή συντονισμού (π.χ. vpn.example.org). Το σχήμα "
+"https:// προστίθεται αυτόματα αν το παραλείψετε."
+
+msgid "Pre-auth key"
+msgstr "Κλειδί προ-εξουσιοδότησης"
+
+msgid ""
+"One-time or reusable key created on the server (starts with 'hskey-auth-'). "
+"Used to register this device automatically without opening a browser."
+msgstr ""
+"Κλειδί μιας χρήσης ή επαναχρησιμοποιήσιμο που δημιουργήθηκε στον διακομιστή "
+"(ξεκινά με 'hskey-auth-'). Χρησιμοποιείται για την αυτόματη εγγραφή αυτής "
+"της συσκευής χωρίς άνοιγμα προγράμματος περιήγησης."
+
+msgid ""
+"The name this device shows to other peers on the VPN — this is the Tailscale"
+" hostname, NOT your computer's name and NOT your user. Lowercase letters, "
+"digits and hyphens. Example: 'tales-laptop', 'francois', 'office-pc'."
+msgstr ""
+"Το όνομα με το οποίο εμφανίζεται αυτή η συσκευή σε άλλους κόμβους στο VPN — "
+"αυτό είναι το όνομα κεντρικού υπολογιστή του Tailscale, ΟΧΙ το όνομα του "
+"υπολογιστή σας και ΟΧΙ το όνομα χρήστη σας. Πεζά γράμματα, ψηφία και παύλες."
+" Παράδειγμα: 'tales-laptop', 'francois', 'office-pc'."
+
+msgid "Apply manual setup"
+msgstr "Εφαρμογή μη αυτόματης ρύθμισης"
+
+msgid "Save"
+msgstr "Αποθήκευση"
+
+msgid ""
+"Persist the server, key and device name above. Won't connect — press Connect"
+" afterwards."
+msgstr ""
+"Αποθήκευση του διακομιστή, του κλειδιού και του ονόματος συσκευής παραπάνω. "
+"Δεν θα γίνει σύνδεση — πατήστε Σύνδεση στη συνέχεια."
+
+msgid "Connect automatically"
+msgstr "Αυτόματη σύνδεση"
+
+msgid "Join the network when BigLace starts"
+msgstr "Σύνδεση στο δίκτυο κατά την εκκίνηση του BigLace"
+
+msgid ""
+"When on, BigLace runs 'tailscale up' as soon as it launches, so you join the"
+" mesh without clicking Connect every time."
+msgstr ""
+"Όταν είναι ενεργό, το BigLace εκτελεί 'tailscale up' μόλις ξεκινήσει, ώστε "
+"να συμμετέχετε στο πλέγμα χωρίς να κάνετε κλικ στο Σύνδεση κάθε φορά."
+
+msgid "Toggle auto-connect on startup"
+msgstr "Εναλλαγή αυτόματης σύνδεσης κατά την εκκίνηση"
+
 msgid "Start BigLace with the session"
 msgstr "Εκκίνηση του BigLace με τη συνεδρία"
 
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/sidebar.rs:179
 msgid "Open BigLace after you sign in to the desktop"
 msgstr "Άνοιγμα του BigLace μετά τη σύνδεση στην επιφάνεια εργασίας"
 
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/sidebar.rs:182
 msgid ""
 "Turn this on to add BigLace to your desktop session startup. Turn it off to "
 "remove it."
@@ -734,9 +2376,85 @@ msgstr ""
 "της συνεδρίας της επιφάνειας εργασίας σας. Απενεργοποιήστε την για να το "
 "αφαιρέσετε."
 
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/sidebar.rs:190
 msgid "Toggle start with session"
 msgstr "Εναλλαγή εκκίνησης με τη συνεδρία"
+
+msgid "Reconnect on drop"
+msgstr "Επανασύνδεση σε περίπτωση αποσύνδεσης"
+
+msgid "Retry with backoff when the connection is lost"
+msgstr "Επανάληψη με καθυστέρηση όταν χαθεί η σύνδεση"
+
+msgid ""
+"If the tunnel drops (network change, sleep, server hiccup), BigLace silently"
+" retries with growing delays instead of leaving you offline until you "
+"notice."
+msgstr ""
+"Εάν η σήραγγα διακοπεί (αλλαγή δικτύου, αναστολή λειτουργίας, πρόβλημα "
+"διακομιστή), το BigLace επαναλαμβάνει σιωπηλά με αυξανόμενες καθυστερήσεις "
+"αντί να σας αφήνει εκτός σύνδεσης μέχρι να το παρατηρήσετε."
+
+msgid "Toggle auto-reconnect"
+msgstr "Εναλλαγή αυτόματης επανασύνδεσης"
+
+msgid "Notify on peer changes"
+msgstr "Ειδοποίηση για αλλαγές σε peers"
+
+msgid "Show a desktop notification when peers go online/offline"
+msgstr ""
+"Εμφάνιση ειδοποίησης στην επιφάνεια εργασίας όταν peers γίνονται "
+"online/offline"
+
+msgid ""
+"Send a desktop toast when another device on your network goes online or "
+"offline. Rapid bursts are coalesced into a single notification so you don't "
+"get spammed during reconnects."
+msgstr ""
+"Αποστολή ειδοποίησης επιφάνειας εργασίας όταν μια άλλη συσκευή στο δίκτυό "
+"σας γίνεται online ή offline. Οι γρήγορες ριπές συγχωνεύονται σε μία μόνο "
+"ειδοποίηση, ώστε να μην λαμβάνετε ανεπιθύμητα μηνύματα κατά τη διάρκεια "
+"επανασυνδέσεων."
+
+msgid "Toggle peer-change notifications"
+msgstr "Εναλλαγή ειδοποιήσεων αλλαγής κόμβων"
+
+msgid ""
+"Join or leave the mesh network. When connected, this device becomes "
+"reachable by the other peers in your account."
+msgstr ""
+"Συνδεθείτε ή αποσυνδεθείτε από το δίκτυο mesh. Όταν είστε συνδεδεμένοι, αυτή"
+" η συσκευή γίνεται προσβάσιμη από τα άλλα μέλη του λογαριασμού σας."
+
+msgid "Your photo"
+msgstr "Η φωτογραφία σας"
+
+#~ msgid "Panel credentials"
+#~ msgstr "Διαπιστευτήρια πίνακα ελέγχου"
+
+#~ msgid "Username"
+#~ msgstr "Όνομα χρήστη"
+
+#~ msgid "Sign in to connect"
+#~ msgstr "Συνδεθείτε για σύνδεση"
+
+#~ msgid "Use the panel on the left to sign in or paste a pre-auth key."
+#~ msgstr ""
+#~ "Χρησιμοποιήστε τον πίνακα στα αριστερά για να συνδεθείτε ή να επικολλήσετε "
+#~ "ένα προ-εξουσιοδοτημένο κλειδί."
+
+#~ msgid "Connect via panel account"
+#~ msgstr "Σύνδεση μέσω λογαριασμού πίνακα"
+
+#~ msgid ""
+#~ "Sign in with your BigScale panel username and password. A device identity "
+#~ "will be created on the network automatically — no manual key needed."
+#~ msgstr ""
+#~ "Συνδεθείτε με το όνομα χρήστη και τον κωδικό πρόσβασης του πίνακα BigScale. "
+#~ "Μια ταυτότητα συσκευής θα δημιουργηθεί αυτόματα στο δίκτυο — δεν απαιτείται "
+#~ "χειροκίνητο κλειδί."
+
+#~ msgid "Connected ·"
+#~ msgstr "Συνδεδεμένο ·"
 
 #~ msgid "Device name"
 #~ msgstr "Όνομα συσκευής"
@@ -777,9 +2495,6 @@ msgstr "Εναλλαγή εκκίνησης με τη συνεδρία"
 
 #~ msgid "Terminal"
 #~ msgstr "Τερματικό"
-
-#~ msgid "Copied!"
-#~ msgstr "Αντιγράφηκε!"
 
 #~ msgid "Key generated successfully."
 #~ msgstr "Το κλειδί δημιουργήθηκε επιτυχώς."

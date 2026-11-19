@@ -684,7 +684,8 @@ pub(crate) fn decode_loop_with(
             | Kind::RoomState
             | Kind::Chat
             | Kind::ChatAck
-            | Kind::Resize => {}
+            | Kind::Resize
+            | Kind::CamVideo => {}
             Kind::Error => anyhow::bail!("{}", String::from_utf8_lossy(&payload)),
         }
     }

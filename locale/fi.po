@@ -3,7 +3,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: biglace\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-05-01 15:35\n"
+"POT-Creation-Date: 2026-11-19 12:50-0300\n"
 "PO-Revision-Date: 2026-05-01 15:35\n"
 "Last-Translator: Translation Automator <auto@translator.ai>\n"
 "Language-Team: Finnish <fi@li.org>\n"
@@ -12,148 +12,43 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/tray/linux.rs:76
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/tray/windows.rs:136
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/mod.rs:1114
-msgid "Disconnect"
-msgstr "Katkaise yhteys"
+msgid "Invalid device address."
+msgstr "Virheellinen laitteen osoite."
 
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/content.rs:47
-msgid "Main menu"
-msgstr "Päävalikko"
-
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/mod.rs:590
-msgid "Sign in with panel account"
-msgstr "Kirjaudu sisään paneelitilillä"
-
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/mod.rs:592
-msgid "Make this user the tailscale operator"
-msgstr "Tee tästä käyttäjästä tailscale-operaattori"
-
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/mod.rs:594
-msgid "About BigLace"
-msgstr "Tietoja BigLacesta"
-
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/dialogs.rs:42
-msgid "Tailscale operator"
-msgstr "Tailscale-operaattori"
-
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/dialogs.rs:37
-msgid "Done. You will no longer need a password to connect or disconnect."
+msgid ""
+"No file manager could open the SFTP location. Install one (Dolphin, "
+"Nautilus, Nemo, Thunar…) and try again."
 msgstr ""
-"Valmis. Et enää tarvitse salasanaa yhdistämiseen tai yhteyden "
-"katkaisemiseen."
+"Mikään tiedostonhallinta ei voinut avata SFTP-sijaintia. Asenna jokin "
+"(Dolphin, Nautilus, Nemo, Thunar…) ja yritä uudelleen."
 
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/dialogs.rs:38
-#, rust-format
-msgid "Failed: {error}"
-msgstr "Epäonnistui: {error}"
+msgid ""
+"No file manager could open the SFTP location. Install WinSCP and try again."
+msgstr ""
+"Mikään tiedostonhallinta ei voinut avata SFTP-sijaintia. Asenna WinSCP ja "
+"yritä uudelleen."
 
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/dialogs.rs:45
-msgid "OK"
-msgstr "OK"
+msgid ""
+"No terminal emulator found. Install one (Konsole, GNOME Terminal, xterm…) "
+"and try again."
+msgstr ""
+"Pääte-emulaattoria ei löytynyt. Asenna jokin (Konsole, GNOME Terminal, "
+"xterm…) ja yritä uudelleen."
 
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/dialogs.rs:387
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/mod.rs:729
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/mod.rs:962
-#, rust-format
-msgid "Error: {error}"
-msgstr "Virhe: {error}"
-
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/dialogs.rs:29
-msgid "Mesh VPN client for BigScale/Headscale."
-msgstr "Mesh VPN -asiakasohjelma BigScale/Headscale-palvelulle."
-
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/dialogs.rs:164
-msgid "Panel credentials"
-msgstr "Paneelin tunnistetiedot"
-
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/dialogs.rs:173
-msgid "Panel URL"
-msgstr "Paneelin URL-osoite"
-
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/dialogs.rs:180
-msgid "Username"
-msgstr "Käyttäjätunnus"
-
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/dialogs.rs:184
-msgid "Password"
-msgstr "Salasana"
-
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/dialogs.rs:75
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/dialogs.rs:247
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/dialogs.rs:448
-msgid "Cancel"
-msgstr "Peruuta"
-
-#. The OK button needs to flip between "Sign in" and "spinner + Connecting…"
-#. while the HTTP call is in flight. Build both children up front and just
-#. swap the button's child — simpler than juggling visibility flags.
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/dialogs.rs:252
-msgid "Sign in"
-msgstr "Kirjaudu sisään"
-
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/dialogs.rs:309
-msgid "Fill in URL, username and password."
-msgstr "Täytä URL-osoite, käyttäjätunnus ja salasana."
-
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/content.rs:159
-msgid "Start service"
-msgstr "Käynnistä palvelu"
-
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/sidebar.rs:95
-msgid "Server URL"
-msgstr "Palvelimen URL-osoite"
-
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/content.rs:206
-msgid "This device"
-msgstr "Tämä laite"
-
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/tray/linux.rs:83
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/tray/windows.rs:81
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/tray/windows.rs:136
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/mod.rs:1124
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/mod.rs:1129
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/sidebar.rs:240
-msgid "Connect"
-msgstr "Yhdistä"
-
-#. ── Devices on the network ──
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/content.rs:223
-msgid "Devices on the network"
-msgstr "Verkon laitteet"
-
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/tailscale.rs:557
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/tailscale.rs:630
 msgid "Failed to run tailscale"
 msgstr "Tailscalen suoritus epäonnistui"
 
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/tailscale.rs:577
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/tailscale.rs:610
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/tailscale.rs:642
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/tailscale.rs:714
 msgid "Failed to connect — check the server URL and key."
 msgstr ""
 "Yhteyden muodostaminen epäonnistui — tarkista palvelimen URL-osoite ja "
 "avain."
 
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/tailscale.rs:598
 msgid "Failed to run pkexec tailscale"
 msgstr "pkexec tailscalen suoritus epäonnistui"
 
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/tailscale.rs:781
-msgid "Could not determine the current user."
-msgstr "Nykyistä käyttäjää ei voitu määrittää."
+msgid "Enter the server URL before connecting."
+msgstr "Syötä palvelimen URL ennen yhdistämistä."
 
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/tailscale.rs:787
-msgid "Failed to run pkexec tailscale set"
-msgstr "pkexec tailscale set -komennon suoritus epäonnistui"
-
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/tailscale.rs:789
-msgid "Failed to set tailscale operator."
-msgstr "Tailscale-operaattorin asettaminen epäonnistui."
-
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/tailscale.rs:707
 msgid ""
 "The pre-auth key was rejected by the server. Generate a new key in the "
 "BigScale panel and try again."
@@ -161,167 +56,643 @@ msgstr ""
 "Palvelin hylkäsi esitodennusavaimen. Luo uusi avain BigScale-paneelissa ja "
 "yritä uudelleen."
 
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/tailscale.rs:710
+msgid "Sign in or paste a pre-auth key first."
+msgstr "Kirjaudu ensin sisään tai liitä ennakkoon todennusavain."
+
 #, rust-format
 msgid "Login rejected by server: {detail}"
 msgstr "Palvelin hylkäsi sisäänkirjautumisen: {detail}"
 
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/sidebar.rs:138
-msgid "Apply manual setup"
-msgstr "Ota käyttöön manuaalinen asetus"
+msgid "Could not determine the current user."
+msgstr "Nykyistä käyttäjää ei voitu määrittää."
 
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/sidebar.rs:140
-msgid "Save"
-msgstr "Tallenna"
+msgid "Failed to run pkexec tailscale set"
+msgstr "pkexec tailscale set -komennon suoritus epäonnistui"
 
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/sidebar.rs:159
-msgid "Connect automatically"
-msgstr "Yhdistä automaattisesti"
+msgid "Failed to set tailscale operator."
+msgstr "Tailscale-operaattorin asettaminen epäonnistui."
 
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/sidebar.rs:160
-msgid "Join the network when BigLace starts"
-msgstr "Liity verkkoon, kun BigLace käynnistyy"
-
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/mod.rs:1079
-msgid "Sign in or paste a pre-auth key"
-msgstr "Kirjaudu sisään tai liitä ennakkoon todennusavain"
-
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/mod.rs:1091
-msgid "Server not set"
-msgstr "Palvelinta ei ole asetettu"
-
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/mod.rs:711
-msgid "Setup saved"
-msgstr "Asetukset tallennettu"
-
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/tailscale.rs:653
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/mod.rs:805
-msgid "Sign in or paste a pre-auth key first."
-msgstr "Kirjaudu ensin sisään tai liitä ennakkoon todennusavain."
-
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/content.rs:96
-msgid "Sign in to connect"
-msgstr "Kirjaudu sisään yhdistääksesi"
-
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/content.rs:97
-msgid "Use the panel on the left to sign in or paste a pre-auth key."
-msgstr ""
-"Käytä vasemmanpuoleista paneelia kirjautuaksesi sisään tai liittääksesi "
-"ennakkoon todennusavaimen."
-
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/content.rs:105
-msgid "Not connected"
-msgstr "Ei yhteyttä"
-
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/content.rs:106
-msgid "Press Connect on the left to join the network."
-msgstr "Paina vasemmalla olevaa Yhdistä-painiketta liittyäksesi verkkoon."
-
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/content.rs:183
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/dialogs.rs:259
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/mod.rs:1026
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/mod.rs:1119
-msgid "Connecting…"
-msgstr "Yhdistetään…"
-
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/content.rs:232
-msgid "No other devices on the network yet."
-msgstr "Verkossa ei ole vielä muita laitteita."
-
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/content.rs:216
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/peer_row.rs:178
-msgid "Copy IP address"
-msgstr "Kopioi IP-osoite"
-
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/mod.rs:888
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/peer_row.rs:186
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/peer_row.rs:271
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/peer_row.rs:280
-msgid "IP address copied"
-msgstr "IP-osoite kopioitu"
-
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/peer_row.rs:231
-msgid "Open files (SFTP)"
-msgstr "Avaa tiedostot (SFTP)"
-
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/peer_row.rs:246
-msgid "Open terminal (SSH)"
-msgstr "Avaa pääte (SSH)"
-
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/peer_row.rs:50
-msgid "offline"
-msgstr "offline"
-
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/mod.rs:1023
-msgid "Service stopped"
-msgstr "Palvelu pysäytetty"
-
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/tray/linux.rs:58
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/tray/windows.rs:172
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/content.rs:40
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/mod.rs:1025
-msgid "Disconnected"
-msgstr "Yhteys katkaistu"
-
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/tray/linux.rs:53
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/tray/windows.rs:167
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/mod.rs:953
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/mod.rs:1027
 msgid "Connected"
 msgstr "Yhdistetty"
 
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/content.rs:59
+msgid "Connected · 1 peer"
+msgstr "Yhdistetty · 1 vertaislaite"
+
+#, rust-format
+msgid "Connected · {n} peers"
+msgstr "Yhdistetty · {n} vertaislaitetta"
+
+msgid "Disconnected"
+msgstr "Yhteys katkaistu"
+
+#, rust-format
+msgid "In the room {group} · muted"
+msgstr "Huoneessa {group} · mykistetty"
+
+#, rust-format
+msgid "In the room {group}"
+msgstr "Huoneessa {group}"
+
+msgid "Disconnect"
+msgstr "Katkaise yhteys"
+
+msgid "Connect"
+msgstr "Yhdistä"
+
+msgid "Show BigLace"
+msgstr "Näytä BigLace"
+
+#, rust-format
+msgid "Room {group}"
+msgstr "Huone {group}"
+
+msgid "Unmute (Ctrl+Alt+M)"
+msgstr "Poista mykistys (Ctrl+Alt+M)"
+
+msgid "Mute (Ctrl+Alt+M)"
+msgstr "Mykistä (Ctrl+Alt+M)"
+
+msgid "Leave the room"
+msgstr "Poistu huoneesta"
+
+msgid "Quit"
+msgstr "Lopeta"
+
+msgid "This computer"
+msgstr "Tämä tietokone"
+
+msgid "Who may use this computer remotely"
+msgstr "Kuka saa käyttää tätä tietokonetta etänä"
+
+msgid ""
+"Anyone you're connected to can ask to see and control this screen. Choose "
+"who is let in without asking, and who is never let in."
+msgstr ""
+"Kuka tahansa, johon olet yhteydessä, voi pyytää nähdä ja hallita tätä "
+"näyttöä. Valitse, kenet päästetään sisään kysymättä ja ketä ei päästetä "
+"koskaan."
+
+msgid "History of accesses"
+msgstr "Käyttöhistoria"
+
+msgid "Kept on this computer only."
+msgstr "Säilytetään vain tällä tietokoneella."
+
+msgid "Clear"
+msgstr "Tyhjennä"
+
+msgid "Nobody has asked yet."
+msgstr "Kukaan ei ole vielä pyytänyt."
+
+msgid "When someone asks, you can choose to always let them in."
+msgstr "Kun joku pyytää, voit valita päästää hänet aina sisään."
+
+msgid "Ask every time"
+msgstr "Kysy joka kerta"
+
+msgid "Always allow"
+msgstr "Salli aina"
+
+msgid "Never allow"
+msgstr "Älä koskaan salli"
+
+msgid "No accesses yet."
+msgstr "Ei vielä käyttökertoja."
+
+msgid "Remote access"
+msgstr "Etäkäyttö"
+
+msgid "Watched the screen shared with the room"
+msgstr "Katsoi huoneen kanssa jaettua näyttöä"
+
+msgid "Got control of the shared screen"
+msgstr "Sai jaetun näytön hallinnan"
+
+msgid "Restarted the computer"
+msgstr "Käynnisti tietokoneen uudelleen"
+
+msgid "Restarted the session"
+msgstr "Käynnisti istunnon uudelleen"
+
+msgid "Shut down the computer"
+msgstr "Sammutti tietokoneen"
+
+msgid "allowed"
+msgstr "sallittu"
+
+msgid "allowed (always)"
+msgstr "sallittu (aina)"
+
+msgid "came back after a restart"
+msgstr "palasi uudelleenkäynnistyksen jälkeen"
+
+msgid "denied"
+msgstr "estetty"
+
+msgid "blocked (never allowed)"
+msgstr "estetty (ei koskaan sallittu)"
+
+msgid "ended"
+msgstr "päättynyt"
+
+#, rust-format
+msgid "{user} ({device})"
+msgstr "{user} ({device})"
+
+#, rust-format
+msgid "{done} of {total}"
+msgstr "{done}/{total}"
+
+msgid "Play"
+msgstr "Toista"
+
+msgid "Download"
+msgstr "Lataa"
+
+msgid "Open"
+msgstr "Avaa"
+
+msgid "Show in folder"
+msgstr "Näytä kansiossa"
+
+msgid "Pause"
+msgstr "Tauko"
+
+msgid "Photo"
+msgstr "Kuva"
+
+msgid "Video"
+msgstr "Video"
+
+msgid "Voice message"
+msgstr "Ääniviesti"
+
+msgid "Chat"
+msgstr "Keskustelu"
+
+msgid "New chat"
+msgstr "Uusi keskustelu"
+
+msgid "Start a conversation with someone on the network"
+msgstr "Aloita keskustelu jonkun verkossa olevan kanssa"
+
+msgid "Main menu"
+msgstr "Päävalikko"
+
+msgid "Chat theme"
+msgstr "Keskustelun teema"
+
+msgid "Conversations"
+msgstr "Keskustelut"
+
+msgid "No conversations yet."
+msgstr "Ei vielä keskusteluja."
+
+msgid "Search in this conversation (Ctrl+F)"
+msgstr "Hae tästä keskustelusta (Ctrl+F)"
+
+msgid "Pinned message"
+msgstr "Kiinnitetty viesti"
+
+msgid "Unpin"
+msgstr "Irrota"
+
+msgid "Search messages"
+msgstr "Hae viestejä"
+
+msgid "Older"
+msgstr "Vanhempi"
+
+msgid "Newer"
+msgstr "Uudempi"
+
+msgid "Emoji"
+msgstr "Emoji"
+
+msgid "Send files, pictures or videos"
+msgstr "Lähetä tiedostoja, kuvia tai videoita"
+
+msgid "Send (Enter) — Shift+Enter for a new line"
+msgstr "Lähetä (Enter) — Shift+Enter uudelle riville"
+
+msgid "Record a voice message"
+msgstr "Nauhoita ääniviesti"
+
+msgid "Discard"
+msgstr "Hylkää"
+
+msgid "Send voice message"
+msgstr "Lähetä ääniviesti"
+
+msgid "Cancel"
+msgstr "Peruuta"
+
+msgid "Copy text"
+msgstr "Kopioi teksti"
+
+msgid "Forward"
+msgstr "Välitä"
+
+msgid "Delete"
+msgstr "Poista"
+
+msgid "Talk with your network"
+msgstr "Keskustele verkkosi kanssa"
+
+msgid ""
+"Pick a conversation, or start one. Messages go straight between your "
+"computers — the server never sees them."
+msgstr ""
+"Valitse keskustelu tai aloita uusi. Viestit kulkevat suoraan tietokoneidenne"
+" välillä — palvelin ei koskaan näe niitä."
+
+msgid "Group"
+msgstr "Ryhmä"
+
+msgid "Direct conversation"
+msgstr "Kahdenkeskinen keskustelu"
+
+msgid "That message is too long."
+msgstr "Viesti on liian pitkä."
+
+#, rust-format
+msgid "Could not send: {error}"
+msgstr "Lähetys epäonnistui: {error}"
+
+#, rust-format
+msgid "Could not download: {error}"
+msgstr "Lataus epäonnistui: {error}"
+
+#, rust-format
+msgid "{user} in {group}"
+msgstr "{user} ryhmässä {group}"
+
+msgid "Send files"
+msgstr "Lähetä tiedostoja"
+
+msgid "Drop to send"
+msgstr "Pudota lähettääksesi"
+
+#, rust-format
+msgid "Could not record: {error}"
+msgstr "Nauhoitus epäonnistui: {error}"
+
+msgid "Too short — record for at least a second."
+msgstr "Liian lyhyt — nauhoita vähintään sekunti."
+
+msgid "Search people and groups"
+msgstr "Hae ihmisiä ja ryhmiä"
+
+msgid "Loading…"
+msgstr "Ladataan…"
+
+msgid "Nobody you can reach yet."
+msgstr "Ei vielä ketään tavoitettavissa."
+
+msgid "online"
+msgstr "paikalla"
+
+msgid "offline"
+msgstr "offline"
+
+#, rust-format
+msgid "You: {text}"
+msgstr "Sinä: {text}"
+
+msgid "Group conversation"
+msgstr "Ryhmäkeskustelu"
+
+#, rust-format
+msgid "Delivered to {people}"
+msgstr "Toimitettu: {people}"
+
+msgid "Waiting to be delivered"
+msgstr "Odottaa toimitusta"
+
+msgid "Today"
+msgstr "Tänään"
+
+msgid "Yesterday"
+msgstr "Eilen"
+
+msgid "🗑 Message deleted"
+msgstr "🗑 Viesti poistettu"
+
+#, rust-format
+msgid "Forwarded from {name}"
+msgstr "Välitetty käyttäjältä {name}"
+
+msgid "edited"
+msgstr "muokattu"
+
+msgid "More reactions"
+msgstr "Lisää reaktioita"
+
+msgid "Reply"
+msgstr "Vastaa"
+
+msgid "Edit"
+msgstr "Muokkaa"
+
+msgid "Pin"
+msgstr "Kiinnitä"
+
+msgid "Select"
+msgstr "Valitse"
+
+#, rust-format
+msgid "Could not react: {error}"
+msgstr "Reagointi epäonnistui: {error}"
+
+#, rust-format
+msgid "Reply to {name}"
+msgstr "Vastaa käyttäjälle {name}"
+
+msgid "Editing message"
+msgstr "Muokataan viestiä"
+
+msgid "Copied."
+msgstr "Kopioitu."
+
+msgid "Forward to…"
+msgstr "Välitä…"
+
+msgid "Forwarded."
+msgstr "Välitetty."
+
+#, rust-format
+msgid "Could not forward: {error}"
+msgstr "Välitys epäonnistui: {error}"
+
+msgid "Delete the message?"
+msgstr "Poistetaanko viesti?"
+
+#, rust-format
+msgid "Delete {count} messages?"
+msgstr "Poistetaanko {count} viestiä?"
+
+msgid "“For everyone” removes it from the other computers too."
+msgstr "”Kaikilta” poistaa sen myös muilta tietokoneilta."
+
+msgid "It's removed from this computer only."
+msgstr "Se poistetaan vain tältä tietokoneelta."
+
+msgid "Delete for me"
+msgstr "Poista minulta"
+
+msgid "Delete for everyone"
+msgstr "Poista kaikilta"
+
+#, rust-format
+msgid "Could not delete: {error}"
+msgstr "Poisto epäonnistui: {error}"
+
+msgid "1 selected"
+msgstr "1 valittu"
+
+#, rust-format
+msgid "{count} selected"
+msgstr "{count} valittu"
+
+msgid "That message isn't here anymore."
+msgstr "Viestiä ei ole enää täällä."
+
+msgid "No results"
+msgstr "Ei tuloksia"
+
+#, rust-format
+msgid "{n} of {total}"
+msgstr "{n}/{total}"
+
+#, rust-format
+msgid "{user} is typing…"
+msgstr "{user} kirjoittaa…"
+
+msgid "typing…"
+msgstr "kirjoittaa…"
+
+msgid "System accent"
+msgstr "Järjestelmän korostusväri"
+
+msgid "Blue"
+msgstr "Sininen"
+
+msgid "Teal"
+msgstr "Sinivihreä"
+
+msgid "Green"
+msgstr "Vihreä"
+
+msgid "Purple"
+msgstr "Violetti"
+
+msgid "Pink"
+msgstr "Vaaleanpunainen"
+
+msgid "Orange"
+msgstr "Oranssi"
+
+msgid "Red"
+msgstr "Punainen"
+
+msgid "Graphite"
+msgstr "Grafiitti"
+
+msgid "Default"
+msgstr "Oletus"
+
+msgid "Plain"
+msgstr "Tavallinen"
+
+msgid "Dots"
+msgstr "Pisteet"
+
+msgid "Ocean"
+msgstr "Valtameri"
+
+msgid "Sunset"
+msgstr "Auringonlasku"
+
+msgid "Forest"
+msgstr "Metsä"
+
+msgid "Lavender"
+msgstr "Laventeli"
+
+msgid "Night"
+msgstr "Yö"
+
+msgid "Hi! How does this look? 😊"
+msgstr "Hei! Miltä tämä näyttää? 😊"
+
+msgid "Looks great!"
+msgstr "Näyttää hienolta!"
+
+msgid "Appearance"
+msgstr "Ulkoasu"
+
+msgid "System"
+msgstr "Järjestelmä"
+
+msgid "Light"
+msgstr "Vaalea"
+
+msgid "Dark"
+msgstr "Tumma"
+
+msgid "Your messages"
+msgstr "Omat viestisi"
+
+msgid "Background"
+msgstr "Tausta"
+
+msgid "Picture…"
+msgstr "Kuva…"
+
+msgid "Pictures"
+msgstr "Kuvat"
+
+msgid "Choose a background picture"
+msgstr "Valitse taustakuva"
+
+msgid "Message"
+msgstr "Viesti"
+
+msgid "Bold"
+msgstr "Lihavointi"
+
+msgid "Italic"
+msgstr "Kursiivi"
+
+msgid "Underline"
+msgstr "Alleviivaus"
+
+msgid "Strikethrough"
+msgstr "Yliviivaus"
+
+msgid "Monospace"
+msgstr "Tasalevyinen"
+
+msgid "Create link"
+msgstr "Luo linkki"
+
+msgid "Plain text"
+msgstr "Pelkkä teksti"
+
+msgid "Formatting"
+msgstr "Muotoilu"
+
+msgid "Create"
+msgstr "Luo"
+
+msgid "Search devices"
+msgstr "Hae laitteita"
+
 msgid "Refresh"
 msgstr "Päivitä"
 
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/dialogs.rs:373
-msgid "Signed in. Press Connect to join the network."
-msgstr "Kirjautunut sisään. Paina Yhdistä liittyäksesi verkkoon."
+msgid "Invite"
+msgstr "Kutsu"
 
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/mod.rs:1240
-msgid "no other devices"
-msgstr "ei muita laitteita"
+msgid "Invite someone to your network"
+msgstr "Kutsu joku verkkoosi"
 
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/mod.rs:1242
-#, rust-format
-msgid "{online} online"
-msgstr "{online} verkossa"
+msgid ""
+"Tailscale cannot write this device's DNS settings, so it can no longer keep "
+"peer names working. They may still resolve for now, from the configuration "
+"left over from before the failure, but that will break the next time the "
+"network changes — and BigLace will fall back to IP addresses. On most "
+"distributions `sudo resolvconf -u` repairs it."
+msgstr ""
+"Tailscale ei voi kirjoittaa tämän laitteen DNS-asetuksia, joten se ei enää "
+"pysty pitämään vertaisten nimiä toiminnassa. Ne saattavat vielä toimia "
+"jonkin aikaa vikaa edeltäneiden asetusten ansiosta, mutta se lakkaa "
+"toimimasta seuraavan kerran verkon muuttuessa — ja BigLace siirtyy "
+"käyttämään IP-osoitteita. Useimmissa jakeluissa `sudo resolvconf -u` korjaa "
+"asian."
 
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/mod.rs:1244
-#, rust-format
-msgid "{online} online · {offline} offline"
-msgstr "{online} verkossa · {offline} offline"
+msgid "Not connected"
+msgstr "Ei yhteyttä"
 
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/content.rs:153
+msgid "Press Connect on the left to join the network."
+msgstr "Paina vasemmalla olevaa Yhdistä-painiketta liittyäksesi verkkoon."
+
 msgid "The tailscale service is not running"
 msgstr "Tailscale-palvelu ei ole käynnissä"
 
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/content.rs:155
 msgid "BigLace needs the tailscaled background service to manage the network."
 msgstr "BigLace tarvitsee tailscaled-taustapalvelun verkon hallintaan."
 
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/sidebar.rs:108
-msgid "Pre-auth key"
-msgstr "Esivaltuutusavain"
+msgid "Start service"
+msgstr "Käynnistä palvelu"
 
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/mod.rs:1024
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/mod.rs:1078
-msgid "Not signed in"
-msgstr "Ei kirjauduttu sisään"
+msgid "Join the network"
+msgstr "Liity verkkoon"
 
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/sidebar.rs:81
-msgid "Advanced: use a pre-auth key"
-msgstr "Lisäasetukset: käytä ennakkoon myönnettyä avainta"
+msgid "Choose how you're going to sign in."
+msgstr "Valitse, miten kirjaudut sisään."
 
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/sidebar.rs:82
-msgid "Already have a key from your administrator? Paste it here."
-msgstr "Onko sinulla jo avain ylläpitäjältäsi? Liitä se tähän."
+msgid "Ways to sign in"
+msgstr "Kirjautumistavat"
 
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/dialogs.rs:68
+msgid "Your account was kept on this computer. No invite needed."
+msgstr "Tilisi säilytettiin tällä tietokoneella. Kutsua ei tarvita."
+
+msgid "I have an invite"
+msgstr "Minulla on kutsu"
+
+msgid "Someone on the network sent you a link or a QR code."
+msgstr "Joku verkossa lähetti sinulle linkin tai QR-koodin."
+
+msgid "I have an access key"
+msgstr "Minulla on käyttöavain"
+
+msgid "A key the administrator created for you (starts with hskey-auth-)."
+msgstr "Ylläpitäjän sinulle luoma avain (alkaa hskey-auth-)."
+
+msgid "I'm the administrator"
+msgstr "Olen ylläpitäjä"
+
+msgid "Sign in with the BigScale panel's admin username and password."
+msgstr ""
+"Kirjaudu BigScale-paneelin ylläpitäjän käyttäjätunnuksella ja salasanalla."
+
+msgid "Connecting…"
+msgstr "Yhdistetään…"
+
+msgid "This device"
+msgstr "Tämä laite"
+
+msgid "Copy IP address"
+msgstr "Kopioi IP-osoite"
+
+msgid "Devices on the network"
+msgstr "Verkon laitteet"
+
+msgid "No other devices on the network yet."
+msgstr "Verkossa ei ole vielä muita laitteita."
+
+msgid "Mesh VPN client for BigScale/Headscale."
+msgstr "Mesh VPN -asiakasohjelma BigScale/Headscale-palvelulle."
+
+msgid "Done. You will no longer need a password to connect or disconnect."
+msgstr ""
+"Valmis. Et enää tarvitse salasanaa yhdistämiseen tai yhteyden "
+"katkaisemiseen."
+
+#, rust-format
+msgid "Failed: {error}"
+msgstr "Epäonnistui: {error}"
+
+msgid "Tailscale operator"
+msgstr "Tailscale-operaattori"
+
+msgid "OK"
+msgstr "OK"
+
 msgid "Sign out of current account?"
 msgstr "Kirjaudutaanko ulos nykyisestä tilistä?"
 
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/dialogs.rs:70
 msgid ""
 "This will disconnect from the network, sign this device out of the current "
 "control server, and forget the saved password. You'll then be able to sign "
@@ -331,265 +702,91 @@ msgstr ""
 "hallintapalvelimesta ja unohtaa tallennetun salasanan. Tämän jälkeen voit "
 "kirjautua sisään toisella tilillä."
 
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/dialogs.rs:76
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/mod.rs:591
 msgid "Sign out"
 msgstr "Kirjaudu ulos"
 
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/dialogs.rs:134
+msgid "Leave the network?"
+msgstr "Poistutaanko verkosta?"
+
+#, rust-format
+msgid ""
+"This device leaves the network and its name becomes free. Your account {user} is kept: you can come back later from this computer, without an invite.\n"
+"\n"
+"If you won't come back, delete the account and the name {user} becomes free too."
+msgstr ""
+"Tämä laite poistuu verkosta ja sen nimi vapautuu. Tilisi {user} säilytetään: voit palata myöhemmin tältä tietokoneelta ilman kutsua.\n"
+"\n"
+"Jos et aio palata, poista tili, jolloin myös nimi {user} vapautuu."
+
+msgid "Leave and delete account"
+msgstr "Poistu ja poista tili"
+
+msgid "Leave"
+msgstr "Poistu"
+
+msgid "Connect first to delete the account."
+msgstr "Yhdistä ensin poistaaksesi tilin."
+
+msgid "Signing out…"
+msgstr "Kirjaudutaan ulos…"
+
+#, rust-format
+msgid ""
+"Signed out. Your account was kept: {count} other device(s) still use it."
+msgstr ""
+"Kirjauduttu ulos. Tilisi säilytettiin: {count} muuta laitetta käyttää sitä "
+"yhä."
+
+msgid ""
+"Couldn't delete the account: the panel can't be reached. Connect and try "
+"again."
+msgstr ""
+"Tiliä ei voitu poistaa: paneelia ei tavoiteta. Yhdistä ja yritä uudelleen."
+
+#, rust-format
+msgid "Error: {error}"
+msgstr "Virhe: {error}"
+
+msgid "Signed out and account deleted."
+msgstr "Kirjauduttu ulos ja tili poistettu."
+
 msgid "Signed out."
 msgstr "Kirjauduttu ulos."
 
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/dialogs.rs:153
-msgid "Connect via panel account"
-msgstr "Yhdistä paneelin tilillä"
+msgid "Couldn't reach the server"
+msgstr "Palvelinta ei tavoitettu"
 
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/dialogs.rs:166
-msgid ""
-"Sign in with your BigScale panel username and password. A device identity "
-"will be created on the network automatically — no manual key needed."
-msgstr ""
-"Kirjaudu sisään BigScale-paneelin käyttäjätunnuksella ja salasanalla. "
-"Laitetunniste luodaan automaattisesti verkkoon – manuaalista avainta ei "
-"tarvita."
-
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/peer_row.rs:446
-msgid "Copy"
-msgstr "Kopioi"
-
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/sidebar.rs:197
-msgid "Reconnect on drop"
-msgstr "Yhdistä uudelleen katketessa"
-
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/sidebar.rs:198
-msgid "Retry with backoff when the connection is lost"
-msgstr "Yritä uudelleen viiveellä, kun yhteys katkeaa"
-
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/sidebar.rs:217
-msgid "Notify on peer changes"
-msgstr "Ilmoita vertaisverkon muutoksista"
-
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/sidebar.rs:218
-msgid "Show a desktop notification when peers go online/offline"
-msgstr ""
-"Näytä työpöytäilmoitus, kun vertaislaitteet menevät online-/offline-tilaan"
-
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/mod.rs:593
-msgid "View tailscaled logs"
-msgstr "Näytä tailscaled-lokit"
-
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/mod.rs:1044
-msgid "Server unreachable"
-msgstr "Palvelimeen ei yhteyttä"
-
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/mod.rs:1054
 #, rust-format
-msgid "Update available: v{version}"
-msgstr "Päivitys saatavilla: v{version}"
-
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/mod.rs:1398
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/mod.rs:1461
-msgid "is online"
-msgstr "on online"
-
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/mod.rs:1399
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/mod.rs:1463
-msgid "went offline"
-msgstr "meni offline-tilaan"
-
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/peer_row.rs:124
-msgid "Unpin from top"
-msgstr "Irrota yläreunasta"
-
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/peer_row.rs:124
-msgid "Pin to top"
-msgstr "Kiinnitä yläreunaan"
-
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/peer_row.rs:259
-msgid "DNS name"
-msgstr "DNS-nimi"
-
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/peer_row.rs:262
-msgid "DNS name copied"
-msgstr "DNS-nimi kopioitu"
-
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/peer_row.rs:284
-msgid "Owner"
-msgstr "Omistaja"
-
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/peer_row.rs:346
-msgid "Tags"
-msgstr "Tunnisteet"
-
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/peer_row.rs:351
-msgid "Last seen"
-msgstr "Viimeksi nähty"
-
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/peer_row.rs:358
-msgid "Use as exit node"
-msgstr "Käytä poistumissolmuna"
-
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/peer_row.rs:359
-msgid "Route all traffic through this peer"
-msgstr "Reititä kaikki liikenne tämän vertaisen kautta"
-
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/peer_row.rs:401
-msgid "Exit node enabled"
-msgstr "Poistumissolmu käytössä"
-
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/peer_row.rs:401
-msgid "Exit node disabled"
-msgstr "Poistumissolmu pois käytöstä"
-
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/peer_row.rs:403
-msgid "Failed to update exit node"
-msgstr "Poistumissolmun päivitys epäonnistui"
-
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/peer_row.rs:146
-msgid "Pinned to top"
-msgstr "Kiinnitetty ylös"
-
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/peer_row.rs:148
-msgid "Unpinned"
-msgstr "Irrotettu"
-
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/tray/linux.rs:54
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/tray/windows.rs:168
-msgid "Connected · 1 peer"
-msgstr "Yhdistetty · 1 vertaislaite"
-
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/tray/linux.rs:55
-#, rust-format
-msgid "Connected · {n} peers"
-msgstr "Yhdistetty · {n} vertaislaitetta"
-
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/tray/linux.rs:92
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/tray/windows.rs:80
-msgid "Show BigLace"
-msgstr "Näytä BigLace"
-
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/tray/linux.rs:101
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/tray/windows.rs:82
-msgid "Quit"
-msgstr "Lopeta"
-
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/tray/windows.rs:169
-msgid "Connected ·"
-msgstr "Yhdistetty ·"
-
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/sidebar.rs:54
 msgid ""
-"Your identity on this mesh — the device name shown to other peers and the "
-"network you're connected to."
+"The control server didn't confirm the sign-out: {error}\n"
+"\n"
+"You can still sign out on this computer: BigLace forgets the saved key and account and disconnects. The server keeps listing this device until an administrator removes it."
 msgstr ""
-"Henkilöllisyytesi tässä mesh-verkossa — laitteen nimi, joka näkyy muille "
-"vertaisille, ja verkko, johon olet yhdistetty."
+"Hallintapalvelin ei vahvistanut uloskirjautumista: {error}\n"
+"\n"
+"Voit silti kirjautua ulos tällä tietokoneella: BigLace unohtaa tallennetun avaimen ja tilin ja katkaisee yhteyden. Palvelin näyttää tämän laitteen luettelossa, kunnes ylläpitäjä poistaa sen."
 
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/sidebar.rs:71
-msgid "Rename this device on the network"
-msgstr "Nimeä tämä laite uudelleen verkossa"
+msgid "Sign out on this computer"
+msgstr "Kirjaudu ulos tällä tietokoneella"
 
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/sidebar.rs:86
+msgid "Sign in as administrator"
+msgstr "Kirjaudu ylläpitäjänä"
+
+msgid "Panel administrator"
+msgstr "Paneelin ylläpitäjä"
+
 msgid ""
-"Manual setup — expand to paste a server URL and pre-auth key when you "
-"already received them from your administrator. Most users should sign in "
-"through the panel button above instead."
+"Only for whoever administers the BigScale panel: use the panel's admin "
+"username and password. This device joins the network under the name below. "
+"Everyone else joins with an invite or an access key."
 msgstr ""
-"Manuaalinen asennus — laajenna liittääksesi palvelimen URL-osoite ja "
-"ennakkoon luotu avain, jos olet jo saanut ne ylläpitäjältäsi. Useimpien "
-"käyttäjien tulisi kirjautua yllä olevan paneelin painikkeen kautta."
+"Vain BigScale-paneelin ylläpitäjälle: käytä paneelin ylläpitäjän "
+"käyttäjätunnusta ja salasanaa. Tämä laite liittyy verkkoon alla olevalla "
+"nimellä. Kaikki muut liittyvät kutsulla tai käyttöavaimella."
 
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/sidebar.rs:99
-msgid ""
-"Address of the coordination server (e.g. vpn.example.org). The https:// "
-"scheme is added automatically if you omit it."
-msgstr ""
-"Koordinaatiopalvelimen osoite (esim. vpn.example.org). https://-etuliite "
-"lisätään automaattisesti, jos jätät sen pois."
+msgid "Panel URL"
+msgstr "Paneelin URL-osoite"
 
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/sidebar.rs:111
-msgid ""
-"One-time or reusable key created on the server (starts with 'hskey-auth-'). "
-"Used to register this device automatically without opening a browser."
-msgstr ""
-"Kertakäyttöinen tai uudelleenkäytettävä avain, joka on luotu palvelimella "
-"(alkaa 'hskey-auth-'). Käytetään laitteen automaattiseen rekisteröintiin "
-"ilman selaimen avaamista."
-
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/dialogs.rs:190
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/dialogs.rs:418
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/sidebar.rs:124
-msgid "Device name on the network"
-msgstr "Laitteen nimi verkossa"
-
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/sidebar.rs:127
-msgid ""
-"The name this device shows to other peers on the VPN — this is the Tailscale"
-" hostname, NOT your computer's name and NOT your user. Lowercase letters, "
-"digits and hyphens. Example: 'tales-laptop', 'francois', 'office-pc'."
-msgstr ""
-"Nimi, jolla tämä laite näkyy muille vertaisille VPN:ssä — tämä on Tailscalen"
-" isäntänimi, EI tietokoneesi nimi eikä käyttäjätunnuksesi. Pienet kirjaimet,"
-" numerot ja väliviivat. Esimerkki: 'tales-laptop', 'francois', 'office-pc'."
-
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/sidebar.rs:144
-msgid ""
-"Persist the server, key and device name above. Won't connect — press Connect"
-" afterwards."
-msgstr ""
-"Tallenna yllä oleva palvelin, avain ja laitteen nimi. Ei yhdistä — paina "
-"Yhdistä sen jälkeen."
-
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/sidebar.rs:163
-msgid ""
-"When on, BigLace runs 'tailscale up' as soon as it launches, so you join the"
-" mesh without clicking Connect every time."
-msgstr ""
-"Kun päällä, BigLace suorittaa 'tailscale up' -komennon heti käynnistyessään,"
-" joten liityt mesh-verkkoon ilman Yhdistä-painikkeen klikkaamista joka "
-"kerta."
-
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/sidebar.rs:171
-msgid "Toggle auto-connect on startup"
-msgstr "Ota automaattinen yhdistäminen käyttöön käynnistyksessä"
-
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/sidebar.rs:201
-msgid ""
-"If the tunnel drops (network change, sleep, server hiccup), BigLace silently"
-" retries with growing delays instead of leaving you offline until you "
-"notice."
-msgstr ""
-"Jos tunneli katkeaa (verkon muutos, lepotila, palvelimen häiriö), BigLace "
-"yrittää uudelleen hiljaisesti kasvavilla viiveillä sen sijaan, että "
-"jättäisit sinut offline-tilaan, kunnes huomaat sen."
-
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/sidebar.rs:210
-msgid "Toggle auto-reconnect"
-msgstr "Ota automaattinen uudelleenyhdistäminen käyttöön"
-
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/sidebar.rs:221
-msgid ""
-"Send a desktop toast when another device on your network goes online or "
-"offline. Rapid bursts are coalesced into a single notification so you don't "
-"get spammed during reconnects."
-msgstr ""
-"Lähetä työpöytäilmoitus, kun toinen laite verkossasi menee online- tai "
-"offline-tilaan. Nopeat purskeet yhdistetään yhdeksi ilmoitukseksi, jotta et "
-"saa roskapostia uudelleenmuodostusten aikana."
-
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/sidebar.rs:230
-msgid "Toggle peer-change notifications"
-msgstr "Ota vertaismuutosten ilmoitukset käyttöön"
-
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/sidebar.rs:245
-msgid ""
-"Join or leave the mesh network. When connected, this device becomes "
-"reachable by the other peers in your account."
-msgstr ""
-"Liity mesh-verkkoon tai poistu siitä. Kun yhteys on muodostettu, tämä laite "
-"on muiden tilisi vertaisten tavoitettavissa."
-
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/dialogs.rs:177
 msgid ""
 "Address of your BigScale panel (e.g. panel.example.org). The https:// scheme"
 " is added automatically if you omit it."
@@ -597,11 +794,15 @@ msgstr ""
 "BigScale-paneelisi osoite (esim. panel.example.org). https://-etuliite "
 "lisätään automaattisesti, jos jätät sen pois."
 
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/dialogs.rs:182
+msgid "Panel admin username"
+msgstr "Paneelin ylläpitäjän käyttäjätunnus"
+
 msgid "Your panel username — the one you use to sign in to the web panel."
 msgstr "Paneelin käyttäjätunnuksesi – se, jolla kirjaudut verkkopaneeliin."
 
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/dialogs.rs:186
+msgid "Password"
+msgstr "Salasana"
+
 msgid ""
 "Your panel password. Stored in the OS keyring (libsecret on Linux, Keychain "
 "on macOS, Credential Manager on Windows)."
@@ -609,7 +810,9 @@ msgstr ""
 "Paneelin salasanasi. Tallennetaan käyttöjärjestelmän avainnippuun (libsecret"
 " Linuxissa, Keychain macOS:ssä, Credential Manager Windowsissa)."
 
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/dialogs.rs:193
+msgid "Device name on the network"
+msgstr "Laitteen nimi verkossa"
+
 msgid ""
 "The name this device shows to other peers on the VPN — this is the Tailscale"
 " hostname, NOT your computer's name and NOT your user. Lowercase letters, "
@@ -621,11 +824,18 @@ msgstr ""
 " numerot ja yhdysviivat. Esimerkki: 'tales-laptop', 'francois', 'office-pc'."
 " Valitse nimi, jonka muut vertaiset tunnistavat."
 
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/dialogs.rs:442
+msgid "Sign in"
+msgstr "Kirjaudu sisään"
+
+msgid "Fill in URL, username and password."
+msgstr "Täytä URL-osoite, käyttäjätunnus ja salasana."
+
+msgid "Signed in. Press Connect to join the network."
+msgstr "Kirjautunut sisään. Paina Yhdistä liittyäksesi verkkoon."
+
 msgid "Rename this device"
 msgstr "Nimeä tämä laite uudelleen"
 
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/dialogs.rs:444
 msgid ""
 "The name this device shows to other peers on the VPN. Lowercase letters, "
 "digits and hyphens. Example: tales-laptop."
@@ -633,90 +843,1473 @@ msgstr ""
 "Nimi, jolla tämä laite näkyy muille vertaisille VPN:ssä. Pienet kirjaimet, "
 "numerot ja yhdysviivat. Esimerkki: tales-laptop."
 
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/dialogs.rs:449
 msgid "Save & apply"
 msgstr "Tallenna ja ota käyttöön"
 
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/dialogs.rs:502
 msgid "Saved. The new name will take effect the next time you connect."
 msgstr ""
 "Tallennettu. Uusi nimi tulee voimaan seuraavan kerran, kun muodostat "
 "yhteyden."
 
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/dialogs.rs:526
 msgid "Device renamed."
 msgstr "Laite nimetty uudelleen."
 
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/dialogs.rs:536
 #, rust-format
 msgid "Rename failed: {error}"
 msgstr "Uudelleennimeäminen epäonnistui: {error}"
 
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/dialogs.rs:553
 msgid "The device name can't be empty."
 msgstr "Laitteen nimi ei voi olla tyhjä."
 
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/dialogs.rs:556
 msgid "Use 63 characters or fewer."
 msgstr "Käytä enintään 63 merkkiä."
 
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/dialogs.rs:560
 msgid "The device name can't start or end with a hyphen."
 msgstr "Laitteen nimi ei voi alkaa tai päättyä yhdysviivaan."
 
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/dialogs.rs:564
 msgid "Only lowercase letters, digits and hyphens are allowed."
 msgstr "Vain pienet kirjaimet, numerot ja yhdysviivat ovat sallittuja."
 
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/peer_row.rs:306
-msgid "SSH login (override)"
-msgstr "SSH-kirjautuminen (ohitus)"
+msgid "Smileys & people"
+msgstr "Hymiöt ja ihmiset"
 
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/peer_row.rs:336
-msgid "Saved"
-msgstr "Tallennettu"
+msgid "Animals & nature"
+msgstr "Eläimet ja luonto"
 
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/mod.rs:1086
+msgid "Food & drink"
+msgstr "Ruoka ja juoma"
+
+msgid "Travel & places"
+msgstr "Matkailu ja paikat"
+
+msgid "Activities"
+msgstr "Aktiviteetit"
+
+msgid "Objects"
+msgstr "Esineet"
+
+msgid "Symbols"
+msgstr "Symbolit"
+
+msgid "Flags"
+msgstr "Liput"
+
+msgid "Search emoji"
+msgstr "Hae emojia"
+
+msgid "Recently used"
+msgstr "Viimeksi käytetyt"
+
+msgid "Search results"
+msgstr "Hakutulokset"
+
+msgid ""
+"Groups from BigLace need a newer BigScale server. Ask your administrator to "
+"update it."
+msgstr ""
+"BigLacen ryhmät vaativat uudemman BigScale-palvelimen. Pyydä ylläpitäjää "
+"päivittämään se."
+
+msgid "This device isn't linked to a person's account, so it has no groups."
+msgstr ""
+"Tätä laitetta ei ole liitetty henkilön tiliin, joten sillä ei ole ryhmiä."
+
+msgid ""
+"The panel knows this device by a different key (BigLace was reinstalled?). "
+"Leave the network and join again to fix it."
+msgstr ""
+"Paneeli tuntee tämän laitteen eri avaimella (asennettiinko BigLace "
+"uudelleen?). Korjaa poistumalla verkosta ja liittymällä uudelleen."
+
+msgid ""
+"The panel couldn't confirm this device. Make sure BigLace is up to date and "
+"stays open while connected, then try again."
+msgstr ""
+"Paneeli ei voinut vahvistaa tätä laitetta. Varmista, että BigLace on ajan "
+"tasalla ja pysyy auki yhteyden aikana, ja yritä uudelleen."
+
+msgid ""
+"On this network everyone already reaches everyone, so groups aren't needed. "
+"The administrator can set access rules first."
+msgstr ""
+"Tässä verkossa kaikki tavoittavat jo kaikki, joten ryhmiä ei tarvita. "
+"Ylläpitäjä voi ensin määrittää käyttösäännöt."
+
+msgid "You already created the maximum number of groups."
+msgstr "Olet jo luonut enimmäismäärän ryhmiä."
+
+msgid "You are no longer in that group."
+msgstr "Et ole enää siinä ryhmässä."
+
+msgid "A group with that name already exists. Choose another name."
+msgstr "Samanniminen ryhmä on jo olemassa. Valitse toinen nimi."
+
+msgid ""
+"Use lowercase letters, digits and hyphens, starting with a letter or digit."
+msgstr ""
+"Käytä pieniä kirjaimia, numeroita ja yhdysmerkkejä; alkuun kirjain tai "
+"numero."
+
+msgid ""
+"The administrator uses this group in the network's rules, so it can't be "
+"deleted. Ask the administrator."
+msgstr ""
+"Ylläpitäjä käyttää tätä ryhmää verkon säännöissä, joten sitä ei voi poistaa."
+" Kysy ylläpitäjältä."
+
+msgid "Only the person who created the group can do that."
+msgstr "Vain ryhmän luoja voi tehdä sen."
+
+msgid "You created this group: delete it instead of leaving."
+msgstr "Loit tämän ryhmän: poista se poistumisen sijaan."
+
+msgid "This group belongs to the administrator; only they can change it."
+msgstr "Tämä ryhmä kuuluu ylläpitäjälle; vain hän voi muuttaa sitä."
+
+msgid "That person is no longer in the group."
+msgstr "Henkilö ei ole enää ryhmässä."
+
+msgid "That group no longer exists, or whoever invited you left it."
+msgstr "Ryhmää ei ole enää olemassa, tai kutsujasi on poistunut siitä."
+
+msgid "That person is no longer on the network."
+msgstr "Henkilö ei ole enää verkossa."
+
+msgid "You're already in that group."
+msgstr "Olet jo siinä ryhmässä."
+
+msgid ""
+"This invite only brings new people into the network, and you're already in "
+"it."
+msgstr "Tämä kutsu tuo verkkoon vain uusia ihmisiä, ja olet jo siinä."
+
+msgid "This invite was already used. Ask for a new one."
+msgstr "Kutsu on jo käytetty. Pyydä uusi."
+
+msgid "This invite expired. Ask for a new one."
+msgstr "Kutsu on vanhentunut. Pyydä uusi."
+
+msgid "This invite is no longer valid. Ask for a new one."
+msgstr "Kutsu ei ole enää voimassa. Pyydä uusi."
+
+msgid "This invite is still waiting for an administrator's approval."
+msgstr "Kutsu odottaa yhä ylläpitäjän hyväksyntää."
+
+msgid "Too many attempts. Wait a minute and try again."
+msgstr "Liian monta yritystä. Odota hetki ja yritä uudelleen."
+
+#, rust-format
+msgid "Could not reach the panel: {error}"
+msgstr "Paneelia ei tavoitettu: {error}"
+
+msgid "Groups"
+msgstr "Ryhmät"
+
+msgid "New group"
+msgstr "Uusi ryhmä"
+
+msgid "Create a group"
+msgstr "Luo ryhmä"
+
+msgid ""
+"People in the same group reach each other's devices. Create groups for "
+"family, work or friends, and invite people into them."
+msgstr ""
+"Saman ryhmän jäsenet tavoittavat toistensa laitteet. Luo ryhmiä perheelle, "
+"työlle tai ystäville ja kutsu ihmisiä niihin."
+
+msgid "Invitations for you"
+msgstr "Kutsut sinulle"
+
+msgid "Your groups"
+msgstr "Ryhmäsi"
+
+msgid "No groups yet"
+msgstr "Ei vielä ryhmiä"
+
+msgid ""
+"A group lets several people reach each other at once — the family, the "
+"office, a class."
+msgstr ""
+"Ryhmän avulla useampi ihminen tavoittaa toisensa kerralla — perhe, toimisto,"
+" luokka."
+
+msgid "Groups unavailable"
+msgstr "Ryhmät eivät ole käytettävissä"
+
+msgid "Invitation to a group"
+msgstr "Kutsu ryhmään"
+
+#, rust-format
+msgid ""
+"{user} invites you to the group {group}. Open BigLace to accept or decline."
+msgstr ""
+"{user} kutsuu sinut ryhmään {group}. Avaa BigLace hyväksyäksesi tai "
+"hylätäksesi."
+
+#, rust-format
+msgid "{user} invites you to {group}"
+msgstr "{user} kutsuu sinut ryhmään {group}"
+
+msgid "Joining lets you and the group's members reach each other's devices."
+msgstr "Liittymällä sinä ja ryhmän jäsenet tavoitatte toistenne laitteet."
+
+msgid "Decline"
+msgstr "Hylkää"
+
+msgid "Accept"
+msgstr "Hyväksy"
+
+#, rust-format
+msgid "You joined {group}."
+msgstr "Liityit ryhmään {group}."
+
+msgid "Invitation declined."
+msgstr "Kutsu hylätty."
+
+msgid "1 person"
+msgstr "1 henkilö"
+
+#, rust-format
+msgid "{count} people"
+msgstr "{count} henkilöä"
+
+msgid "Created by you"
+msgstr "Sinun luomasi"
+
+#, rust-format
+msgid "Created by {user}"
+msgstr "Luonut {user}"
+
+msgid "Network group (administrator)"
+msgstr "Verkkoryhmä (ylläpitäjä)"
+
+msgid "you"
+msgstr "sinä"
+
+msgid "owner"
+msgstr "omistaja"
+
+#, rust-format
+msgid "Remove {user} from the group"
+msgstr "Poista {user} ryhmästä"
+
+msgid "Invite to this group"
+msgstr "Kutsu tähän ryhmään"
+
+msgid "Delete group"
+msgstr "Poista ryhmä"
+
+msgid "Leave group"
+msgstr "Poistu ryhmästä"
+
+#, rust-format
+msgid "Remove {user}?"
+msgstr "Poistetaanko {user}?"
+
+#, rust-format
+msgid ""
+"{user} leaves the group {group} and no longer reaches its members through "
+"it."
+msgstr ""
+"{user} poistuu ryhmästä {group} eikä enää tavoita sen jäseniä sen kautta."
+
+msgid "Remove"
+msgstr "Poista"
+
+#, rust-format
+msgid "{user} was removed from the group."
+msgstr "{user} poistettiin ryhmästä."
+
+#, rust-format
+msgid "Leave {group}?"
+msgstr "Poistutaanko ryhmästä {group}?"
+
+msgid ""
+"You stop reaching the group's members through it. To come back, someone has "
+"to invite you again."
+msgstr ""
+"Et enää tavoita ryhmän jäseniä sen kautta. Palataksesi jonkun on kutsuttava "
+"sinut uudelleen."
+
+msgid "You left the group."
+msgstr "Poistuit ryhmästä."
+
+#, rust-format
+msgid "Delete {group}?"
+msgstr "Poistetaanko {group}?"
+
+msgid ""
+"Its members stop reaching each other through this group. People stay on the "
+"network."
+msgstr ""
+"Jäsenet eivät enää tavoita toisiaan tämän ryhmän kautta. Ihmiset pysyvät "
+"verkossa."
+
+msgid "Group deleted."
+msgstr "Ryhmä poistettu."
+
+#, rust-format
+msgid "Join {group}?"
+msgstr "Liitytäänkö ryhmään {group}?"
+
+#, rust-format
+msgid ""
+"{user} invited you. You and the group's members will reach each other's "
+"devices."
+msgstr ""
+"{user} kutsui sinut. Sinä ja ryhmän jäsenet tavoitatte toistenne laitteet."
+
+msgid "You and the group's members will reach each other's devices."
+msgstr "Sinä ja ryhmän jäsenet tavoitatte toistenne laitteet."
+
+#, rust-format
+msgid "Connect with {user}?"
+msgstr "Yhdistetäänkö käyttäjään {user}?"
+
+#, rust-format
+msgid "You and {user} will reach each other's devices."
+msgstr "Sinä ja {user} tavoitatte toistenne laitteet."
+
+msgid "Join"
+msgstr "Liity"
+
+msgid "Done. You can now reach each other's devices."
+msgstr "Valmis. Tavoitatte nyt toistenne laitteet."
+
+#, rust-format
+msgid "Invite to {group}"
+msgstr "Kutsu ryhmään {group}"
+
+msgid ""
+"Choose people on your network. Each one gets the invitation in BigLace and "
+"decides whether to join."
+msgstr ""
+"Valitse ihmisiä verkostasi. Kukin saa kutsun BigLacessa ja päättää, "
+"liittyykö."
+
+msgid "Search people"
+msgstr "Hae ihmisiä"
+
+msgid ""
+"If someone on the network has exactly this name, they get the invitation."
+msgstr "Jos jollakulla verkossa on täsmälleen tämä nimi, hän saa kutsun."
+
+msgid "People on the network"
+msgstr "Ihmiset verkossa"
+
+#, rust-format
+msgid "Invite \"{name}\""
+msgstr "Kutsu \"{name}\""
+
+msgid "Send invitations"
+msgstr "Lähetä kutsut"
+
+msgid "Someone not on the network yet? Share an invite link"
+msgstr "Joku, joka ei ole vielä verkossa? Jaa kutsulinkki"
+
+msgid "Invitation sent. You'll see the person in the group once they accept."
+msgstr "Kutsu lähetetty. Näet henkilön ryhmässä, kun hän hyväksyy."
+
+#, rust-format
+msgid "{count} invitations sent. People show up in the group as they accept."
+msgstr "{count} kutsua lähetetty. Ihmiset näkyvät ryhmässä hyväksyessään."
+
+msgid ""
+"Listed are the people you're already connected to. To invite someone else on"
+" the network, type their exact name. Each one gets the invitation in BigLace"
+" and decides whether to join."
+msgstr ""
+"Luettelossa ovat ihmiset, joihin olet jo yhteydessä. Kutsuaksesi jonkun muun"
+" verkossa olevan kirjoita hänen tarkka nimensä. Kukin saa kutsun BigLacessa "
+"ja päättää, liittyykö."
+
+msgid ""
+"Nobody you're connected to yet. Type someone's exact name to invite them."
+msgstr ""
+"Et ole vielä yhteydessä keneenkään. Kirjoita jonkun tarkka nimi kutsuaksesi "
+"hänet."
+
+msgid "Nobody else is on the network yet."
+msgstr "Verkossa ei ole vielä muita."
+
+msgid ""
+"You'll be the group's owner: you invite people into it and can remove them. "
+"Everyone in the group reaches each other's devices."
+msgstr ""
+"Sinusta tulee ryhmän omistaja: kutsut ihmisiä siihen ja voit poistaa heitä. "
+"Kaikki ryhmän jäsenet tavoittavat toistensa laitteet."
+
+msgid "Group name"
+msgstr "Ryhmän nimi"
+
+msgid "Create group"
+msgstr "Luo ryhmä"
+
+msgid "For example: family, work, friends."
+msgstr "Esimerkiksi: perhe, työ, ystävät."
+
+#, rust-format
+msgid "It will be called \"{name}\"."
+msgstr "Sen nimeksi tulee \"{name}\"."
+
+#, rust-format
+msgid "Group {group} created. Now invite people into it."
+msgstr "Ryhmä {group} luotu. Kutsu nyt ihmisiä siihen."
+
+msgid "typed name"
+msgstr "kirjoitettu nimi"
+
+msgid "already in the group"
+msgstr "jo ryhmässä"
+
+msgid "invitation sent, waiting"
+msgstr "kutsu lähetetty, odotetaan"
+
+#, rust-format
+msgid "Invite {user}"
+msgstr "Kutsu {user}"
+
+msgid ""
+"Invites from BigLace need a BigScale server that supports them. Ask your "
+"administrator to update the server, or to create the invite in the panel."
+msgstr ""
+"BigLacen kutsut vaativat niitä tukevan BigScale-palvelimen. Pyydä "
+"ylläpitäjää päivittämään palvelin tai luomaan kutsu paneelissa."
+
+msgid ""
+"This device can't send invites (it isn't linked to a person's account)."
+msgstr ""
+"Tämä laite ei voi lähettää kutsuja (sitä ei ole liitetty henkilön tiliin)."
+
+msgid ""
+"On this network everyone can reach everyone, so only the administrator can "
+"invite people."
+msgstr ""
+"Tässä verkossa kaikki tavoittavat kaikki, joten vain ylläpitäjä voi kutsua "
+"ihmisiä."
+
+msgid "You have too many pending invites. Cancel some or try again tomorrow."
+msgstr ""
+"Sinulla on liian monta odottavaa kutsua. Peru joitakin tai yritä uudelleen "
+"huomenna."
+
+msgid ""
+"On this network only administrators invite new people. You can still invite "
+"people already on the network into your groups."
+msgstr ""
+"Tässä verkossa vain ylläpitäjät kutsuvat uusia ihmisiä. Voit silti kutsua jo"
+" verkossa olevia ryhmiisi."
+
+msgid "Waiting to be used"
+msgstr "Odottaa käyttöä"
+
+msgid "Used"
+msgstr "Käytetty"
+
+msgid "Expired"
+msgstr "Vanhentunut"
+
+msgid "Cancelled"
+msgstr "Peruttu"
+
+msgid "Waiting for an administrator's approval"
+msgstr "Odottaa ylläpitäjän hyväksyntää"
+
+msgid "Invites"
+msgstr "Kutsut"
+
+msgid "Bring someone to your network"
+msgstr "Tuo joku verkkoosi"
+
+msgid ""
+"Create a link or QR code and send it to the person. When they join, you two "
+"can reach each other's devices — no administrator needed. The link works "
+"once and stays valid until it's used or you cancel it."
+msgstr ""
+"Luo linkki tai QR-koodi ja lähetä se henkilölle. Kun hän liittyy, tavoitatte"
+" toistenne laitteet — ylläpitäjää ei tarvita. Linkki toimii kerran ja on "
+"voimassa, kunnes se käytetään tai perut sen."
+
+msgid "Invites you sent"
+msgstr "Lähettämäsi kutsut"
+
+msgid "No invites yet"
+msgstr "Ei vielä kutsuja"
+
+msgid "Invites unavailable"
+msgstr "Kutsut eivät ole käytettävissä"
+
+#, rust-format
+msgid "{user} joined"
+msgstr "{user} liittyi"
+
+#, rust-format
+msgid "group {group}"
+msgstr "ryhmä {group}"
+
+msgid "Cancel this invite: the link stops working"
+msgstr "Peru tämä kutsu: linkki lakkaa toimimasta"
+
+msgid "Invite someone"
+msgstr "Kutsu joku"
+
+msgid "The person you invite will reach your devices, and you theirs."
+msgstr "Kutsumasi henkilö tavoittaa laitteesi, ja sinä hänen laitteensa."
+
+msgid "Who is it for? (optional)"
+msgstr "Kenelle se on? (valinnainen)"
+
+msgid "Access"
+msgstr "Pääsy"
+
+msgid "Just the two of us"
+msgstr "Vain me kaksi"
+
+msgid "You see each other's devices, nobody else"
+msgstr "Näette toistenne laitteet, ei kukaan muu"
+
+#, rust-format
+msgid "Also the group {group}"
+msgstr "Myös ryhmä {group}"
+
+msgid "They join the group and see everyone in it"
+msgstr "Hän liittyy ryhmään ja näkee kaikki sen jäsenet"
+
+msgid "A network of their own"
+msgstr "Oma verkko"
+
+msgid ""
+"No link to you: they see only their own devices and whoever they invite "
+"(you're the administrator)"
+msgstr ""
+"Ei yhteyttä sinuun: hän näkee vain omat laitteensa ja kutsumansa ihmiset "
+"(sinä olet ylläpitäjä)"
+
+msgid "Create invite"
+msgstr "Luo kutsu"
+
+msgid "QR code of the invite link"
+msgstr "Kutsulinkin QR-koodi"
+
+msgid ""
+"Send the link or let the person scan the code with their phone. It works "
+"once and stays valid until used or cancelled."
+msgstr ""
+"Lähetä linkki tai anna henkilön skannata koodi puhelimellaan. Se toimii "
+"kerran ja on voimassa, kunnes se käytetään tai perutaan."
+
+msgid "Copy link"
+msgstr "Kopioi linkki"
+
+msgid "Done"
+msgstr "Valmis"
+
+msgid "Copied!"
+msgstr "Kopioitu!"
+
+msgid ""
+"This network asks an administrator to approve each invite: the link starts "
+"working once they do. Its status shows in Invites."
+msgstr ""
+"Tässä verkossa ylläpitäjän on hyväksyttävä jokainen kutsu: linkki alkaa "
+"toimia hyväksynnän jälkeen. Sen tila näkyy Kutsut-osiossa."
+
+#, rust-format
+msgid ""
+"That name already belongs to an account on this network, so we suggested "
+"\"{name}\". If the account is yours, sign in again from the computer where "
+"you used it, or ask the administrator to free the name."
+msgstr ""
+"Nimi kuuluu jo tämän verkon tilille, joten ehdotimme nimeä \"{name}\". Jos "
+"tili on sinun, kirjaudu uudelleen tietokoneelta, jolla käytit sitä, tai "
+"pyydä ylläpitäjää vapauttamaan nimi."
+
+msgid ""
+"That name already belongs to an account on this network. Try another one, or"
+" ask the administrator to free it."
+msgstr ""
+"Nimi kuuluu jo tämän verkon tilille. Kokeile toista tai pyydä ylläpitäjää "
+"vapauttamaan se."
+
+msgid "Type your name using at least two letters or digits."
+msgstr "Kirjoita nimesi käyttäen vähintään kahta kirjainta tai numeroa."
+
+msgid "This invite has expired. Ask for a new one."
+msgstr "Kutsu on vanhentunut. Pyydä uusi."
+
+msgid "This invite was cancelled. Ask for a new one."
+msgstr "Kutsu on peruttu. Pyydä uusi."
+
+msgid ""
+"This invite is waiting for the network administrator's approval. Try again "
+"once the person who invited you says it was approved."
+msgstr ""
+"Kutsu odottaa verkon ylläpitäjän hyväksyntää. Yritä uudelleen, kun kutsujasi"
+" kertoo sen hyväksytyn."
+
+msgid "This invite is not valid. Check the link or ask for a new one."
+msgstr "Kutsu ei ole kelvollinen. Tarkista linkki tai pyydä uusi."
+
+msgid ""
+"This server doesn't support invites yet. Sign in with a panel account "
+"instead."
+msgstr ""
+"Tämä palvelin ei vielä tue kutsuja. Kirjaudu sen sijaan paneelin tilillä."
+
+msgid "Join with an invite"
+msgstr "Liity kutsulla"
+
+msgid ""
+"Paste the invite link you received and type your name. Your account is "
+"created and this device joins the network."
+msgstr ""
+"Liitä saamasi kutsulinkki ja kirjoita nimesi. Tilisi luodaan ja tämä laite "
+"liittyy verkkoon."
+
+msgid "Invite link"
+msgstr "Kutsulinkki"
+
+msgid "Your name"
+msgstr "Nimesi"
+
+msgid "How others will see you on the network, e.g. 'Maria' or 'Office PC'."
+msgstr "Miten muut näkevät sinut verkossa, esim. 'Maria' tai 'Toimiston PC'."
+
+msgid ""
+"The name this device shows to other peers. Lowercase letters, digits and "
+"hyphens. Example: 'maria-laptop'."
+msgstr ""
+"Nimi, jonka tämä laite näyttää muille vertaisille. Pieniä kirjaimia, "
+"numeroita ja yhdysmerkkejä. Esimerkki: 'maria-laptop'."
+
+msgid "Network"
+msgstr "Verkko"
+
+msgid "Joining…"
+msgstr "Liitytään…"
+
+msgid ""
+"That doesn't look like an invite link. It starts with https:// and contains "
+"/join#."
+msgstr "Tämä ei näytä kutsulinkiltä. Se alkaa https:// ja sisältää /join#."
+
+msgid "Type your name."
+msgstr "Kirjoita nimesi."
+
+#, rust-format
+msgid "Welcome, {name}! You joined the group {group}. Connecting…"
+msgstr "Tervetuloa, {name}! Liityit ryhmään {group}. Yhdistetään…"
+
+#, rust-format
+msgid "Welcome, {name}! Connecting…"
+msgstr "Tervetuloa, {name}! Yhdistetään…"
+
+msgid "Open admin panel"
+msgstr "Avaa hallintapaneeli"
+
+msgid "Devices"
+msgstr "Laitteet"
+
+msgid "Rooms"
+msgstr "Huoneet"
+
+msgid "Choose your photo"
+msgstr "Valitse kuvasi"
+
+msgid "Photo updated. Everyone you're connected to will see it."
+msgstr "Kuva päivitetty. Kaikki, joihin olet yhteydessä, näkevät sen."
+
+#, rust-format
+msgid "Could not change the photo: {error}"
+msgstr "Kuvan vaihto epäonnistui: {error}"
+
+msgid "Sign in with an access key"
+msgstr "Kirjaudu käyttöavaimella"
+
+msgid ""
+"Paste the key the administrator gave you. It's used once, to register this "
+"device."
+msgstr ""
+"Liitä ylläpitäjän antama avain. Sitä käytetään kerran tämän laitteen "
+"rekisteröintiin."
+
+msgid "Server URL"
+msgstr "Palvelimen URL-osoite"
+
+msgid "Access key"
+msgstr "Käyttöavain"
+
+msgid ""
+"The key to this account is no longer on this computer. Join with a new "
+"invite."
+msgstr ""
+"Tämän tilin avain ei ole enää tällä tietokoneella. Liity uudella kutsulla."
+
+#, rust-format
+msgid "Welcome back, {name}! Connecting…"
+msgstr "Tervetuloa takaisin, {name}! Yhdistetään…"
+
+#, rust-format
+msgid ""
+"The account {user} no longer exists on this network. Join with a new invite."
+msgstr "Tiliä {user} ei ole enää tässä verkossa. Liity uudella kutsulla."
+
+msgid "Preferences"
+msgstr "Asetukset"
+
+msgid "General"
+msgstr "Yleiset"
+
+msgid "Behaviour"
+msgstr "Toiminta"
+
+msgid "Make this user the tailscale operator"
+msgstr "Tee tästä käyttäjästä tailscale-operaattori"
+
+msgid ""
+"Lets BigLace manage the connection without asking for a password each time"
+msgstr "Antaa BigLacen hallita yhteyttä kysymättä salasanaa joka kerta"
+
+msgid "Account"
+msgstr "Tili"
+
+msgid ""
+"Signing out removes this device's identity from BigLace. You will need a new"
+" invite or key to join again."
+msgstr ""
+"Uloskirjautuminen poistaa tämän laitteen identiteetin BigLacesta. Tarvitset "
+"uuden kutsun tai avaimen liittyäksesi uudelleen."
+
+msgid "Change profile photo…"
+msgstr "Vaihda profiilikuva…"
+
+msgid "Sign in with panel account"
+msgstr "Kirjaudu sisään paneelitilillä"
+
+msgid "Leave the network…"
+msgstr "Poistu verkosta…"
+
+msgid "View tailscaled logs"
+msgstr "Näytä tailscaled-lokit"
+
+msgid "About BigLace"
+msgstr "Tietoja BigLacesta"
+
+msgid "Connect to the network first, then open the invite link again."
+msgstr "Yhdistä ensin verkkoon ja avaa sitten kutsulinkki uudelleen."
+
+#, rust-format
+msgid ""
+"This invite is for another network ({host}). Sign out first to join it."
+msgstr ""
+"Tämä kutsu on toiseen verkkoon ({host}). Kirjaudu ensin ulos liittyäksesi "
+"siihen."
+
+msgid ""
+"This device is already signed in. Sign out first to join with an invite."
+msgstr ""
+"Tämä laite on jo kirjautunut. Kirjaudu ensin ulos liittyäksesi kutsulla."
+
+msgid "Photo removed."
+msgstr "Kuva poistettu."
+
+#, rust-format
+msgid "Could not remove the photo: {error}"
+msgstr "Kuvan poisto epäonnistui: {error}"
+
+#, rust-format
+msgid "Could not open the browser: {error}"
+msgstr "Selaimen avaaminen epäonnistui: {error}"
+
+msgid ""
+"You can't open the admin panel: you're not an administrator of this network,"
+" or the panel can't be reached."
+msgstr ""
+"Et voi avata hallintapaneelia: et ole tämän verkon ylläpitäjä, tai paneelia "
+"ei tavoiteta."
+
+msgid "Enter the server URL before saving."
+msgstr "Syötä palvelimen URL ennen tallentamista."
+
+msgid "Enter the pre-auth key before saving."
+msgstr "Syötä ennakkovarmenne ennen tallentamista."
+
+msgid "Setup saved"
+msgstr "Asetukset tallennettu"
+
+msgid "Could not start the Tailscale service."
+msgstr "Tailscale-palvelun käynnistys epäonnistui."
+
+msgid "IP address copied"
+msgstr "IP-osoite kopioitu"
+
+#, rust-format
+msgid ""
+"Saved, but the pre-auth key could not be stored in the system keyring "
+"({error}). This device can still reconnect; the key is only needed again to "
+"register it anew."
+msgstr ""
+"Tallennettu, mutta esitodennusavainta ei voitu tallentaa järjestelmän "
+"avainnippuun ({error}). Tämä laite voi silti yhdistää uudelleen; avainta "
+"tarvitaan vain laitteen rekisteröimiseen uudelleen."
+
+msgid "Service stopped"
+msgstr "Palvelu pysäytetty"
+
+msgid "Not signed in"
+msgstr "Ei kirjauduttu sisään"
+
+msgid "Server unreachable"
+msgstr "Palvelimeen ei yhteyttä"
+
+msgid "Tailscale can't set DNS"
+msgstr "Tailscale ei voi asettaa DNS:ää"
+
+#, rust-format
+msgid "Update available: v{version}"
+msgstr "Päivitys saatavilla: v{version}"
+
+#, rust-format
+msgid "Sign in again as {user}"
+msgstr "Kirjaudu uudelleen käyttäjänä {user}"
+
 msgid "(no device name)"
 msgstr "(ei laitennimeä)"
 
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/mod.rs:1400
+msgid "Sign in or paste a pre-auth key"
+msgstr "Kirjaudu sisään tai liitä ennakkoon todennusavain"
+
+msgid "Server not set"
+msgstr "Palvelinta ei ole asetettu"
+
+msgid "no other devices"
+msgstr "ei muita laitteita"
+
+#, rust-format
+msgid "{online} online"
+msgstr "{online} verkossa"
+
+#, rust-format
+msgid "{online} online · {offline} offline"
+msgstr "{online} verkossa · {offline} offline"
+
+msgid "is online"
+msgstr "on online"
+
+msgid "went offline"
+msgstr "meni offline-tilaan"
+
 #, rust-format
 msgid "{count} devices are online"
 msgstr "{count} laitetta on verkossa"
 
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/mod.rs:1401
 #, rust-format
 msgid "{count} devices went offline"
 msgstr "{count} laitetta meni offline-tilaan"
 
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/mod.rs:1403
 #, rust-format
 msgid "{on_count} online · {off_count} offline"
 msgstr "{on_count} verkossa · {off_count} offline"
 
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/tailscale.rs:650
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/mod.rs:814
-msgid "Enter the server URL before connecting."
-msgstr "Syötä palvelimen URL ennen yhdistämistä."
+msgid "direct"
+msgstr "suora"
 
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/mod.rs:682
-msgid "Enter the server URL before saving."
-msgstr "Syötä palvelimen URL ennen tallentamista."
+msgid "via relay"
+msgstr "välityspalvelimen kautta"
 
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/mod.rs:691
-msgid "Enter the pre-auth key before saving."
-msgstr "Syötä ennakkovarmenne ennen tallentamista."
+msgid "Turn on over the network (Wake-on-LAN)"
+msgstr "Käynnistä verkon kautta (Wake-on-LAN)"
 
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/sidebar.rs:178
+msgid "Turn on over the network"
+msgstr "Käynnistä verkon kautta"
+
+#, rust-format
+msgid ""
+"Signal sent to {name} (by {via}). If it's set to turn on over the network, "
+"it shows up in a minute or two."
+msgstr ""
+"Signaali lähetetty laitteelle {name} ({via} kautta). Jos se on asetettu "
+"käynnistymään verkon kautta, se ilmestyy minuutin tai kahden kuluttua."
+
+#, rust-format
+msgid "Could not turn on {name}: {error}"
+msgstr "Laitetta {name} ei voitu käynnistää: {error}"
+
+msgid "Unpin from top"
+msgstr "Irrota yläreunasta"
+
+msgid "Pin to top"
+msgstr "Kiinnitä yläreunaan"
+
+msgid "Pinned to top"
+msgstr "Kiinnitetty ylös"
+
+msgid "Unpinned"
+msgstr "Irrotettu"
+
+msgid "Open files (SFTP)"
+msgstr "Avaa tiedostot (SFTP)"
+
+msgid "Open terminal (SSH)"
+msgstr "Avaa pääte (SSH)"
+
+msgid "See and control the screen"
+msgstr "Näe ja hallitse näyttöä"
+
+msgid "DNS name"
+msgstr "DNS-nimi"
+
+msgid "DNS name copied"
+msgstr "DNS-nimi kopioitu"
+
+msgid "Owner"
+msgstr "Omistaja"
+
+msgid "SSH login (override)"
+msgstr "SSH-kirjautuminen (ohitus)"
+
+msgid "Saved"
+msgstr "Tallennettu"
+
+msgid "Tags"
+msgstr "Tunnisteet"
+
+msgid "Last seen"
+msgstr "Viimeksi nähty"
+
+msgid "Use as exit node"
+msgstr "Käytä poistumissolmuna"
+
+msgid "Route all traffic through this peer"
+msgstr "Reititä kaikki liikenne tämän vertaisen kautta"
+
+msgid "Exit node enabled"
+msgstr "Poistumissolmu käytössä"
+
+msgid "Exit node disabled"
+msgstr "Poistumissolmu pois käytöstä"
+
+msgid "Failed to update exit node"
+msgstr "Poistumissolmun päivitys epäonnistui"
+
+msgid "Copy"
+msgstr "Kopioi"
+
+msgid "End access"
+msgstr "Lopeta käyttö"
+
+#, rust-format
+msgid "{who} is seeing and controlling this screen"
+msgstr "{who} näkee ja hallitsee tätä näyttöä"
+
+msgid "Remote access started"
+msgstr "Etäkäyttö alkoi"
+
+#, rust-format
+msgid ""
+"{user} ({device}) is seeing and controlling this screen. Open BigLace to end"
+" the access."
+msgstr ""
+"{user} ({device}) näkee ja hallitsee tätä näyttöä. Avaa BigLace "
+"lopettaaksesi käytön."
+
+#, rust-format
+msgid "Always allow {user} (no more asking)"
+msgstr "Salli aina {user} (ei enää kysymistä)"
+
+msgid "Deny"
+msgstr "Estä"
+
+msgid "Allow access"
+msgstr "Salli käyttö"
+
+msgid "Allow remote access?"
+msgstr "Sallitaanko etäkäyttö?"
+
+#, rust-format
+msgid "<b>{user}</b> wants to <b>see and control</b> this screen."
+msgstr "<b>{user}</b> haluaa <b>nähdä ja hallita</b> tätä näyttöä."
+
+msgid "Person"
+msgstr "Henkilö"
+
+msgid "Device"
+msgstr "Laite"
+
+msgid "See everything on your screen"
+msgstr "Nähdä kaiken näytölläsi"
+
+msgid "Move the mouse and type on this computer"
+msgstr "Liikuttaa hiirtä ja kirjoittaa tällä tietokoneella"
+
+msgid "Hear this computer's sound"
+msgstr "Kuulla tämän tietokoneen äänen"
+
+msgid ""
+"<b>Only allow it if you know this person and are expecting it.</b> You can "
+"end the access at any time from BigLace."
+msgstr ""
+"<b>Salli vain, jos tunnet henkilön ja odotat tätä.</b> Voit lopettaa käytön "
+"milloin tahansa BigLacesta."
+
+#, rust-format
+msgid "Denied automatically in {seconds} s"
+msgstr "Estetään automaattisesti {seconds} s kuluttua"
+
+#, rust-format
+msgid "Restart {name}'s computer?"
+msgstr "Käynnistetäänkö käyttäjän {name} tietokone uudelleen?"
+
+msgid ""
+"It restarts, signs in by itself and locks the screen right away; this window"
+" connects again when it's back. Unsaved work there is lost."
+msgstr ""
+"Se käynnistyy uudelleen, kirjautuu itse sisään ja lukitsee näytön heti; tämä"
+" ikkuna yhdistää uudelleen, kun se on takaisin. Tallentamaton työ siellä "
+"menetetään."
+
+msgid "Restart"
+msgstr "Käynnistä uudelleen"
+
+#, rust-format
+msgid "Restart {name}'s session?"
+msgstr "Käynnistetäänkö käyttäjän {name} istunto uudelleen?"
+
+msgid ""
+"The open programs there close, the computer signs out and back in by itself "
+"(without restarting) and locks the screen; this window connects again. "
+"Unsaved work there is lost."
+msgstr ""
+"Siellä avoinna olevat ohjelmat suljetaan, tietokone kirjautuu itse ulos ja "
+"takaisin sisään (ilman uudelleenkäynnistystä) ja lukitsee näytön; tämä "
+"ikkuna yhdistää uudelleen. Tallentamaton työ siellä menetetään."
+
+msgid "Restart the session"
+msgstr "Käynnistä istunto uudelleen"
+
+#, rust-format
+msgid "Shut down {name}'s computer?"
+msgstr "Sammutetaanko käyttäjän {name} tietokone?"
+
+msgid ""
+"You won't be able to reach it again until someone turns it on. Unsaved work "
+"there is lost."
+msgstr ""
+"Et tavoita sitä uudelleen ennen kuin joku käynnistää sen. Tallentamaton työ "
+"siellä menetetään."
+
+msgid "Shut Down"
+msgstr "Sammuta"
+
+#, rust-format
+msgid "Screen of {name}"
+msgstr "Käyttäjän {name} näyttö"
+
+msgid "Full screen (F11)"
+msgstr "Koko näyttö (F11)"
+
+msgid "Mute the remote sound"
+msgstr "Mykistä etä-ääni"
+
+#, rust-format
+msgid "Fit {name}'s resolution to this window"
+msgstr "Sovita käyttäjän {name} tarkkuus tähän ikkunaan"
+
+msgid "LIVE"
+msgstr "LIVE"
+
+msgid "You are watching this screen right now"
+msgstr "Katselet tätä näyttöä parhaillaan"
+
+msgid "You are seeing and controlling this screen right now"
+msgstr "Näet ja hallitset tätä näyttöä parhaillaan"
+
+msgid "Request control"
+msgstr "Pyydä hallintaa"
+
+#, rust-format
+msgid "Ask {name} to let you use the mouse and keyboard"
+msgstr "Pyydä käyttäjää {name} antamaan sinun käyttää hiirtä ja näppäimistöä"
+
+#, rust-format
+msgid "Waiting for {name}…"
+msgstr "Odotetaan käyttäjää {name}…"
+
+msgid "Connecting to the screen shared with the room."
+msgstr "Yhdistetään huoneen kanssa jaettuun näyttöön."
+
+msgid "The person at that computer needs to allow the access."
+msgstr "Tietokoneen äärellä olevan henkilön on sallittava käyttö."
+
+#, rust-format
+msgid "Asked {name} for control…"
+msgstr "Pyydettiin hallintaa käyttäjältä {name}…"
+
+#, rust-format
+msgid "Restart or shut down {name}'s computer"
+msgstr "Käynnistä uudelleen tai sammuta käyttäjän {name} tietokone"
+
+msgid "Restart and reconnect"
+msgstr "Käynnistä uudelleen ja yhdistä"
+
+msgid "Shut down"
+msgstr "Sammuta"
+
+#, rust-format
+msgid "{name} is back."
+msgstr "{name} on takaisin."
+
+#, rust-format
+msgid "{name}'s computer didn't come back after the restart."
+msgstr ""
+"Käyttäjän {name} tietokone ei palannut uudelleenkäynnistyksen jälkeen."
+
+#, rust-format
+msgid "{name} didn't allow the access."
+msgstr "{name} ei sallinut käyttöä."
+
+msgid ""
+"That computer couldn't confirm this device. Make sure both run an up-to-date"
+" BigLace."
+msgstr ""
+"Tietokone ei voinut vahvistaa tätä laitetta. Varmista, että molemmissa on "
+"ajantasainen BigLace."
+
+#, rust-format
+msgid ""
+"{name}'s computer can't share its screen (screen sharing isn't available "
+"there)."
+msgstr ""
+"Käyttäjän {name} tietokone ei voi jakaa näyttöään (näytön jakaminen ei ole "
+"siellä käytettävissä)."
+
+#, rust-format
+msgid "Could not connect: {error}"
+msgstr "Yhdistäminen epäonnistui: {error}"
+
+#, rust-format
+msgid "{name}'s computer said: {error}"
+msgstr "Käyttäjän {name} tietokone ilmoitti: {error}"
+
+#, rust-format
+msgid "Restarting {name}'s session…"
+msgstr "Käynnistetään käyttäjän {name} istuntoa uudelleen…"
+
+msgid ""
+"This window connects again by itself when the session is back. It takes a "
+"few seconds."
+msgstr ""
+"Tämä ikkuna yhdistää itsestään uudelleen, kun istunto on takaisin. Se vie "
+"muutaman sekunnin."
+
+#, rust-format
+msgid "Restarting {name}…"
+msgstr "Käynnistetään {name} uudelleen…"
+
+msgid ""
+"This window connects again by itself when the computer is back. It takes a "
+"few minutes."
+msgstr ""
+"Tämä ikkuna yhdistää itsestään uudelleen, kun tietokone on takaisin. Se vie "
+"muutaman minuutin."
+
+#, rust-format
+msgid "{latency} ms · {fps} fps · {mbps} Mbit/s"
+msgstr "{latency} ms · {fps} fps · {mbps} Mbit/s"
+
+#, rust-format
+msgid "You're controlling {name}'s screen now."
+msgstr "Hallitset nyt käyttäjän {name} näyttöä."
+
+#, rust-format
+msgid "{name} didn't give you control."
+msgstr "{name} ei antanut sinulle hallintaa."
+
+#, rust-format
+msgid "{name} took control back."
+msgstr "{name} otti hallinnan takaisin."
+
+#, rust-format
+msgid "{name}'s computer is shutting down."
+msgstr "Käyttäjän {name} tietokone sammuu."
+
+#, rust-format
+msgid "The access to {name}'s screen ended."
+msgstr "Käyttäjän {name} näytön käyttö päättyi."
+
+#, rust-format
+msgid "The access to {name}'s screen ended: {error}"
+msgstr "Käyttäjän {name} näytön käyttö päättyi: {error}"
+
+msgid "Give back control"
+msgstr "Palauta hallinta"
+
+msgid ""
+"Each of your groups has a voice room. Join it and talk with whoever is there"
+" — the sound goes straight between you, through the network."
+msgstr ""
+"Jokaisella ryhmälläsi on puhehuone. Liity siihen ja puhu paikalla olevien "
+"kanssa — ääni kulkee suoraan välillänne verkon kautta."
+
+msgid "You're not in any group yet. Create one in Groups."
+msgstr "Et ole vielä missään ryhmässä. Luo ryhmä kohdassa Ryhmät."
+
+msgid "People in the room"
+msgstr "Huoneessa olevat"
+
+msgid "Everyone"
+msgstr "Kaikki"
+
+msgid "Who's speaking"
+msgstr "Kuka puhuu"
+
+msgid "Mute"
+msgstr "Mykistä"
+
+msgid "Mute your microphone for everyone"
+msgstr "Mykistä mikrofonisi kaikilta"
+
+msgid "Which camera"
+msgstr "Mikä kamera"
+
+msgid "Include the computer's sound when sharing the screen"
+msgstr "Sisällytä tietokoneen ääni näyttöä jaettaessa"
+
+msgid ""
+"Videos and music playing here go to the room too; the room's voices don't "
+"(no echo)"
+msgstr ""
+"Täällä toistuvat videot ja musiikki kuuluvat myös huoneessa; huoneen äänet "
+"eivät (ei kaikua)"
+
+msgid "Rooms unavailable"
+msgstr "Huoneet eivät ole käytettävissä"
+
+#, rust-format
+msgid "Could not turn on the camera: {error}"
+msgstr "Kameran käynnistys epäonnistui: {error}"
+
+#, rust-format
+msgid "Could not share the screen: {error}"
+msgstr "Näytön jakaminen epäonnistui: {error}"
+
+msgid "Nobody here right now"
+msgstr "Täällä ei ole nyt ketään"
+
+#, rust-format
+msgid "In the room: {people}"
+msgstr "Huoneessa: {people}"
+
+#, rust-format
+msgid "Join the room {group}"
+msgstr "Liity huoneeseen {group}"
+
+#, rust-format
+msgid "Could not join {group}: {error}"
+msgstr "Liittyminen kohteeseen {group} epäonnistui: {error}"
+
+msgid "📺 You're showing your screen to the room"
+msgstr "📺 Näytät näyttöäsi huoneelle"
+
+msgid "📺 You're showing your screen · 1 person watching"
+msgstr "📺 Näytät näyttöäsi · 1 henkilö katsoo"
+
+#, rust-format
+msgid "📺 You're showing your screen · {count} people watching"
+msgstr "📺 Näytät näyttöäsi · {count} henkilöä katsoo"
+
+#, rust-format
+msgid "{people} · {talking} talking"
+msgstr "{people} · {talking} puhuu"
+
+msgid "connecting…"
+msgstr "yhdistetään…"
+
+msgid "muted"
+msgstr "mykistetty"
+
+msgid "talking"
+msgstr "puhuu"
+
+msgid "quiet"
+msgstr "hiljaa"
+
+msgid "Sharing screen"
+msgstr "Jakaa näyttöä"
+
+msgid "In control"
+msgstr "Hallitsee"
+
+msgid "Controls your screen now"
+msgstr "Hallitsee nyt näyttöäsi"
+
+msgid "Watching"
+msgstr "Katsoo"
+
+msgid "Watching your screen"
+msgstr "Katsoo näyttöäsi"
+
+#, rust-format
+msgid "{user} is showing their screen"
+msgstr "{user} näyttää näyttöään"
+
+msgid "Watch"
+msgstr "Katso"
+
+#, rust-format
+msgid "{user} asks to control your screen"
+msgstr "{user} pyytää saada hallita näyttöäsi"
+
+msgid ""
+"They'll be able to use your mouse and keyboard. You can take control back at"
+" any time."
+msgstr ""
+"Hän voi käyttää hiirtäsi ja näppäimistöäsi. Voit ottaa hallinnan takaisin "
+"milloin tahansa."
+
+msgid "Allow"
+msgstr "Salli"
+
+msgid "Turn off camera"
+msgstr "Sammuta kamera"
+
+msgid "Turn on camera"
+msgstr "Käynnistä kamera"
+
+msgid "No camera found on this computer"
+msgstr "Tästä tietokoneesta ei löytynyt kameraa"
+
+msgid "Stop sharing"
+msgstr "Lopeta jakaminen"
+
+msgid "Share screen"
+msgstr "Jaa näyttö"
+
+msgid "Stop showing your screen to the room"
+msgstr "Lopeta näyttösi näyttäminen huoneelle"
+
+msgid "Show your screen to everyone in the room"
+msgstr "Näytä näyttösi kaikille huoneessa"
+
+msgid "Take back control"
+msgstr "Ota hallinta takaisin"
+
+msgid "Give control"
+msgstr "Anna hallinta"
+
+msgid "Stop them from using your mouse and keyboard"
+msgstr "Estä häntä käyttämästä hiirtäsi ja näppäimistöäsi"
+
+msgid "Let them use your mouse and keyboard"
+msgstr "Anna hänen käyttää hiirtäsi ja näppäimistöäsi"
+
+msgid "Sound level"
+msgstr "Äänitaso"
+
+msgid "Unmute"
+msgstr "Poista mykistys"
+
+msgid "Sections"
+msgstr "Osiot"
+
+msgid ""
+"Your identity on this mesh — the device name shown to other peers and the "
+"network you're connected to."
+msgstr ""
+"Henkilöllisyytesi tässä mesh-verkossa — laitteen nimi, joka näkyy muille "
+"vertaisille, ja verkko, johon olet yhdistetty."
+
+msgid "Change photo…"
+msgstr "Vaihda kuva…"
+
+msgid "Remove photo"
+msgstr "Poista kuva"
+
+msgid "Change your photo"
+msgstr "Vaihda kuvasi"
+
+msgid "Rename this device on the network"
+msgstr "Nimeä tämä laite uudelleen verkossa"
+
+msgid "Advanced: use a pre-auth key"
+msgstr "Lisäasetukset: käytä ennakkoon myönnettyä avainta"
+
+msgid "Already have a key from your administrator? Paste it here."
+msgstr "Onko sinulla jo avain ylläpitäjältäsi? Liitä se tähän."
+
+msgid ""
+"Manual setup — expand to paste a server URL and pre-auth key when you "
+"already received them from your administrator. Most users should sign in "
+"through the panel button above instead."
+msgstr ""
+"Manuaalinen asennus — laajenna liittääksesi palvelimen URL-osoite ja "
+"ennakkoon luotu avain, jos olet jo saanut ne ylläpitäjältäsi. Useimpien "
+"käyttäjien tulisi kirjautua yllä olevan paneelin painikkeen kautta."
+
+msgid ""
+"Address of the coordination server (e.g. vpn.example.org). The https:// "
+"scheme is added automatically if you omit it."
+msgstr ""
+"Koordinaatiopalvelimen osoite (esim. vpn.example.org). https://-etuliite "
+"lisätään automaattisesti, jos jätät sen pois."
+
+msgid "Pre-auth key"
+msgstr "Esivaltuutusavain"
+
+msgid ""
+"One-time or reusable key created on the server (starts with 'hskey-auth-'). "
+"Used to register this device automatically without opening a browser."
+msgstr ""
+"Kertakäyttöinen tai uudelleenkäytettävä avain, joka on luotu palvelimella "
+"(alkaa 'hskey-auth-'). Käytetään laitteen automaattiseen rekisteröintiin "
+"ilman selaimen avaamista."
+
+msgid ""
+"The name this device shows to other peers on the VPN — this is the Tailscale"
+" hostname, NOT your computer's name and NOT your user. Lowercase letters, "
+"digits and hyphens. Example: 'tales-laptop', 'francois', 'office-pc'."
+msgstr ""
+"Nimi, jolla tämä laite näkyy muille vertaisille VPN:ssä — tämä on Tailscalen"
+" isäntänimi, EI tietokoneesi nimi eikä käyttäjätunnuksesi. Pienet kirjaimet,"
+" numerot ja väliviivat. Esimerkki: 'tales-laptop', 'francois', 'office-pc'."
+
+msgid "Apply manual setup"
+msgstr "Ota käyttöön manuaalinen asetus"
+
+msgid "Save"
+msgstr "Tallenna"
+
+msgid ""
+"Persist the server, key and device name above. Won't connect — press Connect"
+" afterwards."
+msgstr ""
+"Tallenna yllä oleva palvelin, avain ja laitteen nimi. Ei yhdistä — paina "
+"Yhdistä sen jälkeen."
+
+msgid "Connect automatically"
+msgstr "Yhdistä automaattisesti"
+
+msgid "Join the network when BigLace starts"
+msgstr "Liity verkkoon, kun BigLace käynnistyy"
+
+msgid ""
+"When on, BigLace runs 'tailscale up' as soon as it launches, so you join the"
+" mesh without clicking Connect every time."
+msgstr ""
+"Kun päällä, BigLace suorittaa 'tailscale up' -komennon heti käynnistyessään,"
+" joten liityt mesh-verkkoon ilman Yhdistä-painikkeen klikkaamista joka "
+"kerta."
+
+msgid "Toggle auto-connect on startup"
+msgstr "Ota automaattinen yhdistäminen käyttöön käynnistyksessä"
+
 msgid "Start BigLace with the session"
 msgstr "Käynnistä BigLace istunnon yhteydessä"
 
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/sidebar.rs:179
 msgid "Open BigLace after you sign in to the desktop"
 msgstr "Avaa BigLace, kun olet kirjautunut työpöydälle"
 
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/sidebar.rs:182
 msgid ""
 "Turn this on to add BigLace to your desktop session startup. Turn it off to "
 "remove it."
@@ -724,9 +2317,83 @@ msgstr ""
 "Ota tämä käyttöön lisätäksesi BigLace työpöytäistunnon käynnistykseen. "
 "Poista se käytöstä poistaaksesi sen."
 
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/sidebar.rs:190
 msgid "Toggle start with session"
 msgstr "Vaihda käynnistys istunnon yhteydessä"
+
+msgid "Reconnect on drop"
+msgstr "Yhdistä uudelleen katketessa"
+
+msgid "Retry with backoff when the connection is lost"
+msgstr "Yritä uudelleen viiveellä, kun yhteys katkeaa"
+
+msgid ""
+"If the tunnel drops (network change, sleep, server hiccup), BigLace silently"
+" retries with growing delays instead of leaving you offline until you "
+"notice."
+msgstr ""
+"Jos tunneli katkeaa (verkon muutos, lepotila, palvelimen häiriö), BigLace "
+"yrittää uudelleen hiljaisesti kasvavilla viiveillä sen sijaan, että "
+"jättäisit sinut offline-tilaan, kunnes huomaat sen."
+
+msgid "Toggle auto-reconnect"
+msgstr "Ota automaattinen uudelleenyhdistäminen käyttöön"
+
+msgid "Notify on peer changes"
+msgstr "Ilmoita vertaisverkon muutoksista"
+
+msgid "Show a desktop notification when peers go online/offline"
+msgstr ""
+"Näytä työpöytäilmoitus, kun vertaislaitteet menevät online-/offline-tilaan"
+
+msgid ""
+"Send a desktop toast when another device on your network goes online or "
+"offline. Rapid bursts are coalesced into a single notification so you don't "
+"get spammed during reconnects."
+msgstr ""
+"Lähetä työpöytäilmoitus, kun toinen laite verkossasi menee online- tai "
+"offline-tilaan. Nopeat purskeet yhdistetään yhdeksi ilmoitukseksi, jotta et "
+"saa roskapostia uudelleenmuodostusten aikana."
+
+msgid "Toggle peer-change notifications"
+msgstr "Ota vertaismuutosten ilmoitukset käyttöön"
+
+msgid ""
+"Join or leave the mesh network. When connected, this device becomes "
+"reachable by the other peers in your account."
+msgstr ""
+"Liity mesh-verkkoon tai poistu siitä. Kun yhteys on muodostettu, tämä laite "
+"on muiden tilisi vertaisten tavoitettavissa."
+
+msgid "Your photo"
+msgstr "Kuvasi"
+
+#~ msgid "Panel credentials"
+#~ msgstr "Paneelin tunnistetiedot"
+
+#~ msgid "Username"
+#~ msgstr "Käyttäjätunnus"
+
+#~ msgid "Sign in to connect"
+#~ msgstr "Kirjaudu sisään yhdistääksesi"
+
+#~ msgid "Use the panel on the left to sign in or paste a pre-auth key."
+#~ msgstr ""
+#~ "Käytä vasemmanpuoleista paneelia kirjautuaksesi sisään tai liittääksesi "
+#~ "ennakkoon todennusavaimen."
+
+#~ msgid "Connect via panel account"
+#~ msgstr "Yhdistä paneelin tilillä"
+
+#~ msgid ""
+#~ "Sign in with your BigScale panel username and password. A device identity "
+#~ "will be created on the network automatically — no manual key needed."
+#~ msgstr ""
+#~ "Kirjaudu sisään BigScale-paneelin käyttäjätunnuksella ja salasanalla. "
+#~ "Laitetunniste luodaan automaattisesti verkkoon – manuaalista avainta ei "
+#~ "tarvita."
+
+#~ msgid "Connected ·"
+#~ msgstr "Yhdistetty ·"
 
 #~ msgid "Device name"
 #~ msgstr "Laitteen nimi"
@@ -767,9 +2434,6 @@ msgstr "Vaihda käynnistys istunnon yhteydessä"
 
 #~ msgid "Terminal"
 #~ msgstr "Pääte"
-
-#~ msgid "Copied!"
-#~ msgstr "Kopioitu!"
 
 #~ msgid "Key generated successfully."
 #~ msgstr "Avain luotu onnistuneesti."

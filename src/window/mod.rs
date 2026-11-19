@@ -11,6 +11,7 @@ mod invites;
 mod join_dialog;
 mod peer_row;
 mod remote_ui;
+mod room_stage;
 mod rooms;
 mod sidebar;
 mod style;

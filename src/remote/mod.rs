@@ -91,6 +91,9 @@ pub enum Kind {
     /// Viewer → host (JSON): fit the screen to the viewer's window,
     /// `{"width": …, "height": …}`, or `{"restore": true}`.
     Resize = 16,
+    /// Voice room, both ways: one camera picture — capture time (µs, u64
+    /// BE) and an H.264 access unit.
+    CamVideo = 17,
 }
 
 /// Announced by hosts that can fit their resolution to the viewer's window.
@@ -126,6 +129,7 @@ impl Kind {
             14 => Some(Self::Power),
             15 => Some(Self::Cursor),
             16 => Some(Self::Resize),
+            17 => Some(Self::CamVideo),
             _ => None,
         }
     }

@@ -3,7 +3,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: biglace\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-05-01 15:14\n"
+"POT-Creation-Date: 2026-11-19 12:50-0300\n"
 "PO-Revision-Date: 2026-05-01 15:14\n"
 "Last-Translator: Translation Automator <auto@translator.ai>\n"
 "Language-Team: Bulgarian <bg@li.org>\n"
@@ -12,146 +12,41 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/tray/linux.rs:76
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/tray/windows.rs:136
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/mod.rs:1114
-msgid "Disconnect"
-msgstr "Прекъсване на връзката"
+msgid "Invalid device address."
+msgstr "Невалиден адрес на устройство."
 
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/content.rs:47
-msgid "Main menu"
-msgstr "Главно меню"
-
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/mod.rs:590
-msgid "Sign in with panel account"
-msgstr "Вход с акаунт в панела"
-
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/mod.rs:592
-msgid "Make this user the tailscale operator"
-msgstr "Направете този потребител оператор на tailscale"
-
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/mod.rs:594
-msgid "About BigLace"
-msgstr "Относно BigLace"
-
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/dialogs.rs:42
-msgid "Tailscale operator"
-msgstr "Оператор на tailscale"
-
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/dialogs.rs:37
-msgid "Done. You will no longer need a password to connect or disconnect."
+msgid ""
+"No file manager could open the SFTP location. Install one (Dolphin, "
+"Nautilus, Nemo, Thunar…) and try again."
 msgstr ""
-"Готово. Вече няма да имате нужда от парола за свързване или прекъсване на "
-"връзката."
+"Нито един файлов мениджър не успя да отвори SFTP местоположението. "
+"Инсталирайте някой (Dolphin, Nautilus, Nemo, Thunar…) и опитайте отново."
 
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/dialogs.rs:38
-#, rust-format
-msgid "Failed: {error}"
-msgstr "Неуспешно: {error}"
+msgid ""
+"No file manager could open the SFTP location. Install WinSCP and try again."
+msgstr ""
+"Нито един файлов мениджър не успя да отвори SFTP местоположението. "
+"Инсталирайте WinSCP и опитайте отново."
 
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/dialogs.rs:45
-msgid "OK"
-msgstr "OK"
+msgid ""
+"No terminal emulator found. Install one (Konsole, GNOME Terminal, xterm…) "
+"and try again."
+msgstr ""
+"Не е намерен терминален емулатор. Инсталирайте някой (Konsole, GNOME "
+"Terminal, xterm…) и опитайте отново."
 
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/dialogs.rs:387
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/mod.rs:729
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/mod.rs:962
-#, rust-format
-msgid "Error: {error}"
-msgstr "Грешка: {error}"
-
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/dialogs.rs:29
-msgid "Mesh VPN client for BigScale/Headscale."
-msgstr "Mesh VPN клиент за BigScale/Headscale."
-
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/dialogs.rs:164
-msgid "Panel credentials"
-msgstr "Удостоверения на панела"
-
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/dialogs.rs:173
-msgid "Panel URL"
-msgstr "URL на панела"
-
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/dialogs.rs:180
-msgid "Username"
-msgstr "Потребителско име"
-
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/dialogs.rs:184
-msgid "Password"
-msgstr "Парола"
-
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/dialogs.rs:75
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/dialogs.rs:247
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/dialogs.rs:448
-msgid "Cancel"
-msgstr "Отказ"
-
-#. The OK button needs to flip between "Sign in" and "spinner + Connecting…"
-#. while the HTTP call is in flight. Build both children up front and just
-#. swap the button's child — simpler than juggling visibility flags.
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/dialogs.rs:252
-msgid "Sign in"
-msgstr "Вход"
-
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/dialogs.rs:309
-msgid "Fill in URL, username and password."
-msgstr "Попълнете URL, потребителско име и парола."
-
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/content.rs:159
-msgid "Start service"
-msgstr "Стартиране на услугата"
-
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/sidebar.rs:95
-msgid "Server URL"
-msgstr "URL на сървъра"
-
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/content.rs:206
-msgid "This device"
-msgstr "Това устройство"
-
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/tray/linux.rs:83
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/tray/windows.rs:81
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/tray/windows.rs:136
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/mod.rs:1124
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/mod.rs:1129
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/sidebar.rs:240
-msgid "Connect"
-msgstr "Свързване"
-
-#. ── Devices on the network ──
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/content.rs:223
-msgid "Devices on the network"
-msgstr "Устройства в мрежата"
-
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/tailscale.rs:557
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/tailscale.rs:630
 msgid "Failed to run tailscale"
 msgstr "Неуспешно стартиране на tailscale"
 
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/tailscale.rs:577
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/tailscale.rs:610
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/tailscale.rs:642
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/tailscale.rs:714
 msgid "Failed to connect — check the server URL and key."
 msgstr "Неуспешно свързване — проверете URL адреса на сървъра и ключа."
 
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/tailscale.rs:598
 msgid "Failed to run pkexec tailscale"
 msgstr "Неуспешно стартиране на pkexec tailscale"
 
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/tailscale.rs:781
-msgid "Could not determine the current user."
-msgstr "Не може да се определи текущият потребител."
+msgid "Enter the server URL before connecting."
+msgstr "Въведете URL адреса на сървъра преди да се свържете."
 
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/tailscale.rs:787
-msgid "Failed to run pkexec tailscale set"
-msgstr "Неуспешно стартиране на pkexec tailscale set"
-
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/tailscale.rs:789
-msgid "Failed to set tailscale operator."
-msgstr "Неуспешно задаване на tailscale оператор."
-
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/tailscale.rs:707
 msgid ""
 "The pre-auth key was rejected by the server. Generate a new key in the "
 "BigScale panel and try again."
@@ -159,168 +54,642 @@ msgstr ""
 "Предварително-удостоверителният ключ беше отхвърлен от сървъра. Генерирайте "
 "нов ключ в панела на BigScale и опитайте отново."
 
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/tailscale.rs:710
+msgid "Sign in or paste a pre-auth key first."
+msgstr "Първо влезте или поставете предварителен ключ."
+
 #, rust-format
 msgid "Login rejected by server: {detail}"
 msgstr "Входът беше отхвърлен от сървъра: {detail}"
 
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/sidebar.rs:138
-msgid "Apply manual setup"
-msgstr "Прилагане на ръчна настройка"
+msgid "Could not determine the current user."
+msgstr "Не може да се определи текущият потребител."
 
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/sidebar.rs:140
-msgid "Save"
-msgstr "Запазване"
+msgid "Failed to run pkexec tailscale set"
+msgstr "Неуспешно стартиране на pkexec tailscale set"
 
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/sidebar.rs:159
-msgid "Connect automatically"
-msgstr "Свързване автоматично"
+msgid "Failed to set tailscale operator."
+msgstr "Неуспешно задаване на tailscale оператор."
 
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/sidebar.rs:160
-msgid "Join the network when BigLace starts"
-msgstr "Присъединете се към мрежата, когато BigLace стартира"
-
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/mod.rs:1079
-msgid "Sign in or paste a pre-auth key"
-msgstr "Влезте или поставете предварителен ключ"
-
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/mod.rs:1091
-msgid "Server not set"
-msgstr "Сървърът не е зададен"
-
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/mod.rs:711
-msgid "Setup saved"
-msgstr "Настройката е запазена"
-
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/tailscale.rs:653
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/mod.rs:805
-msgid "Sign in or paste a pre-auth key first."
-msgstr "Първо влезте или поставете предварителен ключ."
-
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/content.rs:96
-msgid "Sign in to connect"
-msgstr "Влезте, за да се свържете"
-
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/content.rs:97
-msgid "Use the panel on the left to sign in or paste a pre-auth key."
-msgstr ""
-"Използвайте панела отляво, за да влезете или да поставите предварителен "
-"ключ."
-
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/content.rs:105
-msgid "Not connected"
-msgstr "Няма връзка"
-
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/content.rs:106
-msgid "Press Connect on the left to join the network."
-msgstr "Натиснете Connect отляво, за да се присъедините към мрежата."
-
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/content.rs:183
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/dialogs.rs:259
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/mod.rs:1026
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/mod.rs:1119
-msgid "Connecting…"
-msgstr "Свързване…"
-
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/content.rs:232
-msgid "No other devices on the network yet."
-msgstr "Все още няма други устройства в мрежата."
-
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/content.rs:216
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/peer_row.rs:178
-msgid "Copy IP address"
-msgstr "Копиране на IP адрес"
-
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/mod.rs:888
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/peer_row.rs:186
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/peer_row.rs:271
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/peer_row.rs:280
-msgid "IP address copied"
-msgstr "IP адресът е копиран"
-
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/peer_row.rs:231
-msgid "Open files (SFTP)"
-msgstr "Отваряне на файлове (SFTP)"
-
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/peer_row.rs:246
-msgid "Open terminal (SSH)"
-msgstr "Отваряне на терминал (SSH)"
-
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/peer_row.rs:50
-msgid "offline"
-msgstr "офлайн"
-
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/mod.rs:1023
-msgid "Service stopped"
-msgstr "Услугата е спряна"
-
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/tray/linux.rs:58
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/tray/windows.rs:172
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/content.rs:40
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/mod.rs:1025
-msgid "Disconnected"
-msgstr "Прекъсната връзка"
-
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/tray/linux.rs:53
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/tray/windows.rs:167
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/mod.rs:953
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/mod.rs:1027
 msgid "Connected"
 msgstr "Свързан"
 
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/content.rs:59
+msgid "Connected · 1 peer"
+msgstr "Свързан · 1 peer"
+
+#, rust-format
+msgid "Connected · {n} peers"
+msgstr "Свързан · {n} peer-а"
+
+msgid "Disconnected"
+msgstr "Прекъсната връзка"
+
+#, rust-format
+msgid "In the room {group} · muted"
+msgstr "В стая {group} · заглушен"
+
+#, rust-format
+msgid "In the room {group}"
+msgstr "В стая {group}"
+
+msgid "Disconnect"
+msgstr "Прекъсване на връзката"
+
+msgid "Connect"
+msgstr "Свързване"
+
+msgid "Show BigLace"
+msgstr "Покажи BigLace"
+
+#, rust-format
+msgid "Room {group}"
+msgstr "Стая {group}"
+
+msgid "Unmute (Ctrl+Alt+M)"
+msgstr "Включване на звука (Ctrl+Alt+M)"
+
+msgid "Mute (Ctrl+Alt+M)"
+msgstr "Заглушаване (Ctrl+Alt+M)"
+
+msgid "Leave the room"
+msgstr "Напускане на стаята"
+
+msgid "Quit"
+msgstr "Изход"
+
+msgid "This computer"
+msgstr "Този компютър"
+
+msgid "Who may use this computer remotely"
+msgstr "Кой може да използва този компютър отдалечено"
+
+msgid ""
+"Anyone you're connected to can ask to see and control this screen. Choose "
+"who is let in without asking, and who is never let in."
+msgstr ""
+"Всеки, с когото сте свързани, може да поиска да вижда и управлява този "
+"екран. Изберете кой да бъде допускан без питане и кой никога."
+
+msgid "History of accesses"
+msgstr "История на достъпа"
+
+msgid "Kept on this computer only."
+msgstr "Пази се само на този компютър."
+
+msgid "Clear"
+msgstr "Изчистване"
+
+msgid "Nobody has asked yet."
+msgstr "Още никой не е поискал."
+
+msgid "When someone asks, you can choose to always let them in."
+msgstr "Когато някой поиска, можете да изберете винаги да го допускате."
+
+msgid "Ask every time"
+msgstr "Питане всеки път"
+
+msgid "Always allow"
+msgstr "Винаги разрешаване"
+
+msgid "Never allow"
+msgstr "Никога не разрешаване"
+
+msgid "No accesses yet."
+msgstr "Още няма достъпи."
+
+msgid "Remote access"
+msgstr "Отдалечен достъп"
+
+msgid "Watched the screen shared with the room"
+msgstr "Гледа екрана, споделен със стаята"
+
+msgid "Got control of the shared screen"
+msgstr "Пое управлението на споделения екран"
+
+msgid "Restarted the computer"
+msgstr "Рестартира компютъра"
+
+msgid "Restarted the session"
+msgstr "Рестартира сесията"
+
+msgid "Shut down the computer"
+msgstr "Изключи компютъра"
+
+msgid "allowed"
+msgstr "разрешен"
+
+msgid "allowed (always)"
+msgstr "разрешен (винаги)"
+
+msgid "came back after a restart"
+msgstr "върна се след рестартиране"
+
+msgid "denied"
+msgstr "отказан"
+
+msgid "blocked (never allowed)"
+msgstr "блокиран (никога не се разрешава)"
+
+msgid "ended"
+msgstr "приключен"
+
+#, rust-format
+msgid "{user} ({device})"
+msgstr "{user} ({device})"
+
+#, rust-format
+msgid "{done} of {total}"
+msgstr "{done} от {total}"
+
+msgid "Play"
+msgstr "Пускане"
+
+msgid "Download"
+msgstr "Изтегляне"
+
+msgid "Open"
+msgstr "Отваряне"
+
+msgid "Show in folder"
+msgstr "Показване в папката"
+
+msgid "Pause"
+msgstr "Пауза"
+
+msgid "Photo"
+msgstr "Снимка"
+
+msgid "Video"
+msgstr "Видео"
+
+msgid "Voice message"
+msgstr "Гласово съобщение"
+
+msgid "Chat"
+msgstr "Чат"
+
+msgid "New chat"
+msgstr "Нов чат"
+
+msgid "Start a conversation with someone on the network"
+msgstr "Започнете разговор с някого в мрежата"
+
+msgid "Main menu"
+msgstr "Главно меню"
+
+msgid "Chat theme"
+msgstr "Тема на чата"
+
+msgid "Conversations"
+msgstr "Разговори"
+
+msgid "No conversations yet."
+msgstr "Още няма разговори."
+
+msgid "Search in this conversation (Ctrl+F)"
+msgstr "Търсене в този разговор (Ctrl+F)"
+
+msgid "Pinned message"
+msgstr "Закачено съобщение"
+
+msgid "Unpin"
+msgstr "Откачане"
+
+msgid "Search messages"
+msgstr "Търсене на съобщения"
+
+msgid "Older"
+msgstr "По-стари"
+
+msgid "Newer"
+msgstr "По-нови"
+
+msgid "Emoji"
+msgstr "Емоджи"
+
+msgid "Send files, pictures or videos"
+msgstr "Изпращане на файлове, снимки или видеа"
+
+msgid "Send (Enter) — Shift+Enter for a new line"
+msgstr "Изпращане (Enter) — Shift+Enter за нов ред"
+
+msgid "Record a voice message"
+msgstr "Записване на гласово съобщение"
+
+msgid "Discard"
+msgstr "Отхвърляне"
+
+msgid "Send voice message"
+msgstr "Изпращане на гласово съобщение"
+
+msgid "Cancel"
+msgstr "Отказ"
+
+msgid "Copy text"
+msgstr "Копиране на текста"
+
+msgid "Forward"
+msgstr "Препращане"
+
+msgid "Delete"
+msgstr "Изтриване"
+
+msgid "Talk with your network"
+msgstr "Говорете с мрежата си"
+
+msgid ""
+"Pick a conversation, or start one. Messages go straight between your "
+"computers — the server never sees them."
+msgstr ""
+"Изберете разговор или започнете нов. Съобщенията вървят директно между "
+"компютрите ви — сървърът никога не ги вижда."
+
+msgid "Group"
+msgstr "Група"
+
+msgid "Direct conversation"
+msgstr "Личен разговор"
+
+msgid "That message is too long."
+msgstr "Съобщението е твърде дълго."
+
+#, rust-format
+msgid "Could not send: {error}"
+msgstr "Неуспешно изпращане: {error}"
+
+#, rust-format
+msgid "Could not download: {error}"
+msgstr "Неуспешно изтегляне: {error}"
+
+#, rust-format
+msgid "{user} in {group}"
+msgstr "{user} в {group}"
+
+msgid "Send files"
+msgstr "Изпращане на файлове"
+
+msgid "Drop to send"
+msgstr "Пуснете, за да изпратите"
+
+#, rust-format
+msgid "Could not record: {error}"
+msgstr "Неуспешно записване: {error}"
+
+msgid "Too short — record for at least a second."
+msgstr "Твърде кратко — записвайте поне секунда."
+
+msgid "Search people and groups"
+msgstr "Търсене на хора и групи"
+
+msgid "Loading…"
+msgstr "Зареждане…"
+
+msgid "Nobody you can reach yet."
+msgstr "Още няма никой, до когото да достигнете."
+
+msgid "online"
+msgstr "на линия"
+
+msgid "offline"
+msgstr "офлайн"
+
+#, rust-format
+msgid "You: {text}"
+msgstr "Вие: {text}"
+
+msgid "Group conversation"
+msgstr "Групов разговор"
+
+#, rust-format
+msgid "Delivered to {people}"
+msgstr "Доставено до {people}"
+
+msgid "Waiting to be delivered"
+msgstr "Чака доставяне"
+
+msgid "Today"
+msgstr "Днес"
+
+msgid "Yesterday"
+msgstr "Вчера"
+
+msgid "🗑 Message deleted"
+msgstr "🗑 Съобщението е изтрито"
+
+#, rust-format
+msgid "Forwarded from {name}"
+msgstr "Препратено от {name}"
+
+msgid "edited"
+msgstr "редактирано"
+
+msgid "More reactions"
+msgstr "Още реакции"
+
+msgid "Reply"
+msgstr "Отговор"
+
+msgid "Edit"
+msgstr "Редактиране"
+
+msgid "Pin"
+msgstr "Закачане"
+
+msgid "Select"
+msgstr "Избиране"
+
+#, rust-format
+msgid "Could not react: {error}"
+msgstr "Неуспешна реакция: {error}"
+
+#, rust-format
+msgid "Reply to {name}"
+msgstr "Отговор на {name}"
+
+msgid "Editing message"
+msgstr "Редактиране на съобщение"
+
+msgid "Copied."
+msgstr "Копирано."
+
+msgid "Forward to…"
+msgstr "Препращане до…"
+
+msgid "Forwarded."
+msgstr "Препратено."
+
+#, rust-format
+msgid "Could not forward: {error}"
+msgstr "Неуспешно препращане: {error}"
+
+msgid "Delete the message?"
+msgstr "Изтриване на съобщението?"
+
+#, rust-format
+msgid "Delete {count} messages?"
+msgstr "Изтриване на {count} съобщения?"
+
+msgid "“For everyone” removes it from the other computers too."
+msgstr "„За всички“ го премахва и от другите компютри."
+
+msgid "It's removed from this computer only."
+msgstr "Премахва се само от този компютър."
+
+msgid "Delete for me"
+msgstr "Изтриване за мен"
+
+msgid "Delete for everyone"
+msgstr "Изтриване за всички"
+
+#, rust-format
+msgid "Could not delete: {error}"
+msgstr "Неуспешно изтриване: {error}"
+
+msgid "1 selected"
+msgstr "1 избрано"
+
+#, rust-format
+msgid "{count} selected"
+msgstr "{count} избрани"
+
+msgid "That message isn't here anymore."
+msgstr "Това съобщение вече го няма."
+
+msgid "No results"
+msgstr "Няма резултати"
+
+#, rust-format
+msgid "{n} of {total}"
+msgstr "{n} от {total}"
+
+#, rust-format
+msgid "{user} is typing…"
+msgstr "{user} пише…"
+
+msgid "typing…"
+msgstr "пише…"
+
+msgid "System accent"
+msgstr "Системен акцент"
+
+msgid "Blue"
+msgstr "Синьо"
+
+msgid "Teal"
+msgstr "Синьозелено"
+
+msgid "Green"
+msgstr "Зелено"
+
+msgid "Purple"
+msgstr "Лилаво"
+
+msgid "Pink"
+msgstr "Розово"
+
+msgid "Orange"
+msgstr "Оранжево"
+
+msgid "Red"
+msgstr "Червено"
+
+msgid "Graphite"
+msgstr "Графит"
+
+msgid "Default"
+msgstr "По подразбиране"
+
+msgid "Plain"
+msgstr "Обикновен"
+
+msgid "Dots"
+msgstr "Точки"
+
+msgid "Ocean"
+msgstr "Океан"
+
+msgid "Sunset"
+msgstr "Залез"
+
+msgid "Forest"
+msgstr "Гора"
+
+msgid "Lavender"
+msgstr "Лавандула"
+
+msgid "Night"
+msgstr "Нощ"
+
+msgid "Hi! How does this look? 😊"
+msgstr "Здравей! Как ти изглежда? 😊"
+
+msgid "Looks great!"
+msgstr "Изглежда страхотно!"
+
+msgid "Appearance"
+msgstr "Външен вид"
+
+msgid "System"
+msgstr "Системен"
+
+msgid "Light"
+msgstr "Светъл"
+
+msgid "Dark"
+msgstr "Тъмен"
+
+msgid "Your messages"
+msgstr "Вашите съобщения"
+
+msgid "Background"
+msgstr "Фон"
+
+msgid "Picture…"
+msgstr "Изображение…"
+
+msgid "Pictures"
+msgstr "Изображения"
+
+msgid "Choose a background picture"
+msgstr "Изберете фоново изображение"
+
+msgid "Message"
+msgstr "Съобщение"
+
+msgid "Bold"
+msgstr "Получер"
+
+msgid "Italic"
+msgstr "Курсив"
+
+msgid "Underline"
+msgstr "Подчертан"
+
+msgid "Strikethrough"
+msgstr "Зачертан"
+
+msgid "Monospace"
+msgstr "Равноширок"
+
+msgid "Create link"
+msgstr "Създаване на връзка"
+
+msgid "Plain text"
+msgstr "Обикновен текст"
+
+msgid "Formatting"
+msgstr "Форматиране"
+
+msgid "Create"
+msgstr "Създаване"
+
+msgid "Search devices"
+msgstr "Търсене на устройства"
+
 msgid "Refresh"
 msgstr "Обновяване"
 
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/dialogs.rs:373
-msgid "Signed in. Press Connect to join the network."
-msgstr "Влезли сте. Натиснете Connect, за да се присъедините към мрежата."
+msgid "Invite"
+msgstr "Покана"
 
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/mod.rs:1240
-msgid "no other devices"
-msgstr "няма други устройства"
+msgid "Invite someone to your network"
+msgstr "Поканете някого в мрежата си"
 
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/mod.rs:1242
-#, rust-format
-msgid "{online} online"
-msgstr "{online} онлайн"
+msgid ""
+"Tailscale cannot write this device's DNS settings, so it can no longer keep "
+"peer names working. They may still resolve for now, from the configuration "
+"left over from before the failure, but that will break the next time the "
+"network changes — and BigLace will fall back to IP addresses. On most "
+"distributions `sudo resolvconf -u` repairs it."
+msgstr ""
+"Tailscale не може да записва DNS настройките на това устройство, така че "
+"вече не може да поддържа имената на пиърите работещи. Засега те може още да "
+"се разрешават от конфигурацията, останала отпреди грешката, но това ще спре "
+"при следващата промяна на мрежата — и BigLace ще премине към IP адреси. В "
+"повечето дистрибуции `sudo resolvconf -u` го поправя."
 
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/mod.rs:1244
-#, rust-format
-msgid "{online} online · {offline} offline"
-msgstr "{online} онлайн · {offline} офлайн"
+msgid "Not connected"
+msgstr "Няма връзка"
 
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/content.rs:153
+msgid "Press Connect on the left to join the network."
+msgstr "Натиснете Connect отляво, за да се присъедините към мрежата."
+
 msgid "The tailscale service is not running"
 msgstr "Услугата tailscale не работи"
 
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/content.rs:155
 msgid "BigLace needs the tailscaled background service to manage the network."
 msgstr ""
 "BigLace се нуждае от фоновата услуга tailscaled, за да управлява мрежата."
 
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/sidebar.rs:108
-msgid "Pre-auth key"
-msgstr "Ключ за предварително удостоверяване"
+msgid "Start service"
+msgstr "Стартиране на услугата"
 
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/mod.rs:1024
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/mod.rs:1078
-msgid "Not signed in"
-msgstr "Не сте влезли"
+msgid "Join the network"
+msgstr "Присъединяване към мрежата"
 
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/sidebar.rs:81
-msgid "Advanced: use a pre-auth key"
-msgstr "Разширени: използване на предварително удостоверен ключ"
+msgid "Choose how you're going to sign in."
+msgstr "Изберете как ще влезете."
 
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/sidebar.rs:82
-msgid "Already have a key from your administrator? Paste it here."
-msgstr "Вече имате ключ от вашия администратор? Поставете го тук."
+msgid "Ways to sign in"
+msgstr "Начини за влизане"
 
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/dialogs.rs:68
+msgid "Your account was kept on this computer. No invite needed."
+msgstr "Акаунтът ви е запазен на този компютър. Не е нужна покана."
+
+msgid "I have an invite"
+msgstr "Имам покана"
+
+msgid "Someone on the network sent you a link or a QR code."
+msgstr "Някой от мрежата ви е изпратил връзка или QR код."
+
+msgid "I have an access key"
+msgstr "Имам ключ за достъп"
+
+msgid "A key the administrator created for you (starts with hskey-auth-)."
+msgstr "Ключ, създаден за вас от администратора (започва с hskey-auth-)."
+
+msgid "I'm the administrator"
+msgstr "Аз съм администраторът"
+
+msgid "Sign in with the BigScale panel's admin username and password."
+msgstr ""
+"Влезте с администраторското потребителско име и парола на панела BigScale."
+
+msgid "Connecting…"
+msgstr "Свързване…"
+
+msgid "This device"
+msgstr "Това устройство"
+
+msgid "Copy IP address"
+msgstr "Копиране на IP адрес"
+
+msgid "Devices on the network"
+msgstr "Устройства в мрежата"
+
+msgid "No other devices on the network yet."
+msgstr "Все още няма други устройства в мрежата."
+
+msgid "Mesh VPN client for BigScale/Headscale."
+msgstr "Mesh VPN клиент за BigScale/Headscale."
+
+msgid "Done. You will no longer need a password to connect or disconnect."
+msgstr ""
+"Готово. Вече няма да имате нужда от парола за свързване или прекъсване на "
+"връзката."
+
+#, rust-format
+msgid "Failed: {error}"
+msgstr "Неуспешно: {error}"
+
+msgid "Tailscale operator"
+msgstr "Оператор на tailscale"
+
+msgid "OK"
+msgstr "OK"
+
 msgid "Sign out of current account?"
 msgstr "Излизане от текущия акаунт?"
 
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/dialogs.rs:70
 msgid ""
 "This will disconnect from the network, sign this device out of the current "
 "control server, and forget the saved password. You'll then be able to sign "
@@ -330,265 +699,92 @@ msgstr ""
 "контролен сървър и ще забрави запазената парола. След това ще можете да "
 "влезете с друг акаунт."
 
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/dialogs.rs:76
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/mod.rs:591
 msgid "Sign out"
 msgstr "Излизане"
 
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/dialogs.rs:134
+msgid "Leave the network?"
+msgstr "Напускане на мрежата?"
+
+#, rust-format
+msgid ""
+"This device leaves the network and its name becomes free. Your account {user} is kept: you can come back later from this computer, without an invite.\n"
+"\n"
+"If you won't come back, delete the account and the name {user} becomes free too."
+msgstr ""
+"Това устройство напуска мрежата и името му се освобождава. Акаунтът ви {user} се запазва: можете да се върнете по-късно от този компютър без покана.\n"
+"\n"
+"Ако няма да се връщате, изтрийте акаунта и името {user} също ще се освободи."
+
+msgid "Leave and delete account"
+msgstr "Напускане и изтриване на акаунта"
+
+msgid "Leave"
+msgstr "Напускане"
+
+msgid "Connect first to delete the account."
+msgstr "Първо се свържете, за да изтриете акаунта."
+
+msgid "Signing out…"
+msgstr "Излизане…"
+
+#, rust-format
+msgid ""
+"Signed out. Your account was kept: {count} other device(s) still use it."
+msgstr ""
+"Излязохте. Акаунтът ви е запазен: още {count} устройство(а) го използват."
+
+msgid ""
+"Couldn't delete the account: the panel can't be reached. Connect and try "
+"again."
+msgstr ""
+"Неуспешно изтриване на акаунта: панелът е недостъпен. Свържете се и опитайте"
+" отново."
+
+#, rust-format
+msgid "Error: {error}"
+msgstr "Грешка: {error}"
+
+msgid "Signed out and account deleted."
+msgstr "Излязохте и акаунтът е изтрит."
+
 msgid "Signed out."
 msgstr "Излязохте."
 
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/dialogs.rs:153
-msgid "Connect via panel account"
-msgstr "Свързване чрез акаунт от панела"
+msgid "Couldn't reach the server"
+msgstr "Неуспешна връзка със сървъра"
 
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/dialogs.rs:166
-msgid ""
-"Sign in with your BigScale panel username and password. A device identity "
-"will be created on the network automatically — no manual key needed."
-msgstr ""
-"Влезте с потребителско име и парола от вашия BigScale панел. Идентичност на "
-"устройството ще бъде създадена автоматично в мрежата — не е необходим ръчен "
-"ключ."
-
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/peer_row.rs:446
-msgid "Copy"
-msgstr "Копирай"
-
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/sidebar.rs:197
-msgid "Reconnect on drop"
-msgstr "Повторно свързване при прекъсване"
-
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/sidebar.rs:198
-msgid "Retry with backoff when the connection is lost"
-msgstr "Повторен опит с изчакване при загуба на връзка"
-
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/sidebar.rs:217
-msgid "Notify on peer changes"
-msgstr "Уведомяване при промени в пировете"
-
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/sidebar.rs:218
-msgid "Show a desktop notification when peers go online/offline"
-msgstr "Показване на десктоп известие, когато пировете се свържат/изключат"
-
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/mod.rs:593
-msgid "View tailscaled logs"
-msgstr "Преглед на tailscaled логове"
-
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/mod.rs:1044
-msgid "Server unreachable"
-msgstr "Сървърът е недостъпен"
-
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/mod.rs:1054
 #, rust-format
-msgid "Update available: v{version}"
-msgstr "Налична актуализация: v{version}"
-
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/mod.rs:1398
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/mod.rs:1461
-msgid "is online"
-msgstr "е онлайн"
-
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/mod.rs:1399
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/mod.rs:1463
-msgid "went offline"
-msgstr "излезе офлайн"
-
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/peer_row.rs:124
-msgid "Unpin from top"
-msgstr "Откачане от началото"
-
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/peer_row.rs:124
-msgid "Pin to top"
-msgstr "Закачане отгоре"
-
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/peer_row.rs:259
-msgid "DNS name"
-msgstr "DNS име"
-
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/peer_row.rs:262
-msgid "DNS name copied"
-msgstr "DNS името е копирано"
-
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/peer_row.rs:284
-msgid "Owner"
-msgstr "Собственик"
-
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/peer_row.rs:346
-msgid "Tags"
-msgstr "Етикети"
-
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/peer_row.rs:351
-msgid "Last seen"
-msgstr "Последно видян"
-
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/peer_row.rs:358
-msgid "Use as exit node"
-msgstr "Използвай като изходен възел"
-
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/peer_row.rs:359
-msgid "Route all traffic through this peer"
-msgstr "Насочвай целия трафик през този peer"
-
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/peer_row.rs:401
-msgid "Exit node enabled"
-msgstr "Изходният възел е активиран"
-
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/peer_row.rs:401
-msgid "Exit node disabled"
-msgstr "Изходният възел е деактивиран"
-
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/peer_row.rs:403
-msgid "Failed to update exit node"
-msgstr "Неуспешно обновяване на изходния възел"
-
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/peer_row.rs:146
-msgid "Pinned to top"
-msgstr "Закачено най-отгоре"
-
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/peer_row.rs:148
-msgid "Unpinned"
-msgstr "Откачено"
-
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/tray/linux.rs:54
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/tray/windows.rs:168
-msgid "Connected · 1 peer"
-msgstr "Свързан · 1 peer"
-
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/tray/linux.rs:55
-#, rust-format
-msgid "Connected · {n} peers"
-msgstr "Свързан · {n} peer-а"
-
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/tray/linux.rs:92
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/tray/windows.rs:80
-msgid "Show BigLace"
-msgstr "Покажи BigLace"
-
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/tray/linux.rs:101
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/tray/windows.rs:82
-msgid "Quit"
-msgstr "Изход"
-
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/tray/windows.rs:169
-msgid "Connected ·"
-msgstr "Свързан ·"
-
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/sidebar.rs:54
 msgid ""
-"Your identity on this mesh — the device name shown to other peers and the "
-"network you're connected to."
+"The control server didn't confirm the sign-out: {error}\n"
+"\n"
+"You can still sign out on this computer: BigLace forgets the saved key and account and disconnects. The server keeps listing this device until an administrator removes it."
 msgstr ""
-"Вашата идентичност в тази мрежа — името на устройството, което се показва на"
-" другите участници, и мрежата, към която сте свързани."
+"Контролният сървър не потвърди излизането: {error}\n"
+"\n"
+"Все пак можете да излезете на този компютър: BigLace забравя запазения ключ и акаунт и прекъсва връзката. Сървърът ще продължи да показва това устройство, докато администратор не го премахне."
 
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/sidebar.rs:71
-msgid "Rename this device on the network"
-msgstr "Преименувайте това устройство в мрежата"
+msgid "Sign out on this computer"
+msgstr "Излизане на този компютър"
 
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/sidebar.rs:86
+msgid "Sign in as administrator"
+msgstr "Вход като администратор"
+
+msgid "Panel administrator"
+msgstr "Администратор на панела"
+
 msgid ""
-"Manual setup — expand to paste a server URL and pre-auth key when you "
-"already received them from your administrator. Most users should sign in "
-"through the panel button above instead."
+"Only for whoever administers the BigScale panel: use the panel's admin "
+"username and password. This device joins the network under the name below. "
+"Everyone else joins with an invite or an access key."
 msgstr ""
-"Ръчна настройка — разгънете, за да поставите URL на сървър и предварителен "
-"ключ за удостоверяване, ако вече сте ги получили от вашия администратор. "
-"Повечето потребители трябва да влязат чрез бутона на панела по-горе."
+"Само за този, който администрира панела BigScale: използвайте "
+"администраторското потребителско име и парола на панела. Това устройство се "
+"присъединява към мрежата с името по-долу. Всички останали се присъединяват с"
+" покана или ключ за достъп."
 
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/sidebar.rs:99
-msgid ""
-"Address of the coordination server (e.g. vpn.example.org). The https:// "
-"scheme is added automatically if you omit it."
-msgstr ""
-"Адрес на координационния сървър (напр. vpn.example.org). Схемата https:// се"
-" добавя автоматично, ако я пропуснете."
+msgid "Panel URL"
+msgstr "URL на панела"
 
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/sidebar.rs:111
-msgid ""
-"One-time or reusable key created on the server (starts with 'hskey-auth-'). "
-"Used to register this device automatically without opening a browser."
-msgstr ""
-"Еднократен или многократно използваем ключ, създаден на сървъра (започва с "
-"'hskey-auth-'). Използва се за автоматично регистриране на това устройство "
-"без отваряне на браузър."
-
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/dialogs.rs:190
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/dialogs.rs:418
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/sidebar.rs:124
-msgid "Device name on the network"
-msgstr "Име на устройството в мрежата"
-
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/sidebar.rs:127
-msgid ""
-"The name this device shows to other peers on the VPN — this is the Tailscale"
-" hostname, NOT your computer's name and NOT your user. Lowercase letters, "
-"digits and hyphens. Example: 'tales-laptop', 'francois', 'office-pc'."
-msgstr ""
-"Името, с което това устройство се показва на другите участници във VPN — "
-"това е името на хоста в Tailscale, а НЕ името на вашия компютър и НЕ вашето "
-"потребителско име. Малки букви, цифри и тирета. Пример: 'tales-laptop', "
-"'francois', 'office-pc'."
-
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/sidebar.rs:144
-msgid ""
-"Persist the server, key and device name above. Won't connect — press Connect"
-" afterwards."
-msgstr ""
-"Запазете сървъра, ключа и името на устройството по-горе. Няма да се свърже —"
-" натиснете Свързване след това."
-
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/sidebar.rs:163
-msgid ""
-"When on, BigLace runs 'tailscale up' as soon as it launches, so you join the"
-" mesh without clicking Connect every time."
-msgstr ""
-"Когато е включено, BigLace изпълнява 'tailscale up' веднага след стартиране,"
-" така че се присъединявате към мрежата, без да кликвате върху Свързване "
-"всеки път."
-
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/sidebar.rs:171
-msgid "Toggle auto-connect on startup"
-msgstr "Превключване на автоматично свързване при стартиране"
-
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/sidebar.rs:201
-msgid ""
-"If the tunnel drops (network change, sleep, server hiccup), BigLace silently"
-" retries with growing delays instead of leaving you offline until you "
-"notice."
-msgstr ""
-"Ако тунелът прекъсне (промяна на мрежата, заспиване, проблем със сървъра), "
-"BigLace мълчаливо опитва отново с нарастващи закъснения, вместо да ви остави"
-" офлайн, докато не забележите."
-
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/sidebar.rs:210
-msgid "Toggle auto-reconnect"
-msgstr "Превключване на автоматично повторно свързване"
-
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/sidebar.rs:221
-msgid ""
-"Send a desktop toast when another device on your network goes online or "
-"offline. Rapid bursts are coalesced into a single notification so you don't "
-"get spammed during reconnects."
-msgstr ""
-"Изпращайте известие на работния плот, когато друго устройство във вашата "
-"мрежа стане онлайн или офлайн. Бързите поредици се обединяват в едно "
-"известие, за да не бъдете засипвани при повторни свързвания."
-
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/sidebar.rs:230
-msgid "Toggle peer-change notifications"
-msgstr "Превключване на известия за промени в участниците"
-
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/sidebar.rs:245
-msgid ""
-"Join or leave the mesh network. When connected, this device becomes "
-"reachable by the other peers in your account."
-msgstr ""
-"Присъединете се или напуснете мрежовата мрежа. Когато сте свързани, това "
-"устройство става достъпно за другите участници във вашия акаунт."
-
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/dialogs.rs:177
 msgid ""
 "Address of your BigScale panel (e.g. panel.example.org). The https:// scheme"
 " is added automatically if you omit it."
@@ -596,12 +792,16 @@ msgstr ""
 "Адрес на вашия BigScale панел (напр. panel.example.org). Схемата https:// се"
 " добавя автоматично, ако я пропуснете."
 
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/dialogs.rs:182
+msgid "Panel admin username"
+msgstr "Администраторско потребителско име на панела"
+
 msgid "Your panel username — the one you use to sign in to the web panel."
 msgstr ""
 "Вашето потребителско име за панела — това, с което влизате в уеб панела."
 
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/dialogs.rs:186
+msgid "Password"
+msgstr "Парола"
+
 msgid ""
 "Your panel password. Stored in the OS keyring (libsecret on Linux, Keychain "
 "on macOS, Credential Manager on Windows)."
@@ -610,7 +810,9 @@ msgstr ""
 "система (libsecret на Linux, Keychain на macOS, Credential Manager на "
 "Windows)."
 
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/dialogs.rs:193
+msgid "Device name on the network"
+msgstr "Име на устройството в мрежата"
+
 msgid ""
 "The name this device shows to other peers on the VPN — this is the Tailscale"
 " hostname, NOT your computer's name and NOT your user. Lowercase letters, "
@@ -623,11 +825,18 @@ msgstr ""
 "'francois', 'office-pc'. Изберете нещо, което другите участници ще "
 "разпознаят."
 
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/dialogs.rs:442
+msgid "Sign in"
+msgstr "Вход"
+
+msgid "Fill in URL, username and password."
+msgstr "Попълнете URL, потребителско име и парола."
+
+msgid "Signed in. Press Connect to join the network."
+msgstr "Влезли сте. Натиснете Connect, за да се присъедините към мрежата."
+
 msgid "Rename this device"
 msgstr "Преименуване на това устройство"
 
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/dialogs.rs:444
 msgid ""
 "The name this device shows to other peers on the VPN. Lowercase letters, "
 "digits and hyphens. Example: tales-laptop."
@@ -635,88 +844,1482 @@ msgstr ""
 "Името, под което това устройство се показва на другите участници във VPN. "
 "Малки букви, цифри и тирета. Пример: tales-laptop."
 
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/dialogs.rs:449
 msgid "Save & apply"
 msgstr "Запазване и прилагане"
 
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/dialogs.rs:502
 msgid "Saved. The new name will take effect the next time you connect."
 msgstr "Запазено. Новото име ще влезе в сила при следващото ви свързване."
 
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/dialogs.rs:526
 msgid "Device renamed."
 msgstr "Устройството е преименувано."
 
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/dialogs.rs:536
 #, rust-format
 msgid "Rename failed: {error}"
 msgstr "Преименуването неуспешно: {error}"
 
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/dialogs.rs:553
 msgid "The device name can't be empty."
 msgstr "Името на устройството не може да бъде празно."
 
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/dialogs.rs:556
 msgid "Use 63 characters or fewer."
 msgstr "Използвайте 63 символа или по-малко."
 
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/dialogs.rs:560
 msgid "The device name can't start or end with a hyphen."
 msgstr "Името на устройството не може да започва или завършва с тире."
 
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/dialogs.rs:564
 msgid "Only lowercase letters, digits and hyphens are allowed."
 msgstr "Позволени са само малки букви, цифри и тирета."
 
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/peer_row.rs:306
-msgid "SSH login (override)"
-msgstr "SSH вход (заместване)"
+msgid "Smileys & people"
+msgstr "Усмивки и хора"
 
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/peer_row.rs:336
-msgid "Saved"
-msgstr "Запазено"
+msgid "Animals & nature"
+msgstr "Животни и природа"
 
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/mod.rs:1086
+msgid "Food & drink"
+msgstr "Храна и напитки"
+
+msgid "Travel & places"
+msgstr "Пътуване и места"
+
+msgid "Activities"
+msgstr "Дейности"
+
+msgid "Objects"
+msgstr "Предмети"
+
+msgid "Symbols"
+msgstr "Символи"
+
+msgid "Flags"
+msgstr "Знамена"
+
+msgid "Search emoji"
+msgstr "Търсене на емоджи"
+
+msgid "Recently used"
+msgstr "Наскоро използвани"
+
+msgid "Search results"
+msgstr "Резултати от търсенето"
+
+msgid ""
+"Groups from BigLace need a newer BigScale server. Ask your administrator to "
+"update it."
+msgstr ""
+"Групите от BigLace изискват по-нов сървър BigScale. Помолете администратора "
+"да го обнови."
+
+msgid "This device isn't linked to a person's account, so it has no groups."
+msgstr "Това устройство не е свързано с личен акаунт, затова няма групи."
+
+msgid ""
+"The panel knows this device by a different key (BigLace was reinstalled?). "
+"Leave the network and join again to fix it."
+msgstr ""
+"Панелът познава това устройство с друг ключ (BigLace преинсталиран ли е?). "
+"Напуснете мрежата и се присъединете отново, за да го поправите."
+
+msgid ""
+"The panel couldn't confirm this device. Make sure BigLace is up to date and "
+"stays open while connected, then try again."
+msgstr ""
+"Панелът не успя да потвърди това устройство. Уверете се, че BigLace е "
+"актуален и остава отворен, докато сте свързани, после опитайте отново."
+
+msgid ""
+"On this network everyone already reaches everyone, so groups aren't needed. "
+"The administrator can set access rules first."
+msgstr ""
+"В тази мрежа всеки вече достига до всеки, така че групи не са нужни. "
+"Администраторът може първо да зададе правила за достъп."
+
+msgid "You already created the maximum number of groups."
+msgstr "Вече сте създали максималния брой групи."
+
+msgid "You are no longer in that group."
+msgstr "Вече не сте в тази група."
+
+msgid "A group with that name already exists. Choose another name."
+msgstr "Вече съществува група с това име. Изберете друго име."
+
+msgid ""
+"Use lowercase letters, digits and hyphens, starting with a letter or digit."
+msgstr ""
+"Използвайте малки букви, цифри и тирета, като започвате с буква или цифра."
+
+msgid ""
+"The administrator uses this group in the network's rules, so it can't be "
+"deleted. Ask the administrator."
+msgstr ""
+"Администраторът използва тази група в правилата на мрежата, затова не може "
+"да бъде изтрита. Попитайте администратора."
+
+msgid "Only the person who created the group can do that."
+msgstr "Само създателят на групата може да направи това."
+
+msgid "You created this group: delete it instead of leaving."
+msgstr "Вие създадохте тази група: изтрийте я вместо да я напускате."
+
+msgid "This group belongs to the administrator; only they can change it."
+msgstr "Тази група принадлежи на администратора; само той може да я променя."
+
+msgid "That person is no longer in the group."
+msgstr "Този човек вече не е в групата."
+
+msgid "That group no longer exists, or whoever invited you left it."
+msgstr ""
+"Тази група вече не съществува или този, който ви покани, я е напуснал."
+
+msgid "That person is no longer on the network."
+msgstr "Този човек вече не е в мрежата."
+
+msgid "You're already in that group."
+msgstr "Вече сте в тази група."
+
+msgid ""
+"This invite only brings new people into the network, and you're already in "
+"it."
+msgstr "Тази покана само довежда нови хора в мрежата, а вие вече сте в нея."
+
+msgid "This invite was already used. Ask for a new one."
+msgstr "Тази покана вече е използвана. Поискайте нова."
+
+msgid "This invite expired. Ask for a new one."
+msgstr "Тази покана е изтекла. Поискайте нова."
+
+msgid "This invite is no longer valid. Ask for a new one."
+msgstr "Тази покана вече не е валидна. Поискайте нова."
+
+msgid "This invite is still waiting for an administrator's approval."
+msgstr "Тази покана все още чака одобрение от администратор."
+
+msgid "Too many attempts. Wait a minute and try again."
+msgstr "Твърде много опити. Изчакайте минута и опитайте отново."
+
+#, rust-format
+msgid "Could not reach the panel: {error}"
+msgstr "Неуспешна връзка с панела: {error}"
+
+msgid "Groups"
+msgstr "Групи"
+
+msgid "New group"
+msgstr "Нова група"
+
+msgid "Create a group"
+msgstr "Създаване на група"
+
+msgid ""
+"People in the same group reach each other's devices. Create groups for "
+"family, work or friends, and invite people into them."
+msgstr ""
+"Хората в една и съща група достигат до устройствата си взаимно. Създайте "
+"групи за семейството, работата или приятелите и поканете хора в тях."
+
+msgid "Invitations for you"
+msgstr "Покани за вас"
+
+msgid "Your groups"
+msgstr "Вашите групи"
+
+msgid "No groups yet"
+msgstr "Още няма групи"
+
+msgid ""
+"A group lets several people reach each other at once — the family, the "
+"office, a class."
+msgstr ""
+"Групата позволява на няколко души да достигат един до друг наведнъж — "
+"семейството, офисът, един клас."
+
+msgid "Groups unavailable"
+msgstr "Групите не са налични"
+
+msgid "Invitation to a group"
+msgstr "Покана за група"
+
+#, rust-format
+msgid ""
+"{user} invites you to the group {group}. Open BigLace to accept or decline."
+msgstr ""
+"{user} ви кани в групата {group}. Отворете BigLace, за да приемете или "
+"откажете."
+
+#, rust-format
+msgid "{user} invites you to {group}"
+msgstr "{user} ви кани в {group}"
+
+msgid "Joining lets you and the group's members reach each other's devices."
+msgstr ""
+"Присъединяването позволява на вас и членовете на групата да достигате до "
+"устройствата си взаимно."
+
+msgid "Decline"
+msgstr "Отказване"
+
+msgid "Accept"
+msgstr "Приемане"
+
+#, rust-format
+msgid "You joined {group}."
+msgstr "Присъединихте се към {group}."
+
+msgid "Invitation declined."
+msgstr "Поканата е отказана."
+
+msgid "1 person"
+msgstr "1 човек"
+
+#, rust-format
+msgid "{count} people"
+msgstr "{count} души"
+
+msgid "Created by you"
+msgstr "Създадена от вас"
+
+#, rust-format
+msgid "Created by {user}"
+msgstr "Създадена от {user}"
+
+msgid "Network group (administrator)"
+msgstr "Мрежова група (администратор)"
+
+msgid "you"
+msgstr "вие"
+
+msgid "owner"
+msgstr "собственик"
+
+#, rust-format
+msgid "Remove {user} from the group"
+msgstr "Премахване на {user} от групата"
+
+msgid "Invite to this group"
+msgstr "Покана в тази група"
+
+msgid "Delete group"
+msgstr "Изтриване на групата"
+
+msgid "Leave group"
+msgstr "Напускане на групата"
+
+#, rust-format
+msgid "Remove {user}?"
+msgstr "Премахване на {user}?"
+
+#, rust-format
+msgid ""
+"{user} leaves the group {group} and no longer reaches its members through "
+"it."
+msgstr ""
+"{user} напуска групата {group} и вече няма да достига до членовете ѝ чрез "
+"нея."
+
+msgid "Remove"
+msgstr "Премахване"
+
+#, rust-format
+msgid "{user} was removed from the group."
+msgstr "{user} е премахнат от групата."
+
+#, rust-format
+msgid "Leave {group}?"
+msgstr "Напускане на {group}?"
+
+msgid ""
+"You stop reaching the group's members through it. To come back, someone has "
+"to invite you again."
+msgstr ""
+"Вече няма да достигате до членовете на групата чрез нея. За да се върнете, "
+"някой трябва да ви покани отново."
+
+msgid "You left the group."
+msgstr "Напуснахте групата."
+
+#, rust-format
+msgid "Delete {group}?"
+msgstr "Изтриване на {group}?"
+
+msgid ""
+"Its members stop reaching each other through this group. People stay on the "
+"network."
+msgstr ""
+"Членовете ѝ вече няма да достигат един до друг чрез тази група. Хората "
+"остават в мрежата."
+
+msgid "Group deleted."
+msgstr "Групата е изтрита."
+
+#, rust-format
+msgid "Join {group}?"
+msgstr "Присъединяване към {group}?"
+
+#, rust-format
+msgid ""
+"{user} invited you. You and the group's members will reach each other's "
+"devices."
+msgstr ""
+"{user} ви покани. Вие и членовете на групата ще достигате до устройствата си"
+" взаимно."
+
+msgid "You and the group's members will reach each other's devices."
+msgstr "Вие и членовете на групата ще достигате до устройствата си взаимно."
+
+#, rust-format
+msgid "Connect with {user}?"
+msgstr "Свързване с {user}?"
+
+#, rust-format
+msgid "You and {user} will reach each other's devices."
+msgstr "Вие и {user} ще достигате до устройствата си взаимно."
+
+msgid "Join"
+msgstr "Присъединяване"
+
+msgid "Done. You can now reach each other's devices."
+msgstr "Готово. Вече можете да достигате до устройствата си взаимно."
+
+#, rust-format
+msgid "Invite to {group}"
+msgstr "Покана в {group}"
+
+msgid ""
+"Choose people on your network. Each one gets the invitation in BigLace and "
+"decides whether to join."
+msgstr ""
+"Изберете хора от мрежата си. Всеки получава поканата в BigLace и решава дали"
+" да се присъедини."
+
+msgid "Search people"
+msgstr "Търсене на хора"
+
+msgid ""
+"If someone on the network has exactly this name, they get the invitation."
+msgstr "Ако някой в мрежата има точно това име, ще получи поканата."
+
+msgid "People on the network"
+msgstr "Хора в мрежата"
+
+#, rust-format
+msgid "Invite \"{name}\""
+msgstr "Покана за „{name}“"
+
+msgid "Send invitations"
+msgstr "Изпращане на покани"
+
+msgid "Someone not on the network yet? Share an invite link"
+msgstr "Някой още не е в мрежата? Споделете връзка за покана"
+
+msgid "Invitation sent. You'll see the person in the group once they accept."
+msgstr "Поканата е изпратена. Ще видите човека в групата, щом приеме."
+
+#, rust-format
+msgid "{count} invitations sent. People show up in the group as they accept."
+msgstr ""
+"Изпратени са {count} покани. Хората се появяват в групата, когато приемат."
+
+msgid ""
+"Listed are the people you're already connected to. To invite someone else on"
+" the network, type their exact name. Each one gets the invitation in BigLace"
+" and decides whether to join."
+msgstr ""
+"Показани са хората, с които вече сте свързани. За да поканите някой друг от "
+"мрежата, въведете точното му име. Всеки получава поканата в BigLace и решава"
+" дали да се присъедини."
+
+msgid ""
+"Nobody you're connected to yet. Type someone's exact name to invite them."
+msgstr ""
+"Още не сте свързани с никого. Въведете точното име на някого, за да го "
+"поканите."
+
+msgid "Nobody else is on the network yet."
+msgstr "Още няма никой друг в мрежата."
+
+msgid ""
+"You'll be the group's owner: you invite people into it and can remove them. "
+"Everyone in the group reaches each other's devices."
+msgstr ""
+"Ще бъдете собственик на групата: вие каните хора в нея и можете да ги "
+"премахвате. Всички в групата достигат до устройствата си взаимно."
+
+msgid "Group name"
+msgstr "Име на групата"
+
+msgid "Create group"
+msgstr "Създаване на група"
+
+msgid "For example: family, work, friends."
+msgstr "Например: семейство, работа, приятели."
+
+#, rust-format
+msgid "It will be called \"{name}\"."
+msgstr "Ще се казва „{name}“."
+
+#, rust-format
+msgid "Group {group} created. Now invite people into it."
+msgstr "Групата {group} е създадена. Сега поканете хора в нея."
+
+msgid "typed name"
+msgstr "въведено име"
+
+msgid "already in the group"
+msgstr "вече е в групата"
+
+msgid "invitation sent, waiting"
+msgstr "поканата е изпратена, изчаква се"
+
+#, rust-format
+msgid "Invite {user}"
+msgstr "Покана за {user}"
+
+msgid ""
+"Invites from BigLace need a BigScale server that supports them. Ask your "
+"administrator to update the server, or to create the invite in the panel."
+msgstr ""
+"Поканите от BigLace изискват сървър BigScale, който ги поддържа. Помолете "
+"администратора да обнови сървъра или да създаде поканата в панела."
+
+msgid ""
+"This device can't send invites (it isn't linked to a person's account)."
+msgstr ""
+"Това устройство не може да изпраща покани (не е свързано с личен акаунт)."
+
+msgid ""
+"On this network everyone can reach everyone, so only the administrator can "
+"invite people."
+msgstr ""
+"В тази мрежа всеки може да достига до всеки, затова само администраторът "
+"може да кани хора."
+
+msgid "You have too many pending invites. Cancel some or try again tomorrow."
+msgstr ""
+"Имате твърде много чакащи покани. Отменете някои или опитайте отново утре."
+
+msgid ""
+"On this network only administrators invite new people. You can still invite "
+"people already on the network into your groups."
+msgstr ""
+"В тази мрежа само администраторите канят нови хора. Все пак можете да каните"
+" в групите си хора, които вече са в мрежата."
+
+msgid "Waiting to be used"
+msgstr "Чака използване"
+
+msgid "Used"
+msgstr "Използвана"
+
+msgid "Expired"
+msgstr "Изтекла"
+
+msgid "Cancelled"
+msgstr "Отменена"
+
+msgid "Waiting for an administrator's approval"
+msgstr "Чака одобрение от администратор"
+
+msgid "Invites"
+msgstr "Покани"
+
+msgid "Bring someone to your network"
+msgstr "Доведете някого в мрежата си"
+
+msgid ""
+"Create a link or QR code and send it to the person. When they join, you two "
+"can reach each other's devices — no administrator needed. The link works "
+"once and stays valid until it's used or you cancel it."
+msgstr ""
+"Създайте връзка или QR код и го изпратете на човека. Когато се присъедини, "
+"двамата ще достигате до устройствата си взаимно — без нужда от "
+"администратор. Връзката работи веднъж и е валидна, докато не бъде използвана"
+" или отменена от вас."
+
+msgid "Invites you sent"
+msgstr "Изпратени покани"
+
+msgid "No invites yet"
+msgstr "Още няма покани"
+
+msgid "Invites unavailable"
+msgstr "Поканите не са налични"
+
+#, rust-format
+msgid "{user} joined"
+msgstr "{user} се присъедини"
+
+#, rust-format
+msgid "group {group}"
+msgstr "група {group}"
+
+msgid "Cancel this invite: the link stops working"
+msgstr "Отмяна на поканата: връзката спира да работи"
+
+msgid "Invite someone"
+msgstr "Поканете някого"
+
+msgid "The person you invite will reach your devices, and you theirs."
+msgstr "Поканеният ще достига до вашите устройства, а вие до неговите."
+
+msgid "Who is it for? (optional)"
+msgstr "За кого е? (по избор)"
+
+msgid "Access"
+msgstr "Достъп"
+
+msgid "Just the two of us"
+msgstr "Само двамата"
+
+msgid "You see each other's devices, nobody else"
+msgstr "Виждате устройствата си взаимно, никой друг"
+
+#, rust-format
+msgid "Also the group {group}"
+msgstr "Също и групата {group}"
+
+msgid "They join the group and see everyone in it"
+msgstr "Присъединява се към групата и вижда всички в нея"
+
+msgid "A network of their own"
+msgstr "Собствена мрежа"
+
+msgid ""
+"No link to you: they see only their own devices and whoever they invite "
+"(you're the administrator)"
+msgstr ""
+"Без връзка с вас: вижда само собствените си устройства и тези, които покани "
+"(вие сте администраторът)"
+
+msgid "Create invite"
+msgstr "Създаване на покана"
+
+msgid "QR code of the invite link"
+msgstr "QR код на връзката за покана"
+
+msgid ""
+"Send the link or let the person scan the code with their phone. It works "
+"once and stays valid until used or cancelled."
+msgstr ""
+"Изпратете връзката или оставете човека да сканира кода с телефона си. Работи"
+" веднъж и е валидна, докато не бъде използвана или отменена."
+
+msgid "Copy link"
+msgstr "Копиране на връзката"
+
+msgid "Done"
+msgstr "Готово"
+
+msgid "Copied!"
+msgstr "Копирано!"
+
+msgid ""
+"This network asks an administrator to approve each invite: the link starts "
+"working once they do. Its status shows in Invites."
+msgstr ""
+"Тази мрежа изисква администратор да одобри всяка покана: връзката започва да"
+" работи, щом той я одобри. Състоянието ѝ се вижда в Покани."
+
+#, rust-format
+msgid ""
+"That name already belongs to an account on this network, so we suggested "
+"\"{name}\". If the account is yours, sign in again from the computer where "
+"you used it, or ask the administrator to free the name."
+msgstr ""
+"Това име вече принадлежи на акаунт в тази мрежа, затова предложихме "
+"„{name}“. Ако акаунтът е ваш, влезте отново от компютъра, където сте го "
+"използвали, или помолете администратора да освободи името."
+
+msgid ""
+"That name already belongs to an account on this network. Try another one, or"
+" ask the administrator to free it."
+msgstr ""
+"Това име вече принадлежи на акаунт в тази мрежа. Опитайте друго или помолете"
+" администратора да го освободи."
+
+msgid "Type your name using at least two letters or digits."
+msgstr "Въведете името си с поне две букви или цифри."
+
+msgid "This invite has expired. Ask for a new one."
+msgstr "Тази покана е изтекла. Поискайте нова."
+
+msgid "This invite was cancelled. Ask for a new one."
+msgstr "Тази покана е отменена. Поискайте нова."
+
+msgid ""
+"This invite is waiting for the network administrator's approval. Try again "
+"once the person who invited you says it was approved."
+msgstr ""
+"Тази покана чака одобрение от администратора на мрежата. Опитайте отново, "
+"когато поканилият ви каже, че е одобрена."
+
+msgid "This invite is not valid. Check the link or ask for a new one."
+msgstr "Тази покана не е валидна. Проверете връзката или поискайте нова."
+
+msgid ""
+"This server doesn't support invites yet. Sign in with a panel account "
+"instead."
+msgstr ""
+"Този сървър още не поддържа покани. Вместо това влезте с акаунт от панела."
+
+msgid "Join with an invite"
+msgstr "Присъединяване с покана"
+
+msgid ""
+"Paste the invite link you received and type your name. Your account is "
+"created and this device joins the network."
+msgstr ""
+"Поставете получената връзка за покана и въведете името си. Акаунтът ви се "
+"създава и това устройство се присъединява към мрежата."
+
+msgid "Invite link"
+msgstr "Връзка за покана"
+
+msgid "Your name"
+msgstr "Вашето име"
+
+msgid "How others will see you on the network, e.g. 'Maria' or 'Office PC'."
+msgstr ""
+"Как ще ви виждат другите в мрежата, напр. „Мария“ или „Офис компютър“."
+
+msgid ""
+"The name this device shows to other peers. Lowercase letters, digits and "
+"hyphens. Example: 'maria-laptop'."
+msgstr ""
+"Името, което това устройство показва на другите пиъри. Малки букви, цифри и "
+"тирета. Пример: „maria-laptop“."
+
+msgid "Network"
+msgstr "Мрежа"
+
+msgid "Joining…"
+msgstr "Присъединяване…"
+
+msgid ""
+"That doesn't look like an invite link. It starts with https:// and contains "
+"/join#."
+msgstr ""
+"Това не прилича на връзка за покана. Тя започва с https:// и съдържа /join#."
+
+msgid "Type your name."
+msgstr "Въведете името си."
+
+#, rust-format
+msgid "Welcome, {name}! You joined the group {group}. Connecting…"
+msgstr "Добре дошли, {name}! Присъединихте се към групата {group}. Свързване…"
+
+#, rust-format
+msgid "Welcome, {name}! Connecting…"
+msgstr "Добре дошли, {name}! Свързване…"
+
+msgid "Open admin panel"
+msgstr "Отваряне на административния панел"
+
+msgid "Devices"
+msgstr "Устройства"
+
+msgid "Rooms"
+msgstr "Стаи"
+
+msgid "Choose your photo"
+msgstr "Изберете снимката си"
+
+msgid "Photo updated. Everyone you're connected to will see it."
+msgstr "Снимката е обновена. Всички, с които сте свързани, ще я видят."
+
+#, rust-format
+msgid "Could not change the photo: {error}"
+msgstr "Неуспешна промяна на снимката: {error}"
+
+msgid "Sign in with an access key"
+msgstr "Вход с ключ за достъп"
+
+msgid ""
+"Paste the key the administrator gave you. It's used once, to register this "
+"device."
+msgstr ""
+"Поставете ключа, който ви е дал администраторът. Използва се веднъж, за "
+"регистриране на това устройство."
+
+msgid "Server URL"
+msgstr "URL на сървъра"
+
+msgid "Access key"
+msgstr "Ключ за достъп"
+
+msgid ""
+"The key to this account is no longer on this computer. Join with a new "
+"invite."
+msgstr ""
+"Ключът за този акаунт вече не е на този компютър. Присъединете се с нова "
+"покана."
+
+#, rust-format
+msgid "Welcome back, {name}! Connecting…"
+msgstr "Добре дошли отново, {name}! Свързване…"
+
+#, rust-format
+msgid ""
+"The account {user} no longer exists on this network. Join with a new invite."
+msgstr ""
+"Акаунтът {user} вече не съществува в тази мрежа. Присъединете се с нова "
+"покана."
+
+msgid "Preferences"
+msgstr "Предпочитания"
+
+msgid "General"
+msgstr "Общи"
+
+msgid "Behaviour"
+msgstr "Поведение"
+
+msgid "Make this user the tailscale operator"
+msgstr "Направете този потребител оператор на tailscale"
+
+msgid ""
+"Lets BigLace manage the connection without asking for a password each time"
+msgstr ""
+"Позволява на BigLace да управлява връзката, без да иска парола всеки път"
+
+msgid "Account"
+msgstr "Акаунт"
+
+msgid ""
+"Signing out removes this device's identity from BigLace. You will need a new"
+" invite or key to join again."
+msgstr ""
+"Излизането премахва самоличността на това устройство от BigLace. Ще ви "
+"трябва нова покана или ключ, за да се присъедините отново."
+
+msgid "Change profile photo…"
+msgstr "Промяна на профилната снимка…"
+
+msgid "Sign in with panel account"
+msgstr "Вход с акаунт в панела"
+
+msgid "Leave the network…"
+msgstr "Напускане на мрежата…"
+
+msgid "View tailscaled logs"
+msgstr "Преглед на tailscaled логове"
+
+msgid "About BigLace"
+msgstr "Относно BigLace"
+
+msgid "Connect to the network first, then open the invite link again."
+msgstr ""
+"Първо се свържете с мрежата, после отворете връзката за покана отново."
+
+#, rust-format
+msgid ""
+"This invite is for another network ({host}). Sign out first to join it."
+msgstr ""
+"Тази покана е за друга мрежа ({host}). Първо излезте, за да се присъедините "
+"към нея."
+
+msgid ""
+"This device is already signed in. Sign out first to join with an invite."
+msgstr ""
+"Това устройство вече е влязло. Първо излезте, за да се присъедините с "
+"покана."
+
+msgid "Photo removed."
+msgstr "Снимката е премахната."
+
+#, rust-format
+msgid "Could not remove the photo: {error}"
+msgstr "Неуспешно премахване на снимката: {error}"
+
+#, rust-format
+msgid "Could not open the browser: {error}"
+msgstr "Неуспешно отваряне на браузъра: {error}"
+
+msgid ""
+"You can't open the admin panel: you're not an administrator of this network,"
+" or the panel can't be reached."
+msgstr ""
+"Не можете да отворите административния панел: не сте администратор на тази "
+"мрежа или панелът е недостъпен."
+
+msgid "Enter the server URL before saving."
+msgstr "Въведете URL адреса на сървъра преди да запазите."
+
+msgid "Enter the pre-auth key before saving."
+msgstr "Въведете предварителния ключ за удостоверяване преди да запазите."
+
+msgid "Setup saved"
+msgstr "Настройката е запазена"
+
+msgid "Could not start the Tailscale service."
+msgstr "Неуспешно стартиране на услугата Tailscale."
+
+msgid "IP address copied"
+msgstr "IP адресът е копиран"
+
+#, rust-format
+msgid ""
+"Saved, but the pre-auth key could not be stored in the system keyring "
+"({error}). This device can still reconnect; the key is only needed again to "
+"register it anew."
+msgstr ""
+"Запазено, но ключът за предварително удостоверяване не можа да бъде съхранен"
+" в системния ключодържател ({error}). Устройството все пак може да се "
+"свързва отново; ключът е нужен само за повторна регистрация."
+
+msgid "Service stopped"
+msgstr "Услугата е спряна"
+
+msgid "Not signed in"
+msgstr "Не сте влезли"
+
+msgid "Server unreachable"
+msgstr "Сървърът е недостъпен"
+
+msgid "Tailscale can't set DNS"
+msgstr "Tailscale не може да зададе DNS"
+
+#, rust-format
+msgid "Update available: v{version}"
+msgstr "Налична актуализация: v{version}"
+
+#, rust-format
+msgid "Sign in again as {user}"
+msgstr "Влезте отново като {user}"
+
 msgid "(no device name)"
 msgstr "(без име на устройство)"
 
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/mod.rs:1400
+msgid "Sign in or paste a pre-auth key"
+msgstr "Влезте или поставете предварителен ключ"
+
+msgid "Server not set"
+msgstr "Сървърът не е зададен"
+
+msgid "no other devices"
+msgstr "няма други устройства"
+
+#, rust-format
+msgid "{online} online"
+msgstr "{online} онлайн"
+
+#, rust-format
+msgid "{online} online · {offline} offline"
+msgstr "{online} онлайн · {offline} офлайн"
+
+msgid "is online"
+msgstr "е онлайн"
+
+msgid "went offline"
+msgstr "излезе офлайн"
+
 #, rust-format
 msgid "{count} devices are online"
 msgstr "{count} устройства са онлайн"
 
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/mod.rs:1401
 #, rust-format
 msgid "{count} devices went offline"
 msgstr "{count} устройства излязоха офлайн"
 
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/mod.rs:1403
 #, rust-format
 msgid "{on_count} online · {off_count} offline"
 msgstr "{on_count} онлайн · {off_count} офлайн"
 
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/tailscale.rs:650
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/mod.rs:814
-msgid "Enter the server URL before connecting."
-msgstr "Въведете URL адреса на сървъра преди да се свържете."
+msgid "direct"
+msgstr "директно"
 
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/mod.rs:682
-msgid "Enter the server URL before saving."
-msgstr "Въведете URL адреса на сървъра преди да запазите."
+msgid "via relay"
+msgstr "чрез ретранслатор"
 
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/mod.rs:691
-msgid "Enter the pre-auth key before saving."
-msgstr "Въведете предварителния ключ за удостоверяване преди да запазите."
+msgid "Turn on over the network (Wake-on-LAN)"
+msgstr "Включване по мрежата (Wake-on-LAN)"
 
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/sidebar.rs:178
+msgid "Turn on over the network"
+msgstr "Включване по мрежата"
+
+#, rust-format
+msgid ""
+"Signal sent to {name} (by {via}). If it's set to turn on over the network, "
+"it shows up in a minute or two."
+msgstr ""
+"Сигналът е изпратен до {name} (чрез {via}). Ако е настроено да се включва по"
+" мрежата, ще се появи след минута-две."
+
+#, rust-format
+msgid "Could not turn on {name}: {error}"
+msgstr "Неуспешно включване на {name}: {error}"
+
+msgid "Unpin from top"
+msgstr "Откачане от началото"
+
+msgid "Pin to top"
+msgstr "Закачане отгоре"
+
+msgid "Pinned to top"
+msgstr "Закачено най-отгоре"
+
+msgid "Unpinned"
+msgstr "Откачено"
+
+msgid "Open files (SFTP)"
+msgstr "Отваряне на файлове (SFTP)"
+
+msgid "Open terminal (SSH)"
+msgstr "Отваряне на терминал (SSH)"
+
+msgid "See and control the screen"
+msgstr "Виждане и управление на екрана"
+
+msgid "DNS name"
+msgstr "DNS име"
+
+msgid "DNS name copied"
+msgstr "DNS името е копирано"
+
+msgid "Owner"
+msgstr "Собственик"
+
+msgid "SSH login (override)"
+msgstr "SSH вход (заместване)"
+
+msgid "Saved"
+msgstr "Запазено"
+
+msgid "Tags"
+msgstr "Етикети"
+
+msgid "Last seen"
+msgstr "Последно видян"
+
+msgid "Use as exit node"
+msgstr "Използвай като изходен възел"
+
+msgid "Route all traffic through this peer"
+msgstr "Насочвай целия трафик през този peer"
+
+msgid "Exit node enabled"
+msgstr "Изходният възел е активиран"
+
+msgid "Exit node disabled"
+msgstr "Изходният възел е деактивиран"
+
+msgid "Failed to update exit node"
+msgstr "Неуспешно обновяване на изходния възел"
+
+msgid "Copy"
+msgstr "Копирай"
+
+msgid "End access"
+msgstr "Прекратяване на достъпа"
+
+#, rust-format
+msgid "{who} is seeing and controlling this screen"
+msgstr "{who} вижда и управлява този екран"
+
+msgid "Remote access started"
+msgstr "Отдалеченият достъп започна"
+
+#, rust-format
+msgid ""
+"{user} ({device}) is seeing and controlling this screen. Open BigLace to end"
+" the access."
+msgstr ""
+"{user} ({device}) вижда и управлява този екран. Отворете BigLace, за да "
+"прекратите достъпа."
+
+#, rust-format
+msgid "Always allow {user} (no more asking)"
+msgstr "Винаги разрешаване на {user} (без повече питане)"
+
+msgid "Deny"
+msgstr "Отказ"
+
+msgid "Allow access"
+msgstr "Разрешаване на достъпа"
+
+msgid "Allow remote access?"
+msgstr "Разрешаване на отдалечен достъп?"
+
+#, rust-format
+msgid "<b>{user}</b> wants to <b>see and control</b> this screen."
+msgstr "<b>{user}</b> иска да <b>вижда и управлява</b> този екран."
+
+msgid "Person"
+msgstr "Човек"
+
+msgid "Device"
+msgstr "Устройство"
+
+msgid "See everything on your screen"
+msgstr "Вижда всичко на екрана ви"
+
+msgid "Move the mouse and type on this computer"
+msgstr "Движи мишката и пише на този компютър"
+
+msgid "Hear this computer's sound"
+msgstr "Чува звука на този компютър"
+
+msgid ""
+"<b>Only allow it if you know this person and are expecting it.</b> You can "
+"end the access at any time from BigLace."
+msgstr ""
+"<b>Разрешавайте само ако познавате този човек и го очаквате.</b> Можете да "
+"прекратите достъпа по всяко време от BigLace."
+
+#, rust-format
+msgid "Denied automatically in {seconds} s"
+msgstr "Автоматичен отказ след {seconds} с"
+
+#, rust-format
+msgid "Restart {name}'s computer?"
+msgstr "Рестартиране на компютъра на {name}?"
+
+msgid ""
+"It restarts, signs in by itself and locks the screen right away; this window"
+" connects again when it's back. Unsaved work there is lost."
+msgstr ""
+"Рестартира се, влиза сам и веднага заключва екрана; този прозорец се свързва"
+" отново, когато се върне. Незапазената работа там се губи."
+
+msgid "Restart"
+msgstr "Рестартиране"
+
+#, rust-format
+msgid "Restart {name}'s session?"
+msgstr "Рестартиране на сесията на {name}?"
+
+msgid ""
+"The open programs there close, the computer signs out and back in by itself "
+"(without restarting) and locks the screen; this window connects again. "
+"Unsaved work there is lost."
+msgstr ""
+"Отворените там програми се затварят, компютърът излиза и влиза отново сам "
+"(без рестартиране) и заключва екрана; този прозорец се свързва отново. "
+"Незапазената работа там се губи."
+
+msgid "Restart the session"
+msgstr "Рестартиране на сесията"
+
+#, rust-format
+msgid "Shut down {name}'s computer?"
+msgstr "Изключване на компютъра на {name}?"
+
+msgid ""
+"You won't be able to reach it again until someone turns it on. Unsaved work "
+"there is lost."
+msgstr ""
+"Няма да можете да достигнете до него, докато някой не го включи. "
+"Незапазената работа там се губи."
+
+msgid "Shut Down"
+msgstr "Изключване"
+
+#, rust-format
+msgid "Screen of {name}"
+msgstr "Екран на {name}"
+
+msgid "Full screen (F11)"
+msgstr "Цял екран (F11)"
+
+msgid "Mute the remote sound"
+msgstr "Заглушаване на отдалечения звук"
+
+#, rust-format
+msgid "Fit {name}'s resolution to this window"
+msgstr "Напасване на резолюцията на {name} към този прозорец"
+
+msgid "LIVE"
+msgstr "НА ЖИВО"
+
+msgid "You are watching this screen right now"
+msgstr "В момента гледате този екран"
+
+msgid "You are seeing and controlling this screen right now"
+msgstr "В момента виждате и управлявате този екран"
+
+msgid "Request control"
+msgstr "Искане на управление"
+
+#, rust-format
+msgid "Ask {name} to let you use the mouse and keyboard"
+msgstr "Помолете {name} да ви позволи да използвате мишката и клавиатурата"
+
+#, rust-format
+msgid "Waiting for {name}…"
+msgstr "Изчакване на {name}…"
+
+msgid "Connecting to the screen shared with the room."
+msgstr "Свързване към екрана, споделен със стаята."
+
+msgid "The person at that computer needs to allow the access."
+msgstr "Човекът на този компютър трябва да разреши достъпа."
+
+#, rust-format
+msgid "Asked {name} for control…"
+msgstr "Поискано управление от {name}…"
+
+#, rust-format
+msgid "Restart or shut down {name}'s computer"
+msgstr "Рестартиране или изключване на компютъра на {name}"
+
+msgid "Restart and reconnect"
+msgstr "Рестартиране и повторно свързване"
+
+msgid "Shut down"
+msgstr "Изключване"
+
+#, rust-format
+msgid "{name} is back."
+msgstr "{name} се върна."
+
+#, rust-format
+msgid "{name}'s computer didn't come back after the restart."
+msgstr "Компютърът на {name} не се върна след рестартирането."
+
+#, rust-format
+msgid "{name} didn't allow the access."
+msgstr "{name} не разреши достъпа."
+
+msgid ""
+"That computer couldn't confirm this device. Make sure both run an up-to-date"
+" BigLace."
+msgstr ""
+"Този компютър не успя да потвърди това устройство. Уверете се, че и на двата"
+" работи актуален BigLace."
+
+#, rust-format
+msgid ""
+"{name}'s computer can't share its screen (screen sharing isn't available "
+"there)."
+msgstr ""
+"Компютърът на {name} не може да споделя екрана си (споделянето на екрана не "
+"е налично там)."
+
+#, rust-format
+msgid "Could not connect: {error}"
+msgstr "Неуспешно свързване: {error}"
+
+#, rust-format
+msgid "{name}'s computer said: {error}"
+msgstr "Компютърът на {name} отговори: {error}"
+
+#, rust-format
+msgid "Restarting {name}'s session…"
+msgstr "Рестартиране на сесията на {name}…"
+
+msgid ""
+"This window connects again by itself when the session is back. It takes a "
+"few seconds."
+msgstr ""
+"Този прозорец се свързва отново сам, когато сесията се върне. Отнема няколко"
+" секунди."
+
+#, rust-format
+msgid "Restarting {name}…"
+msgstr "Рестартиране на {name}…"
+
+msgid ""
+"This window connects again by itself when the computer is back. It takes a "
+"few minutes."
+msgstr ""
+"Този прозорец се свързва отново сам, когато компютърът се върне. Отнема "
+"няколко минути."
+
+#, rust-format
+msgid "{latency} ms · {fps} fps · {mbps} Mbit/s"
+msgstr "{latency} ms · {fps} fps · {mbps} Mbit/s"
+
+#, rust-format
+msgid "You're controlling {name}'s screen now."
+msgstr "Сега управлявате екрана на {name}."
+
+#, rust-format
+msgid "{name} didn't give you control."
+msgstr "{name} не ви даде управлението."
+
+#, rust-format
+msgid "{name} took control back."
+msgstr "{name} си взе управлението обратно."
+
+#, rust-format
+msgid "{name}'s computer is shutting down."
+msgstr "Компютърът на {name} се изключва."
+
+#, rust-format
+msgid "The access to {name}'s screen ended."
+msgstr "Достъпът до екрана на {name} приключи."
+
+#, rust-format
+msgid "The access to {name}'s screen ended: {error}"
+msgstr "Достъпът до екрана на {name} приключи: {error}"
+
+msgid "Give back control"
+msgstr "Връщане на управлението"
+
+msgid ""
+"Each of your groups has a voice room. Join it and talk with whoever is there"
+" — the sound goes straight between you, through the network."
+msgstr ""
+"Всяка от групите ви има гласова стая. Влезте и говорете с тези, които са там"
+" — звукът върви директно между вас, през мрежата."
+
+msgid "You're not in any group yet. Create one in Groups."
+msgstr "Още не сте в никоя група. Създайте такава в Групи."
+
+msgid "People in the room"
+msgstr "Хора в стаята"
+
+msgid "Everyone"
+msgstr "Всички"
+
+msgid "Who's speaking"
+msgstr "Кой говори"
+
+msgid "Mute"
+msgstr "Заглушаване"
+
+msgid "Mute your microphone for everyone"
+msgstr "Заглушаване на микрофона ви за всички"
+
+msgid "Which camera"
+msgstr "Коя камера"
+
+msgid "Include the computer's sound when sharing the screen"
+msgstr "Включване на звука на компютъра при споделяне на екрана"
+
+msgid ""
+"Videos and music playing here go to the room too; the room's voices don't "
+"(no echo)"
+msgstr ""
+"Видеата и музиката, пускани тук, също отиват в стаята; гласовете от стаята —"
+" не (без ехо)"
+
+msgid "Rooms unavailable"
+msgstr "Стаите не са налични"
+
+#, rust-format
+msgid "Could not turn on the camera: {error}"
+msgstr "Камерата не може да бъде включена: {error}"
+
+#, rust-format
+msgid "Could not share the screen: {error}"
+msgstr "Неуспешно споделяне на екрана: {error}"
+
+msgid "Nobody here right now"
+msgstr "В момента няма никой тук"
+
+#, rust-format
+msgid "In the room: {people}"
+msgstr "В стаята: {people}"
+
+#, rust-format
+msgid "Join the room {group}"
+msgstr "Влизане в стая {group}"
+
+#, rust-format
+msgid "Could not join {group}: {error}"
+msgstr "Неуспешно влизане в {group}: {error}"
+
+msgid "📺 You're showing your screen to the room"
+msgstr "📺 Показвате екрана си на стаята"
+
+msgid "📺 You're showing your screen · 1 person watching"
+msgstr "📺 Показвате екрана си · 1 човек гледа"
+
+#, rust-format
+msgid "📺 You're showing your screen · {count} people watching"
+msgstr "📺 Показвате екрана си · {count} души гледат"
+
+#, rust-format
+msgid "{people} · {talking} talking"
+msgstr "{people} · {talking} говорят"
+
+msgid "connecting…"
+msgstr "свързване…"
+
+msgid "muted"
+msgstr "заглушен"
+
+msgid "talking"
+msgstr "говори"
+
+msgid "quiet"
+msgstr "мълчи"
+
+msgid "Sharing screen"
+msgstr "Споделя екрана"
+
+msgid "In control"
+msgstr "Управлява"
+
+msgid "Controls your screen now"
+msgstr "Сега управлява екрана ви"
+
+msgid "Watching"
+msgstr "Гледа"
+
+msgid "Watching your screen"
+msgstr "Гледа екрана ви"
+
+#, rust-format
+msgid "{user} is showing their screen"
+msgstr "{user} показва екрана си"
+
+msgid "Watch"
+msgstr "Гледане"
+
+#, rust-format
+msgid "{user} asks to control your screen"
+msgstr "{user} иска да управлява екрана ви"
+
+msgid ""
+"They'll be able to use your mouse and keyboard. You can take control back at"
+" any time."
+msgstr ""
+"Ще може да използва мишката и клавиатурата ви. Можете да си върнете "
+"управлението по всяко време."
+
+msgid "Allow"
+msgstr "Разрешаване"
+
+msgid "Turn off camera"
+msgstr "Изключване на камерата"
+
+msgid "Turn on camera"
+msgstr "Включване на камерата"
+
+msgid "No camera found on this computer"
+msgstr "На този компютър не е намерена камера"
+
+msgid "Stop sharing"
+msgstr "Спиране на споделянето"
+
+msgid "Share screen"
+msgstr "Споделяне на екрана"
+
+msgid "Stop showing your screen to the room"
+msgstr "Спиране на показването на екрана ви на стаята"
+
+msgid "Show your screen to everyone in the room"
+msgstr "Показване на екрана ви на всички в стаята"
+
+msgid "Take back control"
+msgstr "Връщане на управлението обратно"
+
+msgid "Give control"
+msgstr "Даване на управлението"
+
+msgid "Stop them from using your mouse and keyboard"
+msgstr "Спрете ги да използват мишката и клавиатурата ви"
+
+msgid "Let them use your mouse and keyboard"
+msgstr "Позволете им да използват мишката и клавиатурата ви"
+
+msgid "Sound level"
+msgstr "Ниво на звука"
+
+msgid "Unmute"
+msgstr "Включване на звука"
+
+msgid "Sections"
+msgstr "Раздели"
+
+msgid ""
+"Your identity on this mesh — the device name shown to other peers and the "
+"network you're connected to."
+msgstr ""
+"Вашата идентичност в тази мрежа — името на устройството, което се показва на"
+" другите участници, и мрежата, към която сте свързани."
+
+msgid "Change photo…"
+msgstr "Промяна на снимката…"
+
+msgid "Remove photo"
+msgstr "Премахване на снимката"
+
+msgid "Change your photo"
+msgstr "Промяна на снимката ви"
+
+msgid "Rename this device on the network"
+msgstr "Преименувайте това устройство в мрежата"
+
+msgid "Advanced: use a pre-auth key"
+msgstr "Разширени: използване на предварително удостоверен ключ"
+
+msgid "Already have a key from your administrator? Paste it here."
+msgstr "Вече имате ключ от вашия администратор? Поставете го тук."
+
+msgid ""
+"Manual setup — expand to paste a server URL and pre-auth key when you "
+"already received them from your administrator. Most users should sign in "
+"through the panel button above instead."
+msgstr ""
+"Ръчна настройка — разгънете, за да поставите URL на сървър и предварителен "
+"ключ за удостоверяване, ако вече сте ги получили от вашия администратор. "
+"Повечето потребители трябва да влязат чрез бутона на панела по-горе."
+
+msgid ""
+"Address of the coordination server (e.g. vpn.example.org). The https:// "
+"scheme is added automatically if you omit it."
+msgstr ""
+"Адрес на координационния сървър (напр. vpn.example.org). Схемата https:// се"
+" добавя автоматично, ако я пропуснете."
+
+msgid "Pre-auth key"
+msgstr "Ключ за предварително удостоверяване"
+
+msgid ""
+"One-time or reusable key created on the server (starts with 'hskey-auth-'). "
+"Used to register this device automatically without opening a browser."
+msgstr ""
+"Еднократен или многократно използваем ключ, създаден на сървъра (започва с "
+"'hskey-auth-'). Използва се за автоматично регистриране на това устройство "
+"без отваряне на браузър."
+
+msgid ""
+"The name this device shows to other peers on the VPN — this is the Tailscale"
+" hostname, NOT your computer's name and NOT your user. Lowercase letters, "
+"digits and hyphens. Example: 'tales-laptop', 'francois', 'office-pc'."
+msgstr ""
+"Името, с което това устройство се показва на другите участници във VPN — "
+"това е името на хоста в Tailscale, а НЕ името на вашия компютър и НЕ вашето "
+"потребителско име. Малки букви, цифри и тирета. Пример: 'tales-laptop', "
+"'francois', 'office-pc'."
+
+msgid "Apply manual setup"
+msgstr "Прилагане на ръчна настройка"
+
+msgid "Save"
+msgstr "Запазване"
+
+msgid ""
+"Persist the server, key and device name above. Won't connect — press Connect"
+" afterwards."
+msgstr ""
+"Запазете сървъра, ключа и името на устройството по-горе. Няма да се свърже —"
+" натиснете Свързване след това."
+
+msgid "Connect automatically"
+msgstr "Свързване автоматично"
+
+msgid "Join the network when BigLace starts"
+msgstr "Присъединете се към мрежата, когато BigLace стартира"
+
+msgid ""
+"When on, BigLace runs 'tailscale up' as soon as it launches, so you join the"
+" mesh without clicking Connect every time."
+msgstr ""
+"Когато е включено, BigLace изпълнява 'tailscale up' веднага след стартиране,"
+" така че се присъединявате към мрежата, без да кликвате върху Свързване "
+"всеки път."
+
+msgid "Toggle auto-connect on startup"
+msgstr "Превключване на автоматично свързване при стартиране"
+
 msgid "Start BigLace with the session"
 msgstr "Стартирайте BigLace със сесията"
 
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/sidebar.rs:179
 msgid "Open BigLace after you sign in to the desktop"
 msgstr "Отваряйте BigLace след влизане в десктоп средата"
 
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/sidebar.rs:182
 msgid ""
 "Turn this on to add BigLace to your desktop session startup. Turn it off to "
 "remove it."
@@ -724,9 +2327,82 @@ msgstr ""
 "Включете това, за да добавите BigLace към стартирането на вашата десктоп "
 "сесия. Изключете го, за да го премахнете."
 
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/sidebar.rs:190
 msgid "Toggle start with session"
 msgstr "Превключване на стартиране със сесията"
+
+msgid "Reconnect on drop"
+msgstr "Повторно свързване при прекъсване"
+
+msgid "Retry with backoff when the connection is lost"
+msgstr "Повторен опит с изчакване при загуба на връзка"
+
+msgid ""
+"If the tunnel drops (network change, sleep, server hiccup), BigLace silently"
+" retries with growing delays instead of leaving you offline until you "
+"notice."
+msgstr ""
+"Ако тунелът прекъсне (промяна на мрежата, заспиване, проблем със сървъра), "
+"BigLace мълчаливо опитва отново с нарастващи закъснения, вместо да ви остави"
+" офлайн, докато не забележите."
+
+msgid "Toggle auto-reconnect"
+msgstr "Превключване на автоматично повторно свързване"
+
+msgid "Notify on peer changes"
+msgstr "Уведомяване при промени в пировете"
+
+msgid "Show a desktop notification when peers go online/offline"
+msgstr "Показване на десктоп известие, когато пировете се свържат/изключат"
+
+msgid ""
+"Send a desktop toast when another device on your network goes online or "
+"offline. Rapid bursts are coalesced into a single notification so you don't "
+"get spammed during reconnects."
+msgstr ""
+"Изпращайте известие на работния плот, когато друго устройство във вашата "
+"мрежа стане онлайн или офлайн. Бързите поредици се обединяват в едно "
+"известие, за да не бъдете засипвани при повторни свързвания."
+
+msgid "Toggle peer-change notifications"
+msgstr "Превключване на известия за промени в участниците"
+
+msgid ""
+"Join or leave the mesh network. When connected, this device becomes "
+"reachable by the other peers in your account."
+msgstr ""
+"Присъединете се или напуснете мрежовата мрежа. Когато сте свързани, това "
+"устройство става достъпно за другите участници във вашия акаунт."
+
+msgid "Your photo"
+msgstr "Вашата снимка"
+
+#~ msgid "Panel credentials"
+#~ msgstr "Удостоверения на панела"
+
+#~ msgid "Username"
+#~ msgstr "Потребителско име"
+
+#~ msgid "Sign in to connect"
+#~ msgstr "Влезте, за да се свържете"
+
+#~ msgid "Use the panel on the left to sign in or paste a pre-auth key."
+#~ msgstr ""
+#~ "Използвайте панела отляво, за да влезете или да поставите предварителен "
+#~ "ключ."
+
+#~ msgid "Connect via panel account"
+#~ msgstr "Свързване чрез акаунт от панела"
+
+#~ msgid ""
+#~ "Sign in with your BigScale panel username and password. A device identity "
+#~ "will be created on the network automatically — no manual key needed."
+#~ msgstr ""
+#~ "Влезте с потребителско име и парола от вашия BigScale панел. Идентичност на "
+#~ "устройството ще бъде създадена автоматично в мрежата — не е необходим ръчен "
+#~ "ключ."
+
+#~ msgid "Connected ·"
+#~ msgstr "Свързан ·"
 
 #~ msgid "Device name"
 #~ msgstr "Име на устройството"
@@ -767,9 +2443,6 @@ msgstr "Превключване на стартиране със сесията
 
 #~ msgid "Terminal"
 #~ msgstr "Терминал"
-
-#~ msgid "Copied!"
-#~ msgstr "Копирано!"
 
 #~ msgid "Key generated successfully."
 #~ msgstr "Ключът е генериран успешно."

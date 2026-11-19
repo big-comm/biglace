@@ -3,7 +3,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: biglace\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-05-01 15:15\n"
+"POT-Creation-Date: 2026-11-19 12:50-0300\n"
 "PO-Revision-Date: 2026-05-01 15:15\n"
 "Last-Translator: Translation Automator <auto@translator.ai>\n"
 "Language-Team: Danish <da@li.org>\n"
@@ -12,146 +12,41 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/tray/linux.rs:76
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/tray/windows.rs:136
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/mod.rs:1114
-msgid "Disconnect"
-msgstr "Afbryd"
+msgid "Invalid device address."
+msgstr "Ugyldig enhedsadresse."
 
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/content.rs:47
-msgid "Main menu"
-msgstr "Hovedmenu"
-
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/mod.rs:590
-msgid "Sign in with panel account"
-msgstr "Log ind med panelkonto"
-
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/mod.rs:592
-msgid "Make this user the tailscale operator"
-msgstr "Gør denne bruger til tailscale-operatør"
-
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/mod.rs:594
-msgid "About BigLace"
-msgstr "Om BigLace"
-
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/dialogs.rs:42
-msgid "Tailscale operator"
-msgstr "Tailscale-operatør"
-
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/dialogs.rs:37
-msgid "Done. You will no longer need a password to connect or disconnect."
+msgid ""
+"No file manager could open the SFTP location. Install one (Dolphin, "
+"Nautilus, Nemo, Thunar…) and try again."
 msgstr ""
-"Færdig. Du vil ikke længere have brug for en adgangskode for at oprette "
-"forbindelse eller afbryde."
+"Ingen filhåndtering kunne åbne SFTP-placeringen. Installer en (Dolphin, "
+"Nautilus, Nemo, Thunar…) og prøv igen."
 
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/dialogs.rs:38
-#, rust-format
-msgid "Failed: {error}"
-msgstr "Mislykkedes: {error}"
+msgid ""
+"No file manager could open the SFTP location. Install WinSCP and try again."
+msgstr ""
+"Ingen filhåndtering kunne åbne SFTP-placeringen. Installer WinSCP og prøv "
+"igen."
 
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/dialogs.rs:45
-msgid "OK"
-msgstr "OK"
+msgid ""
+"No terminal emulator found. Install one (Konsole, GNOME Terminal, xterm…) "
+"and try again."
+msgstr ""
+"Ingen terminalemulator fundet. Installer en (Konsole, GNOME Terminal, "
+"xterm…) og prøv igen."
 
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/dialogs.rs:387
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/mod.rs:729
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/mod.rs:962
-#, rust-format
-msgid "Error: {error}"
-msgstr "Fejl: {error}"
-
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/dialogs.rs:29
-msgid "Mesh VPN client for BigScale/Headscale."
-msgstr "Mesh VPN-klient til BigScale/Headscale."
-
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/dialogs.rs:164
-msgid "Panel credentials"
-msgstr "Panel-legitimationsoplysninger"
-
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/dialogs.rs:173
-msgid "Panel URL"
-msgstr "Panel-URL"
-
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/dialogs.rs:180
-msgid "Username"
-msgstr "Brugernavn"
-
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/dialogs.rs:184
-msgid "Password"
-msgstr "Adgangskode"
-
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/dialogs.rs:75
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/dialogs.rs:247
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/dialogs.rs:448
-msgid "Cancel"
-msgstr "Annuller"
-
-#. The OK button needs to flip between "Sign in" and "spinner + Connecting…"
-#. while the HTTP call is in flight. Build both children up front and just
-#. swap the button's child — simpler than juggling visibility flags.
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/dialogs.rs:252
-msgid "Sign in"
-msgstr "Log ind"
-
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/dialogs.rs:309
-msgid "Fill in URL, username and password."
-msgstr "Udfyld URL, brugernavn og adgangskode."
-
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/content.rs:159
-msgid "Start service"
-msgstr "Start tjeneste"
-
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/sidebar.rs:95
-msgid "Server URL"
-msgstr "Server-URL"
-
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/content.rs:206
-msgid "This device"
-msgstr "Denne enhed"
-
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/tray/linux.rs:83
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/tray/windows.rs:81
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/tray/windows.rs:136
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/mod.rs:1124
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/mod.rs:1129
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/sidebar.rs:240
-msgid "Connect"
-msgstr "Opret forbindelse"
-
-#. ── Devices on the network ──
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/content.rs:223
-msgid "Devices on the network"
-msgstr "Enheder på netværket"
-
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/tailscale.rs:557
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/tailscale.rs:630
 msgid "Failed to run tailscale"
 msgstr "Kunne ikke køre tailscale"
 
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/tailscale.rs:577
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/tailscale.rs:610
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/tailscale.rs:642
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/tailscale.rs:714
 msgid "Failed to connect — check the server URL and key."
 msgstr "Kunne ikke oprette forbindelse – kontrollér server-URL'en og nøglen."
 
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/tailscale.rs:598
 msgid "Failed to run pkexec tailscale"
 msgstr "Kunne ikke køre pkexec tailscale"
 
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/tailscale.rs:781
-msgid "Could not determine the current user."
-msgstr "Kunne ikke bestemme den aktuelle bruger."
+msgid "Enter the server URL before connecting."
+msgstr "Indtast server-URL'en, før du opretter forbindelse."
 
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/tailscale.rs:787
-msgid "Failed to run pkexec tailscale set"
-msgstr "Kunne ikke køre pkexec tailscale set"
-
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/tailscale.rs:789
-msgid "Failed to set tailscale operator."
-msgstr "Kunne ikke indstille tailscale-operatør."
-
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/tailscale.rs:707
 msgid ""
 "The pre-auth key was rejected by the server. Generate a new key in the "
 "BigScale panel and try again."
@@ -159,169 +54,644 @@ msgstr ""
 "Forhåndsgodkendelsesnøglen blev afvist af serveren. Generér en ny nøgle i "
 "BigScale-panelet, og prøv igen."
 
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/tailscale.rs:710
+msgid "Sign in or paste a pre-auth key first."
+msgstr "Log ind eller indsæt først en forhåndsgodkendt nøgle."
+
 #, rust-format
 msgid "Login rejected by server: {detail}"
 msgstr "Login afvist af serveren: {detail}"
 
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/sidebar.rs:138
-msgid "Apply manual setup"
-msgstr "Anvend manuel opsætning"
+msgid "Could not determine the current user."
+msgstr "Kunne ikke bestemme den aktuelle bruger."
 
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/sidebar.rs:140
-msgid "Save"
-msgstr "Gem"
+msgid "Failed to run pkexec tailscale set"
+msgstr "Kunne ikke køre pkexec tailscale set"
 
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/sidebar.rs:159
-msgid "Connect automatically"
-msgstr "Opret forbindelse automatisk"
+msgid "Failed to set tailscale operator."
+msgstr "Kunne ikke indstille tailscale-operatør."
 
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/sidebar.rs:160
-msgid "Join the network when BigLace starts"
-msgstr "Deltag i netværket, når BigLace starter"
-
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/mod.rs:1079
-msgid "Sign in or paste a pre-auth key"
-msgstr "Log ind eller indsæt en forhåndsgodkendt nøgle"
-
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/mod.rs:1091
-msgid "Server not set"
-msgstr "Server ikke angivet"
-
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/mod.rs:711
-msgid "Setup saved"
-msgstr "Opsætning gemt"
-
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/tailscale.rs:653
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/mod.rs:805
-msgid "Sign in or paste a pre-auth key first."
-msgstr "Log ind eller indsæt først en forhåndsgodkendt nøgle."
-
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/content.rs:96
-msgid "Sign in to connect"
-msgstr "Log ind for at oprette forbindelse"
-
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/content.rs:97
-msgid "Use the panel on the left to sign in or paste a pre-auth key."
-msgstr ""
-"Brug panelet til venstre til at logge ind eller indsætte en forhåndsgodkendt"
-" nøgle."
-
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/content.rs:105
-msgid "Not connected"
-msgstr "Ikke forbundet"
-
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/content.rs:106
-msgid "Press Connect on the left to join the network."
-msgstr "Tryk på Forbind til venstre for at deltage i netværket."
-
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/content.rs:183
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/dialogs.rs:259
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/mod.rs:1026
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/mod.rs:1119
-msgid "Connecting…"
-msgstr "Forbinder…"
-
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/content.rs:232
-msgid "No other devices on the network yet."
-msgstr "Ingen andre enheder på netværket endnu."
-
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/content.rs:216
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/peer_row.rs:178
-msgid "Copy IP address"
-msgstr "Kopier IP-adresse"
-
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/mod.rs:888
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/peer_row.rs:186
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/peer_row.rs:271
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/peer_row.rs:280
-msgid "IP address copied"
-msgstr "IP-adresse kopieret"
-
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/peer_row.rs:231
-msgid "Open files (SFTP)"
-msgstr "Åbn filer (SFTP)"
-
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/peer_row.rs:246
-msgid "Open terminal (SSH)"
-msgstr "Åbn terminal (SSH)"
-
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/peer_row.rs:50
-msgid "offline"
-msgstr "offline"
-
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/mod.rs:1023
-msgid "Service stopped"
-msgstr "Tjeneste stoppet"
-
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/tray/linux.rs:58
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/tray/windows.rs:172
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/content.rs:40
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/mod.rs:1025
-msgid "Disconnected"
-msgstr "Afbrudt"
-
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/tray/linux.rs:53
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/tray/windows.rs:167
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/mod.rs:953
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/mod.rs:1027
 msgid "Connected"
 msgstr "Forbundet"
 
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/content.rs:59
+msgid "Connected · 1 peer"
+msgstr "Forbundet · 1 peer"
+
+#, rust-format
+msgid "Connected · {n} peers"
+msgstr "Forbundet · {n} peers"
+
+msgid "Disconnected"
+msgstr "Afbrudt"
+
+#, rust-format
+msgid "In the room {group} · muted"
+msgstr "I rummet {group} · lydløs"
+
+#, rust-format
+msgid "In the room {group}"
+msgstr "I rummet {group}"
+
+msgid "Disconnect"
+msgstr "Afbryd"
+
+msgid "Connect"
+msgstr "Opret forbindelse"
+
+msgid "Show BigLace"
+msgstr "Vis BigLace"
+
+#, rust-format
+msgid "Room {group}"
+msgstr "Rum {group}"
+
+msgid "Unmute (Ctrl+Alt+M)"
+msgstr "Slå lyd til (Ctrl+Alt+M)"
+
+msgid "Mute (Ctrl+Alt+M)"
+msgstr "Slå lyd fra (Ctrl+Alt+M)"
+
+msgid "Leave the room"
+msgstr "Forlad rummet"
+
+msgid "Quit"
+msgstr "Afslut"
+
+msgid "This computer"
+msgstr "Denne computer"
+
+msgid "Who may use this computer remotely"
+msgstr "Hvem må bruge denne computer eksternt"
+
+msgid ""
+"Anyone you're connected to can ask to see and control this screen. Choose "
+"who is let in without asking, and who is never let in."
+msgstr ""
+"Alle, du er forbundet med, kan bede om at se og styre denne skærm. Vælg, "
+"hvem der lukkes ind uden at spørge, og hvem der aldrig lukkes ind."
+
+msgid "History of accesses"
+msgstr "Adgangshistorik"
+
+msgid "Kept on this computer only."
+msgstr "Gemmes kun på denne computer."
+
+msgid "Clear"
+msgstr "Ryd"
+
+msgid "Nobody has asked yet."
+msgstr "Ingen har spurgt endnu."
+
+msgid "When someone asks, you can choose to always let them in."
+msgstr "Når nogen spørger, kan du vælge altid at lukke dem ind."
+
+msgid "Ask every time"
+msgstr "Spørg hver gang"
+
+msgid "Always allow"
+msgstr "Tillad altid"
+
+msgid "Never allow"
+msgstr "Tillad aldrig"
+
+msgid "No accesses yet."
+msgstr "Ingen adgange endnu."
+
+msgid "Remote access"
+msgstr "Fjernadgang"
+
+msgid "Watched the screen shared with the room"
+msgstr "Så skærmen, der blev delt med rummet"
+
+msgid "Got control of the shared screen"
+msgstr "Fik kontrol over den delte skærm"
+
+msgid "Restarted the computer"
+msgstr "Genstartede computeren"
+
+msgid "Restarted the session"
+msgstr "Genstartede sessionen"
+
+msgid "Shut down the computer"
+msgstr "Lukkede computeren ned"
+
+msgid "allowed"
+msgstr "tilladt"
+
+msgid "allowed (always)"
+msgstr "tilladt (altid)"
+
+msgid "came back after a restart"
+msgstr "kom tilbage efter en genstart"
+
+msgid "denied"
+msgstr "afvist"
+
+msgid "blocked (never allowed)"
+msgstr "blokeret (aldrig tilladt)"
+
+msgid "ended"
+msgstr "afsluttet"
+
+#, rust-format
+msgid "{user} ({device})"
+msgstr "{user} ({device})"
+
+#, rust-format
+msgid "{done} of {total}"
+msgstr "{done} af {total}"
+
+msgid "Play"
+msgstr "Afspil"
+
+msgid "Download"
+msgstr "Hent"
+
+msgid "Open"
+msgstr "Åbn"
+
+msgid "Show in folder"
+msgstr "Vis i mappe"
+
+msgid "Pause"
+msgstr "Pause"
+
+msgid "Photo"
+msgstr "Foto"
+
+msgid "Video"
+msgstr "Video"
+
+msgid "Voice message"
+msgstr "Talebesked"
+
+msgid "Chat"
+msgstr "Chat"
+
+msgid "New chat"
+msgstr "Ny chat"
+
+msgid "Start a conversation with someone on the network"
+msgstr "Start en samtale med nogen på netværket"
+
+msgid "Main menu"
+msgstr "Hovedmenu"
+
+msgid "Chat theme"
+msgstr "Chattema"
+
+msgid "Conversations"
+msgstr "Samtaler"
+
+msgid "No conversations yet."
+msgstr "Ingen samtaler endnu."
+
+msgid "Search in this conversation (Ctrl+F)"
+msgstr "Søg i denne samtale (Ctrl+F)"
+
+msgid "Pinned message"
+msgstr "Fastgjort besked"
+
+msgid "Unpin"
+msgstr "Frigør"
+
+msgid "Search messages"
+msgstr "Søg i beskeder"
+
+msgid "Older"
+msgstr "Ældre"
+
+msgid "Newer"
+msgstr "Nyere"
+
+msgid "Emoji"
+msgstr "Emoji"
+
+msgid "Send files, pictures or videos"
+msgstr "Send filer, billeder eller videoer"
+
+msgid "Send (Enter) — Shift+Enter for a new line"
+msgstr "Send (Enter) — Shift+Enter for ny linje"
+
+msgid "Record a voice message"
+msgstr "Optag en talebesked"
+
+msgid "Discard"
+msgstr "Kassér"
+
+msgid "Send voice message"
+msgstr "Send talebesked"
+
+msgid "Cancel"
+msgstr "Annuller"
+
+msgid "Copy text"
+msgstr "Kopiér tekst"
+
+msgid "Forward"
+msgstr "Videresend"
+
+msgid "Delete"
+msgstr "Slet"
+
+msgid "Talk with your network"
+msgstr "Snak med dit netværk"
+
+msgid ""
+"Pick a conversation, or start one. Messages go straight between your "
+"computers — the server never sees them."
+msgstr ""
+"Vælg en samtale, eller start en. Beskeder går direkte mellem jeres computere"
+" — serveren ser dem aldrig."
+
+msgid "Group"
+msgstr "Gruppe"
+
+msgid "Direct conversation"
+msgstr "Direkte samtale"
+
+msgid "That message is too long."
+msgstr "Den besked er for lang."
+
+#, rust-format
+msgid "Could not send: {error}"
+msgstr "Kunne ikke sende: {error}"
+
+#, rust-format
+msgid "Could not download: {error}"
+msgstr "Kunne ikke hente: {error}"
+
+#, rust-format
+msgid "{user} in {group}"
+msgstr "{user} i {group}"
+
+msgid "Send files"
+msgstr "Send filer"
+
+msgid "Drop to send"
+msgstr "Slip for at sende"
+
+#, rust-format
+msgid "Could not record: {error}"
+msgstr "Kunne ikke optage: {error}"
+
+msgid "Too short — record for at least a second."
+msgstr "For kort — optag i mindst et sekund."
+
+msgid "Search people and groups"
+msgstr "Søg efter personer og grupper"
+
+msgid "Loading…"
+msgstr "Indlæser…"
+
+msgid "Nobody you can reach yet."
+msgstr "Ingen, du kan nå, endnu."
+
+msgid "online"
+msgstr "online"
+
+msgid "offline"
+msgstr "offline"
+
+#, rust-format
+msgid "You: {text}"
+msgstr "Dig: {text}"
+
+msgid "Group conversation"
+msgstr "Gruppesamtale"
+
+#, rust-format
+msgid "Delivered to {people}"
+msgstr "Leveret til {people}"
+
+msgid "Waiting to be delivered"
+msgstr "Venter på levering"
+
+msgid "Today"
+msgstr "I dag"
+
+msgid "Yesterday"
+msgstr "I går"
+
+msgid "🗑 Message deleted"
+msgstr "🗑 Besked slettet"
+
+#, rust-format
+msgid "Forwarded from {name}"
+msgstr "Videresendt fra {name}"
+
+msgid "edited"
+msgstr "redigeret"
+
+msgid "More reactions"
+msgstr "Flere reaktioner"
+
+msgid "Reply"
+msgstr "Svar"
+
+msgid "Edit"
+msgstr "Rediger"
+
+msgid "Pin"
+msgstr "Fastgør"
+
+msgid "Select"
+msgstr "Vælg"
+
+#, rust-format
+msgid "Could not react: {error}"
+msgstr "Kunne ikke reagere: {error}"
+
+#, rust-format
+msgid "Reply to {name}"
+msgstr "Svar til {name}"
+
+msgid "Editing message"
+msgstr "Redigerer besked"
+
+msgid "Copied."
+msgstr "Kopieret."
+
+msgid "Forward to…"
+msgstr "Videresend til…"
+
+msgid "Forwarded."
+msgstr "Videresendt."
+
+#, rust-format
+msgid "Could not forward: {error}"
+msgstr "Kunne ikke videresende: {error}"
+
+msgid "Delete the message?"
+msgstr "Slet beskeden?"
+
+#, rust-format
+msgid "Delete {count} messages?"
+msgstr "Slet {count} beskeder?"
+
+msgid "“For everyone” removes it from the other computers too."
+msgstr "“For alle” fjerner den også fra de andre computere."
+
+msgid "It's removed from this computer only."
+msgstr "Den fjernes kun fra denne computer."
+
+msgid "Delete for me"
+msgstr "Slet for mig"
+
+msgid "Delete for everyone"
+msgstr "Slet for alle"
+
+#, rust-format
+msgid "Could not delete: {error}"
+msgstr "Kunne ikke slette: {error}"
+
+msgid "1 selected"
+msgstr "1 valgt"
+
+#, rust-format
+msgid "{count} selected"
+msgstr "{count} valgt"
+
+msgid "That message isn't here anymore."
+msgstr "Den besked er her ikke længere."
+
+msgid "No results"
+msgstr "Ingen resultater"
+
+#, rust-format
+msgid "{n} of {total}"
+msgstr "{n} af {total}"
+
+#, rust-format
+msgid "{user} is typing…"
+msgstr "{user} skriver…"
+
+msgid "typing…"
+msgstr "skriver…"
+
+msgid "System accent"
+msgstr "Systemets accentfarve"
+
+msgid "Blue"
+msgstr "Blå"
+
+msgid "Teal"
+msgstr "Blågrøn"
+
+msgid "Green"
+msgstr "Grøn"
+
+msgid "Purple"
+msgstr "Lilla"
+
+msgid "Pink"
+msgstr "Lyserød"
+
+msgid "Orange"
+msgstr "Orange"
+
+msgid "Red"
+msgstr "Rød"
+
+msgid "Graphite"
+msgstr "Grafit"
+
+msgid "Default"
+msgstr "Standard"
+
+msgid "Plain"
+msgstr "Ensfarvet"
+
+msgid "Dots"
+msgstr "Prikker"
+
+msgid "Ocean"
+msgstr "Hav"
+
+msgid "Sunset"
+msgstr "Solnedgang"
+
+msgid "Forest"
+msgstr "Skov"
+
+msgid "Lavender"
+msgstr "Lavendel"
+
+msgid "Night"
+msgstr "Nat"
+
+msgid "Hi! How does this look? 😊"
+msgstr "Hej! Hvordan ser det her ud? 😊"
+
+msgid "Looks great!"
+msgstr "Det ser godt ud!"
+
+msgid "Appearance"
+msgstr "Udseende"
+
+msgid "System"
+msgstr "System"
+
+msgid "Light"
+msgstr "Lys"
+
+msgid "Dark"
+msgstr "Mørk"
+
+msgid "Your messages"
+msgstr "Dine beskeder"
+
+msgid "Background"
+msgstr "Baggrund"
+
+msgid "Picture…"
+msgstr "Billede…"
+
+msgid "Pictures"
+msgstr "Billeder"
+
+msgid "Choose a background picture"
+msgstr "Vælg et baggrundsbillede"
+
+msgid "Message"
+msgstr "Besked"
+
+msgid "Bold"
+msgstr "Fed"
+
+msgid "Italic"
+msgstr "Kursiv"
+
+msgid "Underline"
+msgstr "Understreget"
+
+msgid "Strikethrough"
+msgstr "Gennemstreget"
+
+msgid "Monospace"
+msgstr "Fast bredde"
+
+msgid "Create link"
+msgstr "Opret link"
+
+msgid "Plain text"
+msgstr "Almindelig tekst"
+
+msgid "Formatting"
+msgstr "Formatering"
+
+msgid "Create"
+msgstr "Opret"
+
+msgid "Search devices"
+msgstr "Søg efter enheder"
+
 msgid "Refresh"
 msgstr "Opdater"
 
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/dialogs.rs:373
-msgid "Signed in. Press Connect to join the network."
-msgstr "Logget ind. Tryk på Forbind for at deltage i netværket."
+msgid "Invite"
+msgstr "Inviter"
 
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/mod.rs:1240
-msgid "no other devices"
-msgstr "ingen andre enheder"
+msgid "Invite someone to your network"
+msgstr "Inviter nogen til dit netværk"
 
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/mod.rs:1242
-#, rust-format
-msgid "{online} online"
-msgstr "{online} online"
+msgid ""
+"Tailscale cannot write this device's DNS settings, so it can no longer keep "
+"peer names working. They may still resolve for now, from the configuration "
+"left over from before the failure, but that will break the next time the "
+"network changes — and BigLace will fall back to IP addresses. On most "
+"distributions `sudo resolvconf -u` repairs it."
+msgstr ""
+"Tailscale kan ikke skrive denne enheds DNS-indstillinger, så den kan ikke "
+"længere holde peer-navne fungerende. De kan stadig blive slået op indtil "
+"videre, ud fra konfigurationen fra før fejlen, men det holder op med at "
+"virke næste gang netværket ændrer sig — og BigLace falder tilbage til IP-"
+"adresser. På de fleste distributioner reparerer `sudo resolvconf -u` det."
 
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/mod.rs:1244
-#, rust-format
-msgid "{online} online · {offline} offline"
-msgstr "{online} online · {offline} offline"
+msgid "Not connected"
+msgstr "Ikke forbundet"
 
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/content.rs:153
+msgid "Press Connect on the left to join the network."
+msgstr "Tryk på Forbind til venstre for at deltage i netværket."
+
 msgid "The tailscale service is not running"
 msgstr "Tailscale-tjenesten kører ikke"
 
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/content.rs:155
 msgid "BigLace needs the tailscaled background service to manage the network."
 msgstr ""
 "BigLace har brug for baggrundstjenesten tailscaled for at administrere "
 "netværket."
 
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/sidebar.rs:108
-msgid "Pre-auth key"
-msgstr "Forudgodkendelsesnøgle"
+msgid "Start service"
+msgstr "Start tjeneste"
 
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/mod.rs:1024
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/mod.rs:1078
-msgid "Not signed in"
-msgstr "Ikke logget ind"
+msgid "Join the network"
+msgstr "Tilslut dig netværket"
 
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/sidebar.rs:81
-msgid "Advanced: use a pre-auth key"
-msgstr "Avanceret: brug en forudgodkendelsesnøgle"
+msgid "Choose how you're going to sign in."
+msgstr "Vælg, hvordan du vil logge ind."
 
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/sidebar.rs:82
-msgid "Already have a key from your administrator? Paste it here."
-msgstr "Har du allerede en nøgle fra din administrator? Indsæt den her."
+msgid "Ways to sign in"
+msgstr "Måder at logge ind på"
 
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/dialogs.rs:68
+msgid "Your account was kept on this computer. No invite needed."
+msgstr "Din konto blev gemt på denne computer. Ingen invitation nødvendig."
+
+msgid "I have an invite"
+msgstr "Jeg har en invitation"
+
+msgid "Someone on the network sent you a link or a QR code."
+msgstr "Nogen på netværket har sendt dig et link eller en QR-kode."
+
+msgid "I have an access key"
+msgstr "Jeg har en adgangsnøgle"
+
+msgid "A key the administrator created for you (starts with hskey-auth-)."
+msgstr ""
+"En nøgle, som administratoren har oprettet til dig (starter med hskey-"
+"auth-)."
+
+msgid "I'm the administrator"
+msgstr "Jeg er administratoren"
+
+msgid "Sign in with the BigScale panel's admin username and password."
+msgstr "Log ind med BigScale-panelets administratorbrugernavn og adgangskode."
+
+msgid "Connecting…"
+msgstr "Forbinder…"
+
+msgid "This device"
+msgstr "Denne enhed"
+
+msgid "Copy IP address"
+msgstr "Kopier IP-adresse"
+
+msgid "Devices on the network"
+msgstr "Enheder på netværket"
+
+msgid "No other devices on the network yet."
+msgstr "Ingen andre enheder på netværket endnu."
+
+msgid "Mesh VPN client for BigScale/Headscale."
+msgstr "Mesh VPN-klient til BigScale/Headscale."
+
+msgid "Done. You will no longer need a password to connect or disconnect."
+msgstr ""
+"Færdig. Du vil ikke længere have brug for en adgangskode for at oprette "
+"forbindelse eller afbryde."
+
+#, rust-format
+msgid "Failed: {error}"
+msgstr "Mislykkedes: {error}"
+
+msgid "Tailscale operator"
+msgstr "Tailscale-operatør"
+
+msgid "OK"
+msgstr "OK"
+
 msgid "Sign out of current account?"
 msgstr "Log ud af den aktuelle konto?"
 
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/dialogs.rs:70
 msgid ""
 "This will disconnect from the network, sign this device out of the current "
 "control server, and forget the saved password. You'll then be able to sign "
@@ -331,263 +701,93 @@ msgstr ""
 "aktuelle kontrolserver og glemme den gemte adgangskode. Du vil derefter "
 "kunne logge ind med en anden konto."
 
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/dialogs.rs:76
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/mod.rs:591
 msgid "Sign out"
 msgstr "Log ud"
 
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/dialogs.rs:134
+msgid "Leave the network?"
+msgstr "Forlad netværket?"
+
+#, rust-format
+msgid ""
+"This device leaves the network and its name becomes free. Your account {user} is kept: you can come back later from this computer, without an invite.\n"
+"\n"
+"If you won't come back, delete the account and the name {user} becomes free too."
+msgstr ""
+"Denne enhed forlader netværket, og dens navn bliver ledigt. Din konto {user} bevares: du kan komme tilbage senere fra denne computer uden en invitation.\n"
+"\n"
+"Hvis du ikke kommer tilbage, så slet kontoen, så bliver navnet {user} også ledigt."
+
+msgid "Leave and delete account"
+msgstr "Forlad og slet konto"
+
+msgid "Leave"
+msgstr "Forlad"
+
+msgid "Connect first to delete the account."
+msgstr "Opret forbindelse først for at slette kontoen."
+
+msgid "Signing out…"
+msgstr "Logger ud…"
+
+#, rust-format
+msgid ""
+"Signed out. Your account was kept: {count} other device(s) still use it."
+msgstr ""
+"Logget ud. Din konto blev bevaret: {count} andre enhed(er) bruger den "
+"stadig."
+
+msgid ""
+"Couldn't delete the account: the panel can't be reached. Connect and try "
+"again."
+msgstr ""
+"Kunne ikke slette kontoen: panelet kan ikke nås. Opret forbindelse og prøv "
+"igen."
+
+#, rust-format
+msgid "Error: {error}"
+msgstr "Fejl: {error}"
+
+msgid "Signed out and account deleted."
+msgstr "Logget ud og konto slettet."
+
 msgid "Signed out."
 msgstr "Logget ud."
 
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/dialogs.rs:153
-msgid "Connect via panel account"
-msgstr "Opret forbindelse via panelkonto"
+msgid "Couldn't reach the server"
+msgstr "Kunne ikke nå serveren"
 
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/dialogs.rs:166
-msgid ""
-"Sign in with your BigScale panel username and password. A device identity "
-"will be created on the network automatically — no manual key needed."
-msgstr ""
-"Log ind med dit BigScale panel-brugernavn og adgangskode. Der oprettes "
-"automatisk en enhedsidentitet på netværket – ingen manuel nøgle er "
-"nødvendig."
-
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/peer_row.rs:446
-msgid "Copy"
-msgstr "Kopier"
-
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/sidebar.rs:197
-msgid "Reconnect on drop"
-msgstr "Genforbind ved afbrydelse"
-
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/sidebar.rs:198
-msgid "Retry with backoff when the connection is lost"
-msgstr "Forsøg igen med backoff, når forbindelsen mistes"
-
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/sidebar.rs:217
-msgid "Notify on peer changes"
-msgstr "Giv besked ved peer-ændringer"
-
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/sidebar.rs:218
-msgid "Show a desktop notification when peers go online/offline"
-msgstr "Vis en skrivebordsmeddelelse, når peers går online/offline"
-
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/mod.rs:593
-msgid "View tailscaled logs"
-msgstr "Se tailscaled-logfiler"
-
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/mod.rs:1044
-msgid "Server unreachable"
-msgstr "Server utilgængelig"
-
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/mod.rs:1054
 #, rust-format
-msgid "Update available: v{version}"
-msgstr "Opdatering tilgængelig: v{version}"
-
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/mod.rs:1398
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/mod.rs:1461
-msgid "is online"
-msgstr "er online"
-
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/mod.rs:1399
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/mod.rs:1463
-msgid "went offline"
-msgstr "gik offline"
-
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/peer_row.rs:124
-msgid "Unpin from top"
-msgstr "Fjern fastgørelse fra toppen"
-
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/peer_row.rs:124
-msgid "Pin to top"
-msgstr "Fastgør til toppen"
-
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/peer_row.rs:259
-msgid "DNS name"
-msgstr "DNS-navn"
-
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/peer_row.rs:262
-msgid "DNS name copied"
-msgstr "DNS-navn kopieret"
-
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/peer_row.rs:284
-msgid "Owner"
-msgstr "Ejer"
-
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/peer_row.rs:346
-msgid "Tags"
-msgstr "Tags"
-
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/peer_row.rs:351
-msgid "Last seen"
-msgstr "Sidst set"
-
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/peer_row.rs:358
-msgid "Use as exit node"
-msgstr "Brug som udgangsnode"
-
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/peer_row.rs:359
-msgid "Route all traffic through this peer"
-msgstr "Diriger al trafik gennem denne peer"
-
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/peer_row.rs:401
-msgid "Exit node enabled"
-msgstr "Udgangsnode aktiveret"
-
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/peer_row.rs:401
-msgid "Exit node disabled"
-msgstr "Udgangsnode deaktiveret"
-
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/peer_row.rs:403
-msgid "Failed to update exit node"
-msgstr "Kunne ikke opdatere udgangsnode"
-
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/peer_row.rs:146
-msgid "Pinned to top"
-msgstr "Fastgjort til toppen"
-
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/peer_row.rs:148
-msgid "Unpinned"
-msgstr "Ikke fastgjort"
-
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/tray/linux.rs:54
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/tray/windows.rs:168
-msgid "Connected · 1 peer"
-msgstr "Forbundet · 1 peer"
-
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/tray/linux.rs:55
-#, rust-format
-msgid "Connected · {n} peers"
-msgstr "Forbundet · {n} peers"
-
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/tray/linux.rs:92
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/tray/windows.rs:80
-msgid "Show BigLace"
-msgstr "Vis BigLace"
-
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/tray/linux.rs:101
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/tray/windows.rs:82
-msgid "Quit"
-msgstr "Afslut"
-
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/tray/windows.rs:169
-msgid "Connected ·"
-msgstr "Tilsluttet ·"
-
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/sidebar.rs:54
 msgid ""
-"Your identity on this mesh — the device name shown to other peers and the "
-"network you're connected to."
+"The control server didn't confirm the sign-out: {error}\n"
+"\n"
+"You can still sign out on this computer: BigLace forgets the saved key and account and disconnects. The server keeps listing this device until an administrator removes it."
 msgstr ""
-"Din identitet i dette mesh — enhedsnavnet, som vises for andre peers, og "
-"netværket du er tilsluttet."
+"Kontrolserveren bekræftede ikke udlogningen: {error}\n"
+"\n"
+"Du kan stadig logge ud på denne computer: BigLace glemmer den gemte nøgle og konto og afbryder forbindelsen. Serveren bliver ved med at vise denne enhed, indtil en administrator fjerner den."
 
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/sidebar.rs:71
-msgid "Rename this device on the network"
-msgstr "Omdøb denne enhed på netværket"
+msgid "Sign out on this computer"
+msgstr "Log ud på denne computer"
 
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/sidebar.rs:86
+msgid "Sign in as administrator"
+msgstr "Log ind som administrator"
+
+msgid "Panel administrator"
+msgstr "Paneladministrator"
+
 msgid ""
-"Manual setup — expand to paste a server URL and pre-auth key when you "
-"already received them from your administrator. Most users should sign in "
-"through the panel button above instead."
+"Only for whoever administers the BigScale panel: use the panel's admin "
+"username and password. This device joins the network under the name below. "
+"Everyone else joins with an invite or an access key."
 msgstr ""
-"Manuel opsætning — udvid for at indsætte en server-URL og en forudgodkendt "
-"nøgle, når du allerede har modtaget dem fra din administrator. De fleste "
-"brugere bør i stedet logge ind via panelknappen ovenfor."
+"Kun for den, der administrerer BigScale-panelet: brug panelets "
+"administratorbrugernavn og adgangskode. Denne enhed tilslutter sig netværket"
+" under navnet nedenfor. Alle andre tilslutter sig med en invitation eller en"
+" adgangsnøgle."
 
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/sidebar.rs:99
-msgid ""
-"Address of the coordination server (e.g. vpn.example.org). The https:// "
-"scheme is added automatically if you omit it."
-msgstr ""
-"Adresse på koordinationsserveren (f.eks. vpn.example.org). Skemaet https:// "
-"tilføjes automatisk, hvis du udelader det."
+msgid "Panel URL"
+msgstr "Panel-URL"
 
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/sidebar.rs:111
-msgid ""
-"One-time or reusable key created on the server (starts with 'hskey-auth-'). "
-"Used to register this device automatically without opening a browser."
-msgstr ""
-"Engangs- eller genbrugelig nøgle oprettet på serveren (starter med 'hskey-"
-"auth-'). Bruges til at registrere denne enhed automatisk uden at åbne en "
-"browser."
-
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/dialogs.rs:190
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/dialogs.rs:418
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/sidebar.rs:124
-msgid "Device name on the network"
-msgstr "Enhedsnavn på netværket"
-
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/sidebar.rs:127
-msgid ""
-"The name this device shows to other peers on the VPN — this is the Tailscale"
-" hostname, NOT your computer's name and NOT your user. Lowercase letters, "
-"digits and hyphens. Example: 'tales-laptop', 'francois', 'office-pc'."
-msgstr ""
-"Navnet som denne enhed viser for andre peers på VPN'et — dette er Tailscale-"
-"værtsnavnet, IKKE din computers navn og IKKE din bruger. Små bogstaver, tal "
-"og bindestreger. Eksempel: 'tales-laptop', 'francois', 'office-pc'."
-
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/sidebar.rs:144
-msgid ""
-"Persist the server, key and device name above. Won't connect — press Connect"
-" afterwards."
-msgstr ""
-"Gem server, nøgle og enhedsnavn ovenfor. Opretter ikke forbindelse — tryk på"
-" Tilslut bagefter."
-
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/sidebar.rs:163
-msgid ""
-"When on, BigLace runs 'tailscale up' as soon as it launches, so you join the"
-" mesh without clicking Connect every time."
-msgstr ""
-"Når den er slået til, kører BigLace 'tailscale up' så snart den starter, så "
-"du tilslutter dig mesh'et uden at klikke på Tilslut hver gang."
-
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/sidebar.rs:171
-msgid "Toggle auto-connect on startup"
-msgstr "Slå auto-tilslutning ved opstart til/fra"
-
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/sidebar.rs:201
-msgid ""
-"If the tunnel drops (network change, sleep, server hiccup), BigLace silently"
-" retries with growing delays instead of leaving you offline until you "
-"notice."
-msgstr ""
-"Hvis tunnelen afbrydes (netværksændring, dvale, serverfejl), forsøger "
-"BigLace stille og roligt igen med stigende forsinkelser i stedet for at "
-"efterlade dig offline, indtil du opdager det."
-
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/sidebar.rs:210
-msgid "Toggle auto-reconnect"
-msgstr "Slå auto-genforbindelse til/fra"
-
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/sidebar.rs:221
-msgid ""
-"Send a desktop toast when another device on your network goes online or "
-"offline. Rapid bursts are coalesced into a single notification so you don't "
-"get spammed during reconnects."
-msgstr ""
-"Send en desktop-notifikation, når en anden enhed på dit netværk går online "
-"eller offline. Hurtige udbrud samles i en enkelt notifikation, så du ikke "
-"bliver oversvømmet under genforbindelser."
-
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/sidebar.rs:230
-msgid "Toggle peer-change notifications"
-msgstr "Slå notifikationer ved peer-ændringer til/fra"
-
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/sidebar.rs:245
-msgid ""
-"Join or leave the mesh network. When connected, this device becomes "
-"reachable by the other peers in your account."
-msgstr ""
-"Deltag eller forlad mesh-netværket. Når du er tilsluttet, bliver denne enhed"
-" tilgængelig for de andre peers på din konto."
-
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/dialogs.rs:177
 msgid ""
 "Address of your BigScale panel (e.g. panel.example.org). The https:// scheme"
 " is added automatically if you omit it."
@@ -595,11 +795,15 @@ msgstr ""
 "Adressen på dit BigScale-panel (f.eks. panel.example.org). https://-skemaet "
 "tilføjes automatisk, hvis du udelader det."
 
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/dialogs.rs:182
+msgid "Panel admin username"
+msgstr "Paneladministratorens brugernavn"
+
 msgid "Your panel username — the one you use to sign in to the web panel."
 msgstr "Dit panelbrugernavn – det du bruger til at logge ind på webpanelet."
 
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/dialogs.rs:186
+msgid "Password"
+msgstr "Adgangskode"
+
 msgid ""
 "Your panel password. Stored in the OS keyring (libsecret on Linux, Keychain "
 "on macOS, Credential Manager on Windows)."
@@ -607,7 +811,9 @@ msgstr ""
 "Din paneladgangskode. Gemmes i operativsystemets nøglering (libsecret på "
 "Linux, Keychain på macOS, Credential Manager på Windows)."
 
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/dialogs.rs:193
+msgid "Device name on the network"
+msgstr "Enhedsnavn på netværket"
+
 msgid ""
 "The name this device shows to other peers on the VPN — this is the Tailscale"
 " hostname, NOT your computer's name and NOT your user. Lowercase letters, "
@@ -619,11 +825,18 @@ msgstr ""
 "og bindestreger. Eksempel: 'tales-laptop', 'francois', 'office-pc'. Vælg "
 "noget som andre peers vil genkende."
 
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/dialogs.rs:442
+msgid "Sign in"
+msgstr "Log ind"
+
+msgid "Fill in URL, username and password."
+msgstr "Udfyld URL, brugernavn og adgangskode."
+
+msgid "Signed in. Press Connect to join the network."
+msgstr "Logget ind. Tryk på Forbind for at deltage i netværket."
+
 msgid "Rename this device"
 msgstr "Omdøb denne enhed"
 
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/dialogs.rs:444
 msgid ""
 "The name this device shows to other peers on the VPN. Lowercase letters, "
 "digits and hyphens. Example: tales-laptop."
@@ -631,88 +844,1494 @@ msgstr ""
 "Navnet som denne enhed viser til andre peers på VPN'et. Små bogstaver, tal "
 "og bindestreger. Eksempel: tales-laptop."
 
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/dialogs.rs:449
 msgid "Save & apply"
 msgstr "Gem & anvend"
 
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/dialogs.rs:502
 msgid "Saved. The new name will take effect the next time you connect."
 msgstr "Gemt. Det nye navn træder i kraft næste gang du opretter forbindelse."
 
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/dialogs.rs:526
 msgid "Device renamed."
 msgstr "Enhed omdøbt."
 
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/dialogs.rs:536
 #, rust-format
 msgid "Rename failed: {error}"
 msgstr "Omdøbning mislykkedes: {error}"
 
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/dialogs.rs:553
 msgid "The device name can't be empty."
 msgstr "Enhedsnavnet må ikke være tomt."
 
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/dialogs.rs:556
 msgid "Use 63 characters or fewer."
 msgstr "Brug 63 tegn eller færre."
 
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/dialogs.rs:560
 msgid "The device name can't start or end with a hyphen."
 msgstr "Enhedsnavnet må ikke starte eller slutte med en bindestreg."
 
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/dialogs.rs:564
 msgid "Only lowercase letters, digits and hyphens are allowed."
 msgstr "Kun små bogstaver, tal og bindestreger er tilladt."
 
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/peer_row.rs:306
-msgid "SSH login (override)"
-msgstr "SSH-login (tilsidesæt)"
+msgid "Smileys & people"
+msgstr "Smileys og personer"
 
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/peer_row.rs:336
-msgid "Saved"
-msgstr "Gemt"
+msgid "Animals & nature"
+msgstr "Dyr og natur"
 
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/mod.rs:1086
+msgid "Food & drink"
+msgstr "Mad og drikke"
+
+msgid "Travel & places"
+msgstr "Rejser og steder"
+
+msgid "Activities"
+msgstr "Aktiviteter"
+
+msgid "Objects"
+msgstr "Objekter"
+
+msgid "Symbols"
+msgstr "Symboler"
+
+msgid "Flags"
+msgstr "Flag"
+
+msgid "Search emoji"
+msgstr "Søg efter emoji"
+
+msgid "Recently used"
+msgstr "Senest brugt"
+
+msgid "Search results"
+msgstr "Søgeresultater"
+
+msgid ""
+"Groups from BigLace need a newer BigScale server. Ask your administrator to "
+"update it."
+msgstr ""
+"Grupper fra BigLace kræver en nyere BigScale-server. Bed din administrator "
+"om at opdatere den."
+
+msgid "This device isn't linked to a person's account, so it has no groups."
+msgstr ""
+"Denne enhed er ikke knyttet til en persons konto, så den har ingen grupper."
+
+msgid ""
+"The panel knows this device by a different key (BigLace was reinstalled?). "
+"Leave the network and join again to fix it."
+msgstr ""
+"Panelet kender denne enhed under en anden nøgle (blev BigLace "
+"geninstalleret?). Forlad netværket og tilslut dig igen for at rette det."
+
+msgid ""
+"The panel couldn't confirm this device. Make sure BigLace is up to date and "
+"stays open while connected, then try again."
+msgstr ""
+"Panelet kunne ikke bekræfte denne enhed. Sørg for, at BigLace er opdateret "
+"og forbliver åben, mens der er forbindelse, og prøv igen."
+
+msgid ""
+"On this network everyone already reaches everyone, so groups aren't needed. "
+"The administrator can set access rules first."
+msgstr ""
+"På dette netværk kan alle allerede nå alle, så grupper er ikke nødvendige. "
+"Administratoren kan først opsætte adgangsregler."
+
+msgid "You already created the maximum number of groups."
+msgstr "Du har allerede oprettet det maksimale antal grupper."
+
+msgid "You are no longer in that group."
+msgstr "Du er ikke længere i den gruppe."
+
+msgid "A group with that name already exists. Choose another name."
+msgstr "Der findes allerede en gruppe med det navn. Vælg et andet navn."
+
+msgid ""
+"Use lowercase letters, digits and hyphens, starting with a letter or digit."
+msgstr ""
+"Brug små bogstaver, cifre og bindestreger, startende med et bogstav eller "
+"ciffer."
+
+msgid ""
+"The administrator uses this group in the network's rules, so it can't be "
+"deleted. Ask the administrator."
+msgstr ""
+"Administratoren bruger denne gruppe i netværkets regler, så den kan ikke "
+"slettes. Spørg administratoren."
+
+msgid "Only the person who created the group can do that."
+msgstr "Kun den person, der oprettede gruppen, kan gøre det."
+
+msgid "You created this group: delete it instead of leaving."
+msgstr "Du har oprettet denne gruppe: slet den i stedet for at forlade den."
+
+msgid "This group belongs to the administrator; only they can change it."
+msgstr ""
+"Denne gruppe tilhører administratoren; kun administratoren kan ændre den."
+
+msgid "That person is no longer in the group."
+msgstr "Den person er ikke længere i gruppen."
+
+msgid "That group no longer exists, or whoever invited you left it."
+msgstr ""
+"Den gruppe findes ikke længere, eller den, der inviterede dig, har forladt "
+"den."
+
+msgid "That person is no longer on the network."
+msgstr "Den person er ikke længere på netværket."
+
+msgid "You're already in that group."
+msgstr "Du er allerede i den gruppe."
+
+msgid ""
+"This invite only brings new people into the network, and you're already in "
+"it."
+msgstr ""
+"Denne invitation bringer kun nye personer ind på netværket, og du er "
+"allerede på det."
+
+msgid "This invite was already used. Ask for a new one."
+msgstr "Denne invitation er allerede brugt. Bed om en ny."
+
+msgid "This invite expired. Ask for a new one."
+msgstr "Denne invitation er udløbet. Bed om en ny."
+
+msgid "This invite is no longer valid. Ask for a new one."
+msgstr "Denne invitation er ikke længere gyldig. Bed om en ny."
+
+msgid "This invite is still waiting for an administrator's approval."
+msgstr "Denne invitation venter stadig på en administrators godkendelse."
+
+msgid "Too many attempts. Wait a minute and try again."
+msgstr "For mange forsøg. Vent et minut og prøv igen."
+
+#, rust-format
+msgid "Could not reach the panel: {error}"
+msgstr "Kunne ikke nå panelet: {error}"
+
+msgid "Groups"
+msgstr "Grupper"
+
+msgid "New group"
+msgstr "Ny gruppe"
+
+msgid "Create a group"
+msgstr "Opret en gruppe"
+
+msgid ""
+"People in the same group reach each other's devices. Create groups for "
+"family, work or friends, and invite people into them."
+msgstr ""
+"Personer i samme gruppe kan nå hinandens enheder. Opret grupper til familie,"
+" arbejde eller venner, og inviter folk ind i dem."
+
+msgid "Invitations for you"
+msgstr "Invitationer til dig"
+
+msgid "Your groups"
+msgstr "Dine grupper"
+
+msgid "No groups yet"
+msgstr "Ingen grupper endnu"
+
+msgid ""
+"A group lets several people reach each other at once — the family, the "
+"office, a class."
+msgstr ""
+"En gruppe lader flere personer nå hinanden på én gang — familien, kontoret, "
+"en klasse."
+
+msgid "Groups unavailable"
+msgstr "Grupper er ikke tilgængelige"
+
+msgid "Invitation to a group"
+msgstr "Invitation til en gruppe"
+
+#, rust-format
+msgid ""
+"{user} invites you to the group {group}. Open BigLace to accept or decline."
+msgstr ""
+"{user} inviterer dig til gruppen {group}. Åbn BigLace for at acceptere eller"
+" afvise."
+
+#, rust-format
+msgid "{user} invites you to {group}"
+msgstr "{user} inviterer dig til {group}"
+
+msgid "Joining lets you and the group's members reach each other's devices."
+msgstr ""
+"Når du tilslutter dig, kan du og gruppens medlemmer nå hinandens enheder."
+
+msgid "Decline"
+msgstr "Afvis"
+
+msgid "Accept"
+msgstr "Acceptér"
+
+#, rust-format
+msgid "You joined {group}."
+msgstr "Du har tilsluttet dig {group}."
+
+msgid "Invitation declined."
+msgstr "Invitation afvist."
+
+msgid "1 person"
+msgstr "1 person"
+
+#, rust-format
+msgid "{count} people"
+msgstr "{count} personer"
+
+msgid "Created by you"
+msgstr "Oprettet af dig"
+
+#, rust-format
+msgid "Created by {user}"
+msgstr "Oprettet af {user}"
+
+msgid "Network group (administrator)"
+msgstr "Netværksgruppe (administrator)"
+
+msgid "you"
+msgstr "dig"
+
+msgid "owner"
+msgstr "ejer"
+
+#, rust-format
+msgid "Remove {user} from the group"
+msgstr "Fjern {user} fra gruppen"
+
+msgid "Invite to this group"
+msgstr "Inviter til denne gruppe"
+
+msgid "Delete group"
+msgstr "Slet gruppe"
+
+msgid "Leave group"
+msgstr "Forlad gruppe"
+
+#, rust-format
+msgid "Remove {user}?"
+msgstr "Fjern {user}?"
+
+#, rust-format
+msgid ""
+"{user} leaves the group {group} and no longer reaches its members through "
+"it."
+msgstr ""
+"{user} forlader gruppen {group} og kan ikke længere nå dens medlemmer gennem"
+" den."
+
+msgid "Remove"
+msgstr "Fjern"
+
+#, rust-format
+msgid "{user} was removed from the group."
+msgstr "{user} blev fjernet fra gruppen."
+
+#, rust-format
+msgid "Leave {group}?"
+msgstr "Forlad {group}?"
+
+msgid ""
+"You stop reaching the group's members through it. To come back, someone has "
+"to invite you again."
+msgstr ""
+"Du kan ikke længere nå gruppens medlemmer gennem den. For at komme tilbage "
+"skal nogen invitere dig igen."
+
+msgid "You left the group."
+msgstr "Du har forladt gruppen."
+
+#, rust-format
+msgid "Delete {group}?"
+msgstr "Slet {group}?"
+
+msgid ""
+"Its members stop reaching each other through this group. People stay on the "
+"network."
+msgstr ""
+"Dens medlemmer kan ikke længere nå hinanden gennem denne gruppe. Personerne "
+"forbliver på netværket."
+
+msgid "Group deleted."
+msgstr "Gruppe slettet."
+
+#, rust-format
+msgid "Join {group}?"
+msgstr "Tilslut dig {group}?"
+
+#, rust-format
+msgid ""
+"{user} invited you. You and the group's members will reach each other's "
+"devices."
+msgstr ""
+"{user} har inviteret dig. Du og gruppens medlemmer vil kunne nå hinandens "
+"enheder."
+
+msgid "You and the group's members will reach each other's devices."
+msgstr "Du og gruppens medlemmer vil kunne nå hinandens enheder."
+
+#, rust-format
+msgid "Connect with {user}?"
+msgstr "Forbind med {user}?"
+
+#, rust-format
+msgid "You and {user} will reach each other's devices."
+msgstr "Du og {user} vil kunne nå hinandens enheder."
+
+msgid "Join"
+msgstr "Tilslut"
+
+msgid "Done. You can now reach each other's devices."
+msgstr "Færdig. I kan nu nå hinandens enheder."
+
+#, rust-format
+msgid "Invite to {group}"
+msgstr "Inviter til {group}"
+
+msgid ""
+"Choose people on your network. Each one gets the invitation in BigLace and "
+"decides whether to join."
+msgstr ""
+"Vælg personer på dit netværk. Hver af dem får invitationen i BigLace og "
+"beslutter, om de vil være med."
+
+msgid "Search people"
+msgstr "Søg efter personer"
+
+msgid ""
+"If someone on the network has exactly this name, they get the invitation."
+msgstr "Hvis nogen på netværket har præcis dette navn, får de invitationen."
+
+msgid "People on the network"
+msgstr "Personer på netværket"
+
+#, rust-format
+msgid "Invite \"{name}\""
+msgstr "Inviter \"{name}\""
+
+msgid "Send invitations"
+msgstr "Send invitationer"
+
+msgid "Someone not on the network yet? Share an invite link"
+msgstr "Er nogen ikke på netværket endnu? Del et invitationslink"
+
+msgid "Invitation sent. You'll see the person in the group once they accept."
+msgstr "Invitation sendt. Du vil se personen i gruppen, når de accepterer."
+
+#, rust-format
+msgid "{count} invitations sent. People show up in the group as they accept."
+msgstr ""
+"{count} invitationer sendt. Personerne dukker op i gruppen, efterhånden som "
+"de accepterer."
+
+msgid ""
+"Listed are the people you're already connected to. To invite someone else on"
+" the network, type their exact name. Each one gets the invitation in BigLace"
+" and decides whether to join."
+msgstr ""
+"Her vises de personer, du allerede er forbundet med. For at invitere en "
+"anden på netværket skal du skrive deres præcise navn. Hver af dem får "
+"invitationen i BigLace og beslutter, om de vil være med."
+
+msgid ""
+"Nobody you're connected to yet. Type someone's exact name to invite them."
+msgstr ""
+"Ingen, du er forbundet med, endnu. Skriv en persons præcise navn for at "
+"invitere dem."
+
+msgid "Nobody else is on the network yet."
+msgstr "Der er ingen andre på netværket endnu."
+
+msgid ""
+"You'll be the group's owner: you invite people into it and can remove them. "
+"Everyone in the group reaches each other's devices."
+msgstr ""
+"Du bliver gruppens ejer: du inviterer folk ind i den og kan fjerne dem. Alle"
+" i gruppen kan nå hinandens enheder."
+
+msgid "Group name"
+msgstr "Gruppenavn"
+
+msgid "Create group"
+msgstr "Opret gruppe"
+
+msgid "For example: family, work, friends."
+msgstr "For eksempel: familie, arbejde, venner."
+
+#, rust-format
+msgid "It will be called \"{name}\"."
+msgstr "Den kommer til at hedde \"{name}\"."
+
+#, rust-format
+msgid "Group {group} created. Now invite people into it."
+msgstr "Gruppen {group} er oprettet. Inviter nu folk ind i den."
+
+msgid "typed name"
+msgstr "indtastet navn"
+
+msgid "already in the group"
+msgstr "allerede i gruppen"
+
+msgid "invitation sent, waiting"
+msgstr "invitation sendt, venter"
+
+#, rust-format
+msgid "Invite {user}"
+msgstr "Inviter {user}"
+
+msgid ""
+"Invites from BigLace need a BigScale server that supports them. Ask your "
+"administrator to update the server, or to create the invite in the panel."
+msgstr ""
+"Invitationer fra BigLace kræver en BigScale-server, der understøtter dem. "
+"Bed din administrator om at opdatere serveren eller om at oprette "
+"invitationen i panelet."
+
+msgid ""
+"This device can't send invites (it isn't linked to a person's account)."
+msgstr ""
+"Denne enhed kan ikke sende invitationer (den er ikke knyttet til en persons "
+"konto)."
+
+msgid ""
+"On this network everyone can reach everyone, so only the administrator can "
+"invite people."
+msgstr ""
+"På dette netværk kan alle nå alle, så kun administratoren kan invitere "
+"personer."
+
+msgid "You have too many pending invites. Cancel some or try again tomorrow."
+msgstr ""
+"Du har for mange ventende invitationer. Annuller nogle, eller prøv igen i "
+"morgen."
+
+msgid ""
+"On this network only administrators invite new people. You can still invite "
+"people already on the network into your groups."
+msgstr ""
+"På dette netværk er det kun administratorer, der inviterer nye personer. Du "
+"kan stadig invitere personer, der allerede er på netværket, ind i dine "
+"grupper."
+
+msgid "Waiting to be used"
+msgstr "Venter på at blive brugt"
+
+msgid "Used"
+msgstr "Brugt"
+
+msgid "Expired"
+msgstr "Udløbet"
+
+msgid "Cancelled"
+msgstr "Annulleret"
+
+msgid "Waiting for an administrator's approval"
+msgstr "Venter på en administrators godkendelse"
+
+msgid "Invites"
+msgstr "Invitationer"
+
+msgid "Bring someone to your network"
+msgstr "Få nogen med på dit netværk"
+
+msgid ""
+"Create a link or QR code and send it to the person. When they join, you two "
+"can reach each other's devices — no administrator needed. The link works "
+"once and stays valid until it's used or you cancel it."
+msgstr ""
+"Opret et link eller en QR-kode, og send det til personen. Når de tilslutter "
+"sig, kan I to nå hinandens enheder — ingen administrator nødvendig. Linket "
+"virker én gang og er gyldigt, indtil det bruges, eller du annullerer det."
+
+msgid "Invites you sent"
+msgstr "Invitationer, du har sendt"
+
+msgid "No invites yet"
+msgstr "Ingen invitationer endnu"
+
+msgid "Invites unavailable"
+msgstr "Invitationer er ikke tilgængelige"
+
+#, rust-format
+msgid "{user} joined"
+msgstr "{user} tilsluttede sig"
+
+#, rust-format
+msgid "group {group}"
+msgstr "gruppen {group}"
+
+msgid "Cancel this invite: the link stops working"
+msgstr "Annuller denne invitation: linket holder op med at virke"
+
+msgid "Invite someone"
+msgstr "Inviter nogen"
+
+msgid "The person you invite will reach your devices, and you theirs."
+msgstr "Personen, du inviterer, kan nå dine enheder, og du deres."
+
+msgid "Who is it for? (optional)"
+msgstr "Hvem er den til? (valgfrit)"
+
+msgid "Access"
+msgstr "Adgang"
+
+msgid "Just the two of us"
+msgstr "Kun os to"
+
+msgid "You see each other's devices, nobody else"
+msgstr "I ser hinandens enheder, ingen andre"
+
+#, rust-format
+msgid "Also the group {group}"
+msgstr "Også gruppen {group}"
+
+msgid "They join the group and see everyone in it"
+msgstr "De tilslutter sig gruppen og ser alle i den"
+
+msgid "A network of their own"
+msgstr "Et helt eget netværk"
+
+msgid ""
+"No link to you: they see only their own devices and whoever they invite "
+"(you're the administrator)"
+msgstr ""
+"Ingen forbindelse til dig: de ser kun deres egne enheder og dem, de "
+"inviterer (du er administratoren)"
+
+msgid "Create invite"
+msgstr "Opret invitation"
+
+msgid "QR code of the invite link"
+msgstr "QR-kode til invitationslinket"
+
+msgid ""
+"Send the link or let the person scan the code with their phone. It works "
+"once and stays valid until used or cancelled."
+msgstr ""
+"Send linket, eller lad personen scanne koden med sin telefon. Det virker én "
+"gang og er gyldigt, indtil det bruges eller annulleres."
+
+msgid "Copy link"
+msgstr "Kopiér link"
+
+msgid "Done"
+msgstr "Færdig"
+
+msgid "Copied!"
+msgstr "Kopieret!"
+
+msgid ""
+"This network asks an administrator to approve each invite: the link starts "
+"working once they do. Its status shows in Invites."
+msgstr ""
+"Dette netværk kræver, at en administrator godkender hver invitation: linket "
+"begynder at virke, når de gør det. Status vises under Invitationer."
+
+#, rust-format
+msgid ""
+"That name already belongs to an account on this network, so we suggested "
+"\"{name}\". If the account is yours, sign in again from the computer where "
+"you used it, or ask the administrator to free the name."
+msgstr ""
+"Det navn tilhører allerede en konto på dette netværk, så vi foreslog "
+"\"{name}\". Hvis kontoen er din, så log ind igen fra den computer, hvor du "
+"brugte den, eller bed administratoren om at frigive navnet."
+
+msgid ""
+"That name already belongs to an account on this network. Try another one, or"
+" ask the administrator to free it."
+msgstr ""
+"Det navn tilhører allerede en konto på dette netværk. Prøv et andet, eller "
+"bed administratoren om at frigive det."
+
+msgid "Type your name using at least two letters or digits."
+msgstr "Skriv dit navn med mindst to bogstaver eller cifre."
+
+msgid "This invite has expired. Ask for a new one."
+msgstr "Denne invitation er udløbet. Bed om en ny."
+
+msgid "This invite was cancelled. Ask for a new one."
+msgstr "Denne invitation blev annulleret. Bed om en ny."
+
+msgid ""
+"This invite is waiting for the network administrator's approval. Try again "
+"once the person who invited you says it was approved."
+msgstr ""
+"Denne invitation venter på netværksadministratorens godkendelse. Prøv igen, "
+"når den person, der inviterede dig, siger, at den er godkendt."
+
+msgid "This invite is not valid. Check the link or ask for a new one."
+msgstr ""
+"Denne invitation er ikke gyldig. Kontrollér linket, eller bed om en ny."
+
+msgid ""
+"This server doesn't support invites yet. Sign in with a panel account "
+"instead."
+msgstr ""
+"Denne server understøtter endnu ikke invitationer. Log i stedet ind med en "
+"panelkonto."
+
+msgid "Join with an invite"
+msgstr "Tilslut med en invitation"
+
+msgid ""
+"Paste the invite link you received and type your name. Your account is "
+"created and this device joins the network."
+msgstr ""
+"Indsæt det invitationslink, du har modtaget, og skriv dit navn. Din konto "
+"oprettes, og denne enhed tilslutter sig netværket."
+
+msgid "Invite link"
+msgstr "Invitationslink"
+
+msgid "Your name"
+msgstr "Dit navn"
+
+msgid "How others will see you on the network, e.g. 'Maria' or 'Office PC'."
+msgstr "Sådan ser andre dig på netværket, f.eks. 'Maria' eller 'Kontor-pc'."
+
+msgid ""
+"The name this device shows to other peers. Lowercase letters, digits and "
+"hyphens. Example: 'maria-laptop'."
+msgstr ""
+"Det navn, denne enhed viser for andre peers. Små bogstaver, cifre og "
+"bindestreger. Eksempel: 'maria-laptop'."
+
+msgid "Network"
+msgstr "Netværk"
+
+msgid "Joining…"
+msgstr "Tilslutter…"
+
+msgid ""
+"That doesn't look like an invite link. It starts with https:// and contains "
+"/join#."
+msgstr ""
+"Det ligner ikke et invitationslink. Det starter med https:// og indeholder "
+"/join#."
+
+msgid "Type your name."
+msgstr "Skriv dit navn."
+
+#, rust-format
+msgid "Welcome, {name}! You joined the group {group}. Connecting…"
+msgstr ""
+"Velkommen, {name}! Du har tilsluttet dig gruppen {group}. Opretter "
+"forbindelse…"
+
+#, rust-format
+msgid "Welcome, {name}! Connecting…"
+msgstr "Velkommen, {name}! Opretter forbindelse…"
+
+msgid "Open admin panel"
+msgstr "Åbn administrationspanel"
+
+msgid "Devices"
+msgstr "Enheder"
+
+msgid "Rooms"
+msgstr "Rum"
+
+msgid "Choose your photo"
+msgstr "Vælg dit foto"
+
+msgid "Photo updated. Everyone you're connected to will see it."
+msgstr "Foto opdateret. Alle, du er forbundet med, vil se det."
+
+#, rust-format
+msgid "Could not change the photo: {error}"
+msgstr "Kunne ikke ændre fotoet: {error}"
+
+msgid "Sign in with an access key"
+msgstr "Log ind med en adgangsnøgle"
+
+msgid ""
+"Paste the key the administrator gave you. It's used once, to register this "
+"device."
+msgstr ""
+"Indsæt nøglen, som administratoren gav dig. Den bruges én gang til at "
+"registrere denne enhed."
+
+msgid "Server URL"
+msgstr "Server-URL"
+
+msgid "Access key"
+msgstr "Adgangsnøgle"
+
+msgid ""
+"The key to this account is no longer on this computer. Join with a new "
+"invite."
+msgstr ""
+"Nøglen til denne konto findes ikke længere på denne computer. Tilslut med en"
+" ny invitation."
+
+#, rust-format
+msgid "Welcome back, {name}! Connecting…"
+msgstr "Velkommen tilbage, {name}! Opretter forbindelse…"
+
+#, rust-format
+msgid ""
+"The account {user} no longer exists on this network. Join with a new invite."
+msgstr ""
+"Kontoen {user} findes ikke længere på dette netværk. Tilslut med en ny "
+"invitation."
+
+msgid "Preferences"
+msgstr "Indstillinger"
+
+msgid "General"
+msgstr "Generelt"
+
+msgid "Behaviour"
+msgstr "Opførsel"
+
+msgid "Make this user the tailscale operator"
+msgstr "Gør denne bruger til tailscale-operatør"
+
+msgid ""
+"Lets BigLace manage the connection without asking for a password each time"
+msgstr ""
+"Lader BigLace styre forbindelsen uden at spørge om adgangskode hver gang"
+
+msgid "Account"
+msgstr "Konto"
+
+msgid ""
+"Signing out removes this device's identity from BigLace. You will need a new"
+" invite or key to join again."
+msgstr ""
+"Når du logger ud, fjernes denne enheds identitet fra BigLace. Du skal bruge "
+"en ny invitation eller nøgle for at tilslutte dig igen."
+
+msgid "Change profile photo…"
+msgstr "Skift profilfoto…"
+
+msgid "Sign in with panel account"
+msgstr "Log ind med panelkonto"
+
+msgid "Leave the network…"
+msgstr "Forlad netværket…"
+
+msgid "View tailscaled logs"
+msgstr "Se tailscaled-logfiler"
+
+msgid "About BigLace"
+msgstr "Om BigLace"
+
+msgid "Connect to the network first, then open the invite link again."
+msgstr ""
+"Opret forbindelse til netværket først, og åbn så invitationslinket igen."
+
+#, rust-format
+msgid ""
+"This invite is for another network ({host}). Sign out first to join it."
+msgstr ""
+"Denne invitation er til et andet netværk ({host}). Log ud først for at "
+"tilslutte dig det."
+
+msgid ""
+"This device is already signed in. Sign out first to join with an invite."
+msgstr ""
+"Denne enhed er allerede logget ind. Log ud først for at tilslutte dig med en"
+" invitation."
+
+msgid "Photo removed."
+msgstr "Foto fjernet."
+
+#, rust-format
+msgid "Could not remove the photo: {error}"
+msgstr "Kunne ikke fjerne fotoet: {error}"
+
+#, rust-format
+msgid "Could not open the browser: {error}"
+msgstr "Kunne ikke åbne browseren: {error}"
+
+msgid ""
+"You can't open the admin panel: you're not an administrator of this network,"
+" or the panel can't be reached."
+msgstr ""
+"Du kan ikke åbne administrationspanelet: du er ikke administrator på dette "
+"netværk, eller panelet kan ikke nås."
+
+msgid "Enter the server URL before saving."
+msgstr "Indtast server-URL'en, før du gemmer."
+
+msgid "Enter the pre-auth key before saving."
+msgstr "Indtast den forhåndsgodkendte nøgle, før du gemmer."
+
+msgid "Setup saved"
+msgstr "Opsætning gemt"
+
+msgid "Could not start the Tailscale service."
+msgstr "Kunne ikke starte Tailscale-tjenesten."
+
+msgid "IP address copied"
+msgstr "IP-adresse kopieret"
+
+#, rust-format
+msgid ""
+"Saved, but the pre-auth key could not be stored in the system keyring "
+"({error}). This device can still reconnect; the key is only needed again to "
+"register it anew."
+msgstr ""
+"Gemt, men pre-auth-nøglen kunne ikke gemmes i systemets nøglering ({error})."
+" Denne enhed kan stadig genoprette forbindelsen; nøglen skal kun bruges igen"
+" for at registrere den på ny."
+
+msgid "Service stopped"
+msgstr "Tjeneste stoppet"
+
+msgid "Not signed in"
+msgstr "Ikke logget ind"
+
+msgid "Server unreachable"
+msgstr "Server utilgængelig"
+
+msgid "Tailscale can't set DNS"
+msgstr "Tailscale kan ikke indstille DNS"
+
+#, rust-format
+msgid "Update available: v{version}"
+msgstr "Opdatering tilgængelig: v{version}"
+
+#, rust-format
+msgid "Sign in again as {user}"
+msgstr "Log ind igen som {user}"
+
 msgid "(no device name)"
 msgstr "(intet enhedsnavn)"
 
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/mod.rs:1400
+msgid "Sign in or paste a pre-auth key"
+msgstr "Log ind eller indsæt en forhåndsgodkendt nøgle"
+
+msgid "Server not set"
+msgstr "Server ikke angivet"
+
+msgid "no other devices"
+msgstr "ingen andre enheder"
+
+#, rust-format
+msgid "{online} online"
+msgstr "{online} online"
+
+#, rust-format
+msgid "{online} online · {offline} offline"
+msgstr "{online} online · {offline} offline"
+
+msgid "is online"
+msgstr "er online"
+
+msgid "went offline"
+msgstr "gik offline"
+
 #, rust-format
 msgid "{count} devices are online"
 msgstr "{count} enheder er online"
 
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/mod.rs:1401
 #, rust-format
 msgid "{count} devices went offline"
 msgstr "{count} enheder gik offline"
 
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/mod.rs:1403
 #, rust-format
 msgid "{on_count} online · {off_count} offline"
 msgstr "{on_count} online · {off_count} offline"
 
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/tailscale.rs:650
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/mod.rs:814
-msgid "Enter the server URL before connecting."
-msgstr "Indtast server-URL'en, før du opretter forbindelse."
+msgid "direct"
+msgstr "direkte"
 
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/mod.rs:682
-msgid "Enter the server URL before saving."
-msgstr "Indtast server-URL'en, før du gemmer."
+msgid "via relay"
+msgstr "via relæ"
 
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/mod.rs:691
-msgid "Enter the pre-auth key before saving."
-msgstr "Indtast den forhåndsgodkendte nøgle, før du gemmer."
+msgid "Turn on over the network (Wake-on-LAN)"
+msgstr "Tænd via netværket (Wake-on-LAN)"
 
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/sidebar.rs:178
+msgid "Turn on over the network"
+msgstr "Tænd via netværket"
+
+#, rust-format
+msgid ""
+"Signal sent to {name} (by {via}). If it's set to turn on over the network, "
+"it shows up in a minute or two."
+msgstr ""
+"Signal sendt til {name} (via {via}). Hvis den er indstillet til at tænde via"
+" netværket, dukker den op om et minut eller to."
+
+#, rust-format
+msgid "Could not turn on {name}: {error}"
+msgstr "Kunne ikke tænde {name}: {error}"
+
+msgid "Unpin from top"
+msgstr "Fjern fastgørelse fra toppen"
+
+msgid "Pin to top"
+msgstr "Fastgør til toppen"
+
+msgid "Pinned to top"
+msgstr "Fastgjort til toppen"
+
+msgid "Unpinned"
+msgstr "Ikke fastgjort"
+
+msgid "Open files (SFTP)"
+msgstr "Åbn filer (SFTP)"
+
+msgid "Open terminal (SSH)"
+msgstr "Åbn terminal (SSH)"
+
+msgid "See and control the screen"
+msgstr "Se og styr skærmen"
+
+msgid "DNS name"
+msgstr "DNS-navn"
+
+msgid "DNS name copied"
+msgstr "DNS-navn kopieret"
+
+msgid "Owner"
+msgstr "Ejer"
+
+msgid "SSH login (override)"
+msgstr "SSH-login (tilsidesæt)"
+
+msgid "Saved"
+msgstr "Gemt"
+
+msgid "Tags"
+msgstr "Tags"
+
+msgid "Last seen"
+msgstr "Sidst set"
+
+msgid "Use as exit node"
+msgstr "Brug som udgangsnode"
+
+msgid "Route all traffic through this peer"
+msgstr "Diriger al trafik gennem denne peer"
+
+msgid "Exit node enabled"
+msgstr "Udgangsnode aktiveret"
+
+msgid "Exit node disabled"
+msgstr "Udgangsnode deaktiveret"
+
+msgid "Failed to update exit node"
+msgstr "Kunne ikke opdatere udgangsnode"
+
+msgid "Copy"
+msgstr "Kopier"
+
+msgid "End access"
+msgstr "Afslut adgang"
+
+#, rust-format
+msgid "{who} is seeing and controlling this screen"
+msgstr "{who} ser og styrer denne skærm"
+
+msgid "Remote access started"
+msgstr "Fjernadgang startet"
+
+#, rust-format
+msgid ""
+"{user} ({device}) is seeing and controlling this screen. Open BigLace to end"
+" the access."
+msgstr ""
+"{user} ({device}) ser og styrer denne skærm. Åbn BigLace for at afslutte "
+"adgangen."
+
+#, rust-format
+msgid "Always allow {user} (no more asking)"
+msgstr "Tillad altid {user} (spørg ikke mere)"
+
+msgid "Deny"
+msgstr "Afvis"
+
+msgid "Allow access"
+msgstr "Tillad adgang"
+
+msgid "Allow remote access?"
+msgstr "Tillad fjernadgang?"
+
+#, rust-format
+msgid "<b>{user}</b> wants to <b>see and control</b> this screen."
+msgstr "<b>{user}</b> vil <b>se og styre</b> denne skærm."
+
+msgid "Person"
+msgstr "Person"
+
+msgid "Device"
+msgstr "Enhed"
+
+msgid "See everything on your screen"
+msgstr "Se alt på din skærm"
+
+msgid "Move the mouse and type on this computer"
+msgstr "Bevæge musen og skrive på denne computer"
+
+msgid "Hear this computer's sound"
+msgstr "Høre denne computers lyd"
+
+msgid ""
+"<b>Only allow it if you know this person and are expecting it.</b> You can "
+"end the access at any time from BigLace."
+msgstr ""
+"<b>Tillad det kun, hvis du kender denne person og forventer det.</b> Du kan "
+"afslutte adgangen når som helst fra BigLace."
+
+#, rust-format
+msgid "Denied automatically in {seconds} s"
+msgstr "Afvises automatisk om {seconds} s"
+
+#, rust-format
+msgid "Restart {name}'s computer?"
+msgstr "Genstart {name}s computer?"
+
+msgid ""
+"It restarts, signs in by itself and locks the screen right away; this window"
+" connects again when it's back. Unsaved work there is lost."
+msgstr ""
+"Den genstarter, logger selv ind og låser skærmen med det samme; dette vindue"
+" opretter forbindelse igen, når den er tilbage. Ikke-gemt arbejde der går "
+"tabt."
+
+msgid "Restart"
+msgstr "Genstart"
+
+#, rust-format
+msgid "Restart {name}'s session?"
+msgstr "Genstart {name}s session?"
+
+msgid ""
+"The open programs there close, the computer signs out and back in by itself "
+"(without restarting) and locks the screen; this window connects again. "
+"Unsaved work there is lost."
+msgstr ""
+"De åbne programmer der lukkes, computeren logger selv ud og ind igen (uden "
+"at genstarte) og låser skærmen; dette vindue opretter forbindelse igen. "
+"Ikke-gemt arbejde der går tabt."
+
+msgid "Restart the session"
+msgstr "Genstart sessionen"
+
+#, rust-format
+msgid "Shut down {name}'s computer?"
+msgstr "Luk {name}s computer ned?"
+
+msgid ""
+"You won't be able to reach it again until someone turns it on. Unsaved work "
+"there is lost."
+msgstr ""
+"Du kan ikke nå den igen, før nogen tænder den. Ikke-gemt arbejde der går "
+"tabt."
+
+msgid "Shut Down"
+msgstr "Luk ned"
+
+#, rust-format
+msgid "Screen of {name}"
+msgstr "{name}s skærm"
+
+msgid "Full screen (F11)"
+msgstr "Fuld skærm (F11)"
+
+msgid "Mute the remote sound"
+msgstr "Slå fjernlyden fra"
+
+#, rust-format
+msgid "Fit {name}'s resolution to this window"
+msgstr "Tilpas {name}s opløsning til dette vindue"
+
+msgid "LIVE"
+msgstr "LIVE"
+
+msgid "You are watching this screen right now"
+msgstr "Du ser denne skærm lige nu"
+
+msgid "You are seeing and controlling this screen right now"
+msgstr "Du ser og styrer denne skærm lige nu"
+
+msgid "Request control"
+msgstr "Anmod om kontrol"
+
+#, rust-format
+msgid "Ask {name} to let you use the mouse and keyboard"
+msgstr "Bed {name} om at lade dig bruge mus og tastatur"
+
+#, rust-format
+msgid "Waiting for {name}…"
+msgstr "Venter på {name}…"
+
+msgid "Connecting to the screen shared with the room."
+msgstr "Opretter forbindelse til skærmen, der deles med rummet."
+
+msgid "The person at that computer needs to allow the access."
+msgstr "Personen ved den computer skal tillade adgangen."
+
+#, rust-format
+msgid "Asked {name} for control…"
+msgstr "Har bedt {name} om kontrol…"
+
+#, rust-format
+msgid "Restart or shut down {name}'s computer"
+msgstr "Genstart eller luk {name}s computer ned"
+
+msgid "Restart and reconnect"
+msgstr "Genstart og genopret forbindelse"
+
+msgid "Shut down"
+msgstr "Luk ned"
+
+#, rust-format
+msgid "{name} is back."
+msgstr "{name} er tilbage."
+
+#, rust-format
+msgid "{name}'s computer didn't come back after the restart."
+msgstr "{name}s computer kom ikke tilbage efter genstarten."
+
+#, rust-format
+msgid "{name} didn't allow the access."
+msgstr "{name} tillod ikke adgangen."
+
+msgid ""
+"That computer couldn't confirm this device. Make sure both run an up-to-date"
+" BigLace."
+msgstr ""
+"Den computer kunne ikke bekræfte denne enhed. Sørg for, at begge kører en "
+"opdateret BigLace."
+
+#, rust-format
+msgid ""
+"{name}'s computer can't share its screen (screen sharing isn't available "
+"there)."
+msgstr ""
+"{name}s computer kan ikke dele sin skærm (skærmdeling er ikke tilgængelig "
+"der)."
+
+#, rust-format
+msgid "Could not connect: {error}"
+msgstr "Kunne ikke oprette forbindelse: {error}"
+
+#, rust-format
+msgid "{name}'s computer said: {error}"
+msgstr "{name}s computer svarede: {error}"
+
+#, rust-format
+msgid "Restarting {name}'s session…"
+msgstr "Genstarter {name}s session…"
+
+msgid ""
+"This window connects again by itself when the session is back. It takes a "
+"few seconds."
+msgstr ""
+"Dette vindue opretter selv forbindelse igen, når sessionen er tilbage. Det "
+"tager et par sekunder."
+
+#, rust-format
+msgid "Restarting {name}…"
+msgstr "Genstarter {name}…"
+
+msgid ""
+"This window connects again by itself when the computer is back. It takes a "
+"few minutes."
+msgstr ""
+"Dette vindue opretter selv forbindelse igen, når computeren er tilbage. Det "
+"tager et par minutter."
+
+#, rust-format
+msgid "{latency} ms · {fps} fps · {mbps} Mbit/s"
+msgstr "{latency} ms · {fps} fps · {mbps} Mbit/s"
+
+#, rust-format
+msgid "You're controlling {name}'s screen now."
+msgstr "Du styrer nu {name}s skærm."
+
+#, rust-format
+msgid "{name} didn't give you control."
+msgstr "{name} gav dig ikke kontrol."
+
+#, rust-format
+msgid "{name} took control back."
+msgstr "{name} tog kontrollen tilbage."
+
+#, rust-format
+msgid "{name}'s computer is shutting down."
+msgstr "{name}s computer lukker ned."
+
+#, rust-format
+msgid "The access to {name}'s screen ended."
+msgstr "Adgangen til {name}s skærm er afsluttet."
+
+#, rust-format
+msgid "The access to {name}'s screen ended: {error}"
+msgstr "Adgangen til {name}s skærm er afsluttet: {error}"
+
+msgid "Give back control"
+msgstr "Giv kontrollen tilbage"
+
+msgid ""
+"Each of your groups has a voice room. Join it and talk with whoever is there"
+" — the sound goes straight between you, through the network."
+msgstr ""
+"Hver af dine grupper har et stemmerum. Gå ind og snak med dem, der er der — "
+"lyden går direkte mellem jer, gennem netværket."
+
+msgid "You're not in any group yet. Create one in Groups."
+msgstr "Du er ikke i nogen gruppe endnu. Opret en under Grupper."
+
+msgid "People in the room"
+msgstr "Personer i rummet"
+
+msgid "Everyone"
+msgstr "Alle"
+
+msgid "Who's speaking"
+msgstr "Hvem der taler"
+
+msgid "Mute"
+msgstr "Slå lyd fra"
+
+msgid "Mute your microphone for everyone"
+msgstr "Slå din mikrofon fra for alle"
+
+msgid "Which camera"
+msgstr "Hvilket kamera"
+
+msgid "Include the computer's sound when sharing the screen"
+msgstr "Medtag computerens lyd ved skærmdeling"
+
+msgid ""
+"Videos and music playing here go to the room too; the room's voices don't "
+"(no echo)"
+msgstr ""
+"Videoer og musik, der afspilles her, går også til rummet; rummets stemmer "
+"gør ikke (intet ekko)"
+
+msgid "Rooms unavailable"
+msgstr "Rum er ikke tilgængelige"
+
+#, rust-format
+msgid "Could not turn on the camera: {error}"
+msgstr "Kunne ikke tænde kameraet: {error}"
+
+#, rust-format
+msgid "Could not share the screen: {error}"
+msgstr "Kunne ikke dele skærmen: {error}"
+
+msgid "Nobody here right now"
+msgstr "Ingen her lige nu"
+
+#, rust-format
+msgid "In the room: {people}"
+msgstr "I rummet: {people}"
+
+#, rust-format
+msgid "Join the room {group}"
+msgstr "Gå ind i rummet {group}"
+
+#, rust-format
+msgid "Could not join {group}: {error}"
+msgstr "Kunne ikke gå ind i {group}: {error}"
+
+msgid "📺 You're showing your screen to the room"
+msgstr "📺 Du viser din skærm for rummet"
+
+msgid "📺 You're showing your screen · 1 person watching"
+msgstr "📺 Du viser din skærm · 1 person ser med"
+
+#, rust-format
+msgid "📺 You're showing your screen · {count} people watching"
+msgstr "📺 Du viser din skærm · {count} personer ser med"
+
+#, rust-format
+msgid "{people} · {talking} talking"
+msgstr "{people} · {talking} taler"
+
+msgid "connecting…"
+msgstr "opretter forbindelse…"
+
+msgid "muted"
+msgstr "lydløs"
+
+msgid "talking"
+msgstr "taler"
+
+msgid "quiet"
+msgstr "stille"
+
+msgid "Sharing screen"
+msgstr "Deler skærm"
+
+msgid "In control"
+msgstr "Har kontrol"
+
+msgid "Controls your screen now"
+msgstr "Styrer din skærm nu"
+
+msgid "Watching"
+msgstr "Ser med"
+
+msgid "Watching your screen"
+msgstr "Ser din skærm"
+
+#, rust-format
+msgid "{user} is showing their screen"
+msgstr "{user} viser sin skærm"
+
+msgid "Watch"
+msgstr "Se med"
+
+#, rust-format
+msgid "{user} asks to control your screen"
+msgstr "{user} beder om at styre din skærm"
+
+msgid ""
+"They'll be able to use your mouse and keyboard. You can take control back at"
+" any time."
+msgstr ""
+"De vil kunne bruge din mus og dit tastatur. Du kan tage kontrollen tilbage "
+"når som helst."
+
+msgid "Allow"
+msgstr "Tillad"
+
+msgid "Turn off camera"
+msgstr "Sluk kamera"
+
+msgid "Turn on camera"
+msgstr "Tænd kamera"
+
+msgid "No camera found on this computer"
+msgstr "Intet kamera fundet på denne computer"
+
+msgid "Stop sharing"
+msgstr "Stop deling"
+
+msgid "Share screen"
+msgstr "Del skærm"
+
+msgid "Stop showing your screen to the room"
+msgstr "Stop med at vise din skærm for rummet"
+
+msgid "Show your screen to everyone in the room"
+msgstr "Vis din skærm for alle i rummet"
+
+msgid "Take back control"
+msgstr "Tag kontrollen tilbage"
+
+msgid "Give control"
+msgstr "Giv kontrol"
+
+msgid "Stop them from using your mouse and keyboard"
+msgstr "Forhindr dem i at bruge din mus og dit tastatur"
+
+msgid "Let them use your mouse and keyboard"
+msgstr "Lad dem bruge din mus og dit tastatur"
+
+msgid "Sound level"
+msgstr "Lydniveau"
+
+msgid "Unmute"
+msgstr "Slå lyd til"
+
+msgid "Sections"
+msgstr "Sektioner"
+
+msgid ""
+"Your identity on this mesh — the device name shown to other peers and the "
+"network you're connected to."
+msgstr ""
+"Din identitet i dette mesh — enhedsnavnet, som vises for andre peers, og "
+"netværket du er tilsluttet."
+
+msgid "Change photo…"
+msgstr "Skift foto…"
+
+msgid "Remove photo"
+msgstr "Fjern foto"
+
+msgid "Change your photo"
+msgstr "Skift dit foto"
+
+msgid "Rename this device on the network"
+msgstr "Omdøb denne enhed på netværket"
+
+msgid "Advanced: use a pre-auth key"
+msgstr "Avanceret: brug en forudgodkendelsesnøgle"
+
+msgid "Already have a key from your administrator? Paste it here."
+msgstr "Har du allerede en nøgle fra din administrator? Indsæt den her."
+
+msgid ""
+"Manual setup — expand to paste a server URL and pre-auth key when you "
+"already received them from your administrator. Most users should sign in "
+"through the panel button above instead."
+msgstr ""
+"Manuel opsætning — udvid for at indsætte en server-URL og en forudgodkendt "
+"nøgle, når du allerede har modtaget dem fra din administrator. De fleste "
+"brugere bør i stedet logge ind via panelknappen ovenfor."
+
+msgid ""
+"Address of the coordination server (e.g. vpn.example.org). The https:// "
+"scheme is added automatically if you omit it."
+msgstr ""
+"Adresse på koordinationsserveren (f.eks. vpn.example.org). Skemaet https:// "
+"tilføjes automatisk, hvis du udelader det."
+
+msgid "Pre-auth key"
+msgstr "Forudgodkendelsesnøgle"
+
+msgid ""
+"One-time or reusable key created on the server (starts with 'hskey-auth-'). "
+"Used to register this device automatically without opening a browser."
+msgstr ""
+"Engangs- eller genbrugelig nøgle oprettet på serveren (starter med 'hskey-"
+"auth-'). Bruges til at registrere denne enhed automatisk uden at åbne en "
+"browser."
+
+msgid ""
+"The name this device shows to other peers on the VPN — this is the Tailscale"
+" hostname, NOT your computer's name and NOT your user. Lowercase letters, "
+"digits and hyphens. Example: 'tales-laptop', 'francois', 'office-pc'."
+msgstr ""
+"Navnet som denne enhed viser for andre peers på VPN'et — dette er Tailscale-"
+"værtsnavnet, IKKE din computers navn og IKKE din bruger. Små bogstaver, tal "
+"og bindestreger. Eksempel: 'tales-laptop', 'francois', 'office-pc'."
+
+msgid "Apply manual setup"
+msgstr "Anvend manuel opsætning"
+
+msgid "Save"
+msgstr "Gem"
+
+msgid ""
+"Persist the server, key and device name above. Won't connect — press Connect"
+" afterwards."
+msgstr ""
+"Gem server, nøgle og enhedsnavn ovenfor. Opretter ikke forbindelse — tryk på"
+" Tilslut bagefter."
+
+msgid "Connect automatically"
+msgstr "Opret forbindelse automatisk"
+
+msgid "Join the network when BigLace starts"
+msgstr "Deltag i netværket, når BigLace starter"
+
+msgid ""
+"When on, BigLace runs 'tailscale up' as soon as it launches, so you join the"
+" mesh without clicking Connect every time."
+msgstr ""
+"Når den er slået til, kører BigLace 'tailscale up' så snart den starter, så "
+"du tilslutter dig mesh'et uden at klikke på Tilslut hver gang."
+
+msgid "Toggle auto-connect on startup"
+msgstr "Slå auto-tilslutning ved opstart til/fra"
+
 msgid "Start BigLace with the session"
 msgstr "Start BigLace med sessionen"
 
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/sidebar.rs:179
 msgid "Open BigLace after you sign in to the desktop"
 msgstr "Åbn BigLace, efter du er logget ind på skrivebordet"
 
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/sidebar.rs:182
 msgid ""
 "Turn this on to add BigLace to your desktop session startup. Turn it off to "
 "remove it."
@@ -720,9 +2339,82 @@ msgstr ""
 "Slå dette til for at tilføje BigLace til din skrivebordssessions opstart. "
 "Slå det fra for at fjerne det."
 
-#: /home/talesam/Servidor/GitHub/BigCommunity/biglace/src/window/sidebar.rs:190
 msgid "Toggle start with session"
 msgstr "Skift start med session"
+
+msgid "Reconnect on drop"
+msgstr "Genforbind ved afbrydelse"
+
+msgid "Retry with backoff when the connection is lost"
+msgstr "Forsøg igen med backoff, når forbindelsen mistes"
+
+msgid ""
+"If the tunnel drops (network change, sleep, server hiccup), BigLace silently"
+" retries with growing delays instead of leaving you offline until you "
+"notice."
+msgstr ""
+"Hvis tunnelen afbrydes (netværksændring, dvale, serverfejl), forsøger "
+"BigLace stille og roligt igen med stigende forsinkelser i stedet for at "
+"efterlade dig offline, indtil du opdager det."
+
+msgid "Toggle auto-reconnect"
+msgstr "Slå auto-genforbindelse til/fra"
+
+msgid "Notify on peer changes"
+msgstr "Giv besked ved peer-ændringer"
+
+msgid "Show a desktop notification when peers go online/offline"
+msgstr "Vis en skrivebordsmeddelelse, når peers går online/offline"
+
+msgid ""
+"Send a desktop toast when another device on your network goes online or "
+"offline. Rapid bursts are coalesced into a single notification so you don't "
+"get spammed during reconnects."
+msgstr ""
+"Send en desktop-notifikation, når en anden enhed på dit netværk går online "
+"eller offline. Hurtige udbrud samles i en enkelt notifikation, så du ikke "
+"bliver oversvømmet under genforbindelser."
+
+msgid "Toggle peer-change notifications"
+msgstr "Slå notifikationer ved peer-ændringer til/fra"
+
+msgid ""
+"Join or leave the mesh network. When connected, this device becomes "
+"reachable by the other peers in your account."
+msgstr ""
+"Deltag eller forlad mesh-netværket. Når du er tilsluttet, bliver denne enhed"
+" tilgængelig for de andre peers på din konto."
+
+msgid "Your photo"
+msgstr "Dit foto"
+
+#~ msgid "Panel credentials"
+#~ msgstr "Panel-legitimationsoplysninger"
+
+#~ msgid "Username"
+#~ msgstr "Brugernavn"
+
+#~ msgid "Sign in to connect"
+#~ msgstr "Log ind for at oprette forbindelse"
+
+#~ msgid "Use the panel on the left to sign in or paste a pre-auth key."
+#~ msgstr ""
+#~ "Brug panelet til venstre til at logge ind eller indsætte en forhåndsgodkendt"
+#~ " nøgle."
+
+#~ msgid "Connect via panel account"
+#~ msgstr "Opret forbindelse via panelkonto"
+
+#~ msgid ""
+#~ "Sign in with your BigScale panel username and password. A device identity "
+#~ "will be created on the network automatically — no manual key needed."
+#~ msgstr ""
+#~ "Log ind med dit BigScale panel-brugernavn og adgangskode. Der oprettes "
+#~ "automatisk en enhedsidentitet på netværket – ingen manuel nøgle er "
+#~ "nødvendig."
+
+#~ msgid "Connected ·"
+#~ msgstr "Tilsluttet ·"
 
 #~ msgid "Device name"
 #~ msgstr "Enhedsnavn"
@@ -763,9 +2455,6 @@ msgstr "Skift start med session"
 
 #~ msgid "Terminal"
 #~ msgstr "Terminal"
-
-#~ msgid "Copied!"
-#~ msgstr "Kopieret!"
 
 #~ msgid "Key generated successfully."
 #~ msgstr "Nøgle genereret med succes."
