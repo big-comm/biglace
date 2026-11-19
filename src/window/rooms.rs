@@ -227,6 +227,8 @@ impl RoomsPage {
         // room on wide windows, over it on narrower ones.
         let chat = super::chat::ChatPage::build(win, toast, &gtk4::Label::new(None));
         chat.embed();
+        // Solid: over the room (narrow windows) nothing shows through it.
+        chat.toolbar.add_css_class("room-chat");
         let chat_split = libadwaita::OverlaySplitView::builder()
             .sidebar_position(gtk4::PackType::End)
             .content(&in_room)
@@ -237,7 +239,9 @@ impl RoomsPage {
             .sidebar_width_fraction(0.33)
             .build();
         let narrow = libadwaita::Breakpoint::new(
-            libadwaita::BreakpointCondition::parse("max-width: 1100sp").expect("valid breakpoint"),
+            // Room controls + the chat side by side need about this much;
+            // below it the chat goes over the room instead of squeezing it.
+            libadwaita::BreakpointCondition::parse("max-width: 1500sp").expect("valid breakpoint"),
         );
         narrow.add_setter(&chat_split, "collapsed", Some(&true.to_value()));
         win.add_breakpoint(narrow);

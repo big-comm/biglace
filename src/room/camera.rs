@@ -384,4 +384,38 @@ mod tests {
         assert_eq!((f.width, f.height), (640, 360));
         assert!(frame("me").is_some(), "our own preview");
     }
+
+    /// A phone's camera (portrait, Android's encoder): one access unit at a
+    /// time into the room's decoder (run by hand with /tmp/blcam.h264).
+    #[test]
+    #[ignore]
+    fn phone_camera_decodes() {
+        let data = std::fs::read("/tmp/blcam.h264").expect("sample");
+        // Split at access unit delimiters / slice starts: each IDR or slice NAL.
+        let mut starts = vec![];
+        let mut i = 0;
+        while i + 4 < data.len() {
+            if data[i..i + 4] == [0, 0, 0, 1] || data[i..i + 3] == [0, 0, 1] {
+                let off = if data[i + 2] == 1 { 3 } else { 4 };
+                let nal = data[i + off] & 0x1f;
+                if nal == 1 || nal == 7 && !starts.last().is_some_and(|&l: &usize| i - l < 64) {
+                    starts.push(i);
+                }
+                i += off;
+            } else {
+                i += 1;
+            }
+        }
+        starts.push(data.len());
+        let d = Decoder::new("phone").unwrap();
+        for w in starts.windows(2) {
+            let mut payload = 0u64.to_be_bytes().to_vec();
+            payload.extend_from_slice(&data[w[0]..w[1]]);
+            d.push(&payload);
+            std::thread::sleep(std::time::Duration::from_millis(20));
+        }
+        std::thread::sleep(std::time::Duration::from_secs(1));
+        let f = frame("phone").expect("no picture from the phone's camera");
+        eprintln!("picture {}x{}", f.width, f.height);
+    }
 }

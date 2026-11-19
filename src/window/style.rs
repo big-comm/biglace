@@ -104,6 +104,7 @@ const CSS: &str = r#"
     font-size: 0.8em;
 }
 .chat-list row { border-radius: 12px; margin: 2px 4px; }
+.room-chat { background-color: @window_bg_color; }
 window.media-viewer, window.media-viewer > * { background-color: black; }
 .media-viewer-bar {
     padding: 10px 14px;

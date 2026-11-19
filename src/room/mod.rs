@@ -289,6 +289,7 @@ impl Room {
                 match read_frame(&mut reader) {
                     Ok((Kind::CamVideo, payload)) => {
                         if decoder.is_none() {
+                            tailscale::dbg(&format!("room: {ip}'s camera: first picture ({} bytes)", payload.len()));
                             decoder = camera::Decoder::new(&ip)
                                 .map_err(|e| tailscale::dbg(&format!("room: can't show {ip}'s camera: {e}")))
                                 .ok();
@@ -311,6 +312,7 @@ impl Room {
                             muted.store(v.get("muted").and_then(|m| m.as_bool()).unwrap_or(false), Ordering::Relaxed);
                             sharing.store(v.get("sharing").and_then(|m| m.as_bool()).unwrap_or(false), Ordering::Relaxed);
                             let on = v.get("camera").and_then(|m| m.as_bool()).unwrap_or(false);
+                            tailscale::dbg(&format!("room: {ip} says camera={on}"));
                             if !cam.swap(on, Ordering::Relaxed) == on && !on {
                                 decoder = None;
                                 camera::forget(&ip);
