@@ -874,7 +874,9 @@ impl ChatPage {
         }
         for m in chat::messages(id) {
             // Pictures and voice messages that didn't come down yet.
-            if m.file.as_ref().is_some_and(|f| f.offer.fetch_by_itself() && f.local().is_none()) {
+            // (Not our own: what we sent and is gone here was moved or
+            // deleted — there's nowhere to fetch it from.)
+            if !m.mine && m.file.as_ref().is_some_and(|f| f.offer.fetch_by_itself() && f.local().is_none()) {
                 files::download(id, &m.id);
             }
             self.render(&m, false);
