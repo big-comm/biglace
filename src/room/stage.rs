@@ -97,6 +97,7 @@ pub fn start(with_sound: bool) -> Result<(), String> {
         *s = Some(stage.clone());
     }
     let _ = std::thread::Builder::new().name("biglace-stage".into()).spawn(move || {
+        host::only_420_here();
         let source = match host::open_source(&stage.stop, host::Pointer::Embedded) {
             Ok(s) => s,
             Err(e) => {

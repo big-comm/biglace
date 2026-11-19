@@ -456,6 +456,12 @@ pub(crate) fn pipeline_desc(head: &str, (enc, format): (&str, &str)) -> String {
     format!("{head} ! video/x-raw,format={format} ! {}", encode_tail(enc))
 }
 
+/// Pictures made on this thread are 4:2:0 (a room's shared screen: phones
+/// may watch it, and their decoders take 4:2:0 only).
+pub(crate) fn only_420_here() {
+    ONLY_420.with(|c| c.set(true));
+}
+
 thread_local! {
     /// This session's viewer asked for 4:2:0 (`X-BigLace-Chroma: 420`).
     static ONLY_420: std::cell::Cell<bool> = const { std::cell::Cell::new(false) };
