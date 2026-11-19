@@ -5,7 +5,7 @@
 use gtk4::{glib, prelude::*};
 use libadwaita::prelude::*;
 use std::cell::{Cell, RefCell};
-use std::collections::HashMap;
+use std::collections::{HashMap, HashSet};
 use std::rc::Rc;
 
 use super::chat_media::{self, FileView};
@@ -42,16 +42,44 @@ pub struct ChatPage {
     rec_area: gtk4::DrawingArea,
     drop_hint: gtk4::Label,
     drop_reveal: gtk4::Revealer,
+    /// "Replying to …" / "Editing" above the box.
+    reply_reveal: gtk4::Revealer,
+    reply_icon: gtk4::Image,
+    reply_title: gtk4::Label,
+    reply_text: gtk4::Label,
+    /// The pinned message, under the header.
+    pinned_reveal: gtk4::Revealer,
+    pinned_text: gtk4::Label,
+    /// Search in the conversation.
+    search_reveal: gtk4::Revealer,
+    search_entry: gtk4::SearchEntry,
+    search_count: gtk4::Label,
+    /// "3 selected" in selection mode.
+    select_count: gtk4::Label,
     state: Rc<State>,
 }
 
 /// A message on screen: what may change later.
 struct Rendered {
+    /// Holds the bubble (rebuilt in place when the message changes).
+    holder: gtk4::Box,
+    /// What the bubble shows, to tell when it changed.
+    sig: String,
+    /// How it sits in its block (kept when rebuilt).
+    look: (bool, bool, bool),
     /// Our messages: ✓ / ✓✓.
     tick: Option<gtk4::Label>,
     /// Its file part.
     file: Option<Rc<FileView>>,
 }
+
+/// What a bubble shows (besides delivery and downloads).
+fn signature(m: &Message) -> String {
+    format!("{}|{}|{}|{:?}|{}", m.text, m.edited_at, m.deleted, m.reactions, m.file.is_some())
+}
+
+/// Quick reactions offered first (like Telegram's).
+const QUICK_REACTIONS: [&str; 6] = ["❤️", "👍", "👀", "🙏", "🤓", "😢"];
 
 #[derive(Default)]
 struct State {
@@ -65,6 +93,17 @@ struct State {
     /// A voice message being recorded, and its loudness so far.
     recorder: RefCell<Option<voice::Recorder>>,
     rec_levels: RefCell<Vec<f32>>,
+    /// Answering this message / editing this one of ours.
+    reply_to: RefCell<Option<String>>,
+    editing: RefCell<Option<String>>,
+    /// Selection mode and what's selected.
+    selecting: Cell<bool>,
+    selected: RefCell<HashSet<String>>,
+    /// Bumped by each "typing…" (an older timeout doesn't clear a newer one).
+    typing_gen: Cell<u64>,
+    /// Search hits (message ids, oldest first) and where we are.
+    search_hits: RefCell<Vec<String>>,
+    search_pos: Cell<usize>,
 }
 
 impl ChatPage {
@@ -125,10 +164,77 @@ impl ChatPage {
         titles.set_valign(gtk4::Align::Center);
         titles.append(&conv_title);
         titles.append(&conv_subtitle);
+        titles.set_hexpand(true);
         let conv_header = gtk4::Box::new(gtk4::Orientation::Horizontal, 10);
         conv_header.add_css_class("chat-header");
         conv_header.append(&conv_avatar);
         conv_header.append(&titles);
+        let btn_search = gtk4::ToggleButton::builder()
+            .icon_name("system-search-symbolic")
+            .css_classes(["flat", "circular"])
+            .valign(gtk4::Align::Center)
+            .tooltip_text(tr!("Search in this conversation (Ctrl+F)"))
+            .build();
+        conv_header.append(&btn_search);
+
+        // The pinned message (click: go to it; ✕: unpin).
+        let pinned_text = gtk4::Label::new(None);
+        pinned_text.set_xalign(0.0);
+        pinned_text.set_ellipsize(gtk4::pango::EllipsizeMode::End);
+        pinned_text.add_css_class("pinned-text");
+        let pinned_head = gtk4::Label::new(Some(&tr!("Pinned message")));
+        pinned_head.set_xalign(0.0);
+        pinned_head.add_css_class("pinned-head");
+        let pinned_texts = gtk4::Box::new(gtk4::Orientation::Vertical, 0);
+        pinned_texts.set_hexpand(true);
+        pinned_texts.append(&pinned_head);
+        pinned_texts.append(&pinned_text);
+        let btn_unpin = gtk4::Button::builder()
+            .icon_name("window-close-symbolic")
+            .css_classes(["flat", "circular"])
+            .valign(gtk4::Align::Center)
+            .tooltip_text(tr!("Unpin"))
+            .build();
+        let pinned_bar = gtk4::Box::new(gtk4::Orientation::Horizontal, 10);
+        pinned_bar.add_css_class("pinned-bar");
+        let pin_icon = gtk4::Image::from_icon_name("view-pin-symbolic");
+        pin_icon.add_css_class("pinned-icon");
+        pinned_bar.append(&pin_icon);
+        pinned_bar.append(&pinned_texts);
+        pinned_bar.append(&btn_unpin);
+        let pinned_reveal = gtk4::Revealer::builder()
+            .transition_type(gtk4::RevealerTransitionType::SlideDown)
+            .child(&pinned_bar)
+            .build();
+
+        // Search: the words, "2 of 5", previous / next.
+        let search_entry = gtk4::SearchEntry::builder()
+            .placeholder_text(tr!("Search messages"))
+            .hexpand(true)
+            .build();
+        let search_count = gtk4::Label::new(None);
+        search_count.add_css_class("dim-label");
+        search_count.add_css_class("numeric");
+        let btn_prev = gtk4::Button::builder()
+            .icon_name("go-up-symbolic")
+            .css_classes(["flat", "circular"])
+            .tooltip_text(tr!("Older"))
+            .build();
+        let btn_next = gtk4::Button::builder()
+            .icon_name("go-down-symbolic")
+            .css_classes(["flat", "circular"])
+            .tooltip_text(tr!("Newer"))
+            .build();
+        let search_bar = gtk4::Box::new(gtk4::Orientation::Horizontal, 6);
+        search_bar.add_css_class("chat-search-bar");
+        search_bar.append(&search_entry);
+        search_bar.append(&search_count);
+        search_bar.append(&btn_prev);
+        search_bar.append(&btn_next);
+        let search_reveal = gtk4::Revealer::builder()
+            .transition_type(gtk4::RevealerTransitionType::SlideDown)
+            .child(&search_bar)
+            .build();
 
         let messages = gtk4::Box::new(gtk4::Orientation::Vertical, 2);
         messages.add_css_class("chat-messages");
@@ -225,10 +331,70 @@ impl ChatPage {
         compose_stack.add_named(&bar, Some("compose"));
         compose_stack.add_named(&rec_bar, Some("record"));
 
+        // Selection mode: "3 selected" · copy · forward · delete · cancel.
+        let select_count = gtk4::Label::new(None);
+        select_count.add_css_class("heading");
+        select_count.set_hexpand(true);
+        select_count.set_xalign(0.0);
+        let sel_button = |icon: &str, tip: String| {
+            gtk4::Button::builder()
+                .icon_name(icon)
+                .css_classes(["flat", "circular", "chat-tool"])
+                .tooltip_text(tip)
+                .valign(gtk4::Align::Center)
+                .build()
+        };
+        let btn_sel_cancel = sel_button("window-close-symbolic", tr!("Cancel"));
+        let btn_sel_copy = sel_button("edit-copy-symbolic", tr!("Copy text"));
+        let btn_sel_forward = sel_button("mail-forward-symbolic", tr!("Forward"));
+        let btn_sel_delete = sel_button("user-trash-symbolic", tr!("Delete"));
+        btn_sel_delete.add_css_class("destructive-action");
+        let select_bar = gtk4::Box::new(gtk4::Orientation::Horizontal, 6);
+        select_bar.add_css_class("chat-composer");
+        select_bar.append(&btn_sel_cancel);
+        select_bar.append(&select_count);
+        select_bar.append(&btn_sel_copy);
+        select_bar.append(&btn_sel_forward);
+        select_bar.append(&btn_sel_delete);
+        compose_stack.add_named(&select_bar, Some("select"));
+
+        // "Replying to …" / "Editing" over the box.
+        let reply_title = gtk4::Label::new(None);
+        reply_title.set_xalign(0.0);
+        reply_title.add_css_class("reply-bar-title");
+        let reply_text = gtk4::Label::new(None);
+        reply_text.set_xalign(0.0);
+        reply_text.set_ellipsize(gtk4::pango::EllipsizeMode::End);
+        reply_text.add_css_class("reply-bar-text");
+        let reply_texts = gtk4::Box::new(gtk4::Orientation::Vertical, 0);
+        reply_texts.set_hexpand(true);
+        reply_texts.append(&reply_title);
+        reply_texts.append(&reply_text);
+        let btn_reply_close = gtk4::Button::builder()
+            .icon_name("window-close-symbolic")
+            .css_classes(["flat", "circular"])
+            .valign(gtk4::Align::Center)
+            .tooltip_text(tr!("Cancel"))
+            .build();
+        let reply_bar = gtk4::Box::new(gtk4::Orientation::Horizontal, 10);
+        reply_bar.add_css_class("reply-bar");
+        let reply_icon = gtk4::Image::from_icon_name("mail-reply-sender-symbolic");
+        reply_icon.add_css_class("reply-bar-icon");
+        reply_bar.append(&reply_icon.clone());
+        reply_bar.append(&reply_texts);
+        reply_bar.append(&btn_reply_close);
+        let reply_reveal = gtk4::Revealer::builder()
+            .transition_type(gtk4::RevealerTransitionType::SlideUp)
+            .child(&reply_bar)
+            .build();
+
         let conv_box = gtk4::Box::new(gtk4::Orientation::Vertical, 0);
         conv_box.append(&conv_header);
         conv_box.append(&gtk4::Separator::new(gtk4::Orientation::Horizontal));
+        conv_box.append(&pinned_reveal);
+        conv_box.append(&search_reveal);
         conv_box.append(&scroll);
+        conv_box.append(&reply_reveal);
         conv_box.append(&compose_stack);
 
         // Dragging files over the conversation.
@@ -298,6 +464,16 @@ impl ChatPage {
             rec_area: rec_area.clone(),
             drop_hint,
             drop_reveal,
+            reply_reveal,
+            reply_icon,
+            reply_title,
+            reply_text,
+            pinned_reveal,
+            pinned_text,
+            search_reveal,
+            search_entry: search_entry.clone(),
+            search_count,
+            select_count,
             state: Rc::default(),
         };
         // Mic or send, as the box fills.
@@ -345,6 +521,133 @@ impl ChatPage {
             });
         }
         page.setup_drop(&conv_overlay);
+        // ── Replies, edits, pins, selection, search ──
+        {
+            let page = page.clone();
+            btn_reply_close.connect_clicked(move |_| page.cancel_reply());
+        }
+        {
+            let page = page.clone();
+            btn_unpin.connect_clicked(move |_| {
+                if let Some(id) = page.state.current.borrow().clone() {
+                    let toast = page.toast.clone();
+                    super::run_in_background(move || chat::pin(&id, None), move |r| {
+                        if let Err(e) = r {
+                            super::show_toast(&toast, &e, 5);
+                        }
+                    });
+                }
+            });
+        }
+        {
+            let page = page.clone();
+            let click = gtk4::GestureClick::new();
+            click.connect_released(move |_, _, _, _| {
+                if let Some(m) = page.state.current.borrow().as_ref().and_then(chat::pinned) {
+                    page.scroll_to_message(&m.id);
+                }
+            });
+            pinned_bar.add_controller(click);
+            pinned_bar.set_cursor_from_name(Some("pointer"));
+        }
+        {
+            let page = page.clone();
+            btn_sel_cancel.connect_clicked(move |_| page.end_selection());
+        }
+        {
+            let page = page.clone();
+            btn_sel_copy.connect_clicked(move |_| {
+                let ids = page.selected_in_order();
+                page.copy_messages(&ids);
+                page.end_selection();
+            });
+        }
+        {
+            let page = page.clone();
+            btn_sel_forward.connect_clicked(move |_| {
+                let ids = page.selected_in_order();
+                page.forward_dialog(ids);
+            });
+        }
+        {
+            let page = page.clone();
+            btn_sel_delete.connect_clicked(move |_| {
+                let ids = page.selected_in_order();
+                page.confirm_delete(ids);
+            });
+        }
+        {
+            let (page, entry) = (page.clone(), search_entry.clone());
+            btn_search.connect_toggled(move |b| {
+                page.search_reveal.set_reveal_child(b.is_active());
+                if b.is_active() {
+                    entry.grab_focus();
+                } else {
+                    entry.set_text("");
+                    page.clear_search();
+                    page.composer.view.grab_focus();
+                }
+            });
+        }
+        {
+            let page = page.clone();
+            search_entry.connect_search_changed(move |e| page.search(&e.text()));
+        }
+        {
+            let page = page.clone();
+            search_entry.connect_activate(move |_| page.search_step(-1));
+        }
+        {
+            let btn = btn_search.clone();
+            search_entry.connect_stop_search(move |_| btn.set_active(false));
+        }
+        {
+            let page = page.clone();
+            btn_prev.connect_clicked(move |_| page.search_step(-1));
+        }
+        {
+            let page = page.clone();
+            btn_next.connect_clicked(move |_| page.search_step(1));
+        }
+        {
+            // Ctrl+F searches; Esc leaves a reply, an edit or a selection.
+            let (page, btn, toolbar) = (page.clone(), btn_search.clone(), page.toolbar.clone());
+            let keys = gtk4::EventControllerKey::new();
+            keys.set_propagation_phase(gtk4::PropagationPhase::Capture);
+            keys.connect_key_pressed(move |_, key, _, mods| {
+                if page.state.current.borrow().is_none() {
+                    return glib::Propagation::Proceed;
+                }
+                if key == gtk4::gdk::Key::f && mods.contains(gtk4::gdk::ModifierType::CONTROL_MASK) {
+                    btn.set_active(true);
+                    page.search_entry.grab_focus();
+                    return glib::Propagation::Stop;
+                }
+                if key == gtk4::gdk::Key::Escape {
+                    if page.state.selecting.get() {
+                        page.end_selection();
+                        return glib::Propagation::Stop;
+                    }
+                    if page.state.reply_to.borrow().is_some() || page.state.editing.borrow().is_some() {
+                        page.cancel_reply();
+                        return glib::Propagation::Stop;
+                    }
+                }
+                glib::Propagation::Proceed
+            });
+            toolbar.add_controller(keys);
+        }
+        // Typing… tells the others (now and then).
+        {
+            let page = page.clone();
+            page.composer.view.buffer().connect_changed(move |b| {
+                if b.char_count() > 0 && page.state.editing.borrow().is_none() {
+                    if let Some(id) = page.state.current.borrow().as_ref() {
+                        chat::typing(id);
+                    }
+                }
+            });
+        }
         super::chat_theme::apply(&page.toolbar, &page.scroll, &super::chat_theme::load());
         {
             let page = page.clone();
@@ -493,6 +796,10 @@ impl ChatPage {
         if self.state.recorder.borrow().is_some() {
             self.stop_recording(false);
         }
+        self.cancel_reply();
+        self.end_selection();
+        self.clear_search();
+        self.update_pinned();
         self.update_actions();
         self.stack.set_visible_child_name("conv");
         self.scroll_to_end();
@@ -525,9 +832,15 @@ impl ChatPage {
             return;
         }
         self.composer.clear();
+        let editing = self.state.editing.borrow_mut().take();
+        let reply_to = self.state.reply_to.borrow_mut().take();
+        self.reply_reveal.set_reveal_child(false);
         let toast = self.toast.clone();
         super::run_in_background(
-            move || chat::send(&id, &text),
+            move || match editing {
+                Some(target) => chat::edit(&id, &target, &text),
+                None => chat::send_reply(&id, &text, reply_to.as_deref()),
+            },
             move |r| {
                 if let Err(e) = r {
                     super::show_toast(&toast, &trf!("Could not send: {error}", "error" => e), 6);
@@ -570,6 +883,7 @@ impl ChatPage {
                     super::show_toast(&self.toast, &trf!("Could not download: {error}", "error" => reason), 6);
                 }
             }
+            ChatEvent::Typing { conv, user } => self.show_typing(&conv, &user),
             ChatEvent::Incoming { conv, message } => {
                 let looking = self.state.visible.get()
                     && self.win.is_active()
@@ -590,15 +904,42 @@ impl ChatPage {
             adj.upper() - adj.page_size() - adj.value() < 80.0
         };
         let mut added = false;
-        for m in chat::messages(&id) {
+        let all = chat::messages(&id);
+        // Deleted here ("for me"): their bubbles go.
+        {
+            let present: HashSet<&str> = all.iter().map(|m| m.id.as_str()).collect();
+            let mut rendered = self.state.rendered.borrow_mut();
+            let gone: Vec<String> = rendered.keys().filter(|k| !present.contains(k.as_str())).cloned().collect();
+            for k in gone {
+                if let Some(r) = rendered.remove(&k) {
+                    let widget: gtk4::Widget = match r.holder.parent().and_downcast::<gtk4::Revealer>() {
+                        Some(rev) => rev.upcast(),
+                        None => r.holder.upcast(),
+                    };
+                    if widget.parent().as_ref() == Some(self.messages.upcast_ref()) {
+                        self.messages.remove(&widget);
+                    }
+                }
+            }
+        }
+        for m in all {
             let known = self
                 .state
                 .rendered
                 .borrow()
                 .get(&m.id)
-                .map(|r| (r.tick.clone(), r.file.clone()));
+                .map(|r| (r.tick.clone(), r.file.clone(), r.sig.clone(), r.holder.clone(), r.look));
             match known {
-                Some((tick, file)) => {
+                Some((_, _, sig, holder, look)) if sig != signature(&m) => {
+                    // Edited, reacted to, deleted: draw it again in place.
+                    let (tick, file) = self.fill_bubble(&holder, &m, look);
+                    if let Some(r) = self.state.rendered.borrow_mut().get_mut(&m.id) {
+                        r.sig = signature(&m);
+                        r.tick = tick;
+                        r.file = file;
+                    }
+                }
+                Some((tick, file, ..)) => {
                     if let Some(t) = tick {
                         set_tick(&t, &m, id.is_group());
                     }
@@ -619,6 +960,7 @@ impl ChatPage {
         if added && near_end {
             self.scroll_to_end();
         }
+        self.update_pinned();
     }
 
     fn scroll_to_end(&self) {
@@ -644,20 +986,25 @@ impl ChatPage {
         let continues = prev
             .as_ref()
             .is_some_and(|p| p.from == m.from && p.mine == m.mine && m.at.saturating_sub(p.at) < BLOCK_GAP_MS && day_of(p.at) == day_of(m.at));
-        let conv = self.state.current.borrow().clone().unwrap_or_else(|| ConvId::direct(&m.from));
-        let (widget, tick, file) = bubble(m, &conv, group && !m.mine && !continues, continues, group && !m.mine);
+        let look = (group && !m.mine && !continues, continues, group && !m.mine);
+        let holder = gtk4::Box::new(gtk4::Orientation::Vertical, 0);
+        holder.add_css_class("msg-row");
+        let (tick, file) = self.fill_bubble(&holder, m, look);
         if animate {
             let rev = gtk4::Revealer::builder()
                 .transition_type(gtk4::RevealerTransitionType::SlideUp)
                 .transition_duration(220)
-                .child(&widget)
+                .child(&holder)
                 .build();
             self.messages.append(&rev);
             glib::idle_add_local_once(move || rev.set_reveal_child(true));
         } else {
-            self.messages.append(&widget);
+            self.messages.append(&holder);
         }
-        self.state.rendered.borrow_mut().insert(m.id.clone(), Rendered { tick, file });
+        self.state
+            .rendered
+            .borrow_mut()
+            .insert(m.id.clone(), Rendered { holder, sig: signature(m), look, tick, file });
         *self.state.last.borrow_mut() = Some(m.clone());
     }
 
@@ -833,10 +1180,17 @@ impl ChatPage {
 
     /// "New chat": pick a person (or one of our groups).
     fn show_new_chat(&self) {
+        let page = self.clone();
+        self.pick_conversation(tr!("New chat"), move |id| page.open_conv(&id));
+    }
+
+    /// Pick a person or a group; `on_pick` gets the conversation.
+    fn pick_conversation(&self, title: String, on_pick: impl Fn(ConvId) + 'static) {
+        let on_pick = Rc::new(on_pick);
         let dlg = libadwaita::Window::builder()
             .transient_for(&self.win)
             .modal(true)
-            .title(tr!("New chat"))
+            .title(title)
             .default_width(400)
             .default_height(520)
             .build();
@@ -873,7 +1227,7 @@ impl ChatPage {
             let list = list.clone();
             search.connect_search_changed(move |_| list.invalidate_filter());
         }
-        let (page, list2, status2, dlg2) = (self.clone(), list.clone(), status.clone(), dlg.clone());
+        let (on_pick2, list2, status2, dlg2) = (on_pick.clone(), list.clone(), status.clone(), dlg.clone());
         super::run_in_background(
             || {
                 let me = chat::my_groups_refresh();
@@ -913,10 +1267,10 @@ impl ChatPage {
                         dot.set_valign(gtk4::Align::Center);
                         row.add_suffix(&dot);
                     }
-                    let (page, dlg, id) = (page.clone(), dlg2.clone(), id.clone());
+                    let (on_pick, dlg, id) = (on_pick2.clone(), dlg2.clone(), id.clone());
                     row.connect_activated(move |_| {
                         dlg.close();
-                        page.open_conv(&id);
+                        on_pick(id.clone());
                     });
                     list2.append(&row);
                 };
@@ -999,93 +1353,6 @@ fn conv_row(c: &chat::Summary) -> gtk4::ListBoxRow {
     row
 }
 
-/// A message bubble (or a big emoji); returns the widget and, for our own
-/// messages, the tick label to update when it's delivered.
-fn bubble(
-    m: &Message,
-    conv: &ConvId,
-    show_name: bool,
-    continues: bool,
-    avatar_slot: bool,
-) -> (gtk4::Widget, Option<gtk4::Label>, Option<Rc<FileView>>) {
-    let outer = gtk4::Box::new(gtk4::Orientation::Horizontal, 8);
-    outer.set_halign(if m.mine { gtk4::Align::End } else { gtk4::Align::Start });
-    outer.set_margin_top(if continues { 1 } else { 8 });
-    outer.set_margin_start(if m.mine { 64 } else { 10 });
-    outer.set_margin_end(if m.mine { 10 } else { 64 });
-    // Groups: who's talking, by face (first message of each block).
-    if avatar_slot {
-        let a = libadwaita::Avatar::new(32, Some(&m.from), true);
-        a.set_valign(gtk4::Align::Start);
-        if continues {
-            a.set_opacity(0.0);
-        } else {
-            crate::avatars::bind(&a, &m.from);
-        }
-        outer.append(&a);
-    }
-
-    let jumbo = m.file.is_none() && markdown::is_jumbo_emoji(&m.text);
-    let b = gtk4::Box::new(gtk4::Orientation::Vertical, 2);
-    if jumbo {
-        b.add_css_class("bubble-jumbo");
-    } else {
-        b.add_css_class("bubble");
-        b.add_css_class(if m.mine { "mine" } else { "theirs" });
-        if continues {
-            b.add_css_class("continues");
-        }
-        if m.file.as_ref().is_some_and(|f| matches!(f.offer.kind, chat::FileKind::Image | chat::FileKind::Video)) {
-            b.add_css_class("media");
-        }
-    }
-    if show_name {
-        let name = gtk4::Label::new(Some(&m.from));
-        name.add_css_class("bubble-name");
-        name.add_css_class(&format!("name-color-{}", color_index(&m.from)));
-        name.set_xalign(0.0);
-        b.append(&name);
-    }
-    let file = m.file.as_ref().map(|_| {
-        let view = chat_media::build(m, conv);
-        b.append(&view.slot);
-        view
-    });
-    let text = gtk4::Label::new(None);
-    text.set_visible(!m.text.trim().is_empty());
-    if jumbo {
-        text.set_text(m.text.trim());
-        text.add_css_class("jumbo-emoji");
-    } else {
-        text.set_markup(&markdown::to_pango(&m.text));
-    }
-    text.set_wrap(true);
-    text.set_wrap_mode(gtk4::pango::WrapMode::WordChar);
-    text.set_max_width_chars(52);
-    text.set_xalign(0.0);
-    text.set_selectable(true);
-    text.set_can_focus(false);
-    b.append(&text);
-
-    let meta = gtk4::Box::new(gtk4::Orientation::Horizontal, 4);
-    meta.set_halign(gtk4::Align::End);
-    meta.add_css_class("bubble-meta");
-    let time = gtk4::Label::new(Some(&clock(m.at)));
-    meta.append(&time);
-    let tick = m.mine.then(|| {
-        let t = gtk4::Label::new(None);
-        t.add_css_class("tick");
-        meta.append(&t);
-        t
-    });
-    if let Some(t) = &tick {
-        set_tick(t, m, false);
-    }
-    b.append(&meta);
-    outer.append(&b);
-    (outer.upcast(), tick, file)
-}
-
 /// ✓ written, ✓✓ delivered.
 fn set_tick(t: &gtk4::Label, m: &Message, _group: bool) {
     let delivered = !m.delivered.is_empty();
@@ -1149,6 +1416,9 @@ fn short_time(at_ms: u64) -> String {
 
 /// One line about a message: its file, or its text.
 fn message_line(m: &Message, max_chars: usize) -> String {
+    if m.deleted {
+        return tr!("🗑 Message deleted");
+    }
     match chat_media::summary(m) {
         Some(file) if m.text.trim().is_empty() => file,
         Some(file) => format!("{file} · {}", preview_text(&m.text, max_chars)),
@@ -1170,4 +1440,602 @@ fn preview_text(text: &str, max_chars: usize) -> String {
 /// Stable colour per person for their name in group bubbles.
 fn color_index(user: &str) -> u32 {
     user.bytes().fold(7u32, |h, b| h.wrapping_mul(31).wrapping_add(u32::from(b))) % 6
+}
+
+// ─── Telegram-style message actions ─────────────────────────────────────────
+
+impl ChatPage {
+    fn current(&self) -> Option<ConvId> {
+        self.state.current.borrow().clone()
+    }
+
+    /// (Re)draw message `m` inside `holder`.
+    fn fill_bubble(&self, holder: &gtk4::Box, m: &Message, look: (bool, bool, bool)) -> (Option<gtk4::Label>, Option<Rc<FileView>>) {
+        while let Some(c) = holder.first_child() {
+            holder.remove(&c);
+        }
+        let conv = self.current().unwrap_or_else(|| ConvId::direct(&m.from));
+        let (widget, tick, file) = self.bubble(m, &conv, look.0, look.1, look.2);
+        holder.append(&widget);
+        if self.state.selected.borrow().contains(&m.id) {
+            holder.add_css_class("selected");
+        }
+        (tick, file)
+    }
+
+    /// A message bubble (or a big emoji); the widget and, for our own
+    /// messages, the tick label to update when it's delivered.
+    fn bubble(
+        &self,
+        m: &Message,
+        conv: &ConvId,
+        show_name: bool,
+        continues: bool,
+        avatar_slot: bool,
+    ) -> (gtk4::Widget, Option<gtk4::Label>, Option<Rc<FileView>>) {
+        let outer = gtk4::Box::new(gtk4::Orientation::Horizontal, 8);
+        outer.set_halign(if m.mine { gtk4::Align::End } else { gtk4::Align::Start });
+        outer.set_margin_top(if continues { 1 } else { 8 });
+        outer.set_margin_start(if m.mine { 64 } else { 10 });
+        outer.set_margin_end(if m.mine { 10 } else { 64 });
+        // Groups: who's talking, by face (first message of each block).
+        if avatar_slot {
+            let a = libadwaita::Avatar::new(32, Some(&m.from), true);
+            a.set_valign(gtk4::Align::Start);
+            if continues {
+                a.set_opacity(0.0);
+            } else {
+                crate::avatars::bind(&a, &m.from);
+            }
+            outer.append(&a);
+        }
+
+        let jumbo = !m.deleted && m.file.is_none() && m.reply_to.is_none() && markdown::is_jumbo_emoji(&m.text);
+        let b = gtk4::Box::new(gtk4::Orientation::Vertical, 2);
+        if jumbo {
+            b.add_css_class("bubble-jumbo");
+        } else {
+            b.add_css_class("bubble");
+            b.add_css_class(if m.mine { "mine" } else { "theirs" });
+            if continues {
+                b.add_css_class("continues");
+            }
+            if m.file.as_ref().is_some_and(|f| matches!(f.offer.kind, chat::FileKind::Image | chat::FileKind::Video)) {
+                b.add_css_class("media");
+            }
+        }
+        if show_name {
+            let name = gtk4::Label::new(Some(&m.from));
+            name.add_css_class("bubble-name");
+            name.add_css_class(&format!("name-color-{}", color_index(&m.from)));
+            name.set_xalign(0.0);
+            b.append(&name);
+        }
+        if let Some(author) = m.forwarded_from.as_ref().filter(|_| !m.deleted) {
+            let fwd = gtk4::Label::new(Some(&trf!("Forwarded from {name}", "name" => author)));
+            fwd.add_css_class("bubble-forwarded");
+            fwd.set_xalign(0.0);
+            b.append(&fwd);
+        }
+        if let Some(r) = m.reply_to.as_ref().filter(|_| !m.deleted) {
+            let quote = gtk4::Box::new(gtk4::Orientation::Vertical, 0);
+            quote.add_css_class("bubble-reply");
+            quote.add_css_class(&format!("reply-color-{}", color_index(&r.from)));
+            let who = gtk4::Label::new(Some(&r.from));
+            who.add_css_class("bubble-reply-name");
+            who.set_xalign(0.0);
+            let what = gtk4::Label::new(Some(&r.preview));
+            what.set_xalign(0.0);
+            what.set_ellipsize(gtk4::pango::EllipsizeMode::End);
+            what.set_max_width_chars(40);
+            what.add_css_class("bubble-reply-text");
+            quote.append(&who);
+            quote.append(&what);
+            let (page, target) = (self.clone(), r.id.clone());
+            let click = gtk4::GestureClick::new();
+            click.connect_released(move |g, _, _, _| {
+                g.set_state(gtk4::EventSequenceState::Claimed);
+                page.scroll_to_message(&target);
+            });
+            quote.add_controller(click);
+            quote.set_cursor_from_name(Some("pointer"));
+            b.append(&quote);
+        }
+        let file = m.file.as_ref().filter(|_| !m.deleted).map(|_| {
+            let view = chat_media::build(m, conv);
+            b.append(&view.slot);
+            view
+        });
+        let text = gtk4::Label::new(None);
+        if m.deleted {
+            text.set_text(&tr!("🗑 Message deleted"));
+            text.add_css_class("bubble-deleted");
+        } else if jumbo {
+            text.set_text(m.text.trim());
+            text.add_css_class("jumbo-emoji");
+        } else {
+            text.set_markup(&markdown::to_pango(&m.text));
+            text.set_visible(!m.text.trim().is_empty());
+        }
+        text.set_wrap(true);
+        text.set_wrap_mode(gtk4::pango::WrapMode::WordChar);
+        text.set_max_width_chars(52);
+        text.set_xalign(0.0);
+        text.set_selectable(!m.deleted);
+        text.set_can_focus(false);
+        b.append(&text);
+
+        // Reactions: one chip per emoji, ours highlighted; click to toggle.
+        if !m.reactions.is_empty() {
+            let me = chat::my_user().unwrap_or_default();
+            let chips = gtk4::FlowBox::builder()
+                .selection_mode(gtk4::SelectionMode::None)
+                .max_children_per_line(8)
+                .column_spacing(4)
+                .row_spacing(4)
+                .halign(gtk4::Align::Start)
+                .build();
+            chips.add_css_class("reactions");
+            for (emoji, who) in &m.reactions {
+                let chip = gtk4::Button::builder().label(format!("{emoji} {}", who.len())).build();
+                chip.add_css_class("reaction-chip");
+                if who.contains(&me) {
+                    chip.add_css_class("mine");
+                }
+                chip.set_tooltip_text(Some(&who.join(", ")));
+                let (page, id, emoji) = (self.clone(), m.id.clone(), emoji.clone());
+                chip.connect_clicked(move |_| page.react(&id, &emoji));
+                chips.insert(&chip, -1);
+            }
+            b.append(&chips);
+        }
+
+        let meta = gtk4::Box::new(gtk4::Orientation::Horizontal, 4);
+        meta.set_halign(gtk4::Align::End);
+        meta.add_css_class("bubble-meta");
+        if m.edited_at > 0 && !m.deleted {
+            let edited = gtk4::Label::new(Some(&tr!("edited")));
+            edited.add_css_class("bubble-edited");
+            meta.append(&edited);
+        }
+        let time = gtk4::Label::new(Some(&clock(m.at)));
+        meta.append(&time);
+        let tick = (m.mine && !m.deleted).then(|| {
+            let t = gtk4::Label::new(None);
+            t.add_css_class("tick");
+            meta.append(&t);
+            t
+        });
+        if let Some(t) = &tick {
+            set_tick(t, m, false);
+        }
+        b.append(&meta);
+        outer.append(&b);
+
+        // Right click / long press: the actions; in selection mode a click
+        // selects. Captured first, so a selectable label doesn't get it.
+        let menu_click = gtk4::GestureClick::new();
+        menu_click.set_button(0);
+        menu_click.set_propagation_phase(gtk4::PropagationPhase::Capture);
+        {
+            let (page, msg, anchor) = (self.clone(), m.clone(), b.clone());
+            menu_click.connect_pressed(move |g, _, x, y| {
+                let button = g.current_button();
+                if page.state.selecting.get() && button == gtk4::gdk::BUTTON_PRIMARY {
+                    g.set_state(gtk4::EventSequenceState::Claimed);
+                    page.toggle_select(&msg.id);
+                } else if button == gtk4::gdk::BUTTON_SECONDARY {
+                    g.set_state(gtk4::EventSequenceState::Claimed);
+                    page.show_actions(&anchor, &msg, x, y);
+                }
+            });
+        }
+        b.add_controller(menu_click);
+        let press = gtk4::GestureLongPress::new();
+        {
+            let (page, msg, anchor) = (self.clone(), m.clone(), b.clone());
+            press.connect_pressed(move |g, x, y| {
+                g.set_state(gtk4::EventSequenceState::Claimed);
+                page.show_actions(&anchor, &msg, x, y);
+            });
+        }
+        b.add_controller(press);
+        (outer.upcast(), tick, file)
+    }
+
+    /// The actions popover for message `m`, Telegram-style: quick
+    /// reactions on top, then reply, edit, pin, copy, forward, delete, select.
+    fn show_actions(&self, anchor: &gtk4::Box, m: &Message, x: f64, y: f64) {
+        let Some(conv) = self.current() else { return };
+        let pop = gtk4::Popover::builder().has_arrow(false).build();
+        pop.add_css_class("msg-actions");
+        pop.set_parent(anchor);
+        pop.set_pointing_to(Some(&gtk4::gdk::Rectangle::new(x as i32, y as i32, 1, 1)));
+        let col = gtk4::Box::new(gtk4::Orientation::Vertical, 2);
+        if !m.deleted {
+            let row = gtk4::Box::new(gtk4::Orientation::Horizontal, 2);
+            row.add_css_class("react-row");
+            for emoji in QUICK_REACTIONS {
+                let b = gtk4::Button::builder().label(emoji).build();
+                b.add_css_class("react-pick");
+                let (page, id, pop) = (self.clone(), m.id.clone(), pop.clone());
+                b.connect_clicked(move |_| {
+                    pop.popdown();
+                    page.react(&id, emoji);
+                });
+                row.append(&b);
+            }
+            let more = gtk4::Button::builder()
+                .icon_name("pan-down-symbolic")
+                .tooltip_text(tr!("More reactions"))
+                .build();
+            more.add_css_class("react-more");
+            {
+                let (page, id, pop, anchor) = (self.clone(), m.id.clone(), pop.clone(), anchor.clone());
+                more.connect_clicked(move |_| {
+                    pop.popdown();
+                    let (page2, id2) = (page.clone(), id.clone());
+                    let picker = super::emoji_picker::build(move |e| page2.react(&id2, e));
+                    picker.set_parent(&anchor);
+                    picker.connect_closed(|p| {
+                        let p = p.clone();
+                        glib::idle_add_local_once(move || p.unparent());
+                    });
+                    picker.popup();
+                });
+            }
+            row.append(&more);
+            col.append(&row);
+            col.append(&gtk4::Separator::new(gtk4::Orientation::Horizontal));
+        }
+        let item = |icon: &str, label: String, destructive: bool, act: Box<dyn Fn()>| {
+            let b = gtk4::Button::builder()
+                .child(&libadwaita::ButtonContent::builder().icon_name(icon).label(label).halign(gtk4::Align::Start).build())
+                .css_classes(["flat", "msg-action"])
+                .build();
+            if destructive {
+                b.add_css_class("destructive");
+            }
+            let pop = pop.clone();
+            b.connect_clicked(move |_| {
+                pop.popdown();
+                act();
+            });
+            col.append(&b);
+        };
+        if !m.deleted {
+            let (page, msg) = (self.clone(), m.clone());
+            item("mail-reply-sender-symbolic", tr!("Reply"), false, Box::new(move || page.start_reply(&msg)));
+            if m.mine && m.file.is_none() && m.forwarded_from.is_none() && !m.text.trim().is_empty() {
+                let (page, msg) = (self.clone(), m.clone());
+                item("document-edit-symbolic", tr!("Edit"), false, Box::new(move || page.start_edit(&msg)));
+            }
+            let pinned_now = chat::pinned(&conv).is_some_and(|p| p.id == m.id);
+            let (page, id) = (self.clone(), m.id.clone());
+            item(
+                "view-pin-symbolic",
+                if pinned_now { tr!("Unpin") } else { tr!("Pin") },
+                false,
+                Box::new(move || page.toggle_pin(&id, pinned_now)),
+            );
+            if !m.text.trim().is_empty() {
+                let (page, id) = (self.clone(), m.id.clone());
+                item("edit-copy-symbolic", tr!("Copy text"), false, Box::new(move || page.copy_messages(std::slice::from_ref(&id))));
+            }
+            let (page, id) = (self.clone(), m.id.clone());
+            item("mail-forward-symbolic", tr!("Forward"), false, Box::new(move || page.forward_dialog(vec![id.clone()])));
+        }
+        let (page, id) = (self.clone(), m.id.clone());
+        item("user-trash-symbolic", tr!("Delete"), true, Box::new(move || page.confirm_delete(vec![id.clone()])));
+        let (page, id) = (self.clone(), m.id.clone());
+        item("object-select-symbolic", tr!("Select"), false, Box::new(move || page.start_selection(&id)));
+        pop.set_child(Some(&col));
+        pop.connect_closed(|p| {
+            let p = p.clone();
+            glib::idle_add_local_once(move || p.unparent());
+        });
+        pop.popup();
+    }
+
+    fn react(&self, id: &str, emoji: &str) {
+        let Some(conv) = self.current() else { return };
+        let (id, emoji, toast) = (id.to_string(), emoji.to_string(), self.toast.clone());
+        super::run_in_background(move || chat::react(&conv, &id, &emoji), move |r| {
+            if let Err(e) = r {
+                super::show_toast(&toast, &trf!("Could not react: {error}", "error" => e), 5);
+            }
+        });
+    }
+
+    fn show_reply_bar(&self, icon: &str, title: &str, text: &str) {
+        self.reply_icon.set_icon_name(Some(icon));
+        self.reply_title.set_text(title);
+        self.reply_text.set_text(text);
+        self.reply_reveal.set_reveal_child(true);
+        self.composer.view.grab_focus();
+    }
+
+    fn start_reply(&self, m: &Message) {
+        *self.state.editing.borrow_mut() = None;
+        *self.state.reply_to.borrow_mut() = Some(m.id.clone());
+        self.show_reply_bar("mail-reply-sender-symbolic", &trf!("Reply to {name}", "name" => m.from), &chat::preview_line(m));
+    }
+
+    fn start_edit(&self, m: &Message) {
+        *self.state.reply_to.borrow_mut() = None;
+        *self.state.editing.borrow_mut() = Some(m.id.clone());
+        self.show_reply_bar("document-edit-symbolic", &tr!("Editing message"), &chat::preview_line(m));
+        self.composer.set_markdown(&m.text);
+    }
+
+    fn cancel_reply(&self) {
+        let was_editing = self.state.editing.borrow_mut().take().is_some();
+        *self.state.reply_to.borrow_mut() = None;
+        self.reply_reveal.set_reveal_child(false);
+        if was_editing {
+            self.composer.clear();
+        }
+    }
+
+    fn toggle_pin(&self, id: &str, pinned_now: bool) {
+        let Some(conv) = self.current() else { return };
+        let (id, toast) = (id.to_string(), self.toast.clone());
+        super::run_in_background(
+            move || chat::pin(&conv, if pinned_now { None } else { Some(&id) }),
+            move |r| {
+                if let Err(e) = r {
+                    super::show_toast(&toast, &e, 5);
+                }
+            },
+        );
+    }
+
+    fn update_pinned(&self) {
+        match self.current().as_ref().and_then(chat::pinned) {
+            Some(m) => {
+                self.pinned_text.set_text(&chat::preview_line(&m));
+                self.pinned_reveal.set_reveal_child(true);
+            }
+            None => self.pinned_reveal.set_reveal_child(false),
+        }
+    }
+
+    /// The text of messages `ids` to the clipboard (several: "who: text").
+    fn copy_messages(&self, ids: &[String]) {
+        let Some(conv) = self.current() else { return };
+        let all = chat::messages(&conv);
+        let picked: Vec<&Message> = ids.iter().filter_map(|id| all.iter().find(|m| &m.id == id && !m.deleted)).collect();
+        let text = if picked.len() == 1 {
+            markdown::plain_text(&picked[0].text)
+        } else {
+            picked
+                .iter()
+                .map(|m| format!("{}: {}", m.from, markdown::plain_text(&m.text)))
+                .collect::<Vec<_>>()
+                .join("\n\n")
+        };
+        if text.trim().is_empty() {
+            return;
+        }
+        self.win.clipboard().set_text(&text);
+        super::show_toast(&self.toast, &tr!("Copied."), 2);
+    }
+
+    /// Pick where to forward messages `ids`, then send them there.
+    fn forward_dialog(&self, ids: Vec<String>) {
+        let Some(from) = self.current() else { return };
+        if ids.is_empty() {
+            return;
+        }
+        let page = self.clone();
+        self.pick_conversation(tr!("Forward to…"), move |to| {
+            let (page2, from, ids, to2) = (page.clone(), from.clone(), ids.clone(), to.clone());
+            super::run_in_background(
+                move || chat::forward(&to2, &from, &ids),
+                move |r| match r {
+                    Ok(()) => {
+                        page2.end_selection();
+                        page2.open_conv(&to);
+                        super::show_toast(&page2.toast, &tr!("Forwarded."), 3);
+                    }
+                    Err(e) => super::show_toast(&page2.toast, &trf!("Could not forward: {error}", "error" => e), 6),
+                },
+            );
+        });
+    }
+
+    /// "Delete N messages?": for me, or (all ours) for everyone.
+    fn confirm_delete(&self, ids: Vec<String>) {
+        let Some(conv) = self.current() else { return };
+        if ids.is_empty() {
+            return;
+        }
+        let all = chat::messages(&conv);
+        let ours = ids.iter().all(|id| all.iter().any(|m| &m.id == id && m.mine && !m.deleted));
+        let heading = if ids.len() == 1 {
+            tr!("Delete the message?")
+        } else {
+            trf!("Delete {count} messages?", "count" => ids.len().to_string())
+        };
+        let dlg = libadwaita::MessageDialog::builder()
+            .transient_for(&self.win)
+            .modal(true)
+            .heading(heading)
+            .body(if ours {
+                tr!("“For everyone” removes it from the other computers too.")
+            } else {
+                tr!("It's removed from this computer only.")
+            })
+            .build();
+        dlg.add_response("cancel", &tr!("Cancel"));
+        dlg.add_response("me", &tr!("Delete for me"));
+        if ours {
+            dlg.add_response("all", &tr!("Delete for everyone"));
+            dlg.set_response_appearance("all", libadwaita::ResponseAppearance::Destructive);
+        } else {
+            dlg.set_response_appearance("me", libadwaita::ResponseAppearance::Destructive);
+        }
+        dlg.set_default_response(Some("cancel"));
+        dlg.set_close_response("cancel");
+        let page = self.clone();
+        dlg.connect_response(None, move |_, r| {
+            let (conv, ids) = (conv.clone(), ids.clone());
+            match r {
+                "me" => {
+                    chat::delete_for_me(&conv, &ids);
+                    page.end_selection();
+                }
+                "all" => {
+                    let toast = page.toast.clone();
+                    page.end_selection();
+                    super::run_in_background(move || chat::delete_for_all(&conv, &ids), move |r| {
+                        if let Err(e) = r {
+                            super::show_toast(&toast, &trf!("Could not delete: {error}", "error" => e), 6);
+                        }
+                    });
+                }
+                _ => {}
+            }
+        });
+        dlg.present();
+    }
+
+    fn start_selection(&self, id: &str) {
+        self.cancel_reply();
+        self.state.selecting.set(true);
+        self.state.selected.borrow_mut().clear();
+        self.toggle_select(id);
+        self.compose_stack.set_visible_child_name("select");
+    }
+
+    fn toggle_select(&self, id: &str) {
+        {
+            let mut sel = self.state.selected.borrow_mut();
+            if !sel.remove(id) {
+                sel.insert(id.to_string());
+            }
+        }
+        if self.state.selected.borrow().is_empty() {
+            self.end_selection();
+            return;
+        }
+        self.update_selection();
+    }
+
+    fn update_selection(&self) {
+        let sel = self.state.selected.borrow();
+        for (id, r) in self.state.rendered.borrow().iter() {
+            if sel.contains(id) {
+                r.holder.add_css_class("selected");
+            } else {
+                r.holder.remove_css_class("selected");
+            }
+        }
+        self.select_count.set_text(&if sel.len() == 1 {
+            tr!("1 selected")
+        } else {
+            trf!("{count} selected", "count" => sel.len().to_string())
+        });
+    }
+
+    fn end_selection(&self) {
+        if !self.state.selecting.replace(false) {
+            return;
+        }
+        self.state.selected.borrow_mut().clear();
+        self.update_selection();
+        self.compose_stack.set_visible_child_name("compose");
+    }
+
+    /// The selected messages, oldest first.
+    fn selected_in_order(&self) -> Vec<String> {
+        let Some(conv) = self.current() else { return vec![] };
+        let sel = self.state.selected.borrow();
+        chat::messages(&conv).into_iter().filter(|m| sel.contains(&m.id)).map(|m| m.id).collect()
+    }
+
+    /// Bring message `id` into view and make it flash.
+    fn scroll_to_message(&self, id: &str) {
+        let Some(holder) = self.state.rendered.borrow().get(id).map(|r| r.holder.clone()) else {
+            super::show_toast(&self.toast, &tr!("That message isn't here anymore."), 3);
+            return;
+        };
+        if let Some(p) = holder.compute_point(&self.messages, &gtk4::graphene::Point::new(0.0, 0.0)) {
+            let adj = self.scroll.vadjustment();
+            adj.set_value((f64::from(p.y()) - adj.page_size() / 3.0).max(0.0));
+        }
+        holder.add_css_class("flash");
+        glib::timeout_add_local_once(std::time::Duration::from_millis(1600), move || holder.remove_css_class("flash"));
+    }
+
+    fn clear_search(&self) {
+        self.state.search_hits.borrow_mut().clear();
+        self.search_count.set_text("");
+    }
+
+    /// Find `query` in this conversation (accents and case ignored); the
+    /// newest hit first.
+    fn search(&self, query: &str) {
+        let Some(conv) = self.current() else { return };
+        let q = super::emoji_picker::fold(query.trim());
+        if q.is_empty() {
+            self.clear_search();
+            return;
+        }
+        let hits: Vec<String> = chat::messages(&conv)
+            .into_iter()
+            .filter(|m| !m.deleted && super::emoji_picker::fold(&markdown::plain_text(&m.text)).contains(&q))
+            .map(|m| m.id)
+            .collect();
+        let n = hits.len();
+        *self.state.search_hits.borrow_mut() = hits;
+        if n == 0 {
+            self.search_count.set_text(&tr!("No results"));
+            return;
+        }
+        self.state.search_pos.set(n - 1);
+        self.show_hit();
+    }
+
+    /// Older (-1) or newer (+1) hit.
+    fn search_step(&self, delta: i32) {
+        let n = self.state.search_hits.borrow().len();
+        if n == 0 {
+            return;
+        }
+        let pos = (self.state.search_pos.get() as i32 + delta).clamp(0, n as i32 - 1) as usize;
+        self.state.search_pos.set(pos);
+        self.show_hit();
+    }
+
+    fn show_hit(&self) {
+        let hits = self.state.search_hits.borrow().clone();
+        let pos = self.state.search_pos.get();
+        if let Some(id) = hits.get(pos) {
+            self.search_count.set_text(&trf!("{n} of {total}", "n" => (pos + 1).to_string(), "total" => hits.len().to_string()));
+            self.scroll_to_message(id);
+        }
+    }
+
+    /// "typing…" under the conversation's name, for a few seconds.
+    fn show_typing(&self, conv: &ConvId, user: &str) {
+        if self.current().as_ref() != Some(conv) {
+            return;
+        }
+        let gen = self.state.typing_gen.get() + 1;
+        self.state.typing_gen.set(gen);
+        self.conv_subtitle.set_text(&if conv.is_group() {
+            trf!("{user} is typing…", "user" => user)
+        } else {
+            tr!("typing…")
+        });
+        self.conv_subtitle.add_css_class("typing");
+        let (page, conv) = (self.clone(), conv.clone());
+        glib::timeout_add_local_once(std::time::Duration::from_secs(5), move || {
+            if page.state.typing_gen.get() == gen {
+                page.conv_subtitle.remove_css_class("typing");
+                page.conv_subtitle.set_text(&if conv.is_group() { tr!("Group") } else { tr!("Direct conversation") });
+            }
+        });
+    }
 }

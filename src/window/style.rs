@@ -151,6 +151,67 @@ const CSS: &str = r#"
     font-size: 0.8em;
     font-weight: 600;
 }
+/* Replies, forwards, edits, deletions, reactions (Telegram-like). */
+.bubble-forwarded { font-size: 0.82em; font-style: italic; opacity: 0.85; }
+.bubble-reply {
+    padding: 3px 8px;
+    margin: 2px 0 3px 0;
+    border-left: 3px solid @accent_color;
+    border-radius: 6px;
+    background-color: alpha(currentColor, 0.08);
+}
+.bubble-reply-name { font-weight: 700; font-size: 0.85em; }
+.bubble-reply-text { font-size: 0.88em; opacity: 0.85; }
+.bubble.mine .bubble-reply { border-left-color: alpha(@accent_fg_color, 0.9); }
+.bubble.mine .bubble-reply .bubble-reply-name { color: @accent_fg_color; }
+.bubble-reply.reply-color-0 { border-left-color: #e66100; }
+.bubble-reply.reply-color-0 .bubble-reply-name { color: #e66100; }
+.bubble-reply.reply-color-1 { border-left-color: #2ec27e; }
+.bubble-reply.reply-color-1 .bubble-reply-name { color: #2ec27e; }
+.bubble-reply.reply-color-2 { border-left-color: #1c71d8; }
+.bubble-reply.reply-color-2 .bubble-reply-name { color: #1c71d8; }
+.bubble-reply.reply-color-3 { border-left-color: #c061cb; }
+.bubble-reply.reply-color-3 .bubble-reply-name { color: #c061cb; }
+.bubble-reply.reply-color-4 { border-left-color: #e5a50a; }
+.bubble-reply.reply-color-4 .bubble-reply-name { color: #e5a50a; }
+.bubble-reply.reply-color-5 { border-left-color: #26a1a2; }
+.bubble-reply.reply-color-5 .bubble-reply-name { color: #26a1a2; }
+.bubble-deleted { font-style: italic; opacity: 0.7; }
+.bubble-edited { font-style: italic; }
+.reactions { margin-top: 3px; }
+.reactions flowboxchild { padding: 0; }
+.reaction-chip {
+    min-height: 0;
+    padding: 1px 8px;
+    border-radius: 999px;
+    background-color: alpha(currentColor, 0.10);
+    font-size: 0.9em;
+}
+.reaction-chip.mine { background-color: alpha(@accent_bg_color, 0.85); color: @accent_fg_color; }
+.bubble.mine .reaction-chip.mine { background-color: alpha(@accent_fg_color, 0.9); color: @accent_bg_color; }
+popover.msg-actions > contents { padding: 6px; border-radius: 14px; min-width: 230px; }
+.react-row { padding: 2px 2px 6px 2px; }
+.react-pick { font-size: 20px; padding: 2px 5px; min-width: 0; min-height: 0; border-radius: 999px; background: none; box-shadow: none; }
+.react-pick:hover { background-color: alpha(currentColor, 0.10); }
+.react-more { min-width: 30px; min-height: 30px; border-radius: 999px; background: none; box-shadow: none; }
+.msg-action { padding: 6px 10px; border-radius: 8px; }
+.msg-action.destructive { color: @error_color; }
+/* A message being pointed at (reply, search) or selected. */
+.msg-row { border-radius: 10px; transition: background-color 300ms ease; }
+.msg-row.flash { background-color: alpha(@accent_bg_color, 0.22); }
+.msg-row.selected { background-color: alpha(@accent_bg_color, 0.16); }
+/* Pinned message, search, "replying to". */
+.pinned-bar { padding: 6px 14px; background-color: alpha(@view_bg_color, 0.6); border-bottom: 1px solid alpha(@view_fg_color, 0.08); }
+.pinned-icon { color: @accent_color; }
+.pinned-head { font-size: 0.8em; font-weight: 700; color: @accent_color; }
+.pinned-text { font-size: 0.9em; }
+.chat-search-bar { padding: 6px 12px; border-bottom: 1px solid alpha(@view_fg_color, 0.08); }
+.reply-bar { padding: 6px 12px; background-color: @view_bg_color; border-top: 1px solid alpha(@view_fg_color, 0.08); }
+.reply-bar-icon { color: @accent_color; }
+.reply-bar-title { font-weight: 700; font-size: 0.85em; color: @accent_color; }
+.reply-bar-text { font-size: 0.9em; opacity: 0.85; }
+.typing { color: @accent_color; font-style: italic; }
+
 /* Composer, flat like Telegram's: attach · text · emoji · mic/send. */
 .chat-composer {
     padding: 4px 8px;

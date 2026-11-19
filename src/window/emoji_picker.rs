@@ -114,7 +114,7 @@ fn all() -> &'static Vec<Emoji> {
 }
 
 /// Lowercase without accents: "Coração" and "coracao" match.
-fn fold(s: &str) -> String {
+pub(super) fn fold(s: &str) -> String {
     use unicode_normalization::UnicodeNormalization;
     s.nfd().filter(|c| !unicode_normalization::char::is_combining_mark(*c)).collect::<String>().to_lowercase()
 }

@@ -304,6 +304,49 @@ impl Composer {
         self.view.buffer().set_text("");
     }
 
+    /// Put a message's Markdown in the box, formatted (to edit it).
+    pub fn set_markdown(&self, md: &str) {
+        let buf = self.view.buffer();
+        buf.set_text("");
+        let table = buf.tag_table();
+        for run in from_markdown(md) {
+            let start = buf.end_iter().offset();
+            let mut end_iter = buf.end_iter();
+            buf.insert(&mut end_iter, &run.text);
+            let (s, e) = (buf.iter_at_offset(start), buf.end_iter());
+            let mut names: Vec<String> = Vec::new();
+            for (on, style) in [
+                (run.bold, Style::Bold),
+                (run.italic, Style::Italic),
+                (run.underline, Style::Underline),
+                (run.strike, Style::Strike),
+                (run.code, Style::Code),
+            ] {
+                if on {
+                    names.push(style.tag().to_string());
+                }
+            }
+            for name in names {
+                if let Some(tag) = table.lookup(&name) {
+                    buf.apply_tag(&tag, &s, &e);
+                }
+            }
+            if let Some(url) = &run.link {
+                let name = format!("{LINK_PREFIX}{url}");
+                let tag = table.lookup(&name).unwrap_or_else(|| {
+                    let t = gtk4::TextTag::new(Some(&name));
+                    t.set_underline(gtk4::pango::Underline::Single);
+                    t.set_foreground_rgba(Some(&gtk4::gdk::RGBA::new(0.21, 0.52, 0.89, 1.0)));
+                    table.add(&t);
+                    t
+                });
+                buf.apply_tag(&tag, &s, &e);
+            }
+        }
+        buf.place_cursor(&buf.end_iter());
+        self.view.grab_focus();
+    }
+
     /// The message as Markdown.
     pub fn markdown(&self) -> String {
         let buf = self.view.buffer();
@@ -364,6 +407,82 @@ impl Run {
             link: names.iter().find_map(|n| n.strip_prefix(LINK_PREFIX).map(str::to_string)),
         }
     }
+}
+
+/// Formatted runs for a message's Markdown (what `to_markdown` writes).
+fn from_markdown(md: &str) -> Vec<Run> {
+    use pulldown_cmark::{Event, Options, Parser, Tag, TagEnd};
+    let mut opts = Options::empty();
+    opts.insert(Options::ENABLE_STRIKETHROUGH);
+    let (mut bold, mut italic, mut underline, mut strike, mut code_block) = (0u32, 0u32, false, 0u32, false);
+    let mut link: Option<String> = None;
+    let mut runs: Vec<Run> = Vec::new();
+    let push = |runs: &mut Vec<Run>, text: &str, r: Run| {
+        if text.is_empty() {
+            return;
+        }
+        match runs.last_mut() {
+            Some(last) if Run { text: String::new(), ..last.clone() } == Run { text: String::new(), ..r.clone() } => {
+                last.text.push_str(text)
+            }
+            _ => runs.push(Run { text: text.to_string(), ..r }),
+        }
+    };
+    let mut paragraphs = 0;
+    for event in Parser::new_ext(md, opts) {
+        let style = Run {
+            text: String::new(),
+            bold: bold > 0,
+            italic: italic > 0,
+            underline,
+            strike: strike > 0,
+            code: code_block,
+            link: link.clone(),
+        };
+        match event {
+            Event::Start(Tag::Strong) => bold += 1,
+            Event::End(TagEnd::Strong) => bold = bold.saturating_sub(1),
+            Event::Start(Tag::Emphasis) => italic += 1,
+            Event::End(TagEnd::Emphasis) => italic = italic.saturating_sub(1),
+            Event::Start(Tag::Strikethrough) => strike += 1,
+            Event::End(TagEnd::Strikethrough) => strike = strike.saturating_sub(1),
+            Event::Start(Tag::Link { dest_url, .. }) => link = Some(dest_url.to_string()),
+            Event::End(TagEnd::Link) => link = None,
+            Event::Start(Tag::CodeBlock(_)) => code_block = true,
+            Event::End(TagEnd::CodeBlock) => {
+                code_block = false;
+                push(&mut runs, "\n", Run::default());
+            }
+            Event::Start(Tag::Paragraph) => {
+                if paragraphs > 0 {
+                    push(&mut runs, "\n\n", Run::default());
+                }
+                paragraphs += 1;
+            }
+            Event::Start(Tag::Item) => push(&mut runs, "- ", Run::default()),
+            Event::End(TagEnd::Item) => push(&mut runs, "\n", Run::default()),
+            Event::Text(t) => push(&mut runs, &t, style),
+            Event::Code(t) => push(&mut runs, &t, Run { code: true, ..style }),
+            Event::SoftBreak | Event::HardBreak => push(&mut runs, "\n", Run::default()),
+            Event::InlineHtml(h) | Event::Html(h) => match h.trim() {
+                "<u>" => underline = true,
+                "</u>" => underline = false,
+                other => push(&mut runs, other, style),
+            },
+            _ => {}
+        }
+    }
+    // No trailing blank lines.
+    while let Some(last) = runs.last_mut() {
+        let trimmed = last.text.trim_end_matches('\n').len();
+        if trimmed == 0 {
+            runs.pop();
+            continue;
+        }
+        last.text.truncate(trimmed);
+        break;
+    }
+    runs
 }
 
 /// Markdown for the formatted runs. Marks go around the words, never
@@ -437,6 +556,21 @@ fn to_markdown(runs: &[Run]) -> String {
 mod tests {
     use super::*;
     use crate::chat::markdown::to_pango;
+
+    /// What's loaded for editing comes back out as the same Markdown.
+    #[test]
+    fn markdown_round_trips_through_the_box() {
+        for md in [
+            "plain text",
+            "**bold** and _italic_ and ~~gone~~",
+            "a `code` word",
+            "see [the site](https://biglinux.com.br) now",
+            "<u>under</u> line",
+            "two\nlines",
+        ] {
+            assert_eq!(to_markdown(&from_markdown(md)), md, "{md}");
+        }
+    }
 
     fn run(text: &str) -> Run {
         Run { text: text.into(), ..Default::default() }

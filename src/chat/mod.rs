@@ -18,7 +18,7 @@ pub mod voice;
 
 pub use files::{Attachment, FileKind, FileState, Offer};
 
-use std::collections::{HashMap, HashSet};
+use std::collections::{BTreeMap, HashMap, HashSet};
 use std::io::{BufReader, Write};
 use std::net::{IpAddr, TcpStream};
 use std::path::{Path, PathBuf};
@@ -92,6 +92,61 @@ pub struct Message {
     /// A file, picture, video or voice message (direct conversations).
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub file: Option<Attachment>,
+    /// The message this one answers.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub reply_to: Option<ReplyRef>,
+    /// Forwarded: who wrote it first.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub forwarded_from: Option<String>,
+    /// Emoji → who reacted with it.
+    #[serde(default, skip_serializing_if = "BTreeMap::is_empty")]
+    pub reactions: BTreeMap<String, Vec<String>>,
+    /// When it was last edited (ms), 0 if never.
+    #[serde(default, skip_serializing_if = "is_zero")]
+    pub edited_at: u64,
+    /// Deleted by its author: only "deleted" remains.
+    #[serde(default, skip_serializing_if = "std::ops::Not::not")]
+    pub deleted: bool,
+}
+
+fn is_zero(n: &u64) -> bool {
+    *n == 0
+}
+
+/// What a reply shows of the message it answers.
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+pub struct ReplyRef {
+    pub id: String,
+    pub from: String,
+    /// A line of it (plain text).
+    pub preview: String,
+}
+
+impl ReplyRef {
+    fn valid(&self) -> bool {
+        !self.id.is_empty() && self.id.len() <= 64 && name_ok(&self.from) && self.preview.len() <= 400
+    }
+}
+
+/// Something done to a message (or a conversation) instead of writing one.
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(tag = "type", rename_all = "lowercase")]
+pub enum Op {
+    /// Add (or take back) a reaction.
+    React { target: String, emoji: String, on: bool },
+    /// The author changed the text.
+    Edit { target: String, text: String },
+    /// The author deleted it for everyone.
+    Delete { target: String },
+    /// Pin a message to the top of the conversation (`None`: unpin).
+    Pin { target: Option<String> },
+    /// Typing right now (not kept).
+    Typing,
+}
+
+/// One emoji (or a short sequence of them) as a reaction.
+fn emoji_ok(e: &str) -> bool {
+    !e.is_empty() && e.len() <= 32 && !e.chars().any(|c| c.is_whitespace() || c.is_control() || c.is_ascii_alphanumeric())
 }
 
 #[derive(Debug, Clone, Default, Serialize, Deserialize)]
@@ -100,6 +155,9 @@ struct Conversation {
     /// Messages received and not seen yet.
     #[serde(default)]
     unread: u32,
+    /// The pinned message.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pinned: Option<String>,
 }
 
 /// What travels between devices.
@@ -113,6 +171,14 @@ struct Wire {
     /// A file offered for download from the sender's computer.
     #[serde(default, skip_serializing_if = "Option::is_none")]
     file: Option<Offer>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    reply_to: Option<ReplyRef>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    forwarded_from: Option<String>,
+    /// Not a message but something done to one; `text` then is what older
+    /// versions show instead ("reacted with ❤️"…).
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    op: Option<Op>,
 }
 
 /// A message waiting to reach one device.
@@ -144,6 +210,8 @@ pub enum ChatEvent {
     Progress { conv: ConvId, id: String, done: u64, total: u64 },
     /// A download stopped short (the sender's computer is off…).
     TransferFailed { conv: ConvId, id: String, reason: String },
+    /// Someone is typing in this conversation.
+    Typing { conv: ConvId, user: String },
 }
 
 /// The history and the outbox, on disk under `dir`.
@@ -218,6 +286,71 @@ impl Store {
             .collect();
         out.sort_by(|a, b| b.last.as_ref().map(|m| m.at).cmp(&a.last.as_ref().map(|m| m.at)).then(a.id.cmp(&b.id)));
         out
+    }
+
+    /// `sender` did `op` in `conv`. True when something changed.
+    fn apply_op(&mut self, conv: &ConvId, sender: &str, op: &Op) -> bool {
+        let Some(c) = self.convs.get_mut(conv) else { return false };
+        let find = |c: &mut Conversation, id: &str| c.messages.iter().position(|m| m.id == id);
+        let changed = match op {
+            Op::React { target, emoji, on } => {
+                if !emoji_ok(emoji) {
+                    return false;
+                }
+                let Some(i) = find(c, target) else { return false };
+                let m = &mut c.messages[i];
+                if m.deleted {
+                    return false;
+                }
+                let who = m.reactions.entry(emoji.clone()).or_default();
+                let had = who.iter().any(|u| u == sender);
+                if *on && !had {
+                    who.push(sender.to_string());
+                } else if !*on && had {
+                    who.retain(|u| u != sender);
+                }
+                m.reactions.retain(|_, users| !users.is_empty());
+                *on != had
+            }
+            Op::Edit { target, text } => {
+                let Some(i) = find(c, target) else { return false };
+                let m = &mut c.messages[i];
+                if m.from != sender || m.deleted || text.trim().is_empty() || text.len() > MAX_TEXT || m.text == *text {
+                    return false;
+                }
+                m.text = text.clone();
+                m.edited_at = now_ms();
+                true
+            }
+            Op::Delete { target } => {
+                let Some(i) = find(c, target) else { return false };
+                let m = &mut c.messages[i];
+                if m.from != sender || m.deleted {
+                    return false;
+                }
+                m.deleted = true;
+                m.text.clear();
+                m.file = None;
+                m.reply_to = None;
+                m.reactions.clear();
+                if c.pinned.as_deref() == Some(target.as_str()) {
+                    c.pinned = None;
+                }
+                true
+            }
+            Op::Pin { target } => {
+                if target.as_ref().is_some_and(|t| find(c, t).is_none()) || c.pinned == *target {
+                    return false;
+                }
+                c.pinned = target.clone();
+                true
+            }
+            Op::Typing => false,
+        };
+        if changed {
+            self.save(conv);
+        }
+        changed
     }
 
     /// The message `id` of `conv`, to change it (saved by the caller).
@@ -342,6 +475,11 @@ pub fn seed_preview() -> Option<ConvId> {
         mine,
         delivered: delivered.iter().map(|s| s.to_string()).collect(),
         file: None,
+        reply_to: None,
+        forwarded_from: None,
+        reactions: BTreeMap::new(),
+        edited_at: 0,
+        deleted: false,
     };
     let dm = ConvId::direct("bruna");
     let grp = ConvId::group("familia");
@@ -431,6 +569,26 @@ pub fn seed_preview() -> Option<ConvId> {
             s.add(&dm, msg, false);
         }
     }
+    // Telegram-like extras: a reply, reactions, an edit, a deletion, a
+    // forward, and a pinned message.
+    {
+        let mut reply = m("x1", "bruna", false, "Achei! Vou te mandar agora", now - 8_000, &[]);
+        reply.reply_to = Some(ReplyRef { id: "p4".into(), from: "bruna".into(), preview: "Me manda o link daquele tutorial?".into() });
+        let mut edited = m("x2", "tales", true, "Combinado, **às 15h** então", now - 7_000, &["bruna"]);
+        edited.edited_at = now - 6_000;
+        edited.reactions.insert("👍".into(), vec!["bruna".into()]);
+        edited.reactions.insert("❤️".into(), vec!["bruna".into(), "tales".into()]);
+        let mut gone = m("x3", "bruna", false, "", now - 5_000, &[]);
+        gone.deleted = true;
+        let mut fwd = m("x4", "tales", true, "Atualização do BigLinux sai amanhã 🎉", now - 4_000, &["bruna"]);
+        fwd.forwarded_from = Some("bruno".into());
+        for msg in [reply, edited, gone, fwd] {
+            s.add(&dm, msg, false);
+        }
+        if let Some(c) = s.convs.get_mut(&dm) {
+            c.pinned = Some("x2".into());
+        }
+    }
     for msg in [
         m("g1", "bruno", false, "Bom dia, família! ☀️", now - 7_200_000, &[]),
         m("g2", "maria", false, "Bom dia!! Alguém vai no almoço de domingo?", now - 7_100_000, &[]),
@@ -503,19 +661,54 @@ fn now_ms() -> u64 {
     crate::remote::now_us() / 1000
 }
 
-/// Write `text` in `conv`. Blocking (looks up who should get it): call off
-/// the UI thread.
-pub fn send(conv: &ConvId, text: &str) -> Result<(), String> {
+/// Write `text` in `conv`, answering message `reply_to` (if any).
+/// Blocking (looks up who should get it): call off the UI thread.
+pub fn send_reply(conv: &ConvId, text: &str, reply_to: Option<&str>) -> Result<(), String> {
     let text = text.trim_end();
     if text.trim().is_empty() {
         return Ok(());
     }
-    post(conv, text, None).map(|_| ())
+    let reply = reply_to.and_then(|id| reply_ref(conv, id));
+    post_with(conv, text, None, Extra { reply_to: reply, ..Extra::default() }).map(|_| ())
+}
+
+/// What a reply to message `id` of `conv` shows.
+fn reply_ref(conv: &ConvId, id: &str) -> Option<ReplyRef> {
+    let m = messages(conv).into_iter().find(|m| m.id == id && !m.deleted)?;
+    Some(ReplyRef { id: m.id.clone(), from: m.from.clone(), preview: preview_line(&m) })
+}
+
+/// One line about a message (plain): its text, or what its file is.
+pub fn preview_line(m: &Message) -> String {
+    let text = markdown::plain_text(&m.text);
+    let line: String = text.split_whitespace().collect::<Vec<_>>().join(" ");
+    let line = if line.is_empty() {
+        m.file.as_ref().map(|f| f.offer.name.clone()).unwrap_or_default()
+    } else {
+        line
+    };
+    if line.chars().count() > 120 {
+        format!("{}…", line.chars().take(120).collect::<String>())
+    } else {
+        line
+    }
+}
+
+/// What comes with a message besides its text.
+#[derive(Default)]
+struct Extra {
+    reply_to: Option<ReplyRef>,
+    forwarded_from: Option<String>,
+    op: Option<Op>,
 }
 
 /// Put a message (with or without a file) in `conv` and queue it for every
 /// recipient device. Returns its id.
 fn post(conv: &ConvId, text: &str, file: Option<(Offer, PathBuf)>) -> Result<String, String> {
+    post_with(conv, text, file, Extra::default())
+}
+
+fn post_with(conv: &ConvId, text: &str, file: Option<(Offer, PathBuf)>, extra: Extra) -> Result<String, String> {
     if !conv.valid() {
         return Err("invalid conversation".into());
     }
@@ -543,6 +736,9 @@ fn post(conv: &ConvId, text: &str, file: Option<(Offer, PathBuf)>) -> Result<Str
         text: text.to_string(),
         at: now_ms(),
         file: file.as_ref().map(|(o, _)| o.clone()),
+        reply_to: extra.reply_to.clone(),
+        forwarded_from: extra.forwarded_from.clone(),
+        op: extra.op.clone(),
     };
     let device = tailscale::get_status().hostname.unwrap_or_default();
     let message = Message {
@@ -558,6 +754,11 @@ fn post(conv: &ConvId, text: &str, file: Option<(Offer, PathBuf)>) -> Result<Str
             path: Some(path.to_string_lossy().into_owned()),
             state: FileState::Done,
         }),
+        reply_to: extra.reply_to,
+        forwarded_from: extra.forwarded_from,
+        reactions: BTreeMap::new(),
+        edited_at: 0,
+        deleted: false,
     };
     if let Some((o, path)) = &file {
         // Served to the recipient (and our own devices) when they ask.
@@ -575,13 +776,172 @@ fn post(conv: &ConvId, text: &str, file: Option<(Offer, PathBuf)>) -> Result<Str
         }
     }
     if let Ok(mut s) = store().lock() {
-        s.add(conv, message, false);
+        // An op changes what's here; a message is added.
+        match &extra.op {
+            Some(op) => {
+                s.apply_op(conv, &me.user, op);
+            }
+            None => {
+                s.add(conv, message, false);
+            }
+        }
         s.outbox.extend(pending);
         s.save_outbox();
     }
     emit(ChatEvent::Changed(conv.clone()));
     kick();
     Ok(wire.id)
+}
+
+/// Do `op` in `conv`, for everyone there; `fallback` is what older
+/// versions show instead.
+fn send_op(conv: &ConvId, op: Op, fallback: String) -> Result<(), String> {
+    post_with(conv, &fallback, None, Extra { op: Some(op), ..Extra::default() }).map(|_| ())
+}
+
+/// Add our reaction `emoji` to message `target`, or take it back if it's
+/// there already.
+pub fn react(conv: &ConvId, target: &str, emoji: &str) -> Result<(), String> {
+    if !emoji_ok(emoji) {
+        return Err("not an emoji".into());
+    }
+    let me = my_user().unwrap_or_default();
+    let m = messages(conv).into_iter().find(|m| m.id == target).ok_or("message not found")?;
+    let on = !m.reactions.get(emoji).is_some_and(|who| who.contains(&me));
+    let fallback = crate::trf!("{emoji} (reaction to: {text})", "emoji" => emoji, "text" => preview_line(&m));
+    send_op(conv, Op::React { target: target.into(), emoji: emoji.into(), on }, fallback)
+}
+
+/// Change the text of our message `target`.
+pub fn edit(conv: &ConvId, target: &str, text: &str) -> Result<(), String> {
+    let text = text.trim_end();
+    if text.trim().is_empty() || text.len() > MAX_TEXT {
+        return Err(crate::tr!("message too long"));
+    }
+    let fallback = crate::trf!("✏️ (edited) {text}", "text" => text);
+    send_op(conv, Op::Edit { target: target.into(), text: text.into() }, fallback)
+}
+
+/// Delete our messages `targets` for everyone.
+pub fn delete_for_all(conv: &ConvId, targets: &[String]) -> Result<(), String> {
+    for t in targets {
+        send_op(conv, Op::Delete { target: t.clone() }, crate::tr!("🗑 (deleted a message)"))?;
+    }
+    Ok(())
+}
+
+/// Remove messages from this computer only.
+pub fn delete_for_me(conv: &ConvId, targets: &[String]) {
+    if let Ok(mut s) = store().lock() {
+        if let Some(c) = s.convs.get_mut(conv) {
+            c.messages.retain(|m| !targets.contains(&m.id));
+            if c.pinned.as_ref().is_some_and(|p| targets.contains(p)) {
+                c.pinned = None;
+            }
+        }
+        s.save(conv);
+    }
+    emit(ChatEvent::Changed(conv.clone()));
+}
+
+/// Pin message `target` to the top of `conv` (None: unpin).
+pub fn pin(conv: &ConvId, target: Option<&str>) -> Result<(), String> {
+    let fallback = match target.and_then(|t| messages(conv).into_iter().find(|m| m.id == t)) {
+        Some(m) => crate::trf!("📌 (pinned: {text})", "text" => preview_line(&m)),
+        None => crate::tr!("📌 (unpinned the message)"),
+    };
+    send_op(conv, Op::Pin { target: target.map(str::to_string) }, fallback)
+}
+
+/// The pinned message of `conv`.
+pub fn pinned(conv: &ConvId) -> Option<Message> {
+    let s = store().lock().ok()?;
+    let c = s.convs.get(conv)?;
+    let id = c.pinned.as_ref()?;
+    c.messages.iter().find(|m| &m.id == id).cloned()
+}
+
+/// Send messages `ids` of `from` to the conversation `to`.
+pub fn forward(to: &ConvId, from: &ConvId, ids: &[String]) -> Result<(), String> {
+    let all = messages(from);
+    for id in ids {
+        let Some(m) = all.iter().find(|m| &m.id == id && !m.deleted) else { continue };
+        let author = m.forwarded_from.clone().unwrap_or_else(|| m.from.clone());
+        if let Some(path) = m.file.as_ref().and_then(Attachment::local) {
+            if !to.is_group() {
+                files::send_file(to, &path)?;
+            }
+        }
+        if !m.text.trim().is_empty() {
+            post_with(to, &m.text, None, Extra { forwarded_from: Some(author), ..Extra::default() })?;
+        }
+    }
+    Ok(())
+}
+
+/// We're typing in `conv`: tell the others (at most every few seconds; not
+/// kept, only to devices that understand it).
+pub fn typing(conv: &ConvId) {
+    static LAST: OnceLock<Mutex<HashMap<ConvId, Instant>>> = OnceLock::new();
+    {
+        let Ok(mut last) = LAST.get_or_init(Default::default).lock() else { return };
+        if last.get(conv).is_some_and(|t| t.elapsed() < Duration::from_secs(3)) {
+            return;
+        }
+        last.insert(conv.clone(), Instant::now());
+    }
+    let conv = conv.clone();
+    let _ = std::thread::Builder::new().name("biglace-typing".into()).spawn(move || {
+        let Some(me) = me(Duration::from_secs(300)) else { return };
+        let recipients: Vec<String> = if conv.is_group() {
+            me.groups.get(&conv.name).cloned().unwrap_or_default().into_iter().filter(|u| *u != me.user).collect()
+        } else {
+            vec![conv.name.clone()]
+        };
+        let wire = Wire {
+            id: new_id(),
+            conv: conv.clone(),
+            text: String::new(),
+            at: now_ms(),
+            file: None,
+            reply_to: None,
+            forwarded_from: None,
+            op: Some(Op::Typing),
+        };
+        for p in tailscale::get_peers() {
+            if !p.online || p.ipv4.is_empty() || !recipients.contains(&p.user) || !understands_ops(&p.ipv4) {
+                continue;
+            }
+            let item = Pending { wire: wire.clone(), to_user: p.user.clone(), node: p.id.clone() };
+            let _ = deliver_to(&p.ipv4, &[item]);
+        }
+    });
+}
+
+/// Announced by versions that understand ops (reactions, edits…).
+pub const OPS_CAPABILITY: &str = "chat2";
+
+/// The BigLace at `ip` understands ops. A "no" from the shared cache (up
+/// to minutes old: the peer may have just upgraded) is checked again, and
+/// fresh "no"s are kept for a minute so older peers aren't asked each time.
+fn understands_ops(ip: &str) -> bool {
+    if crate::agent::client::cached(ip).is_some_and(|h| h.supports(OPS_CAPABILITY)) {
+        return true;
+    }
+    static NO: OnceLock<Mutex<HashMap<String, Instant>>> = OnceLock::new();
+    let no = NO.get_or_init(Default::default);
+    if no.lock().is_ok_and(|n| n.get(ip).is_some_and(|t| t.elapsed() < Duration::from_secs(60))) {
+        return false;
+    }
+    let yes = crate::agent::client::probe(ip).is_some_and(|h| h.supports(OPS_CAPABILITY));
+    if let Ok(mut n) = no.lock() {
+        if yes {
+            n.remove(ip);
+        } else {
+            n.insert(ip.to_string(), Instant::now());
+        }
+    }
+    yes
 }
 
 // ─── Delivery ───────────────────────────────────────────────────────────────
@@ -630,6 +990,25 @@ fn deliver_pending() {
             continue;
         };
         if !peer.online || peer.ipv4.is_empty() {
+            continue;
+        }
+        // Older versions: ops become their plain-text stand-in; those with
+        // nothing to say (a reaction taken back, typing) are skipped.
+        let items: Vec<Pending> = if items.iter().any(|p| p.wire.op.is_some()) && !understands_ops(&peer.ipv4) {
+            let (silent, rest): (Vec<Pending>, Vec<Pending>) = items.into_iter().partition(|p| {
+                matches!(p.wire.op, Some(Op::React { on: false, .. }) | Some(Op::Typing))
+            });
+            drop_pending(&silent);
+            rest.into_iter()
+                .map(|mut p| {
+                    p.wire.op = None;
+                    p
+                })
+                .collect()
+        } else {
+            items
+        };
+        if items.is_empty() {
             continue;
         }
         match deliver_to(&peer.ipv4, &items) {
@@ -722,6 +1101,9 @@ fn place(wire: &Wire, sender: &str, me: &Me) -> Option<(ConvId, bool)> {
             return None;
         }
     }
+    if wire.reply_to.as_ref().is_some_and(|r| !r.valid()) || wire.forwarded_from.as_ref().is_some_and(|f| !name_ok(f)) {
+        return None;
+    }
     let mine = sender == me.user;
     if wire.conv.is_group() {
         let members = me.groups.get(&wire.conv.name)?;
@@ -774,6 +1156,14 @@ pub fn accept(stream: TcpStream, peer: IpAddr, headers: &HashMap<String, String>
                 placed = place(&wire, &sender, &me);
             }
         }
+        if let (Some((conv, _)), Some(op)) = (&placed, &wire.op) {
+            if *op == Op::Typing {
+                emit(ChatEvent::Typing { conv: conv.clone(), user: sender.clone() });
+            } else if store().lock().map(|mut s| s.apply_op(conv, &sender, op)).unwrap_or(false) {
+                emit(ChatEvent::Changed(conv.clone()));
+            }
+            placed = None;
+        }
         if let Some((conv, mine)) = placed {
             let message = Message {
                 id: wire.id.clone(),
@@ -784,6 +1174,11 @@ pub fn accept(stream: TcpStream, peer: IpAddr, headers: &HashMap<String, String>
                 mine,
                 delivered: vec![],
                 file: wire.file.clone().map(|offer| Attachment { offer, path: None, state: FileState::Offered }),
+                reply_to: wire.reply_to.clone(),
+                forwarded_from: wire.forwarded_from.clone(),
+                reactions: BTreeMap::new(),
+                edited_at: 0,
+                deleted: false,
             };
             let added = store().lock().map(|mut s| s.add(&conv, message.clone(), !mine)).unwrap_or(false);
             if added {
@@ -819,7 +1214,7 @@ mod tests {
     }
 
     fn wire(conv: ConvId) -> Wire {
-        Wire { id: "a1".into(), conv, text: "oi".into(), at: 1, file: None }
+        Wire { id: "a1".into(), conv, text: "oi".into(), at: 1, file: None, reply_to: None, forwarded_from: None, op: None }
     }
 
     #[test]
@@ -843,6 +1238,70 @@ mod tests {
         assert_eq!(place(&big, "bruna", &me), None);
     }
 
+    /// Reactions toggle per person; only the author edits or deletes;
+    /// pins follow what's there.
+    #[test]
+    fn ops_change_messages_by_the_rules() {
+        let dir = std::env::temp_dir().join(format!("biglace-chat-ops-{}", new_id()));
+        let conv = ConvId::group("familia");
+        let mut s = Store::open(&dir);
+        let msg = |id: &str, from: &str| Message {
+            id: id.into(),
+            from: from.into(),
+            device: String::new(),
+            text: "oi".into(),
+            at: 1,
+            mine: false,
+            delivered: vec![],
+            file: None,
+            reply_to: None,
+            forwarded_from: None,
+            reactions: BTreeMap::new(),
+            edited_at: 0,
+            deleted: false,
+        };
+        s.add(&conv, msg("m1", "bruna"), false);
+        let react = |emoji: &str, on: bool| Op::React { target: "m1".into(), emoji: emoji.into(), on };
+        assert!(s.apply_op(&conv, "tales", &react("❤️", true)));
+        assert!(!s.apply_op(&conv, "tales", &react("❤️", true)), "already there");
+        assert!(s.apply_op(&conv, "bruna", &react("❤️", true)));
+        assert_eq!(s.convs[&conv].messages[0].reactions["❤️"], ["tales", "bruna"]);
+        assert!(s.apply_op(&conv, "tales", &react("❤️", false)));
+        assert_eq!(s.convs[&conv].messages[0].reactions["❤️"], ["bruna"]);
+        assert!(!s.apply_op(&conv, "tales", &react("abc", true)), "not an emoji");
+        // Only Bruna edits or deletes her message.
+        let edit = Op::Edit { target: "m1".into(), text: "olá".into() };
+        assert!(!s.apply_op(&conv, "tales", &edit));
+        assert!(s.apply_op(&conv, "bruna", &edit));
+        assert_eq!(s.convs[&conv].messages[0].text, "olá");
+        assert!(s.convs[&conv].messages[0].edited_at > 0);
+        assert!(s.apply_op(&conv, "tales", &Op::Pin { target: Some("m1".into()) }));
+        assert!(!s.apply_op(&conv, "tales", &Op::Pin { target: Some("nope".into()) }), "unknown message");
+        let del = Op::Delete { target: "m1".into() };
+        assert!(!s.apply_op(&conv, "tales", &del));
+        assert!(s.apply_op(&conv, "bruna", &del));
+        let m = &s.convs[&conv].messages[0];
+        assert!(m.deleted && m.text.is_empty() && m.reactions.is_empty());
+        assert_eq!(s.convs[&conv].pinned, None, "a deleted message isn't pinned");
+        // Saved: reopened, the same.
+        let again = Store::open(&dir);
+        assert!(again.convs[&conv].messages[0].deleted);
+        let _ = std::fs::remove_dir_all(&dir);
+    }
+
+    /// Older versions read an op as a plain message (its stand-in text).
+    #[test]
+    fn ops_stay_readable_by_older_versions() {
+        let mut w = wire(ConvId::direct("bruna"));
+        w.text = "❤️ (reaction to: oi)".into();
+        w.op = Some(Op::React { target: "x".into(), emoji: "❤️".into(), on: true });
+        let json = serde_json::to_value(&w).unwrap();
+        assert_eq!(json["text"], "❤️ (reaction to: oi)");
+        assert_eq!(json["op"]["type"], "react");
+        let back: Wire = serde_json::from_value(json).unwrap();
+        assert_eq!(back.op, w.op);
+    }
+
     #[test]
     fn history_is_kept_in_order_without_duplicates() {
         let dir = std::env::temp_dir().join(format!("biglace-chat-test-{}", new_id()));
@@ -856,6 +1315,11 @@ mod tests {
             mine: false,
             delivered: vec![],
             file: None,
+            reply_to: None,
+            forwarded_from: None,
+            reactions: BTreeMap::new(),
+            edited_at: 0,
+            deleted: false,
         };
         {
             let mut s = Store::open(&dir);
