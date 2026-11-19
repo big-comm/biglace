@@ -68,7 +68,10 @@ fn store(ip: &str, sample: &gst::Sample) {
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct Device {
     pub name: String,
+    /// The V4L2 device behind it (what identifies it across restarts).
     pub path: String,
+    /// Its PipeWire node (`object.serial`), when PipeWire manages it.
+    pub serial: Option<String>,
 }
 
 /// Cameras plugged in (V4L2 capture devices).
@@ -81,35 +84,96 @@ pub fn devices() -> Vec<Device> {
     if monitor.start().is_err() {
         return vec![];
     }
-    let mut out = Vec::new();
+    let mut out: Vec<Device> = Vec::new();
     for d in monitor.devices() {
         let props = d.properties();
-        let path = props
-            .as_ref()
-            .and_then(|p| p.get::<String>("api.v4l2.path").ok().or_else(|| p.get::<String>("device.path").ok()))
-            .unwrap_or_default();
-        if path.is_empty() || out.iter().any(|x: &Device| x.path == path) {
+        let get = |k: &str| props.as_ref().and_then(|p| p.get::<String>(k).ok()).filter(|v| !v.is_empty());
+        let path = get("api.v4l2.path").or_else(|| get("device.path")).unwrap_or_default();
+        // PipeWire lists each camera too: that's the way to open it, shared
+        // with other programs instead of taking the device for ourselves.
+        let serial = get("object.serial").or_else(|| props.as_ref().and_then(|p| p.get::<i64>("object.serial").ok()).map(|n| n.to_string()));
+        if path.is_empty() {
+            continue;
+        }
+        if let Some(known) = out.iter_mut().find(|x| x.path == path) {
+            if known.serial.is_none() {
+                known.serial = serial;
+            }
             continue;
         }
         // Only devices that really capture (not metadata nodes).
         let caps_ok = d.caps().is_some_and(|c| c.iter().any(|s| s.name().starts_with("video/x-raw") || s.name() == "image/jpeg"));
         if caps_ok {
-            out.push(Device { name: d.display_name().to_string(), path });
+            out.push(Device { name: d.display_name().to_string(), path, serial });
         }
     }
     monitor.stop();
     out
 }
 
+/// How the camera is reached.
+enum Access {
+    /// Through the desktop's camera portal: its PipeWire connection.
+    Portal(std::os::fd::OwnedFd),
+    /// The session's PipeWire (no camera portal here).
+    PipeWire,
+    /// No PipeWire plugin for GStreamer: the device itself.
+    Direct,
+}
+
+/// Ask the desktop for the camera (the Camera portal: it may ask the person,
+/// and shows that the camera is in use). `Err` = the person said no.
+#[cfg(target_os = "linux")]
+fn access() -> Result<Access, String> {
+    if gst::ElementFactory::find("pipewiresrc").is_none() {
+        return Ok(Access::Direct);
+    }
+    use ashpd::desktop::camera::Camera;
+    let result: Result<Option<std::os::fd::OwnedFd>, Option<String>> = ashpd::zbus::block_on(async {
+        let conn = ashpd::zbus::Connection::session().await.map_err(|_| None)?;
+        if let Ok(app_id) = ashpd::AppID::try_from(crate::APP_ID) {
+            let _ = ashpd::register_host_app_with_connection(conn.clone(), app_id).await;
+        }
+        let cam = Camera::with_connection(conn).await.map_err(|_| None)?;
+        let request = cam.request_access(Default::default()).await.map_err(|_| None)?;
+        match request.response() {
+            Ok(()) => {}
+            Err(ashpd::Error::Response(ashpd::desktop::ResponseError::Cancelled)) => {
+                return Err(Some(crate::tr!("access to the camera was refused")));
+            }
+            Err(_) => return Err(None),
+        }
+        if !cam.is_present().await.unwrap_or(true) {
+            return Ok(None);
+        }
+        cam.open_pipe_wire_remote(Default::default()).await.map(Some).map_err(|_| None)
+    });
+    match result {
+        Ok(Some(fd)) => Ok(Access::Portal(fd)),
+        Ok(None) | Err(None) => Ok(Access::PipeWire),
+        Err(Some(refused)) => Err(refused),
+    }
+}
+
 /// The source part of the capture pipeline.
-fn source_desc(path: Option<&str>) -> String {
+fn source_desc(device: Option<&Device>, access: &Access) -> String {
     // Development and tests on machines without a camera.
     if std::env::var_os("BIGLACE_FAKE_CAMERA").is_some() {
         return "videotestsrc is-live=true pattern=ball".into();
     }
-    match path {
-        Some(p) => format!("v4l2src device={p} ! decodebin"),
-        None => "v4l2src ! decodebin".into(),
+    match access {
+        Access::Portal(_) | Access::PipeWire => {
+            let fd = match access {
+                Access::Portal(fd) => format!(" fd={}", std::os::fd::AsRawFd::as_raw_fd(fd)),
+                _ => String::new(),
+            };
+            let target = device.and_then(|d| d.serial.as_deref()).map(|s| format!(" target-object={s}")).unwrap_or_default();
+            format!("pipewiresrc{fd}{target} always-copy=true ! decodebin")
+        }
+        Access::Direct => match device {
+            Some(d) => format!("v4l2src device={} ! decodebin", d.path),
+            None => "v4l2src ! decodebin".into(),
+        },
     }
 }
 
@@ -117,6 +181,8 @@ fn source_desc(path: Option<&str>) -> String {
 pub struct Capture {
     pipeline: gst::Pipeline,
     alive: Arc<AtomicBool>,
+    /// The portal's PipeWire connection, open while we capture.
+    _access: Access,
 }
 
 impl Drop for Capture {
@@ -131,6 +197,11 @@ impl Drop for Capture {
 /// `frame(my_ip)`.
 pub fn start(path: Option<&str>, my_ip: &str, send: impl Fn(&[u8]) + Send + Sync + 'static) -> Result<Capture, String> {
     gst::init().map_err(|e| e.to_string())?;
+    let fake = std::env::var_os("BIGLACE_FAKE_CAMERA").is_some();
+    let access = if fake { Access::Direct } else { access()? };
+    // The chosen camera (by its device), with its PipeWire node.
+    let device = if fake { None } else { path.and_then(|p| devices().into_iter().find(|d| d.path == p)) };
+    let device = device.or_else(|| path.map(|p| Device { name: String::new(), path: p.to_string(), serial: None }));
     let enc = encoder();
     let desc = format!(
         "{src} ! videoconvert ! videoscale ! videorate \
@@ -141,7 +212,7 @@ pub fn start(path: Option<&str>, my_ip: &str, send: impl Fn(&[u8]) + Send + Sync
          t. ! queue max-size-buffers=2 leaky=downstream ! {enc} \
             ! h264parse config-interval=-1 ! video/x-h264,stream-format=byte-stream,alignment=au \
             ! appsink name=enc sync=false max-buffers=4 drop=true",
-        src = source_desc(path)
+        src = source_desc(device.as_ref(), &access)
     );
     let pipeline = gst::parse::launch(&desc)
         .map_err(|e| e.to_string())?
@@ -187,7 +258,15 @@ pub fn start(path: Option<&str>, my_ip: &str, send: impl Fn(&[u8]) + Send + Sync
             }
         }
     }
-    Ok(Capture { pipeline, alive })
+    crate::tailscale::dbg(&format!(
+        "room: camera through {}",
+        match access {
+            Access::Portal(_) => "the camera portal (PipeWire)",
+            Access::PipeWire => "PipeWire",
+            Access::Direct => "the device",
+        }
+    ));
+    Ok(Capture { pipeline, alive, _access: access })
 }
 
 /// A light, low-delay H.264 encoder: the GPU's when there is one.

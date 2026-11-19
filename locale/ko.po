@@ -65,8 +65,253 @@ msgstr "pkexec tailscale set 실행 실패"
 msgid "Failed to set tailscale operator."
 msgstr "tailscale 운영자 설정 실패"
 
+msgid "Invite someone"
+msgstr "사람 초대"
+
+msgid "Open admin panel"
+msgstr "관리자 패널 열기"
+
+msgid "Devices"
+msgstr "기기"
+
+msgid "Chat"
+msgstr "채팅"
+
+msgid "Invites"
+msgstr "초대"
+
+msgid "Groups"
+msgstr "그룹"
+
+msgid "Rooms"
+msgstr "룸"
+
+msgid "Pictures"
+msgstr "사진"
+
+msgid "Choose your photo"
+msgstr "사진 선택"
+
+msgid "Photo updated. Everyone you're connected to will see it."
+msgstr "사진을 업데이트했습니다. 연결된 모든 사람이 볼 수 있습니다."
+
+#, rust-format
+msgid "Could not change the photo: {error}"
+msgstr "사진을 변경할 수 없습니다: {error}"
+
+msgid "Sign in with an access key"
+msgstr "액세스 키로 로그인"
+
+msgid ""
+"Paste the key the administrator gave you. It's used once, to register this "
+"device."
+msgstr "관리자가 준 키를 붙여넣으세요. 이 기기를 등록할 때 한 번만 사용됩니다."
+
+msgid "Server URL"
+msgstr "서버 URL"
+
+msgid "Access key"
+msgstr "액세스 키"
+
+msgid "Device name on the network"
+msgstr "네트워크 상의 기기 이름"
+
+msgid "Cancel"
+msgstr "취소"
+
+msgid "Connect"
+msgstr "연결"
+
+msgid ""
+"The key to this account is no longer on this computer. Join with a new "
+"invite."
+msgstr "이 계정의 키가 더 이상 이 컴퓨터에 없습니다. 새 초대로 참여하세요."
+
+#, rust-format
+msgid "Welcome back, {name}! Connecting…"
+msgstr "다시 오신 것을 환영합니다, {name}님! 연결 중…"
+
+#, rust-format
+msgid "Error: {error}"
+msgstr "오류: {error}"
+
+#, rust-format
+msgid ""
+"The account {user} no longer exists on this network. Join with a new invite."
+msgstr "계정 {user}이(가) 더 이상 이 네트워크에 없습니다. 새 초대로 참여하세요."
+
+msgid "Preferences"
+msgstr "환경설정"
+
+msgid "General"
+msgstr "일반"
+
+msgid "Behaviour"
+msgstr "동작"
+
+msgid "System"
+msgstr "시스템"
+
+msgid "Make this user the tailscale operator"
+msgstr "이 사용자를 Tailscale 운영자로 설정"
+
+msgid ""
+"Lets BigLace manage the connection without asking for a password each time"
+msgstr "BigLace가 매번 비밀번호를 묻지 않고 연결을 관리할 수 있게 합니다"
+
+msgid "Account"
+msgstr "계정"
+
+msgid ""
+"Signing out removes this device's identity from BigLace. You will need a new"
+" invite or key to join again."
+msgstr "로그아웃하면 BigLace에서 이 기기의 ID가 제거됩니다. 다시 참여하려면 새 초대나 키가 필요합니다."
+
+msgid "Sign out"
+msgstr "로그아웃"
+
+msgid "Invites you sent"
+msgstr "보낸 초대"
+
+msgid "Change profile photo…"
+msgstr "프로필 사진 변경…"
+
+msgid "Join with an invite"
+msgstr "초대로 참여"
+
+msgid "Sign in with panel account"
+msgstr "패널 계정으로 로그인"
+
+msgid "Leave the network…"
+msgstr "네트워크 나가기…"
+
+msgid "View tailscaled logs"
+msgstr "tailscaled 로그 보기"
+
+msgid "About BigLace"
+msgstr "BigLace 정보"
+
+msgid "Connect to the network first, then open the invite link again."
+msgstr "먼저 네트워크에 연결한 후 초대 링크를 다시 여세요."
+
+#, rust-format
+msgid ""
+"This invite is for another network ({host}). Sign out first to join it."
+msgstr "이 초대는 다른 네트워크({host})용입니다. 참여하려면 먼저 로그아웃하세요."
+
+msgid ""
+"This device is already signed in. Sign out first to join with an invite."
+msgstr "이 기기는 이미 로그인되어 있습니다. 초대로 참여하려면 먼저 로그아웃하세요."
+
+msgid "Photo removed."
+msgstr "사진을 제거했습니다."
+
+#, rust-format
+msgid "Could not remove the photo: {error}"
+msgstr "사진을 제거할 수 없습니다: {error}"
+
+#, rust-format
+msgid "Could not open the browser: {error}"
+msgstr "브라우저를 열 수 없습니다: {error}"
+
+msgid ""
+"You can't open the admin panel: you're not an administrator of this network,"
+" or the panel can't be reached."
+msgstr "관리자 패널을 열 수 없습니다: 이 네트워크의 관리자가 아니거나 패널에 연결할 수 없습니다."
+
+msgid "Enter the server URL before saving."
+msgstr "저장하기 전에 서버 URL을 입력하세요."
+
+msgid "Enter the pre-auth key before saving."
+msgstr "저장하기 전에 사전 인증 키를 입력하세요."
+
+msgid "Setup saved"
+msgstr "설정이 저장되었습니다"
+
+msgid "Could not start the Tailscale service."
+msgstr "Tailscale 서비스를 시작할 수 없습니다."
+
+msgid "IP address copied"
+msgstr "IP 주소가 복사되었습니다"
+
+#, rust-format
+msgid ""
+"Saved, but the pre-auth key could not be stored in the system keyring "
+"({error}). This device can still reconnect; the key is only needed again to "
+"register it anew."
+msgstr ""
+"저장했지만 사전 인증 키를 시스템 키링에 저장할 수 없습니다({error}). 이 기기는 계속 다시 연결할 수 있으며, 키는 기기를 새로"
+" 등록할 때만 다시 필요합니다."
+
 msgid "Connected"
 msgstr "연결됨"
+
+msgid "Service stopped"
+msgstr "서비스 중지됨"
+
+msgid "Not signed in"
+msgstr "로그인되지 않음"
+
+msgid "Disconnected"
+msgstr "연결 해제됨"
+
+msgid "Connecting…"
+msgstr "연결 중…"
+
+msgid "Server unreachable"
+msgstr "서버에 연결할 수 없음"
+
+msgid "Tailscale can't set DNS"
+msgstr "Tailscale이 DNS를 설정할 수 없음"
+
+#, rust-format
+msgid "Update available: v{version}"
+msgstr "업데이트 가능: v{version}"
+
+#, rust-format
+msgid "Sign in again as {user}"
+msgstr "{user}(으)로 다시 로그인"
+
+msgid "(no device name)"
+msgstr "(장치 이름 없음)"
+
+msgid "Sign in or paste a pre-auth key"
+msgstr "로그인 또는 사전 인증 키 붙여넣기"
+
+msgid "Server not set"
+msgstr "서버가 설정되지 않음"
+
+msgid "Disconnect"
+msgstr "연결 해제"
+
+msgid "no other devices"
+msgstr "다른 기기 없음"
+
+#, rust-format
+msgid "{online} online"
+msgstr "{online} 온라인"
+
+#, rust-format
+msgid "{online} online · {offline} offline"
+msgstr "{online} 온라인 · {offline} 오프라인"
+
+msgid "is online"
+msgstr "온라인 상태입니다"
+
+msgid "went offline"
+msgstr "오프라인 상태가 되었습니다"
+
+#, rust-format
+msgid "{count} devices are online"
+msgstr "{count}개 장치가 온라인 상태입니다"
+
+#, rust-format
+msgid "{count} devices went offline"
+msgstr "{count}개 장치가 오프라인 상태가 되었습니다"
+
+#, rust-format
+msgid "{on_count} online · {off_count} offline"
+msgstr "{on_count}개 온라인 · {off_count}개 오프라인"
 
 msgid "Connected · 1 peer"
 msgstr "연결됨 · 피어 1개"
@@ -75,9 +320,6 @@ msgstr "연결됨 · 피어 1개"
 msgid "Connected · {n} peers"
 msgstr "연결됨 · 피어 {n}개"
 
-msgid "Disconnected"
-msgstr "연결 해제됨"
-
 #, rust-format
 msgid "In the room {group} · muted"
 msgstr "{group} 룸에 있음 · 음소거됨"
@@ -85,12 +327,6 @@ msgstr "{group} 룸에 있음 · 음소거됨"
 #, rust-format
 msgid "In the room {group}"
 msgstr "{group} 룸에 있음"
-
-msgid "Disconnect"
-msgstr "연결 해제"
-
-msgid "Connect"
-msgstr "연결"
 
 msgid "Show BigLace"
 msgstr "BigLace 보기"
@@ -110,6 +346,411 @@ msgstr "룸 나가기"
 
 msgid "Quit"
 msgstr "종료"
+
+msgid "Main menu"
+msgstr "메인 메뉴"
+
+msgid "Search devices"
+msgstr "기기 검색"
+
+msgid "Refresh"
+msgstr "새로고침"
+
+msgid "Invite"
+msgstr "초대"
+
+msgid "Invite someone to your network"
+msgstr "네트워크에 사람 초대"
+
+msgid ""
+"Tailscale cannot write this device's DNS settings, so it can no longer keep "
+"peer names working. They may still resolve for now, from the configuration "
+"left over from before the failure, but that will break the next time the "
+"network changes — and BigLace will fall back to IP addresses. On most "
+"distributions `sudo resolvconf -u` repairs it."
+msgstr ""
+"Tailscale이 이 기기의 DNS 설정을 쓸 수 없어 피어 이름을 더 이상 유지할 수 없습니다. 오류 이전에 남아 있던 설정 덕분에 "
+"당분간은 이름이 확인될 수 있지만, 다음에 네트워크가 바뀌면 작동하지 않게 되며 BigLace는 IP 주소를 대신 사용합니다. 대부분의 "
+"배포판에서는 `sudo resolvconf -u`로 해결됩니다."
+
+msgid "Not connected"
+msgstr "연결되지 않음"
+
+msgid "Press Connect on the left to join the network."
+msgstr "왼쪽의 연결 버튼을 눌러 네트워크에 가입하세요."
+
+msgid "The tailscale service is not running"
+msgstr "Tailscale 서비스가 실행 중이지 않습니다"
+
+msgid "BigLace needs the tailscaled background service to manage the network."
+msgstr "BigLace는 네트워크 관리를 위해 tailscaled 백그라운드 서비스가 필요합니다."
+
+msgid "Start service"
+msgstr "서비스 시작"
+
+msgid "Join the network"
+msgstr "네트워크 참여"
+
+msgid "Choose how you're going to sign in."
+msgstr "로그인 방법을 선택하세요."
+
+msgid "Ways to sign in"
+msgstr "로그인 방법"
+
+msgid "Your account was kept on this computer. No invite needed."
+msgstr "계정이 이 컴퓨터에 보관되어 있습니다. 초대가 필요 없습니다."
+
+msgid "I have an invite"
+msgstr "초대가 있습니다"
+
+msgid "Someone on the network sent you a link or a QR code."
+msgstr "네트워크의 누군가가 링크나 QR 코드를 보냈습니다."
+
+msgid "I have an access key"
+msgstr "액세스 키가 있습니다"
+
+msgid "A key the administrator created for you (starts with hskey-auth-)."
+msgstr "관리자가 만들어 준 키입니다(hskey-auth-로 시작)."
+
+msgid "I'm the administrator"
+msgstr "관리자입니다"
+
+msgid "Sign in with the BigScale panel's admin username and password."
+msgstr "BigScale 패널의 관리자 사용자 이름과 비밀번호로 로그인합니다."
+
+msgid "This device"
+msgstr "이 기기"
+
+msgid "Copy IP address"
+msgstr "IP 주소 복사"
+
+msgid "Devices on the network"
+msgstr "네트워크 상의 기기"
+
+msgid "No other devices on the network yet."
+msgstr "아직 네트워크에 다른 기기가 없습니다."
+
+msgid "Sections"
+msgstr "섹션"
+
+msgid ""
+"Your identity on this mesh — the device name shown to other peers and the "
+"network you're connected to."
+msgstr "이 메시 네트워크에서의 내 ID — 다른 피어에게 표시되는 기기 이름과 연결된 네트워크입니다."
+
+msgid "Change photo…"
+msgstr "사진 변경…"
+
+msgid "Remove photo"
+msgstr "사진 제거"
+
+msgid "Change your photo"
+msgstr "내 사진 변경"
+
+msgid "Rename this device on the network"
+msgstr "네트워크에서 이 기기 이름 변경"
+
+msgid "Advanced: use a pre-auth key"
+msgstr "고급: 사전 인증 키 사용"
+
+msgid "Already have a key from your administrator? Paste it here."
+msgstr "관리자로부터 키를 이미 받으셨나요? 여기에 붙여넣으세요."
+
+msgid ""
+"Manual setup — expand to paste a server URL and pre-auth key when you "
+"already received them from your administrator. Most users should sign in "
+"through the panel button above instead."
+msgstr ""
+"수동 설정 — 관리자로부터 서버 URL과 사전 인증 키를 이미 받은 경우 펼쳐서 붙여넣으세요. 대부분의 사용자는 위의 패널 버튼을 통해 "
+"로그인해야 합니다."
+
+msgid ""
+"Address of the coordination server (e.g. vpn.example.org). The https:// "
+"scheme is added automatically if you omit it."
+msgstr "조정 서버 주소 (예: vpn.example.org). 생략 시 https:// 체계가 자동으로 추가됩니다."
+
+msgid "Pre-auth key"
+msgstr "사전 인증 키"
+
+msgid ""
+"One-time or reusable key created on the server (starts with 'hskey-auth-'). "
+"Used to register this device automatically without opening a browser."
+msgstr ""
+"서버에서 생성된 일회성 또는 재사용 가능 키 ('hskey-auth-'로 시작). 브라우저를 열지 않고 이 기기를 자동으로 등록하는 데 "
+"사용됩니다."
+
+msgid ""
+"The name this device shows to other peers on the VPN — this is the Tailscale"
+" hostname, NOT your computer's name and NOT your user. Lowercase letters, "
+"digits and hyphens. Example: 'tales-laptop', 'francois', 'office-pc'."
+msgstr ""
+"이 기기가 VPN 상의 다른 피어에게 표시되는 이름 — Tailscale 호스트 이름이며, 컴퓨터 이름도 사용자 이름도 아닙니다. "
+"소문자, 숫자 및 하이픈만 사용 가능합니다. 예: 'tales-laptop', 'francois', 'office-pc'."
+
+msgid "Apply manual setup"
+msgstr "수동 설정 적용"
+
+msgid "Save"
+msgstr "저장"
+
+msgid ""
+"Persist the server, key and device name above. Won't connect — press Connect"
+" afterwards."
+msgstr "위의 서버, 키 및 기기 이름을 저장합니다. 연결되지는 않습니다 — 이후 연결 버튼을 누르세요."
+
+msgid "Connect automatically"
+msgstr "자동 연결"
+
+msgid "Join the network when BigLace starts"
+msgstr "BigLace 시작 시 네트워크에 가입"
+
+msgid ""
+"When on, BigLace runs 'tailscale up' as soon as it launches, so you join the"
+" mesh without clicking Connect every time."
+msgstr ""
+"켜져 있으면 BigLace가 실행될 때 'tailscale up'을 자동으로 실행하여 매번 연결을 클릭하지 않고도 메시 네트워크에 "
+"참여합니다."
+
+msgid "Toggle auto-connect on startup"
+msgstr "시작 시 자동 연결 전환"
+
+msgid "Start BigLace with the session"
+msgstr "세션과 함께 BigLace 시작"
+
+msgid "Open BigLace after you sign in to the desktop"
+msgstr "데스크톱에 로그인한 후 BigLace 열기"
+
+msgid ""
+"Turn this on to add BigLace to your desktop session startup. Turn it off to "
+"remove it."
+msgstr "이 옵션을 켜면 BigLace가 데스크톱 세션 시작 시 추가됩니다. 끄면 제거됩니다."
+
+msgid "Toggle start with session"
+msgstr "세션 시작 시 실행 전환"
+
+msgid "Reconnect on drop"
+msgstr "연결 끊김 시 자동 재연결"
+
+msgid "Retry with backoff when the connection is lost"
+msgstr "연결이 끊어졌을 때 백오프(backoff) 방식으로 재시도"
+
+msgid ""
+"If the tunnel drops (network change, sleep, server hiccup), BigLace silently"
+" retries with growing delays instead of leaving you offline until you "
+"notice."
+msgstr ""
+"터널이 끊어지면(네트워크 변경, 절전 모드, 서버 오류) BigLace가 지연 시간을 늘려가며 자동으로 재시도하므로, 사용자가 인지할 "
+"때까지 오프라인 상태로 방치되지 않습니다."
+
+msgid "Toggle auto-reconnect"
+msgstr "자동 재연결 전환"
+
+msgid "Notify on peer changes"
+msgstr "피어 변경 시 알림"
+
+msgid "Show a desktop notification when peers go online/offline"
+msgstr "피어가 온라인/오프라인 상태가 되면 데스크톱 알림 표시"
+
+msgid ""
+"Send a desktop toast when another device on your network goes online or "
+"offline. Rapid bursts are coalesced into a single notification so you don't "
+"get spammed during reconnects."
+msgstr ""
+"네트워크 상의 다른 기기가 온라인 또는 오프라인이 될 때 데스크톱 알림을 보냅니다. 빠른 연속 변경은 하나의 알림으로 통합되어 재연결 중"
+" 알림이 과도하게 표시되지 않습니다."
+
+msgid "Toggle peer-change notifications"
+msgstr "피어 변경 알림 전환"
+
+msgid ""
+"Join or leave the mesh network. When connected, this device becomes "
+"reachable by the other peers in your account."
+msgstr "메시 네트워크에 연결하거나 연결을 해제합니다. 연결되면 이 기기는 계정 내 다른 피어에서 접근할 수 있습니다."
+
+msgid "Your photo"
+msgstr "내 사진"
+
+msgid ""
+"Each of your groups has a voice room. Join it and talk with whoever is there"
+" — the sound goes straight between you, through the network."
+msgstr "각 그룹에는 음성 룸이 있습니다. 참여하여 그곳에 있는 사람과 대화하세요 — 소리는 네트워크를 통해 서로 직접 전달됩니다."
+
+msgid "You're not in any group yet. Create one in Groups."
+msgstr "아직 어떤 그룹에도 속해 있지 않습니다. 그룹에서 하나 만드세요."
+
+msgid "People in the room"
+msgstr "룸에 있는 사람"
+
+msgid "Everyone"
+msgstr "모두"
+
+msgid "Who's speaking"
+msgstr "말하는 사람"
+
+msgid "Mute"
+msgstr "음소거"
+
+msgid "Mute your microphone for everyone"
+msgstr "모든 사람에게 내 마이크 음소거"
+
+msgid "Leave"
+msgstr "나가기"
+
+msgid "Which camera"
+msgstr "카메라 선택"
+
+msgid "Include the computer's sound when sharing the screen"
+msgstr "화면 공유 시 컴퓨터 소리 포함"
+
+msgid ""
+"Videos and music playing here go to the room too; the room's voices don't "
+"(no echo)"
+msgstr "여기서 재생되는 동영상과 음악도 룸에 전달됩니다. 룸의 음성은 전달되지 않습니다(에코 없음)"
+
+msgid "Rooms unavailable"
+msgstr "룸을 사용할 수 없음"
+
+#, rust-format
+msgid "Could not turn on the camera: {error}"
+msgstr "카메라를 켤 수 없습니다: {error}"
+
+#, rust-format
+msgid "Could not share the screen: {error}"
+msgstr "화면을 공유할 수 없습니다: {error}"
+
+#, rust-format
+msgid "Could not reach the panel: {error}"
+msgstr "패널에 연결할 수 없습니다: {error}"
+
+msgid "Nobody here right now"
+msgstr "지금 아무도 없음"
+
+#, rust-format
+msgid "In the room: {people}"
+msgstr "룸에 있음: {people}"
+
+msgid "Join"
+msgstr "참여"
+
+#, rust-format
+msgid "Join the room {group}"
+msgstr "{group} 룸 참여"
+
+#, rust-format
+msgid "Could not join {group}: {error}"
+msgstr "{group}에 참여할 수 없습니다: {error}"
+
+msgid "📺 You're showing your screen to the room"
+msgstr "📺 룸에 내 화면을 보여 주는 중"
+
+msgid "📺 You're showing your screen · 1 person watching"
+msgstr "📺 내 화면을 보여 주는 중 · 1명 시청 중"
+
+#, rust-format
+msgid "📺 You're showing your screen · {count} people watching"
+msgstr "📺 내 화면을 보여 주는 중 · {count}명 시청 중"
+
+msgid "1 person"
+msgstr "1명"
+
+#, rust-format
+msgid "{count} people"
+msgstr "{count}명"
+
+#, rust-format
+msgid "{people} · {talking} talking"
+msgstr "{people} · {talking}명 말하는 중"
+
+msgid "you"
+msgstr "나"
+
+msgid "connecting…"
+msgstr "연결 중…"
+
+msgid "muted"
+msgstr "음소거됨"
+
+msgid "talking"
+msgstr "말하는 중"
+
+msgid "quiet"
+msgstr "조용함"
+
+msgid "Sharing screen"
+msgstr "화면 공유 중"
+
+msgid "In control"
+msgstr "제어 중"
+
+msgid "Controls your screen now"
+msgstr "지금 내 화면을 제어하는 중"
+
+msgid "Watching"
+msgstr "시청 중"
+
+msgid "Watching your screen"
+msgstr "내 화면을 시청하는 중"
+
+#, rust-format
+msgid "{user} is showing their screen"
+msgstr "{user}님이 화면을 보여 주는 중입니다"
+
+msgid "Watch"
+msgstr "시청"
+
+#, rust-format
+msgid "{user} asks to control your screen"
+msgstr "{user}님이 내 화면 제어를 요청합니다"
+
+msgid ""
+"They'll be able to use your mouse and keyboard. You can take control back at"
+" any time."
+msgstr "상대방이 내 마우스와 키보드를 사용할 수 있게 됩니다. 언제든지 제어권을 되찾을 수 있습니다."
+
+msgid "Deny"
+msgstr "거부"
+
+msgid "Allow"
+msgstr "허용"
+
+msgid "Turn off camera"
+msgstr "카메라 끄기"
+
+msgid "Turn on camera"
+msgstr "카메라 켜기"
+
+msgid "No camera found on this computer"
+msgstr "이 컴퓨터에서 카메라를 찾을 수 없습니다"
+
+msgid "Stop sharing"
+msgstr "공유 중지"
+
+msgid "Share screen"
+msgstr "화면 공유"
+
+msgid "Stop showing your screen to the room"
+msgstr "룸에 내 화면 보여 주기 중지"
+
+msgid "Show your screen to everyone in the room"
+msgstr "룸의 모든 사람에게 내 화면 보여 주기"
+
+msgid "Take back control"
+msgstr "제어권 되찾기"
+
+msgid "Give control"
+msgstr "제어권 주기"
+
+msgid "Stop them from using your mouse and keyboard"
+msgstr "상대방이 내 마우스와 키보드를 사용하지 못하게 합니다"
+
+msgid "Let them use your mouse and keyboard"
+msgstr "상대방이 내 마우스와 키보드를 사용하게 합니다"
+
+msgid "Sound level"
+msgstr "소리 크기"
+
+msgid "Unmute"
+msgstr "음소거 해제"
 
 msgid "This computer"
 msgstr "이 컴퓨터"
@@ -218,17 +859,11 @@ msgstr "동영상"
 msgid "Voice message"
 msgstr "음성 메시지"
 
-msgid "Chat"
-msgstr "채팅"
-
 msgid "New chat"
 msgstr "새 채팅"
 
 msgid "Start a conversation with someone on the network"
 msgstr "네트워크의 다른 사람과 대화 시작"
-
-msgid "Main menu"
-msgstr "메인 메뉴"
 
 msgid "Chat theme"
 msgstr "채팅 테마"
@@ -274,9 +909,6 @@ msgstr "삭제"
 
 msgid "Send voice message"
 msgstr "음성 메시지 보내기"
-
-msgid "Cancel"
-msgstr "취소"
 
 msgid "Copy text"
 msgstr "텍스트 복사"
@@ -460,421 +1092,6 @@ msgstr "{user}님이 입력 중…"
 msgid "typing…"
 msgstr "입력 중…"
 
-msgid "System accent"
-msgstr "시스템 강조 색상"
-
-msgid "Blue"
-msgstr "파랑"
-
-msgid "Teal"
-msgstr "청록"
-
-msgid "Green"
-msgstr "초록"
-
-msgid "Purple"
-msgstr "보라"
-
-msgid "Pink"
-msgstr "분홍"
-
-msgid "Orange"
-msgstr "주황"
-
-msgid "Red"
-msgstr "빨강"
-
-msgid "Graphite"
-msgstr "흑연"
-
-msgid "Default"
-msgstr "기본값"
-
-msgid "Plain"
-msgstr "단색"
-
-msgid "Dots"
-msgstr "점무늬"
-
-msgid "Ocean"
-msgstr "바다"
-
-msgid "Sunset"
-msgstr "노을"
-
-msgid "Forest"
-msgstr "숲"
-
-msgid "Lavender"
-msgstr "라벤더"
-
-msgid "Night"
-msgstr "밤"
-
-msgid "Hi! How does this look? 😊"
-msgstr "안녕하세요! 이거 어때요? 😊"
-
-msgid "Looks great!"
-msgstr "멋져요!"
-
-msgid "Appearance"
-msgstr "모양"
-
-msgid "System"
-msgstr "시스템"
-
-msgid "Light"
-msgstr "밝게"
-
-msgid "Dark"
-msgstr "어둡게"
-
-msgid "Your messages"
-msgstr "내 메시지"
-
-msgid "Background"
-msgstr "배경"
-
-msgid "Picture…"
-msgstr "사진…"
-
-msgid "Pictures"
-msgstr "사진"
-
-msgid "Choose a background picture"
-msgstr "배경 사진 선택"
-
-msgid "Message"
-msgstr "메시지"
-
-msgid "Bold"
-msgstr "굵게"
-
-msgid "Italic"
-msgstr "기울임꼴"
-
-msgid "Underline"
-msgstr "밑줄"
-
-msgid "Strikethrough"
-msgstr "취소선"
-
-msgid "Monospace"
-msgstr "고정폭"
-
-msgid "Create link"
-msgstr "링크 만들기"
-
-msgid "Plain text"
-msgstr "일반 텍스트"
-
-msgid "Formatting"
-msgstr "서식"
-
-msgid "Create"
-msgstr "만들기"
-
-msgid "Search devices"
-msgstr "기기 검색"
-
-msgid "Refresh"
-msgstr "새로고침"
-
-msgid "Invite"
-msgstr "초대"
-
-msgid "Invite someone to your network"
-msgstr "네트워크에 사람 초대"
-
-msgid ""
-"Tailscale cannot write this device's DNS settings, so it can no longer keep "
-"peer names working. They may still resolve for now, from the configuration "
-"left over from before the failure, but that will break the next time the "
-"network changes — and BigLace will fall back to IP addresses. On most "
-"distributions `sudo resolvconf -u` repairs it."
-msgstr ""
-"Tailscale이 이 기기의 DNS 설정을 쓸 수 없어 피어 이름을 더 이상 유지할 수 없습니다. 오류 이전에 남아 있던 설정 덕분에 "
-"당분간은 이름이 확인될 수 있지만, 다음에 네트워크가 바뀌면 작동하지 않게 되며 BigLace는 IP 주소를 대신 사용합니다. 대부분의 "
-"배포판에서는 `sudo resolvconf -u`로 해결됩니다."
-
-msgid "Not connected"
-msgstr "연결되지 않음"
-
-msgid "Press Connect on the left to join the network."
-msgstr "왼쪽의 연결 버튼을 눌러 네트워크에 가입하세요."
-
-msgid "The tailscale service is not running"
-msgstr "Tailscale 서비스가 실행 중이지 않습니다"
-
-msgid "BigLace needs the tailscaled background service to manage the network."
-msgstr "BigLace는 네트워크 관리를 위해 tailscaled 백그라운드 서비스가 필요합니다."
-
-msgid "Start service"
-msgstr "서비스 시작"
-
-msgid "Join the network"
-msgstr "네트워크 참여"
-
-msgid "Choose how you're going to sign in."
-msgstr "로그인 방법을 선택하세요."
-
-msgid "Ways to sign in"
-msgstr "로그인 방법"
-
-msgid "Your account was kept on this computer. No invite needed."
-msgstr "계정이 이 컴퓨터에 보관되어 있습니다. 초대가 필요 없습니다."
-
-msgid "I have an invite"
-msgstr "초대가 있습니다"
-
-msgid "Someone on the network sent you a link or a QR code."
-msgstr "네트워크의 누군가가 링크나 QR 코드를 보냈습니다."
-
-msgid "I have an access key"
-msgstr "액세스 키가 있습니다"
-
-msgid "A key the administrator created for you (starts with hskey-auth-)."
-msgstr "관리자가 만들어 준 키입니다(hskey-auth-로 시작)."
-
-msgid "I'm the administrator"
-msgstr "관리자입니다"
-
-msgid "Sign in with the BigScale panel's admin username and password."
-msgstr "BigScale 패널의 관리자 사용자 이름과 비밀번호로 로그인합니다."
-
-msgid "Connecting…"
-msgstr "연결 중…"
-
-msgid "This device"
-msgstr "이 기기"
-
-msgid "Copy IP address"
-msgstr "IP 주소 복사"
-
-msgid "Devices on the network"
-msgstr "네트워크 상의 기기"
-
-msgid "No other devices on the network yet."
-msgstr "아직 네트워크에 다른 기기가 없습니다."
-
-msgid "Mesh VPN client for BigScale/Headscale."
-msgstr "BigScale/Headscale용 메시 VPN 클라이언트"
-
-msgid "Done. You will no longer need a password to connect or disconnect."
-msgstr "완료되었습니다. 이제 연결 또는 해제 시 비밀번호가 필요하지 않습니다."
-
-#, rust-format
-msgid "Failed: {error}"
-msgstr "실패: {error}"
-
-msgid "Tailscale operator"
-msgstr "Tailscale 운영자"
-
-msgid "OK"
-msgstr "확인"
-
-msgid "Sign out of current account?"
-msgstr "현재 계정에서 로그아웃하시겠습니까?"
-
-msgid ""
-"This will disconnect from the network, sign this device out of the current "
-"control server, and forget the saved password. You'll then be able to sign "
-"in with a different account."
-msgstr ""
-"이 작업을 수행하면 네트워크 연결이 해제되고, 현재 제어 서버에서 이 기기가 로그아웃되며, 저장된 비밀번호가 삭제됩니다. 이후 다른 "
-"계정으로 로그인할 수 있습니다."
-
-msgid "Sign out"
-msgstr "로그아웃"
-
-msgid "Leave the network?"
-msgstr "네트워크를 나갈까요?"
-
-#, rust-format
-msgid ""
-"This device leaves the network and its name becomes free. Your account {user} is kept: you can come back later from this computer, without an invite.\n"
-"\n"
-"If you won't come back, delete the account and the name {user} becomes free too."
-msgstr ""
-"이 기기가 네트워크를 나가고 이름은 다시 사용할 수 있게 됩니다. 계정 {user}은(는) 유지되므로 나중에 초대 없이 이 컴퓨터에서 돌아올 수 있습니다.\n"
-"\n"
-"돌아오지 않을 거라면 계정을 삭제하세요. 그러면 {user} 이름도 다시 사용할 수 있게 됩니다."
-
-msgid "Leave and delete account"
-msgstr "나가고 계정 삭제"
-
-msgid "Leave"
-msgstr "나가기"
-
-msgid "Connect first to delete the account."
-msgstr "계정을 삭제하려면 먼저 연결하세요."
-
-msgid "Signing out…"
-msgstr "로그아웃 중…"
-
-#, rust-format
-msgid ""
-"Signed out. Your account was kept: {count} other device(s) still use it."
-msgstr "로그아웃했습니다. 계정은 유지됩니다: 다른 기기 {count}대가 아직 사용 중입니다."
-
-msgid ""
-"Couldn't delete the account: the panel can't be reached. Connect and try "
-"again."
-msgstr "계정을 삭제할 수 없습니다: 패널에 연결할 수 없습니다. 연결한 후 다시 시도하세요."
-
-#, rust-format
-msgid "Error: {error}"
-msgstr "오류: {error}"
-
-msgid "Signed out and account deleted."
-msgstr "로그아웃하고 계정을 삭제했습니다."
-
-msgid "Signed out."
-msgstr "로그아웃되었습니다."
-
-msgid "Couldn't reach the server"
-msgstr "서버에 연결할 수 없음"
-
-#, rust-format
-msgid ""
-"The control server didn't confirm the sign-out: {error}\n"
-"\n"
-"You can still sign out on this computer: BigLace forgets the saved key and account and disconnects. The server keeps listing this device until an administrator removes it."
-msgstr ""
-"제어 서버가 로그아웃을 확인하지 않았습니다: {error}\n"
-"\n"
-"이 컴퓨터에서는 계속 로그아웃할 수 있습니다: BigLace가 저장된 키와 계정을 잊고 연결을 해제합니다. 관리자가 제거할 때까지 서버에는 이 기기가 계속 표시됩니다."
-
-msgid "Sign out on this computer"
-msgstr "이 컴퓨터에서 로그아웃"
-
-msgid "Sign in as administrator"
-msgstr "관리자로 로그인"
-
-msgid "Panel administrator"
-msgstr "패널 관리자"
-
-msgid ""
-"Only for whoever administers the BigScale panel: use the panel's admin "
-"username and password. This device joins the network under the name below. "
-"Everyone else joins with an invite or an access key."
-msgstr ""
-"BigScale 패널을 관리하는 사람만 사용하세요: 패널의 관리자 사용자 이름과 비밀번호를 입력합니다. 이 기기는 아래 이름으로 "
-"네트워크에 참여합니다. 다른 사람은 모두 초대나 액세스 키로 참여합니다."
-
-msgid "Panel URL"
-msgstr "패널 URL"
-
-msgid ""
-"Address of your BigScale panel (e.g. panel.example.org). The https:// scheme"
-" is added automatically if you omit it."
-msgstr ""
-"BigScale 패널의 주소입니다(예: panel.example.org). 생략하면 https:// 스키마가 자동으로 추가됩니다."
-
-msgid "Panel admin username"
-msgstr "패널 관리자 사용자 이름"
-
-msgid "Your panel username — the one you use to sign in to the web panel."
-msgstr "웹 패널에 로그인할 때 사용하는 패널 사용자 이름입니다."
-
-msgid "Password"
-msgstr "비밀번호"
-
-msgid ""
-"Your panel password. Stored in the OS keyring (libsecret on Linux, Keychain "
-"on macOS, Credential Manager on Windows)."
-msgstr ""
-"패널 비밀번호입니다. OS 키링(Linux의 libsecret, macOS의 Keychain, Windows의 Credential "
-"Manager)에 저장됩니다."
-
-msgid "Device name on the network"
-msgstr "네트워크 상의 기기 이름"
-
-msgid ""
-"The name this device shows to other peers on the VPN — this is the Tailscale"
-" hostname, NOT your computer's name and NOT your user. Lowercase letters, "
-"digits and hyphens. Example: 'tales-laptop', 'francois', 'office-pc'. Pick "
-"something other peers will recognise."
-msgstr ""
-"VPN에서 다른 피어에게 표시되는 이 기기의 이름입니다. 이는 Tailscale 호스트 이름이며, 컴퓨터 이름이나 사용자 이름이 "
-"아닙니다. 소문자, 숫자, 하이픈만 사용 가능합니다. 예: 'tales-laptop', 'francois', 'office-pc'. 다른"
-" 피어가 알아볼 수 있는 이름을 선택하세요."
-
-msgid "Sign in"
-msgstr "로그인"
-
-msgid "Fill in URL, username and password."
-msgstr "URL, 사용자 이름, 비밀번호를 입력하세요."
-
-msgid "Signed in. Press Connect to join the network."
-msgstr "로그인되었습니다. 네트워크에 가입하려면 연결을 누르세요."
-
-msgid "Rename this device"
-msgstr "이 기기 이름 바꾸기"
-
-msgid ""
-"The name this device shows to other peers on the VPN. Lowercase letters, "
-"digits and hyphens. Example: tales-laptop."
-msgstr "VPN에서 다른 피어에게 표시되는 기기 이름입니다. 소문자, 숫자, 하이픈만 사용 가능합니다. 예: tales-laptop."
-
-msgid "Save & apply"
-msgstr "저장 및 적용"
-
-msgid "Saved. The new name will take effect the next time you connect."
-msgstr "저장되었습니다. 새 이름은 다음 연결 시 적용됩니다."
-
-msgid "Device renamed."
-msgstr "기기 이름이 변경되었습니다."
-
-#, rust-format
-msgid "Rename failed: {error}"
-msgstr "이름 변경 실패: {error}"
-
-msgid "The device name can't be empty."
-msgstr "기기 이름은 비워둘 수 없습니다."
-
-msgid "Use 63 characters or fewer."
-msgstr "63자 이하로 입력하세요."
-
-msgid "The device name can't start or end with a hyphen."
-msgstr "기기 이름은 하이픈으로 시작하거나 끝날 수 없습니다."
-
-msgid "Only lowercase letters, digits and hyphens are allowed."
-msgstr "소문자, 숫자, 하이픈만 허용됩니다."
-
-msgid "Smileys & people"
-msgstr "스마일리 및 사람"
-
-msgid "Animals & nature"
-msgstr "동물 및 자연"
-
-msgid "Food & drink"
-msgstr "음식 및 음료"
-
-msgid "Travel & places"
-msgstr "여행 및 장소"
-
-msgid "Activities"
-msgstr "활동"
-
-msgid "Objects"
-msgstr "사물"
-
-msgid "Symbols"
-msgstr "기호"
-
-msgid "Flags"
-msgstr "깃발"
-
-msgid "Search emoji"
-msgstr "이모지 검색"
-
-msgid "Recently used"
-msgstr "최근 사용"
-
-msgid "Search results"
-msgstr "검색 결과"
-
 msgid ""
 "Groups from BigLace need a newer BigScale server. Ask your administrator to "
 "update it."
@@ -958,13 +1175,6 @@ msgstr "이 초대는 아직 관리자의 승인을 기다리고 있습니다."
 msgid "Too many attempts. Wait a minute and try again."
 msgstr "시도 횟수가 너무 많습니다. 1분 후에 다시 시도하세요."
 
-#, rust-format
-msgid "Could not reach the panel: {error}"
-msgstr "패널에 연결할 수 없습니다: {error}"
-
-msgid "Groups"
-msgstr "그룹"
-
 msgid "New group"
 msgstr "새 그룹"
 
@@ -1021,13 +1231,6 @@ msgstr "{group}에 참여했습니다."
 msgid "Invitation declined."
 msgstr "초대를 거절했습니다."
 
-msgid "1 person"
-msgstr "1명"
-
-#, rust-format
-msgid "{count} people"
-msgstr "{count}명"
-
 msgid "Created by you"
 msgstr "내가 만듦"
 
@@ -1037,9 +1240,6 @@ msgstr "{user}님이 만듦"
 
 msgid "Network group (administrator)"
 msgstr "네트워크 그룹 (관리자)"
-
-msgid "you"
-msgstr "나"
 
 msgid "owner"
 msgstr "소유자"
@@ -1118,9 +1318,6 @@ msgstr "{user}님과 연결할까요?"
 #, rust-format
 msgid "You and {user} will reach each other's devices."
 msgstr "나와 {user}님이 서로의 기기에 연결할 수 있게 됩니다."
-
-msgid "Join"
-msgstr "참여"
 
 msgid "Done. You can now reach each other's devices."
 msgstr "완료. 이제 서로의 기기에 연결할 수 있습니다."
@@ -1250,9 +1447,6 @@ msgstr "취소됨"
 msgid "Waiting for an administrator's approval"
 msgstr "관리자 승인 대기 중"
 
-msgid "Invites"
-msgstr "초대"
-
 msgid "Bring someone to your network"
 msgstr "네트워크에 사람 초대하기"
 
@@ -1263,9 +1457,6 @@ msgid ""
 msgstr ""
 "링크나 QR 코드를 만들어 상대방에게 보내세요. 상대방이 참여하면 관리자 없이도 서로의 기기에 연결할 수 있습니다. 링크는 한 번만 "
 "사용할 수 있으며 사용되거나 취소할 때까지 유효합니다."
-
-msgid "Invites you sent"
-msgstr "보낸 초대"
 
 msgid "No invites yet"
 msgstr "아직 초대가 없음"
@@ -1283,9 +1474,6 @@ msgstr "{group} 그룹"
 
 msgid "Cancel this invite: the link stops working"
 msgstr "이 초대 취소: 링크가 더 이상 작동하지 않습니다"
-
-msgid "Invite someone"
-msgstr "사람 초대"
 
 msgid "The person you invite will reach your devices, and you theirs."
 msgstr "초대한 사람은 내 기기에, 나는 그 사람의 기기에 연결할 수 있습니다."
@@ -1342,6 +1530,286 @@ msgid ""
 "working once they do. Its status shows in Invites."
 msgstr "이 네트워크에서는 각 초대에 관리자 승인이 필요합니다: 승인되면 링크가 작동합니다. 상태는 초대에서 확인할 수 있습니다."
 
+msgid "System accent"
+msgstr "시스템 강조 색상"
+
+msgid "Blue"
+msgstr "파랑"
+
+msgid "Teal"
+msgstr "청록"
+
+msgid "Green"
+msgstr "초록"
+
+msgid "Purple"
+msgstr "보라"
+
+msgid "Pink"
+msgstr "분홍"
+
+msgid "Orange"
+msgstr "주황"
+
+msgid "Red"
+msgstr "빨강"
+
+msgid "Graphite"
+msgstr "흑연"
+
+msgid "Default"
+msgstr "기본값"
+
+msgid "Plain"
+msgstr "단색"
+
+msgid "Dots"
+msgstr "점무늬"
+
+msgid "Ocean"
+msgstr "바다"
+
+msgid "Sunset"
+msgstr "노을"
+
+msgid "Forest"
+msgstr "숲"
+
+msgid "Lavender"
+msgstr "라벤더"
+
+msgid "Night"
+msgstr "밤"
+
+msgid "Hi! How does this look? 😊"
+msgstr "안녕하세요! 이거 어때요? 😊"
+
+msgid "Looks great!"
+msgstr "멋져요!"
+
+msgid "Appearance"
+msgstr "모양"
+
+msgid "Light"
+msgstr "밝게"
+
+msgid "Dark"
+msgstr "어둡게"
+
+msgid "Your messages"
+msgstr "내 메시지"
+
+msgid "Background"
+msgstr "배경"
+
+msgid "Picture…"
+msgstr "사진…"
+
+msgid "Choose a background picture"
+msgstr "배경 사진 선택"
+
+msgid "Message"
+msgstr "메시지"
+
+msgid "Bold"
+msgstr "굵게"
+
+msgid "Italic"
+msgstr "기울임꼴"
+
+msgid "Underline"
+msgstr "밑줄"
+
+msgid "Strikethrough"
+msgstr "취소선"
+
+msgid "Monospace"
+msgstr "고정폭"
+
+msgid "Create link"
+msgstr "링크 만들기"
+
+msgid "Plain text"
+msgstr "일반 텍스트"
+
+msgid "Formatting"
+msgstr "서식"
+
+msgid "Create"
+msgstr "만들기"
+
+msgid "Mesh VPN client for BigScale/Headscale."
+msgstr "BigScale/Headscale용 메시 VPN 클라이언트"
+
+msgid "Done. You will no longer need a password to connect or disconnect."
+msgstr "완료되었습니다. 이제 연결 또는 해제 시 비밀번호가 필요하지 않습니다."
+
+#, rust-format
+msgid "Failed: {error}"
+msgstr "실패: {error}"
+
+msgid "Tailscale operator"
+msgstr "Tailscale 운영자"
+
+msgid "OK"
+msgstr "확인"
+
+msgid "Sign out of current account?"
+msgstr "현재 계정에서 로그아웃하시겠습니까?"
+
+msgid ""
+"This will disconnect from the network, sign this device out of the current "
+"control server, and forget the saved password. You'll then be able to sign "
+"in with a different account."
+msgstr ""
+"이 작업을 수행하면 네트워크 연결이 해제되고, 현재 제어 서버에서 이 기기가 로그아웃되며, 저장된 비밀번호가 삭제됩니다. 이후 다른 "
+"계정으로 로그인할 수 있습니다."
+
+msgid "Leave the network?"
+msgstr "네트워크를 나갈까요?"
+
+#, rust-format
+msgid ""
+"This device leaves the network and its name becomes free. Your account {user} is kept: you can come back later from this computer, without an invite.\n"
+"\n"
+"If you won't come back, delete the account and the name {user} becomes free too."
+msgstr ""
+"이 기기가 네트워크를 나가고 이름은 다시 사용할 수 있게 됩니다. 계정 {user}은(는) 유지되므로 나중에 초대 없이 이 컴퓨터에서 돌아올 수 있습니다.\n"
+"\n"
+"돌아오지 않을 거라면 계정을 삭제하세요. 그러면 {user} 이름도 다시 사용할 수 있게 됩니다."
+
+msgid "Leave and delete account"
+msgstr "나가고 계정 삭제"
+
+msgid "Connect first to delete the account."
+msgstr "계정을 삭제하려면 먼저 연결하세요."
+
+msgid "Signing out…"
+msgstr "로그아웃 중…"
+
+#, rust-format
+msgid ""
+"Signed out. Your account was kept: {count} other device(s) still use it."
+msgstr "로그아웃했습니다. 계정은 유지됩니다: 다른 기기 {count}대가 아직 사용 중입니다."
+
+msgid ""
+"Couldn't delete the account: the panel can't be reached. Connect and try "
+"again."
+msgstr "계정을 삭제할 수 없습니다: 패널에 연결할 수 없습니다. 연결한 후 다시 시도하세요."
+
+msgid "Signed out and account deleted."
+msgstr "로그아웃하고 계정을 삭제했습니다."
+
+msgid "Signed out."
+msgstr "로그아웃되었습니다."
+
+msgid "Couldn't reach the server"
+msgstr "서버에 연결할 수 없음"
+
+#, rust-format
+msgid ""
+"The control server didn't confirm the sign-out: {error}\n"
+"\n"
+"You can still sign out on this computer: BigLace forgets the saved key and account and disconnects. The server keeps listing this device until an administrator removes it."
+msgstr ""
+"제어 서버가 로그아웃을 확인하지 않았습니다: {error}\n"
+"\n"
+"이 컴퓨터에서는 계속 로그아웃할 수 있습니다: BigLace가 저장된 키와 계정을 잊고 연결을 해제합니다. 관리자가 제거할 때까지 서버에는 이 기기가 계속 표시됩니다."
+
+msgid "Sign out on this computer"
+msgstr "이 컴퓨터에서 로그아웃"
+
+msgid "Sign in as administrator"
+msgstr "관리자로 로그인"
+
+msgid "Panel administrator"
+msgstr "패널 관리자"
+
+msgid ""
+"Only for whoever administers the BigScale panel: use the panel's admin "
+"username and password. This device joins the network under the name below. "
+"Everyone else joins with an invite or an access key."
+msgstr ""
+"BigScale 패널을 관리하는 사람만 사용하세요: 패널의 관리자 사용자 이름과 비밀번호를 입력합니다. 이 기기는 아래 이름으로 "
+"네트워크에 참여합니다. 다른 사람은 모두 초대나 액세스 키로 참여합니다."
+
+msgid "Panel URL"
+msgstr "패널 URL"
+
+msgid ""
+"Address of your BigScale panel (e.g. panel.example.org). The https:// scheme"
+" is added automatically if you omit it."
+msgstr ""
+"BigScale 패널의 주소입니다(예: panel.example.org). 생략하면 https:// 스키마가 자동으로 추가됩니다."
+
+msgid "Panel admin username"
+msgstr "패널 관리자 사용자 이름"
+
+msgid "Your panel username — the one you use to sign in to the web panel."
+msgstr "웹 패널에 로그인할 때 사용하는 패널 사용자 이름입니다."
+
+msgid "Password"
+msgstr "비밀번호"
+
+msgid ""
+"Your panel password. Stored in the OS keyring (libsecret on Linux, Keychain "
+"on macOS, Credential Manager on Windows)."
+msgstr ""
+"패널 비밀번호입니다. OS 키링(Linux의 libsecret, macOS의 Keychain, Windows의 Credential "
+"Manager)에 저장됩니다."
+
+msgid ""
+"The name this device shows to other peers on the VPN — this is the Tailscale"
+" hostname, NOT your computer's name and NOT your user. Lowercase letters, "
+"digits and hyphens. Example: 'tales-laptop', 'francois', 'office-pc'. Pick "
+"something other peers will recognise."
+msgstr ""
+"VPN에서 다른 피어에게 표시되는 이 기기의 이름입니다. 이는 Tailscale 호스트 이름이며, 컴퓨터 이름이나 사용자 이름이 "
+"아닙니다. 소문자, 숫자, 하이픈만 사용 가능합니다. 예: 'tales-laptop', 'francois', 'office-pc'. 다른"
+" 피어가 알아볼 수 있는 이름을 선택하세요."
+
+msgid "Sign in"
+msgstr "로그인"
+
+msgid "Fill in URL, username and password."
+msgstr "URL, 사용자 이름, 비밀번호를 입력하세요."
+
+msgid "Signed in. Press Connect to join the network."
+msgstr "로그인되었습니다. 네트워크에 가입하려면 연결을 누르세요."
+
+msgid "Rename this device"
+msgstr "이 기기 이름 바꾸기"
+
+msgid ""
+"The name this device shows to other peers on the VPN. Lowercase letters, "
+"digits and hyphens. Example: tales-laptop."
+msgstr "VPN에서 다른 피어에게 표시되는 기기 이름입니다. 소문자, 숫자, 하이픈만 사용 가능합니다. 예: tales-laptop."
+
+msgid "Save & apply"
+msgstr "저장 및 적용"
+
+msgid "Saved. The new name will take effect the next time you connect."
+msgstr "저장되었습니다. 새 이름은 다음 연결 시 적용됩니다."
+
+msgid "Device renamed."
+msgstr "기기 이름이 변경되었습니다."
+
+#, rust-format
+msgid "Rename failed: {error}"
+msgstr "이름 변경 실패: {error}"
+
+msgid "The device name can't be empty."
+msgstr "기기 이름은 비워둘 수 없습니다."
+
+msgid "Use 63 characters or fewer."
+msgstr "63자 이하로 입력하세요."
+
+msgid "The device name can't start or end with a hyphen."
+msgstr "기기 이름은 하이픈으로 시작하거나 끝날 수 없습니다."
+
+msgid "Only lowercase letters, digits and hyphens are allowed."
+msgstr "소문자, 숫자, 하이픈만 허용됩니다."
+
 #, rust-format
 msgid ""
 "That name already belongs to an account on this network, so we suggested "
@@ -1377,9 +1845,6 @@ msgid ""
 "This server doesn't support invites yet. Sign in with a panel account "
 "instead."
 msgstr "이 서버는 아직 초대를 지원하지 않습니다. 대신 패널 계정으로 로그인하세요."
-
-msgid "Join with an invite"
-msgstr "초대로 참여"
 
 msgid ""
 "Paste the invite link you received and type your name. Your account is "
@@ -1422,284 +1887,6 @@ msgstr "환영합니다, {name}님! {group} 그룹에 참여했습니다. 연결
 msgid "Welcome, {name}! Connecting…"
 msgstr "환영합니다, {name}님! 연결 중…"
 
-msgid "Open admin panel"
-msgstr "관리자 패널 열기"
-
-msgid "Devices"
-msgstr "기기"
-
-msgid "Rooms"
-msgstr "룸"
-
-msgid "Choose your photo"
-msgstr "사진 선택"
-
-msgid "Photo updated. Everyone you're connected to will see it."
-msgstr "사진을 업데이트했습니다. 연결된 모든 사람이 볼 수 있습니다."
-
-#, rust-format
-msgid "Could not change the photo: {error}"
-msgstr "사진을 변경할 수 없습니다: {error}"
-
-msgid "Sign in with an access key"
-msgstr "액세스 키로 로그인"
-
-msgid ""
-"Paste the key the administrator gave you. It's used once, to register this "
-"device."
-msgstr "관리자가 준 키를 붙여넣으세요. 이 기기를 등록할 때 한 번만 사용됩니다."
-
-msgid "Server URL"
-msgstr "서버 URL"
-
-msgid "Access key"
-msgstr "액세스 키"
-
-msgid ""
-"The key to this account is no longer on this computer. Join with a new "
-"invite."
-msgstr "이 계정의 키가 더 이상 이 컴퓨터에 없습니다. 새 초대로 참여하세요."
-
-#, rust-format
-msgid "Welcome back, {name}! Connecting…"
-msgstr "다시 오신 것을 환영합니다, {name}님! 연결 중…"
-
-#, rust-format
-msgid ""
-"The account {user} no longer exists on this network. Join with a new invite."
-msgstr "계정 {user}이(가) 더 이상 이 네트워크에 없습니다. 새 초대로 참여하세요."
-
-msgid "Preferences"
-msgstr "환경설정"
-
-msgid "General"
-msgstr "일반"
-
-msgid "Behaviour"
-msgstr "동작"
-
-msgid "Make this user the tailscale operator"
-msgstr "이 사용자를 Tailscale 운영자로 설정"
-
-msgid ""
-"Lets BigLace manage the connection without asking for a password each time"
-msgstr "BigLace가 매번 비밀번호를 묻지 않고 연결을 관리할 수 있게 합니다"
-
-msgid "Account"
-msgstr "계정"
-
-msgid ""
-"Signing out removes this device's identity from BigLace. You will need a new"
-" invite or key to join again."
-msgstr "로그아웃하면 BigLace에서 이 기기의 ID가 제거됩니다. 다시 참여하려면 새 초대나 키가 필요합니다."
-
-msgid "Change profile photo…"
-msgstr "프로필 사진 변경…"
-
-msgid "Sign in with panel account"
-msgstr "패널 계정으로 로그인"
-
-msgid "Leave the network…"
-msgstr "네트워크 나가기…"
-
-msgid "View tailscaled logs"
-msgstr "tailscaled 로그 보기"
-
-msgid "About BigLace"
-msgstr "BigLace 정보"
-
-msgid "Connect to the network first, then open the invite link again."
-msgstr "먼저 네트워크에 연결한 후 초대 링크를 다시 여세요."
-
-#, rust-format
-msgid ""
-"This invite is for another network ({host}). Sign out first to join it."
-msgstr "이 초대는 다른 네트워크({host})용입니다. 참여하려면 먼저 로그아웃하세요."
-
-msgid ""
-"This device is already signed in. Sign out first to join with an invite."
-msgstr "이 기기는 이미 로그인되어 있습니다. 초대로 참여하려면 먼저 로그아웃하세요."
-
-msgid "Photo removed."
-msgstr "사진을 제거했습니다."
-
-#, rust-format
-msgid "Could not remove the photo: {error}"
-msgstr "사진을 제거할 수 없습니다: {error}"
-
-#, rust-format
-msgid "Could not open the browser: {error}"
-msgstr "브라우저를 열 수 없습니다: {error}"
-
-msgid ""
-"You can't open the admin panel: you're not an administrator of this network,"
-" or the panel can't be reached."
-msgstr "관리자 패널을 열 수 없습니다: 이 네트워크의 관리자가 아니거나 패널에 연결할 수 없습니다."
-
-msgid "Enter the server URL before saving."
-msgstr "저장하기 전에 서버 URL을 입력하세요."
-
-msgid "Enter the pre-auth key before saving."
-msgstr "저장하기 전에 사전 인증 키를 입력하세요."
-
-msgid "Setup saved"
-msgstr "설정이 저장되었습니다"
-
-msgid "Could not start the Tailscale service."
-msgstr "Tailscale 서비스를 시작할 수 없습니다."
-
-msgid "IP address copied"
-msgstr "IP 주소가 복사되었습니다"
-
-#, rust-format
-msgid ""
-"Saved, but the pre-auth key could not be stored in the system keyring "
-"({error}). This device can still reconnect; the key is only needed again to "
-"register it anew."
-msgstr ""
-"저장했지만 사전 인증 키를 시스템 키링에 저장할 수 없습니다({error}). 이 기기는 계속 다시 연결할 수 있으며, 키는 기기를 새로"
-" 등록할 때만 다시 필요합니다."
-
-msgid "Service stopped"
-msgstr "서비스 중지됨"
-
-msgid "Not signed in"
-msgstr "로그인되지 않음"
-
-msgid "Server unreachable"
-msgstr "서버에 연결할 수 없음"
-
-msgid "Tailscale can't set DNS"
-msgstr "Tailscale이 DNS를 설정할 수 없음"
-
-#, rust-format
-msgid "Update available: v{version}"
-msgstr "업데이트 가능: v{version}"
-
-#, rust-format
-msgid "Sign in again as {user}"
-msgstr "{user}(으)로 다시 로그인"
-
-msgid "(no device name)"
-msgstr "(장치 이름 없음)"
-
-msgid "Sign in or paste a pre-auth key"
-msgstr "로그인 또는 사전 인증 키 붙여넣기"
-
-msgid "Server not set"
-msgstr "서버가 설정되지 않음"
-
-msgid "no other devices"
-msgstr "다른 기기 없음"
-
-#, rust-format
-msgid "{online} online"
-msgstr "{online} 온라인"
-
-#, rust-format
-msgid "{online} online · {offline} offline"
-msgstr "{online} 온라인 · {offline} 오프라인"
-
-msgid "is online"
-msgstr "온라인 상태입니다"
-
-msgid "went offline"
-msgstr "오프라인 상태가 되었습니다"
-
-#, rust-format
-msgid "{count} devices are online"
-msgstr "{count}개 장치가 온라인 상태입니다"
-
-#, rust-format
-msgid "{count} devices went offline"
-msgstr "{count}개 장치가 오프라인 상태가 되었습니다"
-
-#, rust-format
-msgid "{on_count} online · {off_count} offline"
-msgstr "{on_count}개 온라인 · {off_count}개 오프라인"
-
-msgid "direct"
-msgstr "직접"
-
-msgid "via relay"
-msgstr "릴레이 경유"
-
-msgid "Turn on over the network (Wake-on-LAN)"
-msgstr "네트워크로 켜기 (Wake-on-LAN)"
-
-msgid "Turn on over the network"
-msgstr "네트워크로 켜기"
-
-#, rust-format
-msgid ""
-"Signal sent to {name} (by {via}). If it's set to turn on over the network, "
-"it shows up in a minute or two."
-msgstr "{name}에 신호를 보냈습니다({via} 경유). 네트워크로 켜지도록 설정되어 있으면 1~2분 후에 표시됩니다."
-
-#, rust-format
-msgid "Could not turn on {name}: {error}"
-msgstr "{name}을(를) 켤 수 없습니다: {error}"
-
-msgid "Unpin from top"
-msgstr "상단 고정 해제"
-
-msgid "Pin to top"
-msgstr "상단에 고정"
-
-msgid "Pinned to top"
-msgstr "상단에 고정됨"
-
-msgid "Unpinned"
-msgstr "고정 해제됨"
-
-msgid "Open files (SFTP)"
-msgstr "파일 열기 (SFTP)"
-
-msgid "Open terminal (SSH)"
-msgstr "터미널 열기 (SSH)"
-
-msgid "See and control the screen"
-msgstr "화면 보기 및 제어"
-
-msgid "DNS name"
-msgstr "DNS 이름"
-
-msgid "DNS name copied"
-msgstr "DNS 이름이 복사되었습니다"
-
-msgid "Owner"
-msgstr "소유자"
-
-msgid "SSH login (override)"
-msgstr "SSH 로그인 (재정의)"
-
-msgid "Saved"
-msgstr "저장됨"
-
-msgid "Tags"
-msgstr "태그"
-
-msgid "Last seen"
-msgstr "마지막 확인 시간"
-
-msgid "Use as exit node"
-msgstr "종료 노드로 사용"
-
-msgid "Route all traffic through this peer"
-msgstr "모든 트래픽을 이 피어를 통해 라우팅"
-
-msgid "Exit node enabled"
-msgstr "종료 노드 활성화됨"
-
-msgid "Exit node disabled"
-msgstr "종료 노드 비활성화됨"
-
-msgid "Failed to update exit node"
-msgstr "종료 노드 업데이트 실패"
-
-msgid "Copy"
-msgstr "복사"
-
 msgid "End access"
 msgstr "접근 종료"
 
@@ -1719,9 +1906,6 @@ msgstr "{user}({device})님이 이 화면을 보고 제어하는 중입니다. �
 #, rust-format
 msgid "Always allow {user} (no more asking)"
 msgstr "{user}님 항상 허용 (더 이상 묻지 않음)"
-
-msgid "Deny"
-msgstr "거부"
 
 msgid "Allow access"
 msgstr "접근 허용"
@@ -1932,304 +2116,243 @@ msgstr "{name}님의 화면에 대한 접근이 종료되었습니다: {error}"
 msgid "Give back control"
 msgstr "제어권 돌려주기"
 
-msgid ""
-"Each of your groups has a voice room. Join it and talk with whoever is there"
-" — the sound goes straight between you, through the network."
-msgstr "각 그룹에는 음성 룸이 있습니다. 참여하여 그곳에 있는 사람과 대화하세요 — 소리는 네트워크를 통해 서로 직접 전달됩니다."
+msgid "direct"
+msgstr "직접"
 
-msgid "You're not in any group yet. Create one in Groups."
-msgstr "아직 어떤 그룹에도 속해 있지 않습니다. 그룹에서 하나 만드세요."
+msgid "via relay"
+msgstr "릴레이 경유"
 
-msgid "People in the room"
-msgstr "룸에 있는 사람"
+msgid "Turn on over the network (Wake-on-LAN)"
+msgstr "네트워크로 켜기 (Wake-on-LAN)"
 
-msgid "Everyone"
-msgstr "모두"
-
-msgid "Who's speaking"
-msgstr "말하는 사람"
-
-msgid "Mute"
-msgstr "음소거"
-
-msgid "Mute your microphone for everyone"
-msgstr "모든 사람에게 내 마이크 음소거"
-
-msgid "Which camera"
-msgstr "카메라 선택"
-
-msgid "Include the computer's sound when sharing the screen"
-msgstr "화면 공유 시 컴퓨터 소리 포함"
-
-msgid ""
-"Videos and music playing here go to the room too; the room's voices don't "
-"(no echo)"
-msgstr "여기서 재생되는 동영상과 음악도 룸에 전달됩니다. 룸의 음성은 전달되지 않습니다(에코 없음)"
-
-msgid "Rooms unavailable"
-msgstr "룸을 사용할 수 없음"
+msgid "Turn on over the network"
+msgstr "네트워크로 켜기"
 
 #, rust-format
-msgid "Could not turn on the camera: {error}"
-msgstr "카메라를 켤 수 없습니다: {error}"
+msgid ""
+"Signal sent to {name} (by {via}). If it's set to turn on over the network, "
+"it shows up in a minute or two."
+msgstr "{name}에 신호를 보냈습니다({via} 경유). 네트워크로 켜지도록 설정되어 있으면 1~2분 후에 표시됩니다."
 
 #, rust-format
-msgid "Could not share the screen: {error}"
-msgstr "화면을 공유할 수 없습니다: {error}"
+msgid "Could not turn on {name}: {error}"
+msgstr "{name}을(를) 켤 수 없습니다: {error}"
 
-msgid "Nobody here right now"
-msgstr "지금 아무도 없음"
+msgid "Unpin from top"
+msgstr "상단 고정 해제"
+
+msgid "Pin to top"
+msgstr "상단에 고정"
+
+msgid "Pinned to top"
+msgstr "상단에 고정됨"
+
+msgid "Unpinned"
+msgstr "고정 해제됨"
+
+msgid "Open files (SFTP)"
+msgstr "파일 열기 (SFTP)"
+
+msgid "Open terminal (SSH)"
+msgstr "터미널 열기 (SSH)"
+
+msgid "See and control the screen"
+msgstr "화면 보기 및 제어"
+
+msgid "DNS name"
+msgstr "DNS 이름"
+
+msgid "DNS name copied"
+msgstr "DNS 이름이 복사되었습니다"
+
+msgid "Owner"
+msgstr "소유자"
+
+msgid "SSH login (override)"
+msgstr "SSH 로그인 (재정의)"
+
+msgid "Saved"
+msgstr "저장됨"
+
+msgid "Tags"
+msgstr "태그"
+
+msgid "Last seen"
+msgstr "마지막 확인 시간"
+
+msgid "Use as exit node"
+msgstr "종료 노드로 사용"
+
+msgid "Route all traffic through this peer"
+msgstr "모든 트래픽을 이 피어를 통해 라우팅"
+
+msgid "Exit node enabled"
+msgstr "종료 노드 활성화됨"
+
+msgid "Exit node disabled"
+msgstr "종료 노드 비활성화됨"
+
+msgid "Failed to update exit node"
+msgstr "종료 노드 업데이트 실패"
+
+msgid "Copy"
+msgstr "복사"
+
+msgid "Smileys & people"
+msgstr "스마일리 및 사람"
+
+msgid "Animals & nature"
+msgstr "동물 및 자연"
+
+msgid "Food & drink"
+msgstr "음식 및 음료"
+
+msgid "Travel & places"
+msgstr "여행 및 장소"
+
+msgid "Activities"
+msgstr "활동"
+
+msgid "Objects"
+msgstr "사물"
+
+msgid "Symbols"
+msgstr "기호"
+
+msgid "Flags"
+msgstr "깃발"
+
+msgid "Search emoji"
+msgstr "이모지 검색"
+
+msgid "Recently used"
+msgstr "최근 사용"
+
+msgid "Search results"
+msgstr "검색 결과"
+
+msgid "Failed to disable start at login"
+msgstr "로그인 시 시작을 비활성화하지 못했습니다"
+
+msgid "Failed to create the autostart folder"
+msgstr "자동 시작 폴더를 만들지 못했습니다"
+
+msgid "Failed to enable start at login"
+msgstr "로그인 시 시작을 활성화하지 못했습니다"
+
+msgid "only files can be sent"
+msgstr "파일만 보낼 수 있습니다"
+
+msgid "the file is too big (4 GB at most)"
+msgstr "파일이 너무 큽니다 (최대 4 GB)"
+
+msgid "that file name can't be sent"
+msgstr "해당 파일 이름은 보낼 수 없습니다"
 
 #, rust-format
-msgid "In the room: {people}"
-msgstr "룸에 있음: {people}"
+msgid "{user}'s computer is off or offline — try again when it's back"
+msgstr "{user}의 컴퓨터가 꺼져 있거나 오프라인입니다 — 다시 연결되면 시도하세요"
+
+msgid ""
+"the file arrived different from the original (damaged on the way) — download"
+" it again"
+msgstr "파일이 원본과 다르게 도착했습니다 (전송 중 손상됨) — 다시 다운로드하세요"
+
+msgid "the file is no longer on their computer (moved or changed)"
+msgstr "파일이 더 이상 상대방 컴퓨터에 없습니다 (이동되었거나 변경됨)"
+
+msgid "the file isn't available"
+msgstr "파일을 사용할 수 없습니다"
+
+msgid "the transfer was interrupted — try again to resume it"
+msgstr "전송이 중단되었습니다 — 다시 시도하면 이어서 받습니다"
+
+msgid "message too long"
+msgstr "메시지가 너무 깁니다"
+
+msgid "not signed in to a BigScale network"
+msgstr "BigScale 네트워크에 로그인되어 있지 않습니다"
+
+msgid "you are not in that group"
+msgstr "해당 그룹에 속해 있지 않습니다"
 
 #, rust-format
-msgid "Join the room {group}"
-msgstr "{group} 룸 참여"
+msgid "{emoji} (reaction to: {text})"
+msgstr "{emoji} ({text}에 대한 반응)"
 
 #, rust-format
-msgid "Could not join {group}: {error}"
-msgstr "{group}에 참여할 수 없습니다: {error}"
+msgid "✏️ (edited) {text}"
+msgstr "✏️ (수정됨) {text}"
 
-msgid "📺 You're showing your screen to the room"
-msgstr "📺 룸에 내 화면을 보여 주는 중"
-
-msgid "📺 You're showing your screen · 1 person watching"
-msgstr "📺 내 화면을 보여 주는 중 · 1명 시청 중"
+msgid "🗑 (deleted a message)"
+msgstr "🗑 (메시지를 삭제함)"
 
 #, rust-format
-msgid "📺 You're showing your screen · {count} people watching"
-msgstr "📺 내 화면을 보여 주는 중 · {count}명 시청 중"
+msgid "📌 (pinned: {text})"
+msgstr "📌 (고정됨: {text})"
+
+msgid "📌 (unpinned the message)"
+msgstr "📌 (메시지 고정을 해제함)"
+
+msgid "nothing was recorded — is a microphone connected?"
+msgstr "아무것도 녹음되지 않았습니다 — 마이크가 연결되어 있나요?"
+
+msgid ""
+"this computer can't restart remotely (BigLace's helper isn't installed)"
+msgstr "이 컴퓨터는 원격으로 다시 시작할 수 없습니다 (BigLace 도우미가 설치되지 않음)"
 
 #, rust-format
-msgid "{people} · {talking} talking"
-msgstr "{people} · {talking}명 말하는 중"
-
-msgid "connecting…"
-msgstr "연결 중…"
-
-msgid "muted"
-msgstr "음소거됨"
-
-msgid "talking"
-msgstr "말하는 중"
-
-msgid "quiet"
-msgstr "조용함"
-
-msgid "Sharing screen"
-msgstr "화면 공유 중"
-
-msgid "In control"
-msgstr "제어 중"
-
-msgid "Controls your screen now"
-msgstr "지금 내 화면을 제어하는 중"
-
-msgid "Watching"
-msgstr "시청 중"
-
-msgid "Watching your screen"
-msgstr "내 화면을 시청하는 중"
+msgid "could not prepare the automatic sign-in: {error}"
+msgstr "자동 로그인을 준비할 수 없습니다: {error}"
 
 #, rust-format
-msgid "{user} is showing their screen"
-msgstr "{user}님이 화면을 보여 주는 중입니다"
-
-msgid "Watch"
-msgstr "시청"
+msgid "could not restart: {error}"
+msgstr "다시 시작할 수 없습니다: {error}"
 
 #, rust-format
-msgid "{user} asks to control your screen"
-msgstr "{user}님이 내 화면 제어를 요청합니다"
+msgid "could not restart the session: {error}"
+msgstr "세션을 다시 시작할 수 없습니다: {error}"
+
+#, rust-format
+msgid "could not shut down: {error}"
+msgstr "종료할 수 없습니다: {error}"
+
+msgid "the connection was lost"
+msgstr "연결이 끊어졌습니다"
 
 msgid ""
-"They'll be able to use your mouse and keyboard. You can take control back at"
-" any time."
-msgstr "상대방이 내 마우스와 키보드를 사용할 수 있게 됩니다. 언제든지 제어권을 되찾을 수 있습니다."
+"the screen there is locked, and GNOME doesn't allow remote access to a "
+"locked screen — ask the person to unlock it"
+msgstr "상대방 화면이 잠겨 있으며 GNOME은 잠긴 화면에 대한 원격 접근을 허용하지 않습니다 — 잠금을 해제해 달라고 요청하세요"
 
-msgid "Allow"
-msgstr "허용"
+msgid "access to the camera was refused"
+msgstr "카메라 접근이 거부되었습니다"
 
-msgid "Turn off camera"
-msgstr "카메라 끄기"
+msgid "you are not in a room"
+msgstr "룸에 있지 않습니다"
 
-msgid "Turn on camera"
-msgstr "카메라 켜기"
+msgid "Mute or unmute the microphone in a BigLace room"
+msgstr "BigLace 룸에서 마이크 음소거 또는 음소거 해제"
 
-msgid "No camera found on this computer"
-msgstr "이 컴퓨터에서 카메라를 찾을 수 없습니다"
+msgid "screen sharing isn't available on this computer"
+msgstr "이 컴퓨터에서는 화면 공유를 사용할 수 없습니다"
 
-msgid "Stop sharing"
-msgstr "공유 중지"
+#, rust-format
+msgid "The computer's sound can't be shared: {error}"
+msgstr "컴퓨터 소리를 공유할 수 없습니다: {error}"
 
-msgid "Share screen"
-msgstr "화면 공유"
+#, rust-format
+msgid "The screen share stopped: {error}"
+msgstr "화면 공유가 중지되었습니다: {error}"
 
-msgid "Stop showing your screen to the room"
-msgstr "룸에 내 화면 보여 주기 중지"
+msgid "BigLace doesn't know that computer's network card yet"
+msgstr "BigLace가 아직 해당 컴퓨터의 네트워크 카드를 알지 못합니다"
 
-msgid "Show your screen to everyone in the room"
-msgstr "룸의 모든 사람에게 내 화면 보여 주기"
+msgid "this computer"
+msgstr "이 컴퓨터"
 
-msgid "Take back control"
-msgstr "제어권 되찾기"
-
-msgid "Give control"
-msgstr "제어권 주기"
-
-msgid "Stop them from using your mouse and keyboard"
-msgstr "상대방이 내 마우스와 키보드를 사용하지 못하게 합니다"
-
-msgid "Let them use your mouse and keyboard"
-msgstr "상대방이 내 마우스와 키보드를 사용하게 합니다"
-
-msgid "Sound level"
-msgstr "소리 크기"
-
-msgid "Unmute"
-msgstr "음소거 해제"
-
-msgid "Sections"
-msgstr "섹션"
-
-msgid ""
-"Your identity on this mesh — the device name shown to other peers and the "
-"network you're connected to."
-msgstr "이 메시 네트워크에서의 내 ID — 다른 피어에게 표시되는 기기 이름과 연결된 네트워크입니다."
-
-msgid "Change photo…"
-msgstr "사진 변경…"
-
-msgid "Remove photo"
-msgstr "사진 제거"
-
-msgid "Change your photo"
-msgstr "내 사진 변경"
-
-msgid "Rename this device on the network"
-msgstr "네트워크에서 이 기기 이름 변경"
-
-msgid "Advanced: use a pre-auth key"
-msgstr "고급: 사전 인증 키 사용"
-
-msgid "Already have a key from your administrator? Paste it here."
-msgstr "관리자로부터 키를 이미 받으셨나요? 여기에 붙여넣으세요."
-
-msgid ""
-"Manual setup — expand to paste a server URL and pre-auth key when you "
-"already received them from your administrator. Most users should sign in "
-"through the panel button above instead."
-msgstr ""
-"수동 설정 — 관리자로부터 서버 URL과 사전 인증 키를 이미 받은 경우 펼쳐서 붙여넣으세요. 대부분의 사용자는 위의 패널 버튼을 통해 "
-"로그인해야 합니다."
-
-msgid ""
-"Address of the coordination server (e.g. vpn.example.org). The https:// "
-"scheme is added automatically if you omit it."
-msgstr "조정 서버 주소 (예: vpn.example.org). 생략 시 https:// 체계가 자동으로 추가됩니다."
-
-msgid "Pre-auth key"
-msgstr "사전 인증 키"
-
-msgid ""
-"One-time or reusable key created on the server (starts with 'hskey-auth-'). "
-"Used to register this device automatically without opening a browser."
-msgstr ""
-"서버에서 생성된 일회성 또는 재사용 가능 키 ('hskey-auth-'로 시작). 브라우저를 열지 않고 이 기기를 자동으로 등록하는 데 "
-"사용됩니다."
-
-msgid ""
-"The name this device shows to other peers on the VPN — this is the Tailscale"
-" hostname, NOT your computer's name and NOT your user. Lowercase letters, "
-"digits and hyphens. Example: 'tales-laptop', 'francois', 'office-pc'."
-msgstr ""
-"이 기기가 VPN 상의 다른 피어에게 표시되는 이름 — Tailscale 호스트 이름이며, 컴퓨터 이름도 사용자 이름도 아닙니다. "
-"소문자, 숫자 및 하이픈만 사용 가능합니다. 예: 'tales-laptop', 'francois', 'office-pc'."
-
-msgid "Apply manual setup"
-msgstr "수동 설정 적용"
-
-msgid "Save"
-msgstr "저장"
-
-msgid ""
-"Persist the server, key and device name above. Won't connect — press Connect"
-" afterwards."
-msgstr "위의 서버, 키 및 기기 이름을 저장합니다. 연결되지는 않습니다 — 이후 연결 버튼을 누르세요."
-
-msgid "Connect automatically"
-msgstr "자동 연결"
-
-msgid "Join the network when BigLace starts"
-msgstr "BigLace 시작 시 네트워크에 가입"
-
-msgid ""
-"When on, BigLace runs 'tailscale up' as soon as it launches, so you join the"
-" mesh without clicking Connect every time."
-msgstr ""
-"켜져 있으면 BigLace가 실행될 때 'tailscale up'을 자동으로 실행하여 매번 연결을 클릭하지 않고도 메시 네트워크에 "
-"참여합니다."
-
-msgid "Toggle auto-connect on startup"
-msgstr "시작 시 자동 연결 전환"
-
-msgid "Start BigLace with the session"
-msgstr "세션과 함께 BigLace 시작"
-
-msgid "Open BigLace after you sign in to the desktop"
-msgstr "데스크톱에 로그인한 후 BigLace 열기"
-
-msgid ""
-"Turn this on to add BigLace to your desktop session startup. Turn it off to "
-"remove it."
-msgstr "이 옵션을 켜면 BigLace가 데스크톱 세션 시작 시 추가됩니다. 끄면 제거됩니다."
-
-msgid "Toggle start with session"
-msgstr "세션 시작 시 실행 전환"
-
-msgid "Reconnect on drop"
-msgstr "연결 끊김 시 자동 재연결"
-
-msgid "Retry with backoff when the connection is lost"
-msgstr "연결이 끊어졌을 때 백오프(backoff) 방식으로 재시도"
-
-msgid ""
-"If the tunnel drops (network change, sleep, server hiccup), BigLace silently"
-" retries with growing delays instead of leaving you offline until you "
-"notice."
-msgstr ""
-"터널이 끊어지면(네트워크 변경, 절전 모드, 서버 오류) BigLace가 지연 시간을 늘려가며 자동으로 재시도하므로, 사용자가 인지할 "
-"때까지 오프라인 상태로 방치되지 않습니다."
-
-msgid "Toggle auto-reconnect"
-msgstr "자동 재연결 전환"
-
-msgid "Notify on peer changes"
-msgstr "피어 변경 시 알림"
-
-msgid "Show a desktop notification when peers go online/offline"
-msgstr "피어가 온라인/오프라인 상태가 되면 데스크톱 알림 표시"
-
-msgid ""
-"Send a desktop toast when another device on your network goes online or "
-"offline. Rapid bursts are coalesced into a single notification so you don't "
-"get spammed during reconnects."
-msgstr ""
-"네트워크 상의 다른 기기가 온라인 또는 오프라인이 될 때 데스크톱 알림을 보냅니다. 빠른 연속 변경은 하나의 알림으로 통합되어 재연결 중"
-" 알림이 과도하게 표시되지 않습니다."
-
-msgid "Toggle peer-change notifications"
-msgstr "피어 변경 알림 전환"
-
-msgid ""
-"Join or leave the mesh network. When connected, this device becomes "
-"reachable by the other peers in your account."
-msgstr "메시 네트워크에 연결하거나 연결을 해제합니다. 연결되면 이 기기는 계정 내 다른 피어에서 접근할 수 있습니다."
-
-msgid "Your photo"
-msgstr "내 사진"
+msgid "no computer on its network is on to send the signal"
+msgstr "신호를 보낼 수 있는 컴퓨터가 해당 네트워크에서 켜져 있지 않습니다"
 
 #~ msgid "Panel credentials"
 #~ msgstr "패널 자격 증명"

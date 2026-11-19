@@ -70,8 +70,269 @@ msgstr "Impossibile eseguire pkexec tailscale set"
 msgid "Failed to set tailscale operator."
 msgstr "Impossibile impostare l'operatore tailscale."
 
+msgid "Invite someone"
+msgstr "Invita qualcuno"
+
+msgid "Open admin panel"
+msgstr "Apri pannello di amministrazione"
+
+msgid "Devices"
+msgstr "Dispositivi"
+
+msgid "Chat"
+msgstr "Chat"
+
+msgid "Invites"
+msgstr "Inviti"
+
+msgid "Groups"
+msgstr "Gruppi"
+
+msgid "Rooms"
+msgstr "Stanze"
+
+msgid "Pictures"
+msgstr "Immagini"
+
+msgid "Choose your photo"
+msgstr "Scegli la tua foto"
+
+msgid "Photo updated. Everyone you're connected to will see it."
+msgstr "Foto aggiornata. Tutti quelli con cui sei connesso la vedranno."
+
+#, rust-format
+msgid "Could not change the photo: {error}"
+msgstr "Impossibile cambiare la foto: {error}"
+
+msgid "Sign in with an access key"
+msgstr "Accedi con una chiave di accesso"
+
+msgid ""
+"Paste the key the administrator gave you. It's used once, to register this "
+"device."
+msgstr ""
+"Incolla la chiave che ti ha dato l'amministratore. Viene usata una sola "
+"volta, per registrare questo dispositivo."
+
+msgid "Server URL"
+msgstr "URL del server"
+
+msgid "Access key"
+msgstr "Chiave di accesso"
+
+msgid "Device name on the network"
+msgstr "Nome del dispositivo sulla rete"
+
+msgid "Cancel"
+msgstr "Annulla"
+
+msgid "Connect"
+msgstr "Connetti"
+
+msgid ""
+"The key to this account is no longer on this computer. Join with a new "
+"invite."
+msgstr ""
+"La chiave di questo account non è più su questo computer. Entra con un nuovo"
+" invito."
+
+#, rust-format
+msgid "Welcome back, {name}! Connecting…"
+msgstr "Bentornato, {name}! Connessione…"
+
+#, rust-format
+msgid "Error: {error}"
+msgstr "Errore: {error}"
+
+#, rust-format
+msgid ""
+"The account {user} no longer exists on this network. Join with a new invite."
+msgstr ""
+"L'account {user} non esiste più in questa rete. Entra con un nuovo invito."
+
+msgid "Preferences"
+msgstr "Preferenze"
+
+msgid "General"
+msgstr "Generale"
+
+msgid "Behaviour"
+msgstr "Comportamento"
+
+msgid "System"
+msgstr "Sistema"
+
+msgid "Make this user the tailscale operator"
+msgstr "Rendi questo utente operatore di Tailscale"
+
+msgid ""
+"Lets BigLace manage the connection without asking for a password each time"
+msgstr ""
+"Permette a BigLace di gestire la connessione senza chiedere ogni volta una "
+"password"
+
+msgid "Account"
+msgstr "Account"
+
+msgid ""
+"Signing out removes this device's identity from BigLace. You will need a new"
+" invite or key to join again."
+msgstr ""
+"La disconnessione rimuove l'identità di questo dispositivo da BigLace. Ti "
+"servirà un nuovo invito o una nuova chiave per rientrare."
+
+msgid "Sign out"
+msgstr "Esci"
+
+msgid "Invites you sent"
+msgstr "Inviti che hai inviato"
+
+msgid "Change profile photo…"
+msgstr "Cambia foto del profilo…"
+
+msgid "Join with an invite"
+msgstr "Entra con un invito"
+
+msgid "Sign in with panel account"
+msgstr "Accedi con account pannello"
+
+msgid "Leave the network…"
+msgstr "Lascia la rete…"
+
+msgid "View tailscaled logs"
+msgstr "Visualizza log di tailscaled"
+
+msgid "About BigLace"
+msgstr "Informazioni su BigLace"
+
+msgid "Connect to the network first, then open the invite link again."
+msgstr "Connettiti prima alla rete, poi apri di nuovo il link di invito."
+
+#, rust-format
+msgid ""
+"This invite is for another network ({host}). Sign out first to join it."
+msgstr ""
+"Questo invito è per un'altra rete ({host}). Disconnettiti prima per "
+"entrarvi."
+
+msgid ""
+"This device is already signed in. Sign out first to join with an invite."
+msgstr ""
+"Questo dispositivo ha già effettuato l'accesso. Disconnettiti prima per "
+"entrare con un invito."
+
+msgid "Photo removed."
+msgstr "Foto rimossa."
+
+#, rust-format
+msgid "Could not remove the photo: {error}"
+msgstr "Impossibile rimuovere la foto: {error}"
+
+#, rust-format
+msgid "Could not open the browser: {error}"
+msgstr "Impossibile aprire il browser: {error}"
+
+msgid ""
+"You can't open the admin panel: you're not an administrator of this network,"
+" or the panel can't be reached."
+msgstr ""
+"Non puoi aprire il pannello di amministrazione: non sei un amministratore di"
+" questa rete, oppure il pannello non è raggiungibile."
+
+msgid "Enter the server URL before saving."
+msgstr "Inserisci l'URL del server prima di salvare."
+
+msgid "Enter the pre-auth key before saving."
+msgstr "Inserisci la chiave di pre-autenticazione prima di salvare."
+
+msgid "Setup saved"
+msgstr "Configurazione salvata"
+
+msgid "Could not start the Tailscale service."
+msgstr "Impossibile avviare il servizio Tailscale."
+
+msgid "IP address copied"
+msgstr "Indirizzo IP copiato"
+
+#, rust-format
+msgid ""
+"Saved, but the pre-auth key could not be stored in the system keyring "
+"({error}). This device can still reconnect; the key is only needed again to "
+"register it anew."
+msgstr ""
+"Salvato, ma la chiave di pre-autenticazione non è stata memorizzata nel "
+"portachiavi di sistema ({error}). Questo dispositivo può ancora "
+"riconnettersi; la chiave serve solo per registrarlo di nuovo."
+
 msgid "Connected"
 msgstr "Connesso"
+
+msgid "Service stopped"
+msgstr "Servizio arrestato"
+
+msgid "Not signed in"
+msgstr "Non hai effettuato l'accesso"
+
+msgid "Disconnected"
+msgstr "Disconnesso"
+
+msgid "Connecting…"
+msgstr "Connessione in corso…"
+
+msgid "Server unreachable"
+msgstr "Server irraggiungibile"
+
+msgid "Tailscale can't set DNS"
+msgstr "Tailscale non riesce a impostare il DNS"
+
+#, rust-format
+msgid "Update available: v{version}"
+msgstr "Aggiornamento disponibile: v{version}"
+
+#, rust-format
+msgid "Sign in again as {user}"
+msgstr "Accedi di nuovo come {user}"
+
+msgid "(no device name)"
+msgstr "(nessun nome dispositivo)"
+
+msgid "Sign in or paste a pre-auth key"
+msgstr "Accedi o incolla una chiave di pre-autorizzazione"
+
+msgid "Server not set"
+msgstr "Server non impostato"
+
+msgid "Disconnect"
+msgstr "Disconnetti"
+
+msgid "no other devices"
+msgstr "nessun altro dispositivo"
+
+#, rust-format
+msgid "{online} online"
+msgstr "{online} online"
+
+#, rust-format
+msgid "{online} online · {offline} offline"
+msgstr "{online} online · {offline} offline"
+
+msgid "is online"
+msgstr "è online"
+
+msgid "went offline"
+msgstr "è andato offline"
+
+#, rust-format
+msgid "{count} devices are online"
+msgstr "{count} dispositivi sono online"
+
+#, rust-format
+msgid "{count} devices went offline"
+msgstr "{count} dispositivi sono andati offline"
+
+#, rust-format
+msgid "{on_count} online · {off_count} offline"
+msgstr "{on_count} online · {off_count} offline"
 
 msgid "Connected · 1 peer"
 msgstr "Connesso · 1 peer"
@@ -80,9 +341,6 @@ msgstr "Connesso · 1 peer"
 msgid "Connected · {n} peers"
 msgstr "Connesso · {n} peer"
 
-msgid "Disconnected"
-msgstr "Disconnesso"
-
 #, rust-format
 msgid "In the room {group} · muted"
 msgstr "Nella stanza {group} · muto"
@@ -90,12 +348,6 @@ msgstr "Nella stanza {group} · muto"
 #, rust-format
 msgid "In the room {group}"
 msgstr "Nella stanza {group}"
-
-msgid "Disconnect"
-msgstr "Disconnetti"
-
-msgid "Connect"
-msgstr "Connetti"
 
 msgid "Show BigLace"
 msgstr "Mostra BigLace"
@@ -115,6 +367,442 @@ msgstr "Esci dalla stanza"
 
 msgid "Quit"
 msgstr "Esci"
+
+msgid "Main menu"
+msgstr "Menu principale"
+
+msgid "Search devices"
+msgstr "Cerca dispositivi"
+
+msgid "Refresh"
+msgstr "Aggiorna"
+
+msgid "Invite"
+msgstr "Invita"
+
+msgid "Invite someone to your network"
+msgstr "Invita qualcuno nella tua rete"
+
+msgid ""
+"Tailscale cannot write this device's DNS settings, so it can no longer keep "
+"peer names working. They may still resolve for now, from the configuration "
+"left over from before the failure, but that will break the next time the "
+"network changes — and BigLace will fall back to IP addresses. On most "
+"distributions `sudo resolvconf -u` repairs it."
+msgstr ""
+"Tailscale non riesce a scrivere le impostazioni DNS di questo dispositivo, "
+"quindi non può più mantenere funzionanti i nomi dei peer. Per ora potrebbero"
+" ancora essere risolti, grazie alla configurazione rimasta da prima del "
+"guasto, ma smetterà di funzionare al prossimo cambio di rete — e BigLace "
+"ripiegherà sugli indirizzi IP. Sulla maggior parte delle distribuzioni `sudo"
+" resolvconf -u` risolve il problema."
+
+msgid "Not connected"
+msgstr "Non connesso"
+
+msgid "Press Connect on the left to join the network."
+msgstr "Premi Connetti a sinistra per unirti alla rete."
+
+msgid "The tailscale service is not running"
+msgstr "Il servizio tailscale non è in esecuzione"
+
+msgid "BigLace needs the tailscaled background service to manage the network."
+msgstr ""
+"BigLace necessita del servizio in background tailscaled per gestire la rete."
+
+msgid "Start service"
+msgstr "Avvia servizio"
+
+msgid "Join the network"
+msgstr "Entra nella rete"
+
+msgid "Choose how you're going to sign in."
+msgstr "Scegli come accedere."
+
+msgid "Ways to sign in"
+msgstr "Modi per accedere"
+
+msgid "Your account was kept on this computer. No invite needed."
+msgstr ""
+"Il tuo account è stato conservato su questo computer. Nessun invito "
+"necessario."
+
+msgid "I have an invite"
+msgstr "Ho un invito"
+
+msgid "Someone on the network sent you a link or a QR code."
+msgstr "Qualcuno della rete ti ha inviato un link o un codice QR."
+
+msgid "I have an access key"
+msgstr "Ho una chiave di accesso"
+
+msgid "A key the administrator created for you (starts with hskey-auth-)."
+msgstr ""
+"Una chiave che l'amministratore ha creato per te (inizia con hskey-auth-)."
+
+msgid "I'm the administrator"
+msgstr "Sono l'amministratore"
+
+msgid "Sign in with the BigScale panel's admin username and password."
+msgstr ""
+"Accedi con nome utente e password di amministratore del pannello BigScale."
+
+msgid "This device"
+msgstr "Questo dispositivo"
+
+msgid "Copy IP address"
+msgstr "Copia indirizzo IP"
+
+msgid "Devices on the network"
+msgstr "Dispositivi sulla rete"
+
+msgid "No other devices on the network yet."
+msgstr "Nessun altro dispositivo nella rete al momento."
+
+msgid "Sections"
+msgstr "Sezioni"
+
+msgid ""
+"Your identity on this mesh — the device name shown to other peers and the "
+"network you're connected to."
+msgstr ""
+"La tua identità in questa mesh — il nome del dispositivo mostrato agli altri"
+" peer e la rete a cui sei connesso."
+
+msgid "Change photo…"
+msgstr "Cambia foto…"
+
+msgid "Remove photo"
+msgstr "Rimuovi foto"
+
+msgid "Change your photo"
+msgstr "Cambia la tua foto"
+
+msgid "Rename this device on the network"
+msgstr "Rinomina questo dispositivo sulla rete"
+
+msgid "Advanced: use a pre-auth key"
+msgstr "Avanzato: usa una chiave pre-autorizzata"
+
+msgid "Already have a key from your administrator? Paste it here."
+msgstr "Hai già una chiave dal tuo amministratore? Incollala qui."
+
+msgid ""
+"Manual setup — expand to paste a server URL and pre-auth key when you "
+"already received them from your administrator. Most users should sign in "
+"through the panel button above instead."
+msgstr ""
+"Configurazione manuale — espandi per incollare l'URL del server e la chiave "
+"di pre-autenticazione se li hai già ricevuti dal tuo amministratore. La "
+"maggior parte degli utenti dovrebbe invece accedere tramite il pulsante del "
+"pannello qui sopra."
+
+msgid ""
+"Address of the coordination server (e.g. vpn.example.org). The https:// "
+"scheme is added automatically if you omit it."
+msgstr ""
+"Indirizzo del server di coordinamento (es. vpn.example.org). Lo schema "
+"https:// viene aggiunto automaticamente se lo ometti."
+
+msgid "Pre-auth key"
+msgstr "Chiave di pre-autorizzazione"
+
+msgid ""
+"One-time or reusable key created on the server (starts with 'hskey-auth-'). "
+"Used to register this device automatically without opening a browser."
+msgstr ""
+"Chiave monouso o riutilizzabile creata sul server (inizia con 'hskey-"
+"auth-'). Utilizzata per registrare automaticamente questo dispositivo senza "
+"aprire un browser."
+
+msgid ""
+"The name this device shows to other peers on the VPN — this is the Tailscale"
+" hostname, NOT your computer's name and NOT your user. Lowercase letters, "
+"digits and hyphens. Example: 'tales-laptop', 'francois', 'office-pc'."
+msgstr ""
+"Il nome con cui questo dispositivo si mostra agli altri peer sulla VPN — "
+"questo è l'hostname di Tailscale, NON il nome del tuo computer e NON il tuo "
+"nome utente. Lettere minuscole, cifre e trattini. Esempio: 'tales-laptop', "
+"'francois', 'office-pc'."
+
+msgid "Apply manual setup"
+msgstr "Applica configurazione manuale"
+
+msgid "Save"
+msgstr "Salva"
+
+msgid ""
+"Persist the server, key and device name above. Won't connect — press Connect"
+" afterwards."
+msgstr ""
+"Salva server, chiave e nome del dispositivo qui sopra. Non si connetterà — "
+"premi Connetti successivamente."
+
+msgid "Connect automatically"
+msgstr "Connetti automaticamente"
+
+msgid "Join the network when BigLace starts"
+msgstr "Unisciti alla rete all'avvio di BigLace"
+
+msgid ""
+"When on, BigLace runs 'tailscale up' as soon as it launches, so you join the"
+" mesh without clicking Connect every time."
+msgstr ""
+"Quando attivo, BigLace esegue 'tailscale up' non appena si avvia, così ti "
+"unisci alla mesh senza dover cliccare su Connetti ogni volta."
+
+msgid "Toggle auto-connect on startup"
+msgstr "Attiva/disattiva connessione automatica all'avvio"
+
+msgid "Start BigLace with the session"
+msgstr "Avvia BigLace con la sessione"
+
+msgid "Open BigLace after you sign in to the desktop"
+msgstr "Apri BigLace dopo aver effettuato l'accesso al desktop"
+
+msgid ""
+"Turn this on to add BigLace to your desktop session startup. Turn it off to "
+"remove it."
+msgstr ""
+"Attiva questa opzione per aggiungere BigLace all'avvio della sessione del "
+"desktop. Disattivala per rimuoverla."
+
+msgid "Toggle start with session"
+msgstr "Attiva/disattiva avvio con la sessione"
+
+msgid "Reconnect on drop"
+msgstr "Riconnessione automatica alla caduta"
+
+msgid "Retry with backoff when the connection is lost"
+msgstr "Riprova con backoff quando la connessione viene persa"
+
+msgid ""
+"If the tunnel drops (network change, sleep, server hiccup), BigLace silently"
+" retries with growing delays instead of leaving you offline until you "
+"notice."
+msgstr ""
+"Se il tunnel cade (cambio di rete, sospensione, problema del server), "
+"BigLace riprova silenziosamente con ritardi crescenti invece di lasciarti "
+"offline finché non te ne accorgi."
+
+msgid "Toggle auto-reconnect"
+msgstr "Attiva/disattiva riconnessione automatica"
+
+msgid "Notify on peer changes"
+msgstr "Notifica modifiche peer"
+
+msgid "Show a desktop notification when peers go online/offline"
+msgstr "Mostra una notifica desktop quando i peer vanno online/offline"
+
+msgid ""
+"Send a desktop toast when another device on your network goes online or "
+"offline. Rapid bursts are coalesced into a single notification so you don't "
+"get spammed during reconnects."
+msgstr ""
+"Invia una notifica desktop quando un altro dispositivo sulla tua rete va "
+"online o offline. Raffiche rapide vengono raggruppate in un'unica notifica "
+"per evitare di essere sommerso durante le riconnessioni."
+
+msgid "Toggle peer-change notifications"
+msgstr "Attiva/disattiva notifiche di cambiamento peer"
+
+msgid ""
+"Join or leave the mesh network. When connected, this device becomes "
+"reachable by the other peers in your account."
+msgstr ""
+"Unisciti o abbandona la rete mesh. Quando connesso, questo dispositivo "
+"diventa raggiungibile dagli altri peer del tuo account."
+
+msgid "Your photo"
+msgstr "La tua foto"
+
+msgid ""
+"Each of your groups has a voice room. Join it and talk with whoever is there"
+" — the sound goes straight between you, through the network."
+msgstr ""
+"Ciascuno dei tuoi gruppi ha una stanza vocale. Entra e parla con chi c'è — "
+"l'audio viaggia direttamente tra voi, attraverso la rete."
+
+msgid "You're not in any group yet. Create one in Groups."
+msgstr "Non sei ancora in nessun gruppo. Creane uno in Gruppi."
+
+msgid "People in the room"
+msgstr "Persone nella stanza"
+
+msgid "Everyone"
+msgstr "Tutti"
+
+msgid "Who's speaking"
+msgstr "Chi parla"
+
+msgid "Mute"
+msgstr "Silenzia"
+
+msgid "Mute your microphone for everyone"
+msgstr "Silenzia il tuo microfono per tutti"
+
+msgid "Leave"
+msgstr "Lascia"
+
+msgid "Which camera"
+msgstr "Quale fotocamera"
+
+msgid "Include the computer's sound when sharing the screen"
+msgstr "Includi l'audio del computer quando condividi lo schermo"
+
+msgid ""
+"Videos and music playing here go to the room too; the room's voices don't "
+"(no echo)"
+msgstr ""
+"Video e musica riprodotti qui arrivano anche alla stanza; le voci della "
+"stanza no (nessuna eco)"
+
+msgid "Rooms unavailable"
+msgstr "Stanze non disponibili"
+
+#, rust-format
+msgid "Could not turn on the camera: {error}"
+msgstr "Impossibile accendere la fotocamera: {error}"
+
+#, rust-format
+msgid "Could not share the screen: {error}"
+msgstr "Impossibile condividere lo schermo: {error}"
+
+#, rust-format
+msgid "Could not reach the panel: {error}"
+msgstr "Impossibile raggiungere il pannello: {error}"
+
+msgid "Nobody here right now"
+msgstr "Nessuno qui al momento"
+
+#, rust-format
+msgid "In the room: {people}"
+msgstr "Nella stanza: {people}"
+
+msgid "Join"
+msgstr "Entra"
+
+#, rust-format
+msgid "Join the room {group}"
+msgstr "Entra nella stanza {group}"
+
+#, rust-format
+msgid "Could not join {group}: {error}"
+msgstr "Impossibile entrare in {group}: {error}"
+
+msgid "📺 You're showing your screen to the room"
+msgstr "📺 Stai mostrando il tuo schermo alla stanza"
+
+msgid "📺 You're showing your screen · 1 person watching"
+msgstr "📺 Stai mostrando il tuo schermo · 1 persona guarda"
+
+#, rust-format
+msgid "📺 You're showing your screen · {count} people watching"
+msgstr "📺 Stai mostrando il tuo schermo · {count} persone guardano"
+
+msgid "1 person"
+msgstr "1 persona"
+
+#, rust-format
+msgid "{count} people"
+msgstr "{count} persone"
+
+#, rust-format
+msgid "{people} · {talking} talking"
+msgstr "{people} · {talking} parlano"
+
+msgid "you"
+msgstr "tu"
+
+msgid "connecting…"
+msgstr "connessione…"
+
+msgid "muted"
+msgstr "muto"
+
+msgid "talking"
+msgstr "parla"
+
+msgid "quiet"
+msgstr "in silenzio"
+
+msgid "Sharing screen"
+msgstr "Condivide lo schermo"
+
+msgid "In control"
+msgstr "Ha il controllo"
+
+msgid "Controls your screen now"
+msgstr "Controlla il tuo schermo ora"
+
+msgid "Watching"
+msgstr "Sta guardando"
+
+msgid "Watching your screen"
+msgstr "Sta guardando il tuo schermo"
+
+#, rust-format
+msgid "{user} is showing their screen"
+msgstr "{user} sta mostrando il suo schermo"
+
+msgid "Watch"
+msgstr "Guarda"
+
+#, rust-format
+msgid "{user} asks to control your screen"
+msgstr "{user} chiede di controllare il tuo schermo"
+
+msgid ""
+"They'll be able to use your mouse and keyboard. You can take control back at"
+" any time."
+msgstr ""
+"Potrà usare il tuo mouse e la tua tastiera. Puoi riprendere il controllo in "
+"qualsiasi momento."
+
+msgid "Deny"
+msgstr "Nega"
+
+msgid "Allow"
+msgstr "Consenti"
+
+msgid "Turn off camera"
+msgstr "Spegni fotocamera"
+
+msgid "Turn on camera"
+msgstr "Accendi fotocamera"
+
+msgid "No camera found on this computer"
+msgstr "Nessuna fotocamera trovata su questo computer"
+
+msgid "Stop sharing"
+msgstr "Interrompi condivisione"
+
+msgid "Share screen"
+msgstr "Condividi schermo"
+
+msgid "Stop showing your screen to the room"
+msgstr "Smetti di mostrare il tuo schermo alla stanza"
+
+msgid "Show your screen to everyone in the room"
+msgstr "Mostra il tuo schermo a tutti nella stanza"
+
+msgid "Take back control"
+msgstr "Riprendi il controllo"
+
+msgid "Give control"
+msgstr "Cedi il controllo"
+
+msgid "Stop them from using your mouse and keyboard"
+msgstr "Impediscigli di usare il tuo mouse e la tua tastiera"
+
+msgid "Let them use your mouse and keyboard"
+msgstr "Lascia che usi il tuo mouse e la tua tastiera"
+
+msgid "Sound level"
+msgstr "Livello audio"
+
+msgid "Unmute"
+msgstr "Riattiva microfono"
 
 msgid "This computer"
 msgstr "Questo computer"
@@ -224,17 +912,11 @@ msgstr "Video"
 msgid "Voice message"
 msgstr "Messaggio vocale"
 
-msgid "Chat"
-msgstr "Chat"
-
 msgid "New chat"
 msgstr "Nuova chat"
 
 msgid "Start a conversation with someone on the network"
 msgstr "Avvia una conversazione con qualcuno della rete"
-
-msgid "Main menu"
-msgstr "Menu principale"
 
 msgid "Chat theme"
 msgstr "Tema della chat"
@@ -280,9 +962,6 @@ msgstr "Scarta"
 
 msgid "Send voice message"
 msgstr "Invia messaggio vocale"
-
-msgid "Cancel"
-msgstr "Annulla"
 
 msgid "Copy text"
 msgstr "Copia testo"
@@ -468,443 +1147,6 @@ msgstr "{user} sta scrivendo…"
 msgid "typing…"
 msgstr "sta scrivendo…"
 
-msgid "System accent"
-msgstr "Colore di sistema"
-
-msgid "Blue"
-msgstr "Blu"
-
-msgid "Teal"
-msgstr "Verde acqua"
-
-msgid "Green"
-msgstr "Verde"
-
-msgid "Purple"
-msgstr "Viola"
-
-msgid "Pink"
-msgstr "Rosa"
-
-msgid "Orange"
-msgstr "Arancione"
-
-msgid "Red"
-msgstr "Rosso"
-
-msgid "Graphite"
-msgstr "Grafite"
-
-msgid "Default"
-msgstr "Predefinito"
-
-msgid "Plain"
-msgstr "Semplice"
-
-msgid "Dots"
-msgstr "Puntini"
-
-msgid "Ocean"
-msgstr "Oceano"
-
-msgid "Sunset"
-msgstr "Tramonto"
-
-msgid "Forest"
-msgstr "Foresta"
-
-msgid "Lavender"
-msgstr "Lavanda"
-
-msgid "Night"
-msgstr "Notte"
-
-msgid "Hi! How does this look? 😊"
-msgstr "Ciao! Come ti sembra? 😊"
-
-msgid "Looks great!"
-msgstr "Sta benissimo!"
-
-msgid "Appearance"
-msgstr "Aspetto"
-
-msgid "System"
-msgstr "Sistema"
-
-msgid "Light"
-msgstr "Chiaro"
-
-msgid "Dark"
-msgstr "Scuro"
-
-msgid "Your messages"
-msgstr "I tuoi messaggi"
-
-msgid "Background"
-msgstr "Sfondo"
-
-msgid "Picture…"
-msgstr "Immagine…"
-
-msgid "Pictures"
-msgstr "Immagini"
-
-msgid "Choose a background picture"
-msgstr "Scegli un'immagine di sfondo"
-
-msgid "Message"
-msgstr "Messaggio"
-
-msgid "Bold"
-msgstr "Grassetto"
-
-msgid "Italic"
-msgstr "Corsivo"
-
-msgid "Underline"
-msgstr "Sottolineato"
-
-msgid "Strikethrough"
-msgstr "Barrato"
-
-msgid "Monospace"
-msgstr "Monospazio"
-
-msgid "Create link"
-msgstr "Crea link"
-
-msgid "Plain text"
-msgstr "Testo semplice"
-
-msgid "Formatting"
-msgstr "Formattazione"
-
-msgid "Create"
-msgstr "Crea"
-
-msgid "Search devices"
-msgstr "Cerca dispositivi"
-
-msgid "Refresh"
-msgstr "Aggiorna"
-
-msgid "Invite"
-msgstr "Invita"
-
-msgid "Invite someone to your network"
-msgstr "Invita qualcuno nella tua rete"
-
-msgid ""
-"Tailscale cannot write this device's DNS settings, so it can no longer keep "
-"peer names working. They may still resolve for now, from the configuration "
-"left over from before the failure, but that will break the next time the "
-"network changes — and BigLace will fall back to IP addresses. On most "
-"distributions `sudo resolvconf -u` repairs it."
-msgstr ""
-"Tailscale non riesce a scrivere le impostazioni DNS di questo dispositivo, "
-"quindi non può più mantenere funzionanti i nomi dei peer. Per ora potrebbero"
-" ancora essere risolti, grazie alla configurazione rimasta da prima del "
-"guasto, ma smetterà di funzionare al prossimo cambio di rete — e BigLace "
-"ripiegherà sugli indirizzi IP. Sulla maggior parte delle distribuzioni `sudo"
-" resolvconf -u` risolve il problema."
-
-msgid "Not connected"
-msgstr "Non connesso"
-
-msgid "Press Connect on the left to join the network."
-msgstr "Premi Connetti a sinistra per unirti alla rete."
-
-msgid "The tailscale service is not running"
-msgstr "Il servizio tailscale non è in esecuzione"
-
-msgid "BigLace needs the tailscaled background service to manage the network."
-msgstr ""
-"BigLace necessita del servizio in background tailscaled per gestire la rete."
-
-msgid "Start service"
-msgstr "Avvia servizio"
-
-msgid "Join the network"
-msgstr "Entra nella rete"
-
-msgid "Choose how you're going to sign in."
-msgstr "Scegli come accedere."
-
-msgid "Ways to sign in"
-msgstr "Modi per accedere"
-
-msgid "Your account was kept on this computer. No invite needed."
-msgstr ""
-"Il tuo account è stato conservato su questo computer. Nessun invito "
-"necessario."
-
-msgid "I have an invite"
-msgstr "Ho un invito"
-
-msgid "Someone on the network sent you a link or a QR code."
-msgstr "Qualcuno della rete ti ha inviato un link o un codice QR."
-
-msgid "I have an access key"
-msgstr "Ho una chiave di accesso"
-
-msgid "A key the administrator created for you (starts with hskey-auth-)."
-msgstr ""
-"Una chiave che l'amministratore ha creato per te (inizia con hskey-auth-)."
-
-msgid "I'm the administrator"
-msgstr "Sono l'amministratore"
-
-msgid "Sign in with the BigScale panel's admin username and password."
-msgstr ""
-"Accedi con nome utente e password di amministratore del pannello BigScale."
-
-msgid "Connecting…"
-msgstr "Connessione in corso…"
-
-msgid "This device"
-msgstr "Questo dispositivo"
-
-msgid "Copy IP address"
-msgstr "Copia indirizzo IP"
-
-msgid "Devices on the network"
-msgstr "Dispositivi sulla rete"
-
-msgid "No other devices on the network yet."
-msgstr "Nessun altro dispositivo nella rete al momento."
-
-msgid "Mesh VPN client for BigScale/Headscale."
-msgstr "Client VPN mesh per BigScale/Headscale."
-
-msgid "Done. You will no longer need a password to connect or disconnect."
-msgstr ""
-"Operazione completata. Non avrai più bisogno di una password per connetterti"
-" o disconnetterti."
-
-#, rust-format
-msgid "Failed: {error}"
-msgstr "Operazione fallita: {error}"
-
-msgid "Tailscale operator"
-msgstr "Operatore Tailscale"
-
-msgid "OK"
-msgstr "OK"
-
-msgid "Sign out of current account?"
-msgstr "Uscire dall'account corrente?"
-
-msgid ""
-"This will disconnect from the network, sign this device out of the current "
-"control server, and forget the saved password. You'll then be able to sign "
-"in with a different account."
-msgstr ""
-"Questa operazione disconnetterà dalla rete, rimuoverà questo dispositivo dal"
-" server di controllo corrente e cancellerà la password salvata. Potrai "
-"quindi accedere con un account diverso."
-
-msgid "Sign out"
-msgstr "Esci"
-
-msgid "Leave the network?"
-msgstr "Lasciare la rete?"
-
-#, rust-format
-msgid ""
-"This device leaves the network and its name becomes free. Your account {user} is kept: you can come back later from this computer, without an invite.\n"
-"\n"
-"If you won't come back, delete the account and the name {user} becomes free too."
-msgstr ""
-"Questo dispositivo lascia la rete e il suo nome diventa libero. Il tuo account {user} viene conservato: potrai tornare più tardi da questo computer, senza invito.\n"
-"\n"
-"Se non tornerai, elimina l'account e anche il nome {user} diventerà libero."
-
-msgid "Leave and delete account"
-msgstr "Lascia ed elimina l'account"
-
-msgid "Leave"
-msgstr "Lascia"
-
-msgid "Connect first to delete the account."
-msgstr "Connettiti prima per eliminare l'account."
-
-msgid "Signing out…"
-msgstr "Disconnessione…"
-
-#, rust-format
-msgid ""
-"Signed out. Your account was kept: {count} other device(s) still use it."
-msgstr ""
-"Disconnesso. Il tuo account è stato conservato: {count} altro/i "
-"dispositivo/i lo usano ancora."
-
-msgid ""
-"Couldn't delete the account: the panel can't be reached. Connect and try "
-"again."
-msgstr ""
-"Impossibile eliminare l'account: il pannello non è raggiungibile. Connettiti"
-" e riprova."
-
-#, rust-format
-msgid "Error: {error}"
-msgstr "Errore: {error}"
-
-msgid "Signed out and account deleted."
-msgstr "Disconnesso e account eliminato."
-
-msgid "Signed out."
-msgstr "Disconnesso."
-
-msgid "Couldn't reach the server"
-msgstr "Impossibile raggiungere il server"
-
-#, rust-format
-msgid ""
-"The control server didn't confirm the sign-out: {error}\n"
-"\n"
-"You can still sign out on this computer: BigLace forgets the saved key and account and disconnects. The server keeps listing this device until an administrator removes it."
-msgstr ""
-"Il server di controllo non ha confermato la disconnessione: {error}\n"
-"\n"
-"Puoi comunque disconnetterti su questo computer: BigLace dimentica la chiave e l'account salvati e si disconnette. Il server continuerà a elencare questo dispositivo finché un amministratore non lo rimuove."
-
-msgid "Sign out on this computer"
-msgstr "Disconnetti su questo computer"
-
-msgid "Sign in as administrator"
-msgstr "Accedi come amministratore"
-
-msgid "Panel administrator"
-msgstr "Amministratore del pannello"
-
-msgid ""
-"Only for whoever administers the BigScale panel: use the panel's admin "
-"username and password. This device joins the network under the name below. "
-"Everyone else joins with an invite or an access key."
-msgstr ""
-"Solo per chi amministra il pannello BigScale: usa nome utente e password di "
-"amministratore del pannello. Questo dispositivo entra nella rete con il nome"
-" qui sotto. Tutti gli altri entrano con un invito o una chiave di accesso."
-
-msgid "Panel URL"
-msgstr "URL pannello"
-
-msgid ""
-"Address of your BigScale panel (e.g. panel.example.org). The https:// scheme"
-" is added automatically if you omit it."
-msgstr ""
-"Indirizzo del tuo pannello BigScale (es. panel.example.org). Lo schema "
-"https:// viene aggiunto automaticamente se omesso."
-
-msgid "Panel admin username"
-msgstr "Nome utente amministratore del pannello"
-
-msgid "Your panel username — the one you use to sign in to the web panel."
-msgstr ""
-"Il tuo nome utente del pannello — quello che usi per accedere al pannello "
-"web."
-
-msgid "Password"
-msgstr "Password"
-
-msgid ""
-"Your panel password. Stored in the OS keyring (libsecret on Linux, Keychain "
-"on macOS, Credential Manager on Windows)."
-msgstr ""
-"La tua password del pannello. Salvata nel portachiavi del sistema (libsecret"
-" su Linux, Portachiavi su macOS, Gestione credenziali su Windows)."
-
-msgid "Device name on the network"
-msgstr "Nome del dispositivo sulla rete"
-
-msgid ""
-"The name this device shows to other peers on the VPN — this is the Tailscale"
-" hostname, NOT your computer's name and NOT your user. Lowercase letters, "
-"digits and hyphens. Example: 'tales-laptop', 'francois', 'office-pc'. Pick "
-"something other peers will recognise."
-msgstr ""
-"Il nome con cui questo dispositivo si mostra agli altri peer sulla VPN — è "
-"il nome host di Tailscale, NON il nome del computer e NON il tuo nome "
-"utente. Solo lettere minuscole, cifre e trattini. Esempio: 'tales-laptop', "
-"'francois', 'office-pc'. Scegli un nome che gli altri peer riconosceranno."
-
-msgid "Sign in"
-msgstr "Accedi"
-
-msgid "Fill in URL, username and password."
-msgstr "Inserisci URL, nome utente e password."
-
-msgid "Signed in. Press Connect to join the network."
-msgstr "Accesso effettuato. Premi Connetti per unirti alla rete."
-
-msgid "Rename this device"
-msgstr "Rinomina questo dispositivo"
-
-msgid ""
-"The name this device shows to other peers on the VPN. Lowercase letters, "
-"digits and hyphens. Example: tales-laptop."
-msgstr ""
-"Il nome con cui questo dispositivo si mostra agli altri peer sulla VPN. Solo"
-" lettere minuscole, cifre e trattini. Esempio: tales-laptop."
-
-msgid "Save & apply"
-msgstr "Salva e applica"
-
-msgid "Saved. The new name will take effect the next time you connect."
-msgstr "Salvato. Il nuovo nome avrà effetto al prossimo collegamento."
-
-msgid "Device renamed."
-msgstr "Dispositivo rinominato."
-
-#, rust-format
-msgid "Rename failed: {error}"
-msgstr "Rinomina fallita: {error}"
-
-msgid "The device name can't be empty."
-msgstr "Il nome del dispositivo non può essere vuoto."
-
-msgid "Use 63 characters or fewer."
-msgstr "Usa 63 caratteri o meno."
-
-msgid "The device name can't start or end with a hyphen."
-msgstr "Il nome del dispositivo non può iniziare o terminare con un trattino."
-
-msgid "Only lowercase letters, digits and hyphens are allowed."
-msgstr "Sono consentite solo lettere minuscole, cifre e trattini."
-
-msgid "Smileys & people"
-msgstr "Faccine e persone"
-
-msgid "Animals & nature"
-msgstr "Animali e natura"
-
-msgid "Food & drink"
-msgstr "Cibo e bevande"
-
-msgid "Travel & places"
-msgstr "Viaggi e luoghi"
-
-msgid "Activities"
-msgstr "Attività"
-
-msgid "Objects"
-msgstr "Oggetti"
-
-msgid "Symbols"
-msgstr "Simboli"
-
-msgid "Flags"
-msgstr "Bandiere"
-
-msgid "Search emoji"
-msgstr "Cerca emoji"
-
-msgid "Recently used"
-msgstr "Usati di recente"
-
-msgid "Search results"
-msgstr "Risultati della ricerca"
-
 msgid ""
 "Groups from BigLace need a newer BigScale server. Ask your administrator to "
 "update it."
@@ -1005,13 +1247,6 @@ msgstr ""
 msgid "Too many attempts. Wait a minute and try again."
 msgstr "Troppi tentativi. Attendi un minuto e riprova."
 
-#, rust-format
-msgid "Could not reach the panel: {error}"
-msgstr "Impossibile raggiungere il pannello: {error}"
-
-msgid "Groups"
-msgstr "Gruppi"
-
 msgid "New group"
 msgstr "Nuovo gruppo"
 
@@ -1076,13 +1311,6 @@ msgstr "Sei entrato in {group}."
 msgid "Invitation declined."
 msgstr "Invito rifiutato."
 
-msgid "1 person"
-msgstr "1 persona"
-
-#, rust-format
-msgid "{count} people"
-msgstr "{count} persone"
-
 msgid "Created by you"
 msgstr "Creato da te"
 
@@ -1092,9 +1320,6 @@ msgstr "Creato da {user}"
 
 msgid "Network group (administrator)"
 msgstr "Gruppo di rete (amministratore)"
-
-msgid "you"
-msgstr "tu"
 
 msgid "owner"
 msgstr "proprietario"
@@ -1182,9 +1407,6 @@ msgstr "Connettersi con {user}?"
 #, rust-format
 msgid "You and {user} will reach each other's devices."
 msgstr "Tu e {user} raggiungerete i dispositivi l'uno dell'altro."
-
-msgid "Join"
-msgstr "Entra"
 
 msgid "Done. You can now reach each other's devices."
 msgstr "Fatto. Ora potete raggiungere i dispositivi l'uno dell'altro."
@@ -1330,9 +1552,6 @@ msgstr "Annullato"
 msgid "Waiting for an administrator's approval"
 msgstr "In attesa dell'approvazione di un amministratore"
 
-msgid "Invites"
-msgstr "Inviti"
-
 msgid "Bring someone to your network"
 msgstr "Porta qualcuno nella tua rete"
 
@@ -1345,9 +1564,6 @@ msgstr ""
 "raggiungere i dispositivi l'uno dell'altro — senza bisogno di un "
 "amministratore. Il link funziona una volta e resta valido finché non viene "
 "usato o annullato da te."
-
-msgid "Invites you sent"
-msgstr "Inviti che hai inviato"
 
 msgid "No invites yet"
 msgstr "Ancora nessun invito"
@@ -1365,9 +1581,6 @@ msgstr "gruppo {group}"
 
 msgid "Cancel this invite: the link stops working"
 msgstr "Annulla questo invito: il link smette di funzionare"
-
-msgid "Invite someone"
-msgstr "Invita qualcuno"
 
 msgid "The person you invite will reach your devices, and you theirs."
 msgstr "La persona che inviti raggiungerà i tuoi dispositivi, e tu i suoi."
@@ -1430,6 +1643,300 @@ msgstr ""
 "Questa rete richiede che un amministratore approvi ogni invito: il link "
 "inizia a funzionare dopo l'approvazione. Lo stato appare in Inviti."
 
+msgid "System accent"
+msgstr "Colore di sistema"
+
+msgid "Blue"
+msgstr "Blu"
+
+msgid "Teal"
+msgstr "Verde acqua"
+
+msgid "Green"
+msgstr "Verde"
+
+msgid "Purple"
+msgstr "Viola"
+
+msgid "Pink"
+msgstr "Rosa"
+
+msgid "Orange"
+msgstr "Arancione"
+
+msgid "Red"
+msgstr "Rosso"
+
+msgid "Graphite"
+msgstr "Grafite"
+
+msgid "Default"
+msgstr "Predefinito"
+
+msgid "Plain"
+msgstr "Semplice"
+
+msgid "Dots"
+msgstr "Puntini"
+
+msgid "Ocean"
+msgstr "Oceano"
+
+msgid "Sunset"
+msgstr "Tramonto"
+
+msgid "Forest"
+msgstr "Foresta"
+
+msgid "Lavender"
+msgstr "Lavanda"
+
+msgid "Night"
+msgstr "Notte"
+
+msgid "Hi! How does this look? 😊"
+msgstr "Ciao! Come ti sembra? 😊"
+
+msgid "Looks great!"
+msgstr "Sta benissimo!"
+
+msgid "Appearance"
+msgstr "Aspetto"
+
+msgid "Light"
+msgstr "Chiaro"
+
+msgid "Dark"
+msgstr "Scuro"
+
+msgid "Your messages"
+msgstr "I tuoi messaggi"
+
+msgid "Background"
+msgstr "Sfondo"
+
+msgid "Picture…"
+msgstr "Immagine…"
+
+msgid "Choose a background picture"
+msgstr "Scegli un'immagine di sfondo"
+
+msgid "Message"
+msgstr "Messaggio"
+
+msgid "Bold"
+msgstr "Grassetto"
+
+msgid "Italic"
+msgstr "Corsivo"
+
+msgid "Underline"
+msgstr "Sottolineato"
+
+msgid "Strikethrough"
+msgstr "Barrato"
+
+msgid "Monospace"
+msgstr "Monospazio"
+
+msgid "Create link"
+msgstr "Crea link"
+
+msgid "Plain text"
+msgstr "Testo semplice"
+
+msgid "Formatting"
+msgstr "Formattazione"
+
+msgid "Create"
+msgstr "Crea"
+
+msgid "Mesh VPN client for BigScale/Headscale."
+msgstr "Client VPN mesh per BigScale/Headscale."
+
+msgid "Done. You will no longer need a password to connect or disconnect."
+msgstr ""
+"Operazione completata. Non avrai più bisogno di una password per connetterti"
+" o disconnetterti."
+
+#, rust-format
+msgid "Failed: {error}"
+msgstr "Operazione fallita: {error}"
+
+msgid "Tailscale operator"
+msgstr "Operatore Tailscale"
+
+msgid "OK"
+msgstr "OK"
+
+msgid "Sign out of current account?"
+msgstr "Uscire dall'account corrente?"
+
+msgid ""
+"This will disconnect from the network, sign this device out of the current "
+"control server, and forget the saved password. You'll then be able to sign "
+"in with a different account."
+msgstr ""
+"Questa operazione disconnetterà dalla rete, rimuoverà questo dispositivo dal"
+" server di controllo corrente e cancellerà la password salvata. Potrai "
+"quindi accedere con un account diverso."
+
+msgid "Leave the network?"
+msgstr "Lasciare la rete?"
+
+#, rust-format
+msgid ""
+"This device leaves the network and its name becomes free. Your account {user} is kept: you can come back later from this computer, without an invite.\n"
+"\n"
+"If you won't come back, delete the account and the name {user} becomes free too."
+msgstr ""
+"Questo dispositivo lascia la rete e il suo nome diventa libero. Il tuo account {user} viene conservato: potrai tornare più tardi da questo computer, senza invito.\n"
+"\n"
+"Se non tornerai, elimina l'account e anche il nome {user} diventerà libero."
+
+msgid "Leave and delete account"
+msgstr "Lascia ed elimina l'account"
+
+msgid "Connect first to delete the account."
+msgstr "Connettiti prima per eliminare l'account."
+
+msgid "Signing out…"
+msgstr "Disconnessione…"
+
+#, rust-format
+msgid ""
+"Signed out. Your account was kept: {count} other device(s) still use it."
+msgstr ""
+"Disconnesso. Il tuo account è stato conservato: {count} altro/i "
+"dispositivo/i lo usano ancora."
+
+msgid ""
+"Couldn't delete the account: the panel can't be reached. Connect and try "
+"again."
+msgstr ""
+"Impossibile eliminare l'account: il pannello non è raggiungibile. Connettiti"
+" e riprova."
+
+msgid "Signed out and account deleted."
+msgstr "Disconnesso e account eliminato."
+
+msgid "Signed out."
+msgstr "Disconnesso."
+
+msgid "Couldn't reach the server"
+msgstr "Impossibile raggiungere il server"
+
+#, rust-format
+msgid ""
+"The control server didn't confirm the sign-out: {error}\n"
+"\n"
+"You can still sign out on this computer: BigLace forgets the saved key and account and disconnects. The server keeps listing this device until an administrator removes it."
+msgstr ""
+"Il server di controllo non ha confermato la disconnessione: {error}\n"
+"\n"
+"Puoi comunque disconnetterti su questo computer: BigLace dimentica la chiave e l'account salvati e si disconnette. Il server continuerà a elencare questo dispositivo finché un amministratore non lo rimuove."
+
+msgid "Sign out on this computer"
+msgstr "Disconnetti su questo computer"
+
+msgid "Sign in as administrator"
+msgstr "Accedi come amministratore"
+
+msgid "Panel administrator"
+msgstr "Amministratore del pannello"
+
+msgid ""
+"Only for whoever administers the BigScale panel: use the panel's admin "
+"username and password. This device joins the network under the name below. "
+"Everyone else joins with an invite or an access key."
+msgstr ""
+"Solo per chi amministra il pannello BigScale: usa nome utente e password di "
+"amministratore del pannello. Questo dispositivo entra nella rete con il nome"
+" qui sotto. Tutti gli altri entrano con un invito o una chiave di accesso."
+
+msgid "Panel URL"
+msgstr "URL pannello"
+
+msgid ""
+"Address of your BigScale panel (e.g. panel.example.org). The https:// scheme"
+" is added automatically if you omit it."
+msgstr ""
+"Indirizzo del tuo pannello BigScale (es. panel.example.org). Lo schema "
+"https:// viene aggiunto automaticamente se omesso."
+
+msgid "Panel admin username"
+msgstr "Nome utente amministratore del pannello"
+
+msgid "Your panel username — the one you use to sign in to the web panel."
+msgstr ""
+"Il tuo nome utente del pannello — quello che usi per accedere al pannello "
+"web."
+
+msgid "Password"
+msgstr "Password"
+
+msgid ""
+"Your panel password. Stored in the OS keyring (libsecret on Linux, Keychain "
+"on macOS, Credential Manager on Windows)."
+msgstr ""
+"La tua password del pannello. Salvata nel portachiavi del sistema (libsecret"
+" su Linux, Portachiavi su macOS, Gestione credenziali su Windows)."
+
+msgid ""
+"The name this device shows to other peers on the VPN — this is the Tailscale"
+" hostname, NOT your computer's name and NOT your user. Lowercase letters, "
+"digits and hyphens. Example: 'tales-laptop', 'francois', 'office-pc'. Pick "
+"something other peers will recognise."
+msgstr ""
+"Il nome con cui questo dispositivo si mostra agli altri peer sulla VPN — è "
+"il nome host di Tailscale, NON il nome del computer e NON il tuo nome "
+"utente. Solo lettere minuscole, cifre e trattini. Esempio: 'tales-laptop', "
+"'francois', 'office-pc'. Scegli un nome che gli altri peer riconosceranno."
+
+msgid "Sign in"
+msgstr "Accedi"
+
+msgid "Fill in URL, username and password."
+msgstr "Inserisci URL, nome utente e password."
+
+msgid "Signed in. Press Connect to join the network."
+msgstr "Accesso effettuato. Premi Connetti per unirti alla rete."
+
+msgid "Rename this device"
+msgstr "Rinomina questo dispositivo"
+
+msgid ""
+"The name this device shows to other peers on the VPN. Lowercase letters, "
+"digits and hyphens. Example: tales-laptop."
+msgstr ""
+"Il nome con cui questo dispositivo si mostra agli altri peer sulla VPN. Solo"
+" lettere minuscole, cifre e trattini. Esempio: tales-laptop."
+
+msgid "Save & apply"
+msgstr "Salva e applica"
+
+msgid "Saved. The new name will take effect the next time you connect."
+msgstr "Salvato. Il nuovo nome avrà effetto al prossimo collegamento."
+
+msgid "Device renamed."
+msgstr "Dispositivo rinominato."
+
+#, rust-format
+msgid "Rename failed: {error}"
+msgstr "Rinomina fallita: {error}"
+
+msgid "The device name can't be empty."
+msgstr "Il nome del dispositivo non può essere vuoto."
+
+msgid "Use 63 characters or fewer."
+msgstr "Usa 63 caratteri o meno."
+
+msgid "The device name can't start or end with a hyphen."
+msgstr "Il nome del dispositivo non può iniziare o terminare con un trattino."
+
+msgid "Only lowercase letters, digits and hyphens are allowed."
+msgstr "Sono consentite solo lettere minuscole, cifre e trattini."
+
 #, rust-format
 msgid ""
 "That name already belongs to an account on this network, so we suggested "
@@ -1472,9 +1979,6 @@ msgid ""
 msgstr ""
 "Questo server non supporta ancora gli inviti. Accedi invece con un account "
 "del pannello."
-
-msgid "Join with an invite"
-msgstr "Entra con un invito"
 
 msgid ""
 "Paste the invite link you received and type your name. Your account is "
@@ -1521,302 +2025,6 @@ msgstr "Benvenuto, {name}! Sei entrato nel gruppo {group}. Connessione…"
 msgid "Welcome, {name}! Connecting…"
 msgstr "Benvenuto, {name}! Connessione…"
 
-msgid "Open admin panel"
-msgstr "Apri pannello di amministrazione"
-
-msgid "Devices"
-msgstr "Dispositivi"
-
-msgid "Rooms"
-msgstr "Stanze"
-
-msgid "Choose your photo"
-msgstr "Scegli la tua foto"
-
-msgid "Photo updated. Everyone you're connected to will see it."
-msgstr "Foto aggiornata. Tutti quelli con cui sei connesso la vedranno."
-
-#, rust-format
-msgid "Could not change the photo: {error}"
-msgstr "Impossibile cambiare la foto: {error}"
-
-msgid "Sign in with an access key"
-msgstr "Accedi con una chiave di accesso"
-
-msgid ""
-"Paste the key the administrator gave you. It's used once, to register this "
-"device."
-msgstr ""
-"Incolla la chiave che ti ha dato l'amministratore. Viene usata una sola "
-"volta, per registrare questo dispositivo."
-
-msgid "Server URL"
-msgstr "URL del server"
-
-msgid "Access key"
-msgstr "Chiave di accesso"
-
-msgid ""
-"The key to this account is no longer on this computer. Join with a new "
-"invite."
-msgstr ""
-"La chiave di questo account non è più su questo computer. Entra con un nuovo"
-" invito."
-
-#, rust-format
-msgid "Welcome back, {name}! Connecting…"
-msgstr "Bentornato, {name}! Connessione…"
-
-#, rust-format
-msgid ""
-"The account {user} no longer exists on this network. Join with a new invite."
-msgstr ""
-"L'account {user} non esiste più in questa rete. Entra con un nuovo invito."
-
-msgid "Preferences"
-msgstr "Preferenze"
-
-msgid "General"
-msgstr "Generale"
-
-msgid "Behaviour"
-msgstr "Comportamento"
-
-msgid "Make this user the tailscale operator"
-msgstr "Rendi questo utente operatore di Tailscale"
-
-msgid ""
-"Lets BigLace manage the connection without asking for a password each time"
-msgstr ""
-"Permette a BigLace di gestire la connessione senza chiedere ogni volta una "
-"password"
-
-msgid "Account"
-msgstr "Account"
-
-msgid ""
-"Signing out removes this device's identity from BigLace. You will need a new"
-" invite or key to join again."
-msgstr ""
-"La disconnessione rimuove l'identità di questo dispositivo da BigLace. Ti "
-"servirà un nuovo invito o una nuova chiave per rientrare."
-
-msgid "Change profile photo…"
-msgstr "Cambia foto del profilo…"
-
-msgid "Sign in with panel account"
-msgstr "Accedi con account pannello"
-
-msgid "Leave the network…"
-msgstr "Lascia la rete…"
-
-msgid "View tailscaled logs"
-msgstr "Visualizza log di tailscaled"
-
-msgid "About BigLace"
-msgstr "Informazioni su BigLace"
-
-msgid "Connect to the network first, then open the invite link again."
-msgstr "Connettiti prima alla rete, poi apri di nuovo il link di invito."
-
-#, rust-format
-msgid ""
-"This invite is for another network ({host}). Sign out first to join it."
-msgstr ""
-"Questo invito è per un'altra rete ({host}). Disconnettiti prima per "
-"entrarvi."
-
-msgid ""
-"This device is already signed in. Sign out first to join with an invite."
-msgstr ""
-"Questo dispositivo ha già effettuato l'accesso. Disconnettiti prima per "
-"entrare con un invito."
-
-msgid "Photo removed."
-msgstr "Foto rimossa."
-
-#, rust-format
-msgid "Could not remove the photo: {error}"
-msgstr "Impossibile rimuovere la foto: {error}"
-
-#, rust-format
-msgid "Could not open the browser: {error}"
-msgstr "Impossibile aprire il browser: {error}"
-
-msgid ""
-"You can't open the admin panel: you're not an administrator of this network,"
-" or the panel can't be reached."
-msgstr ""
-"Non puoi aprire il pannello di amministrazione: non sei un amministratore di"
-" questa rete, oppure il pannello non è raggiungibile."
-
-msgid "Enter the server URL before saving."
-msgstr "Inserisci l'URL del server prima di salvare."
-
-msgid "Enter the pre-auth key before saving."
-msgstr "Inserisci la chiave di pre-autenticazione prima di salvare."
-
-msgid "Setup saved"
-msgstr "Configurazione salvata"
-
-msgid "Could not start the Tailscale service."
-msgstr "Impossibile avviare il servizio Tailscale."
-
-msgid "IP address copied"
-msgstr "Indirizzo IP copiato"
-
-#, rust-format
-msgid ""
-"Saved, but the pre-auth key could not be stored in the system keyring "
-"({error}). This device can still reconnect; the key is only needed again to "
-"register it anew."
-msgstr ""
-"Salvato, ma la chiave di pre-autenticazione non è stata memorizzata nel "
-"portachiavi di sistema ({error}). Questo dispositivo può ancora "
-"riconnettersi; la chiave serve solo per registrarlo di nuovo."
-
-msgid "Service stopped"
-msgstr "Servizio arrestato"
-
-msgid "Not signed in"
-msgstr "Non hai effettuato l'accesso"
-
-msgid "Server unreachable"
-msgstr "Server irraggiungibile"
-
-msgid "Tailscale can't set DNS"
-msgstr "Tailscale non riesce a impostare il DNS"
-
-#, rust-format
-msgid "Update available: v{version}"
-msgstr "Aggiornamento disponibile: v{version}"
-
-#, rust-format
-msgid "Sign in again as {user}"
-msgstr "Accedi di nuovo come {user}"
-
-msgid "(no device name)"
-msgstr "(nessun nome dispositivo)"
-
-msgid "Sign in or paste a pre-auth key"
-msgstr "Accedi o incolla una chiave di pre-autorizzazione"
-
-msgid "Server not set"
-msgstr "Server non impostato"
-
-msgid "no other devices"
-msgstr "nessun altro dispositivo"
-
-#, rust-format
-msgid "{online} online"
-msgstr "{online} online"
-
-#, rust-format
-msgid "{online} online · {offline} offline"
-msgstr "{online} online · {offline} offline"
-
-msgid "is online"
-msgstr "è online"
-
-msgid "went offline"
-msgstr "è andato offline"
-
-#, rust-format
-msgid "{count} devices are online"
-msgstr "{count} dispositivi sono online"
-
-#, rust-format
-msgid "{count} devices went offline"
-msgstr "{count} dispositivi sono andati offline"
-
-#, rust-format
-msgid "{on_count} online · {off_count} offline"
-msgstr "{on_count} online · {off_count} offline"
-
-msgid "direct"
-msgstr "diretta"
-
-msgid "via relay"
-msgstr "via relay"
-
-msgid "Turn on over the network (Wake-on-LAN)"
-msgstr "Accendi tramite rete (Wake-on-LAN)"
-
-msgid "Turn on over the network"
-msgstr "Accendi tramite rete"
-
-#, rust-format
-msgid ""
-"Signal sent to {name} (by {via}). If it's set to turn on over the network, "
-"it shows up in a minute or two."
-msgstr ""
-"Segnale inviato a {name} (tramite {via}). Se è configurato per accendersi "
-"tramite rete, comparirà tra un paio di minuti."
-
-#, rust-format
-msgid "Could not turn on {name}: {error}"
-msgstr "Impossibile accendere {name}: {error}"
-
-msgid "Unpin from top"
-msgstr "Rimuovi dall'alto"
-
-msgid "Pin to top"
-msgstr "Fissa in alto"
-
-msgid "Pinned to top"
-msgstr "Appuntato in alto"
-
-msgid "Unpinned"
-msgstr "Non appuntato"
-
-msgid "Open files (SFTP)"
-msgstr "Apri file (SFTP)"
-
-msgid "Open terminal (SSH)"
-msgstr "Apri terminale (SSH)"
-
-msgid "See and control the screen"
-msgstr "Vedi e controlla lo schermo"
-
-msgid "DNS name"
-msgstr "Nome DNS"
-
-msgid "DNS name copied"
-msgstr "Nome DNS copiato"
-
-msgid "Owner"
-msgstr "Proprietario"
-
-msgid "SSH login (override)"
-msgstr "Accesso SSH (sostituisci)"
-
-msgid "Saved"
-msgstr "Salvato"
-
-msgid "Tags"
-msgstr "Tag"
-
-msgid "Last seen"
-msgstr "Ultima volta visto"
-
-msgid "Use as exit node"
-msgstr "Usa come nodo di uscita"
-
-msgid "Route all traffic through this peer"
-msgstr "Instrada tutto il traffico attraverso questo peer"
-
-msgid "Exit node enabled"
-msgstr "Nodo di uscita attivato"
-
-msgid "Exit node disabled"
-msgstr "Nodo di uscita disattivato"
-
-msgid "Failed to update exit node"
-msgstr "Impossibile aggiornare il nodo di uscita"
-
-msgid "Copy"
-msgstr "Copia"
-
 msgid "End access"
 msgstr "Termina accesso"
 
@@ -1838,9 +2046,6 @@ msgstr ""
 #, rust-format
 msgid "Always allow {user} (no more asking)"
 msgstr "Consenti sempre a {user} (non chiedere più)"
-
-msgid "Deny"
-msgstr "Nega"
 
 msgid "Allow access"
 msgstr "Consenti accesso"
@@ -2064,327 +2269,252 @@ msgstr "L'accesso allo schermo di {name} è terminato: {error}"
 msgid "Give back control"
 msgstr "Restituisci il controllo"
 
-msgid ""
-"Each of your groups has a voice room. Join it and talk with whoever is there"
-" — the sound goes straight between you, through the network."
-msgstr ""
-"Ciascuno dei tuoi gruppi ha una stanza vocale. Entra e parla con chi c'è — "
-"l'audio viaggia direttamente tra voi, attraverso la rete."
+msgid "direct"
+msgstr "diretta"
 
-msgid "You're not in any group yet. Create one in Groups."
-msgstr "Non sei ancora in nessun gruppo. Creane uno in Gruppi."
+msgid "via relay"
+msgstr "via relay"
 
-msgid "People in the room"
-msgstr "Persone nella stanza"
+msgid "Turn on over the network (Wake-on-LAN)"
+msgstr "Accendi tramite rete (Wake-on-LAN)"
 
-msgid "Everyone"
-msgstr "Tutti"
-
-msgid "Who's speaking"
-msgstr "Chi parla"
-
-msgid "Mute"
-msgstr "Silenzia"
-
-msgid "Mute your microphone for everyone"
-msgstr "Silenzia il tuo microfono per tutti"
-
-msgid "Which camera"
-msgstr "Quale fotocamera"
-
-msgid "Include the computer's sound when sharing the screen"
-msgstr "Includi l'audio del computer quando condividi lo schermo"
-
-msgid ""
-"Videos and music playing here go to the room too; the room's voices don't "
-"(no echo)"
-msgstr ""
-"Video e musica riprodotti qui arrivano anche alla stanza; le voci della "
-"stanza no (nessuna eco)"
-
-msgid "Rooms unavailable"
-msgstr "Stanze non disponibili"
+msgid "Turn on over the network"
+msgstr "Accendi tramite rete"
 
 #, rust-format
-msgid "Could not turn on the camera: {error}"
-msgstr "Impossibile accendere la fotocamera: {error}"
+msgid ""
+"Signal sent to {name} (by {via}). If it's set to turn on over the network, "
+"it shows up in a minute or two."
+msgstr ""
+"Segnale inviato a {name} (tramite {via}). Se è configurato per accendersi "
+"tramite rete, comparirà tra un paio di minuti."
 
 #, rust-format
-msgid "Could not share the screen: {error}"
-msgstr "Impossibile condividere lo schermo: {error}"
+msgid "Could not turn on {name}: {error}"
+msgstr "Impossibile accendere {name}: {error}"
 
-msgid "Nobody here right now"
-msgstr "Nessuno qui al momento"
+msgid "Unpin from top"
+msgstr "Rimuovi dall'alto"
+
+msgid "Pin to top"
+msgstr "Fissa in alto"
+
+msgid "Pinned to top"
+msgstr "Appuntato in alto"
+
+msgid "Unpinned"
+msgstr "Non appuntato"
+
+msgid "Open files (SFTP)"
+msgstr "Apri file (SFTP)"
+
+msgid "Open terminal (SSH)"
+msgstr "Apri terminale (SSH)"
+
+msgid "See and control the screen"
+msgstr "Vedi e controlla lo schermo"
+
+msgid "DNS name"
+msgstr "Nome DNS"
+
+msgid "DNS name copied"
+msgstr "Nome DNS copiato"
+
+msgid "Owner"
+msgstr "Proprietario"
+
+msgid "SSH login (override)"
+msgstr "Accesso SSH (sostituisci)"
+
+msgid "Saved"
+msgstr "Salvato"
+
+msgid "Tags"
+msgstr "Tag"
+
+msgid "Last seen"
+msgstr "Ultima volta visto"
+
+msgid "Use as exit node"
+msgstr "Usa come nodo di uscita"
+
+msgid "Route all traffic through this peer"
+msgstr "Instrada tutto il traffico attraverso questo peer"
+
+msgid "Exit node enabled"
+msgstr "Nodo di uscita attivato"
+
+msgid "Exit node disabled"
+msgstr "Nodo di uscita disattivato"
+
+msgid "Failed to update exit node"
+msgstr "Impossibile aggiornare il nodo di uscita"
+
+msgid "Copy"
+msgstr "Copia"
+
+msgid "Smileys & people"
+msgstr "Faccine e persone"
+
+msgid "Animals & nature"
+msgstr "Animali e natura"
+
+msgid "Food & drink"
+msgstr "Cibo e bevande"
+
+msgid "Travel & places"
+msgstr "Viaggi e luoghi"
+
+msgid "Activities"
+msgstr "Attività"
+
+msgid "Objects"
+msgstr "Oggetti"
+
+msgid "Symbols"
+msgstr "Simboli"
+
+msgid "Flags"
+msgstr "Bandiere"
+
+msgid "Search emoji"
+msgstr "Cerca emoji"
+
+msgid "Recently used"
+msgstr "Usati di recente"
+
+msgid "Search results"
+msgstr "Risultati della ricerca"
+
+msgid "Failed to disable start at login"
+msgstr "Impossibile disattivare l'avvio all'accesso"
+
+msgid "Failed to create the autostart folder"
+msgstr "Impossibile creare la cartella di avvio automatico"
+
+msgid "Failed to enable start at login"
+msgstr "Impossibile attivare l'avvio all'accesso"
+
+msgid "only files can be sent"
+msgstr "si possono inviare solo file"
+
+msgid "the file is too big (4 GB at most)"
+msgstr "il file è troppo grande (massimo 4 GB)"
+
+msgid "that file name can't be sent"
+msgstr "quel nome di file non può essere inviato"
 
 #, rust-format
-msgid "In the room: {people}"
-msgstr "Nella stanza: {people}"
+msgid "{user}'s computer is off or offline — try again when it's back"
+msgstr ""
+"il computer di {user} è spento o offline — riprova quando torna disponibile"
+
+msgid ""
+"the file arrived different from the original (damaged on the way) — download"
+" it again"
+msgstr ""
+"il file è arrivato diverso dall'originale (danneggiato durante il "
+"trasferimento) — scaricalo di nuovo"
+
+msgid "the file is no longer on their computer (moved or changed)"
+msgstr "il file non è più sul suo computer (spostato o modificato)"
+
+msgid "the file isn't available"
+msgstr "il file non è disponibile"
+
+msgid "the transfer was interrupted — try again to resume it"
+msgstr "il trasferimento è stato interrotto — riprova per riprenderlo"
+
+msgid "message too long"
+msgstr "messaggio troppo lungo"
+
+msgid "not signed in to a BigScale network"
+msgstr "non connesso a una rete BigScale"
+
+msgid "you are not in that group"
+msgstr "non sei in quel gruppo"
 
 #, rust-format
-msgid "Join the room {group}"
-msgstr "Entra nella stanza {group}"
+msgid "{emoji} (reaction to: {text})"
+msgstr "{emoji} (reazione a: {text})"
 
 #, rust-format
-msgid "Could not join {group}: {error}"
-msgstr "Impossibile entrare in {group}: {error}"
+msgid "✏️ (edited) {text}"
+msgstr "✏️ (modificato) {text}"
 
-msgid "📺 You're showing your screen to the room"
-msgstr "📺 Stai mostrando il tuo schermo alla stanza"
-
-msgid "📺 You're showing your screen · 1 person watching"
-msgstr "📺 Stai mostrando il tuo schermo · 1 persona guarda"
+msgid "🗑 (deleted a message)"
+msgstr "🗑 (ha eliminato un messaggio)"
 
 #, rust-format
-msgid "📺 You're showing your screen · {count} people watching"
-msgstr "📺 Stai mostrando il tuo schermo · {count} persone guardano"
+msgid "📌 (pinned: {text})"
+msgstr "📌 (fissato: {text})"
+
+msgid "📌 (unpinned the message)"
+msgstr "📌 (ha tolto il messaggio fissato)"
+
+msgid "nothing was recorded — is a microphone connected?"
+msgstr "non è stato registrato nulla — c'è un microfono collegato?"
+
+msgid ""
+"this computer can't restart remotely (BigLace's helper isn't installed)"
+msgstr ""
+"questo computer non può riavviarsi da remoto (l'helper di BigLace non è "
+"installato)"
 
 #, rust-format
-msgid "{people} · {talking} talking"
-msgstr "{people} · {talking} parlano"
-
-msgid "connecting…"
-msgstr "connessione…"
-
-msgid "muted"
-msgstr "muto"
-
-msgid "talking"
-msgstr "parla"
-
-msgid "quiet"
-msgstr "in silenzio"
-
-msgid "Sharing screen"
-msgstr "Condivide lo schermo"
-
-msgid "In control"
-msgstr "Ha il controllo"
-
-msgid "Controls your screen now"
-msgstr "Controlla il tuo schermo ora"
-
-msgid "Watching"
-msgstr "Sta guardando"
-
-msgid "Watching your screen"
-msgstr "Sta guardando il tuo schermo"
+msgid "could not prepare the automatic sign-in: {error}"
+msgstr "impossibile preparare l'accesso automatico: {error}"
 
 #, rust-format
-msgid "{user} is showing their screen"
-msgstr "{user} sta mostrando il suo schermo"
-
-msgid "Watch"
-msgstr "Guarda"
+msgid "could not restart: {error}"
+msgstr "impossibile riavviare: {error}"
 
 #, rust-format
-msgid "{user} asks to control your screen"
-msgstr "{user} chiede di controllare il tuo schermo"
+msgid "could not restart the session: {error}"
+msgstr "impossibile riavviare la sessione: {error}"
+
+#, rust-format
+msgid "could not shut down: {error}"
+msgstr "impossibile spegnere: {error}"
+
+msgid "the connection was lost"
+msgstr "la connessione è stata persa"
 
 msgid ""
-"They'll be able to use your mouse and keyboard. You can take control back at"
-" any time."
+"the screen there is locked, and GNOME doesn't allow remote access to a "
+"locked screen — ask the person to unlock it"
 msgstr ""
-"Potrà usare il tuo mouse e la tua tastiera. Puoi riprendere il controllo in "
-"qualsiasi momento."
+"lo schermo lì è bloccato e GNOME non consente l'accesso remoto a uno schermo"
+" bloccato — chiedi alla persona di sbloccarlo"
 
-msgid "Allow"
-msgstr "Consenti"
+msgid "access to the camera was refused"
+msgstr "l'accesso alla fotocamera è stato negato"
 
-msgid "Turn off camera"
-msgstr "Spegni fotocamera"
+msgid "you are not in a room"
+msgstr "non sei in una stanza"
 
-msgid "Turn on camera"
-msgstr "Accendi fotocamera"
+msgid "Mute or unmute the microphone in a BigLace room"
+msgstr "Attiva o disattiva il microfono in una stanza BigLace"
 
-msgid "No camera found on this computer"
-msgstr "Nessuna fotocamera trovata su questo computer"
+msgid "screen sharing isn't available on this computer"
+msgstr "la condivisione dello schermo non è disponibile su questo computer"
 
-msgid "Stop sharing"
-msgstr "Interrompi condivisione"
+#, rust-format
+msgid "The computer's sound can't be shared: {error}"
+msgstr "Impossibile condividere l'audio del computer: {error}"
 
-msgid "Share screen"
-msgstr "Condividi schermo"
+#, rust-format
+msgid "The screen share stopped: {error}"
+msgstr "La condivisione dello schermo si è interrotta: {error}"
 
-msgid "Stop showing your screen to the room"
-msgstr "Smetti di mostrare il tuo schermo alla stanza"
+msgid "BigLace doesn't know that computer's network card yet"
+msgstr "BigLace non conosce ancora la scheda di rete di quel computer"
 
-msgid "Show your screen to everyone in the room"
-msgstr "Mostra il tuo schermo a tutti nella stanza"
+msgid "this computer"
+msgstr "questo computer"
 
-msgid "Take back control"
-msgstr "Riprendi il controllo"
-
-msgid "Give control"
-msgstr "Cedi il controllo"
-
-msgid "Stop them from using your mouse and keyboard"
-msgstr "Impediscigli di usare il tuo mouse e la tua tastiera"
-
-msgid "Let them use your mouse and keyboard"
-msgstr "Lascia che usi il tuo mouse e la tua tastiera"
-
-msgid "Sound level"
-msgstr "Livello audio"
-
-msgid "Unmute"
-msgstr "Riattiva microfono"
-
-msgid "Sections"
-msgstr "Sezioni"
-
-msgid ""
-"Your identity on this mesh — the device name shown to other peers and the "
-"network you're connected to."
-msgstr ""
-"La tua identità in questa mesh — il nome del dispositivo mostrato agli altri"
-" peer e la rete a cui sei connesso."
-
-msgid "Change photo…"
-msgstr "Cambia foto…"
-
-msgid "Remove photo"
-msgstr "Rimuovi foto"
-
-msgid "Change your photo"
-msgstr "Cambia la tua foto"
-
-msgid "Rename this device on the network"
-msgstr "Rinomina questo dispositivo sulla rete"
-
-msgid "Advanced: use a pre-auth key"
-msgstr "Avanzato: usa una chiave pre-autorizzata"
-
-msgid "Already have a key from your administrator? Paste it here."
-msgstr "Hai già una chiave dal tuo amministratore? Incollala qui."
-
-msgid ""
-"Manual setup — expand to paste a server URL and pre-auth key when you "
-"already received them from your administrator. Most users should sign in "
-"through the panel button above instead."
-msgstr ""
-"Configurazione manuale — espandi per incollare l'URL del server e la chiave "
-"di pre-autenticazione se li hai già ricevuti dal tuo amministratore. La "
-"maggior parte degli utenti dovrebbe invece accedere tramite il pulsante del "
-"pannello qui sopra."
-
-msgid ""
-"Address of the coordination server (e.g. vpn.example.org). The https:// "
-"scheme is added automatically if you omit it."
-msgstr ""
-"Indirizzo del server di coordinamento (es. vpn.example.org). Lo schema "
-"https:// viene aggiunto automaticamente se lo ometti."
-
-msgid "Pre-auth key"
-msgstr "Chiave di pre-autorizzazione"
-
-msgid ""
-"One-time or reusable key created on the server (starts with 'hskey-auth-'). "
-"Used to register this device automatically without opening a browser."
-msgstr ""
-"Chiave monouso o riutilizzabile creata sul server (inizia con 'hskey-"
-"auth-'). Utilizzata per registrare automaticamente questo dispositivo senza "
-"aprire un browser."
-
-msgid ""
-"The name this device shows to other peers on the VPN — this is the Tailscale"
-" hostname, NOT your computer's name and NOT your user. Lowercase letters, "
-"digits and hyphens. Example: 'tales-laptop', 'francois', 'office-pc'."
-msgstr ""
-"Il nome con cui questo dispositivo si mostra agli altri peer sulla VPN — "
-"questo è l'hostname di Tailscale, NON il nome del tuo computer e NON il tuo "
-"nome utente. Lettere minuscole, cifre e trattini. Esempio: 'tales-laptop', "
-"'francois', 'office-pc'."
-
-msgid "Apply manual setup"
-msgstr "Applica configurazione manuale"
-
-msgid "Save"
-msgstr "Salva"
-
-msgid ""
-"Persist the server, key and device name above. Won't connect — press Connect"
-" afterwards."
-msgstr ""
-"Salva server, chiave e nome del dispositivo qui sopra. Non si connetterà — "
-"premi Connetti successivamente."
-
-msgid "Connect automatically"
-msgstr "Connetti automaticamente"
-
-msgid "Join the network when BigLace starts"
-msgstr "Unisciti alla rete all'avvio di BigLace"
-
-msgid ""
-"When on, BigLace runs 'tailscale up' as soon as it launches, so you join the"
-" mesh without clicking Connect every time."
-msgstr ""
-"Quando attivo, BigLace esegue 'tailscale up' non appena si avvia, così ti "
-"unisci alla mesh senza dover cliccare su Connetti ogni volta."
-
-msgid "Toggle auto-connect on startup"
-msgstr "Attiva/disattiva connessione automatica all'avvio"
-
-msgid "Start BigLace with the session"
-msgstr "Avvia BigLace con la sessione"
-
-msgid "Open BigLace after you sign in to the desktop"
-msgstr "Apri BigLace dopo aver effettuato l'accesso al desktop"
-
-msgid ""
-"Turn this on to add BigLace to your desktop session startup. Turn it off to "
-"remove it."
-msgstr ""
-"Attiva questa opzione per aggiungere BigLace all'avvio della sessione del "
-"desktop. Disattivala per rimuoverla."
-
-msgid "Toggle start with session"
-msgstr "Attiva/disattiva avvio con la sessione"
-
-msgid "Reconnect on drop"
-msgstr "Riconnessione automatica alla caduta"
-
-msgid "Retry with backoff when the connection is lost"
-msgstr "Riprova con backoff quando la connessione viene persa"
-
-msgid ""
-"If the tunnel drops (network change, sleep, server hiccup), BigLace silently"
-" retries with growing delays instead of leaving you offline until you "
-"notice."
-msgstr ""
-"Se il tunnel cade (cambio di rete, sospensione, problema del server), "
-"BigLace riprova silenziosamente con ritardi crescenti invece di lasciarti "
-"offline finché non te ne accorgi."
-
-msgid "Toggle auto-reconnect"
-msgstr "Attiva/disattiva riconnessione automatica"
-
-msgid "Notify on peer changes"
-msgstr "Notifica modifiche peer"
-
-msgid "Show a desktop notification when peers go online/offline"
-msgstr "Mostra una notifica desktop quando i peer vanno online/offline"
-
-msgid ""
-"Send a desktop toast when another device on your network goes online or "
-"offline. Rapid bursts are coalesced into a single notification so you don't "
-"get spammed during reconnects."
-msgstr ""
-"Invia una notifica desktop quando un altro dispositivo sulla tua rete va "
-"online o offline. Raffiche rapide vengono raggruppate in un'unica notifica "
-"per evitare di essere sommerso durante le riconnessioni."
-
-msgid "Toggle peer-change notifications"
-msgstr "Attiva/disattiva notifiche di cambiamento peer"
-
-msgid ""
-"Join or leave the mesh network. When connected, this device becomes "
-"reachable by the other peers in your account."
-msgstr ""
-"Unisciti o abbandona la rete mesh. Quando connesso, questo dispositivo "
-"diventa raggiungibile dagli altri peer del tuo account."
-
-msgid "Your photo"
-msgstr "La tua foto"
+msgid "no computer on its network is on to send the signal"
+msgstr "nessun computer della sua rete è acceso per inviare il segnale"
 
 #~ msgid "Panel credentials"
 #~ msgstr "Credenziali pannello"

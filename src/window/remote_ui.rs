@@ -825,6 +825,21 @@ fn normalize(picture: &gtk4::Picture, video: (u32, u32), x: f64, y: f64) -> Opti
     ((0.0..=1.0).contains(&nx) && (0.0..=1.0).contains(&ny)).then_some((nx, ny))
 }
 
+/// The symbol of the key itself (first group, no modifiers): "a" for A,
+/// "1" for "!". Falls back to what GTK reported, lower-cased.
+fn base_keysym(c: &gtk4::EventControllerKey, keyval: gdk::Key, keycode: u32) -> u32 {
+    use glib::translate::IntoGlib;
+    let base = c
+        .widget()
+        .and_then(|w| w.display().map_keycode(keycode))
+        .and_then(|entries| {
+            entries.into_iter().find(|(k, _)| k.group() == 0 && k.level() == 0).map(|(_, key)| key)
+        })
+        .filter(|k| k.into_glib() != 0)
+        .unwrap_or_else(|| keyval.to_lower());
+    base.into_glib()
+}
+
 fn wire_input(
     win: &libadwaita::Window,
     picture: &gtk4::Picture,
@@ -884,12 +899,17 @@ fn wire_input(
     }
     picture.add_controller(scroll);
 
-    // Keys go to the remote screen, except F11 (full screen here).
+    // Keys go to the remote screen, except F11 (full screen here). What goes
+    // is the key's own symbol, without Shift & co. applied ("a", not "A"):
+    // the remote side applies its modifiers itself, and a release always
+    // names the same key as its press — otherwise a Shift let go first left
+    // "A" (and the Shift some compositors add to type it) held down there.
+    let held: Rc<RefCell<std::collections::HashMap<u32, u32>>> = Rc::default();
     let keys = gtk4::EventControllerKey::new();
     keys.set_propagation_phase(gtk4::PropagationPhase::Capture);
     {
-        let (send, win) = (send.clone(), win.clone());
-        keys.connect_key_pressed(move |_, keyval, _, _| {
+        let (send, win, held) = (send.clone(), win.clone(), held.clone());
+        keys.connect_key_pressed(move |c, keyval, keycode, _| {
             if keyval == gdk::Key::F11 {
                 if win.is_fullscreen() {
                     win.unfullscreen();
@@ -898,15 +918,31 @@ fn wire_input(
                 }
                 return glib::Propagation::Stop;
             }
-            send(Input::Key { keysym: glib::translate::IntoGlib::into_glib(keyval), pressed: true });
+            let keysym = base_keysym(c, keyval, keycode);
+            held.borrow_mut().insert(keycode, keysym);
+            send(Input::Key { keysym, pressed: true });
             glib::Propagation::Stop
         });
     }
     {
-        let send = send.clone();
-        keys.connect_key_released(move |_, keyval, _, _| {
-            if keyval != gdk::Key::F11 {
-                send(Input::Key { keysym: glib::translate::IntoGlib::into_glib(keyval), pressed: false });
+        let (send, held) = (send.clone(), held.clone());
+        keys.connect_key_released(move |c, keyval, keycode, _| {
+            if keyval == gdk::Key::F11 {
+                return;
+            }
+            let keysym = held.borrow_mut().remove(&keycode).unwrap_or_else(|| base_keysym(c, keyval, keycode));
+            send(Input::Key { keysym, pressed: false });
+        });
+    }
+    // Leaving the window (Alt+Tab, a dialog) with keys down: let them go
+    // there too, or they stay pressed on the remote screen.
+    {
+        let (send, held) = (send.clone(), held.clone());
+        win.connect_is_active_notify(move |w| {
+            if !w.is_active() {
+                for (_, keysym) in held.borrow_mut().drain() {
+                    send(Input::Key { keysym, pressed: false });
+                }
             }
         });
     }

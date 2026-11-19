@@ -40,6 +40,9 @@ pub struct Portal {
     pub fd: OwnedFd,
     pub node: u32,
     pub input: async_channel::Sender<Input>,
+    /// How many input events the compositor has been handed so far (sent
+    /// ones can then be awaited: key releases must land before we go).
+    pub handled: std::sync::Arc<std::sync::atomic::AtomicU64>,
     /// The pointer is drawn into the frames.
     pub cursor_embedded: bool,
 }
@@ -127,7 +130,8 @@ pub fn start(embed_cursor: bool) -> anyhow::Result<Portal> {
                 };
                 let node = stream.pipe_wire_node_id();
                 let size = stream.size();
-                let _ = ready_tx.send(Ok(Portal { fd, node, input: input_tx, cursor_embedded }));
+                let handled = std::sync::Arc::new(std::sync::atomic::AtomicU64::new(0));
+                let _ = ready_tx.send(Ok(Portal { fd, node, input: input_tx, handled: handled.clone(), cursor_embedded }));
 
                 let (w, h) = size.map(|(w, h)| (f64::from(w), f64::from(h))).unwrap_or((1920.0, 1080.0));
                 while let Ok(first) = input_rx.recv().await {
@@ -136,6 +140,7 @@ pub fn start(embed_cursor: bool) -> anyhow::Result<Portal> {
                   while let Ok(more) = input_rx.try_recv() {
                       batch.push(more);
                   }
+                  let count = batch.len() as u64;
                   for event in super::coalesce(batch) {
                     let r = match event {
                         Input::Move { x, y } => {
@@ -182,6 +187,7 @@ pub fn start(embed_cursor: bool) -> anyhow::Result<Portal> {
                         crate::tailscale::dbg(&format!("remote: portal input failed: {e}"));
                     }
                   }
+                  handled.fetch_add(count, std::sync::atomic::Ordering::AcqRel);
                 }
                 let _ = session.close().await;
             });

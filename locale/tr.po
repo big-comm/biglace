@@ -70,8 +70,264 @@ msgstr "pkexec tailscale set çalıştırılamadı"
 msgid "Failed to set tailscale operator."
 msgstr "Tailscale operatörü ayarlanamadı."
 
+msgid "Invite someone"
+msgstr "Birini davet et"
+
+msgid "Open admin panel"
+msgstr "Yönetim panelini aç"
+
+msgid "Devices"
+msgstr "Cihazlar"
+
+msgid "Chat"
+msgstr "Sohbet"
+
+msgid "Invites"
+msgstr "Davetler"
+
+msgid "Groups"
+msgstr "Gruplar"
+
+msgid "Rooms"
+msgstr "Odalar"
+
+msgid "Pictures"
+msgstr "Resimler"
+
+msgid "Choose your photo"
+msgstr "Fotoğrafınızı seçin"
+
+msgid "Photo updated. Everyone you're connected to will see it."
+msgstr "Fotoğraf güncellendi. Bağlı olduğunuz herkes görecek."
+
+#, rust-format
+msgid "Could not change the photo: {error}"
+msgstr "Fotoğraf değiştirilemedi: {error}"
+
+msgid "Sign in with an access key"
+msgstr "Erişim anahtarıyla oturum aç"
+
+msgid ""
+"Paste the key the administrator gave you. It's used once, to register this "
+"device."
+msgstr ""
+"Yöneticinin size verdiği anahtarı yapıştırın. Bu cihazı kaydetmek için bir "
+"kez kullanılır."
+
+msgid "Server URL"
+msgstr "Sunucu URL'si"
+
+msgid "Access key"
+msgstr "Erişim anahtarı"
+
+msgid "Device name on the network"
+msgstr "Ağdaki cihaz adı"
+
+msgid "Cancel"
+msgstr "İptal"
+
+msgid "Connect"
+msgstr "Bağlan"
+
+msgid ""
+"The key to this account is no longer on this computer. Join with a new "
+"invite."
+msgstr ""
+"Bu hesabın anahtarı artık bu bilgisayarda değil. Yeni bir davetle katılın."
+
+#, rust-format
+msgid "Welcome back, {name}! Connecting…"
+msgstr "Tekrar hoş geldiniz, {name}! Bağlanılıyor…"
+
+#, rust-format
+msgid "Error: {error}"
+msgstr "Hata: {error}"
+
+#, rust-format
+msgid ""
+"The account {user} no longer exists on this network. Join with a new invite."
+msgstr "{user} hesabı artık bu ağda yok. Yeni bir davetle katılın."
+
+msgid "Preferences"
+msgstr "Tercihler"
+
+msgid "General"
+msgstr "Genel"
+
+msgid "Behaviour"
+msgstr "Davranış"
+
+msgid "System"
+msgstr "Sistem"
+
+msgid "Make this user the tailscale operator"
+msgstr "Bu kullanıcıyı tailscale operatörü yap"
+
+msgid ""
+"Lets BigLace manage the connection without asking for a password each time"
+msgstr ""
+"BigLace'in bağlantıyı her seferinde parola sormadan yönetmesine izin verir"
+
+msgid "Account"
+msgstr "Hesap"
+
+msgid ""
+"Signing out removes this device's identity from BigLace. You will need a new"
+" invite or key to join again."
+msgstr ""
+"Oturumu kapatmak bu cihazın kimliğini BigLace'ten kaldırır. Yeniden katılmak"
+" için yeni bir davet veya anahtar gerekir."
+
+msgid "Sign out"
+msgstr "Çıkış yap"
+
+msgid "Invites you sent"
+msgstr "Gönderdiğiniz davetler"
+
+msgid "Change profile photo…"
+msgstr "Profil fotoğrafını değiştir…"
+
+msgid "Join with an invite"
+msgstr "Davetle katıl"
+
+msgid "Sign in with panel account"
+msgstr "Panel hesabıyla oturum aç"
+
+msgid "Leave the network…"
+msgstr "Ağdan ayrıl…"
+
+msgid "View tailscaled logs"
+msgstr "tailscaled günlüklerini görüntüle"
+
+msgid "About BigLace"
+msgstr "BigLace Hakkında"
+
+msgid "Connect to the network first, then open the invite link again."
+msgstr "Önce ağa bağlanın, sonra davet bağlantısını yeniden açın."
+
+#, rust-format
+msgid ""
+"This invite is for another network ({host}). Sign out first to join it."
+msgstr ""
+"Bu davet başka bir ağ için ({host}). Katılmak için önce oturumu kapatın."
+
+msgid ""
+"This device is already signed in. Sign out first to join with an invite."
+msgstr ""
+"Bu cihazda zaten oturum açık. Davetle katılmak için önce oturumu kapatın."
+
+msgid "Photo removed."
+msgstr "Fotoğraf kaldırıldı."
+
+#, rust-format
+msgid "Could not remove the photo: {error}"
+msgstr "Fotoğraf kaldırılamadı: {error}"
+
+#, rust-format
+msgid "Could not open the browser: {error}"
+msgstr "Tarayıcı açılamadı: {error}"
+
+msgid ""
+"You can't open the admin panel: you're not an administrator of this network,"
+" or the panel can't be reached."
+msgstr ""
+"Yönetim panelini açamazsınız: bu ağın yöneticisi değilsiniz ya da panele "
+"ulaşılamıyor."
+
+msgid "Enter the server URL before saving."
+msgstr "Kaydetmeden önce sunucu URL'sini girin."
+
+msgid "Enter the pre-auth key before saving."
+msgstr "Kaydetmeden önce ön yetkilendirme anahtarını girin."
+
+msgid "Setup saved"
+msgstr "Kurulum kaydedildi"
+
+msgid "Could not start the Tailscale service."
+msgstr "Tailscale hizmeti başlatılamadı."
+
+msgid "IP address copied"
+msgstr "IP adresi kopyalandı"
+
+#, rust-format
+msgid ""
+"Saved, but the pre-auth key could not be stored in the system keyring "
+"({error}). This device can still reconnect; the key is only needed again to "
+"register it anew."
+msgstr ""
+"Kaydedildi, ancak ön yetkilendirme anahtarı sistem anahtarlığına "
+"kaydedilemedi ({error}). Bu cihaz yine de yeniden bağlanabilir; anahtar "
+"yalnızca cihazı yeniden kaydetmek için gerekir."
+
 msgid "Connected"
 msgstr "Bağlandı"
+
+msgid "Service stopped"
+msgstr "Hizmet durduruldu"
+
+msgid "Not signed in"
+msgstr "Oturum açılmadı"
+
+msgid "Disconnected"
+msgstr "Bağlantı kesildi"
+
+msgid "Connecting…"
+msgstr "Bağlanıyor…"
+
+msgid "Server unreachable"
+msgstr "Sunucuya ulaşılamıyor"
+
+msgid "Tailscale can't set DNS"
+msgstr "Tailscale DNS'i ayarlayamıyor"
+
+#, rust-format
+msgid "Update available: v{version}"
+msgstr "Güncelleme mevcut: v{version}"
+
+#, rust-format
+msgid "Sign in again as {user}"
+msgstr "{user} olarak yeniden oturum aç"
+
+msgid "(no device name)"
+msgstr "(cihaz adı yok)"
+
+msgid "Sign in or paste a pre-auth key"
+msgstr "Oturum açın veya ön yetkilendirme anahtarı yapıştırın"
+
+msgid "Server not set"
+msgstr "Sunucu ayarlanmamış"
+
+msgid "Disconnect"
+msgstr "Bağlantıyı Kes"
+
+msgid "no other devices"
+msgstr "başka cihaz yok"
+
+#, rust-format
+msgid "{online} online"
+msgstr "{online} çevrimiçi"
+
+#, rust-format
+msgid "{online} online · {offline} offline"
+msgstr "{online} çevrimiçi · {offline} çevrimdışı"
+
+msgid "is online"
+msgstr "çevrimiçi"
+
+msgid "went offline"
+msgstr "çevrimdışı oldu"
+
+#, rust-format
+msgid "{count} devices are online"
+msgstr "{count} cihaz çevrimiçi"
+
+#, rust-format
+msgid "{count} devices went offline"
+msgstr "{count} cihaz çevrimdışı oldu"
+
+#, rust-format
+msgid "{on_count} online · {off_count} offline"
+msgstr "{on_count} çevrimiçi · {off_count} çevrimdışı"
 
 msgid "Connected · 1 peer"
 msgstr "Bağlandı · 1 eş"
@@ -80,9 +336,6 @@ msgstr "Bağlandı · 1 eş"
 msgid "Connected · {n} peers"
 msgstr "Bağlandı · {n} eş"
 
-msgid "Disconnected"
-msgstr "Bağlantı kesildi"
-
 #, rust-format
 msgid "In the room {group} · muted"
 msgstr "{group} odasında · sessizde"
@@ -90,12 +343,6 @@ msgstr "{group} odasında · sessizde"
 #, rust-format
 msgid "In the room {group}"
 msgstr "{group} odasında"
-
-msgid "Disconnect"
-msgstr "Bağlantıyı Kes"
-
-msgid "Connect"
-msgstr "Bağlan"
 
 msgid "Show BigLace"
 msgstr "BigLace'i Göster"
@@ -115,6 +362,436 @@ msgstr "Odadan ayrıl"
 
 msgid "Quit"
 msgstr "Çık"
+
+msgid "Main menu"
+msgstr "Ana Menü"
+
+msgid "Search devices"
+msgstr "Cihaz ara"
+
+msgid "Refresh"
+msgstr "Yenile"
+
+msgid "Invite"
+msgstr "Davet et"
+
+msgid "Invite someone to your network"
+msgstr "Ağınıza birini davet edin"
+
+msgid ""
+"Tailscale cannot write this device's DNS settings, so it can no longer keep "
+"peer names working. They may still resolve for now, from the configuration "
+"left over from before the failure, but that will break the next time the "
+"network changes — and BigLace will fall back to IP addresses. On most "
+"distributions `sudo resolvconf -u` repairs it."
+msgstr ""
+"Tailscale bu cihazın DNS ayarlarını yazamıyor, bu yüzden eş adlarının "
+"çalışmasını artık sağlayamıyor. Arızadan önce kalan yapılandırma sayesinde "
+"adlar şimdilik çözümlenebilir, ancak ağ bir sonraki değiştiğinde bu "
+"bozulacak — ve BigLace IP adreslerine geri dönecek. Çoğu dağıtımda `sudo "
+"resolvconf -u` bunu onarır."
+
+msgid "Not connected"
+msgstr "Bağlı değil"
+
+msgid "Press Connect on the left to join the network."
+msgstr "Ağa katılmak için soldaki Bağlan düğmesine basın."
+
+msgid "The tailscale service is not running"
+msgstr "Tailscale hizmeti çalışmıyor"
+
+msgid "BigLace needs the tailscaled background service to manage the network."
+msgstr ""
+"BigLace, ağı yönetmek için tailscaled arka plan hizmetine ihtiyaç duyar."
+
+msgid "Start service"
+msgstr "Hizmeti başlat"
+
+msgid "Join the network"
+msgstr "Ağa katıl"
+
+msgid "Choose how you're going to sign in."
+msgstr "Nasıl oturum açacağınızı seçin."
+
+msgid "Ways to sign in"
+msgstr "Oturum açma yolları"
+
+msgid "Your account was kept on this computer. No invite needed."
+msgstr "Hesabınız bu bilgisayarda tutuldu. Davet gerekmez."
+
+msgid "I have an invite"
+msgstr "Davetim var"
+
+msgid "Someone on the network sent you a link or a QR code."
+msgstr "Ağdaki biri size bir bağlantı veya QR kodu gönderdi."
+
+msgid "I have an access key"
+msgstr "Erişim anahtarım var"
+
+msgid "A key the administrator created for you (starts with hskey-auth-)."
+msgstr ""
+"Yöneticinin sizin için oluşturduğu bir anahtar (hskey-auth- ile başlar)."
+
+msgid "I'm the administrator"
+msgstr "Yöneticiyim"
+
+msgid "Sign in with the BigScale panel's admin username and password."
+msgstr "BigScale panelinin yönetici kullanıcı adı ve parolasıyla oturum açın."
+
+msgid "This device"
+msgstr "Bu cihaz"
+
+msgid "Copy IP address"
+msgstr "IP adresini kopyala"
+
+msgid "Devices on the network"
+msgstr "Ağdaki cihazlar"
+
+msgid "No other devices on the network yet."
+msgstr "Ağda henüz başka cihaz yok."
+
+msgid "Sections"
+msgstr "Bölümler"
+
+msgid ""
+"Your identity on this mesh — the device name shown to other peers and the "
+"network you're connected to."
+msgstr ""
+"Bu ağdaki kimliğiniz — diğer eşlere gösterilen cihaz adı ve bağlı olduğunuz "
+"ağ."
+
+msgid "Change photo…"
+msgstr "Fotoğrafı değiştir…"
+
+msgid "Remove photo"
+msgstr "Fotoğrafı kaldır"
+
+msgid "Change your photo"
+msgstr "Fotoğrafınızı değiştirin"
+
+msgid "Rename this device on the network"
+msgstr "Bu cihazı ağda yeniden adlandır"
+
+msgid "Advanced: use a pre-auth key"
+msgstr "Gelişmiş: bir ön yetkilendirme anahtarı kullanın"
+
+msgid "Already have a key from your administrator? Paste it here."
+msgstr "Yöneticinizden bir anahtarınız var mı? Buraya yapıştırın."
+
+msgid ""
+"Manual setup — expand to paste a server URL and pre-auth key when you "
+"already received them from your administrator. Most users should sign in "
+"through the panel button above instead."
+msgstr ""
+"Manuel kurulum — yöneticinizden zaten aldıysanız, bir sunucu URL'si ve ön "
+"yetkilendirme anahtarı yapıştırmak için genişletin. Çoğu kullanıcı bunun "
+"yerine yukarıdaki panel düğmesi aracılığıyla oturum açmalıdır."
+
+msgid ""
+"Address of the coordination server (e.g. vpn.example.org). The https:// "
+"scheme is added automatically if you omit it."
+msgstr ""
+"Koordinasyon sunucusunun adresi (ör. vpn.example.org). Atlarsanız https:// "
+"şeması otomatik olarak eklenir."
+
+msgid "Pre-auth key"
+msgstr "Ön yetkilendirme anahtarı"
+
+msgid ""
+"One-time or reusable key created on the server (starts with 'hskey-auth-'). "
+"Used to register this device automatically without opening a browser."
+msgstr ""
+"Sunucuda oluşturulan tek kullanımlık veya yeniden kullanılabilir anahtar "
+"('hskey-auth-' ile başlar). Bir tarayıcı açmadan bu cihazı otomatik olarak "
+"kaydetmek için kullanılır."
+
+msgid ""
+"The name this device shows to other peers on the VPN — this is the Tailscale"
+" hostname, NOT your computer's name and NOT your user. Lowercase letters, "
+"digits and hyphens. Example: 'tales-laptop', 'francois', 'office-pc'."
+msgstr ""
+"Bu cihazın VPN'deki diğer eşlere gösterdiği ad — bu Tailscale ana bilgisayar"
+" adıdır, bilgisayarınızın adı VEYA kullanıcı adınız DEĞİLDİR. Küçük harfler,"
+" rakamlar ve tireler. Örnek: 'tales-dizustu', 'francois', 'ofis-pc'."
+
+msgid "Apply manual setup"
+msgstr "Manuel kurulumu uygula"
+
+msgid "Save"
+msgstr "Kaydet"
+
+msgid ""
+"Persist the server, key and device name above. Won't connect — press Connect"
+" afterwards."
+msgstr ""
+"Yukarıdaki sunucuyu, anahtarı ve cihaz adını kaydedin. Bağlanmayacak — "
+"ardından Bağlan'a basın."
+
+msgid "Connect automatically"
+msgstr "Otomatik bağlan"
+
+msgid "Join the network when BigLace starts"
+msgstr "BigLace başladığında ağa katıl"
+
+msgid ""
+"When on, BigLace runs 'tailscale up' as soon as it launches, so you join the"
+" mesh without clicking Connect every time."
+msgstr ""
+"Açıkken, BigLace başlatıldığında 'tailscale up' komutunu çalıştırır, böylece"
+" her seferinde Bağlan'a tıklamadan ağa katılırsınız."
+
+msgid "Toggle auto-connect on startup"
+msgstr "Başlangıçta otomatik bağlanmayı aç/kapat"
+
+msgid "Start BigLace with the session"
+msgstr "BigLace'i oturumla birlikte başlat"
+
+msgid "Open BigLace after you sign in to the desktop"
+msgstr "Masaüstüne giriş yaptıktan sonra BigLace'i aç"
+
+msgid ""
+"Turn this on to add BigLace to your desktop session startup. Turn it off to "
+"remove it."
+msgstr ""
+"Bunu açarak BigLace'i masaüstü oturum başlangıcına ekleyin. Kapatarak "
+"kaldırın."
+
+msgid "Toggle start with session"
+msgstr "Oturumla başlatmayı aç/kapat"
+
+msgid "Reconnect on drop"
+msgstr "Bağlantı koptuğunda yeniden bağlan"
+
+msgid "Retry with backoff when the connection is lost"
+msgstr "Bağlantı kesildiğinde gecikmeli olarak yeniden dene"
+
+msgid ""
+"If the tunnel drops (network change, sleep, server hiccup), BigLace silently"
+" retries with growing delays instead of leaving you offline until you "
+"notice."
+msgstr ""
+"Tünel kesilirse (ağ değişikliği, uyku, sunucu takılması), BigLace sizi fark "
+"edene kadar çevrimdışı bırakmak yerine artan gecikmelerle sessizce yeniden "
+"dener."
+
+msgid "Toggle auto-reconnect"
+msgstr "Otomatik yeniden bağlanmayı aç/kapat"
+
+msgid "Notify on peer changes"
+msgstr "Eş değişikliklerinde bildirim göster"
+
+msgid "Show a desktop notification when peers go online/offline"
+msgstr "Eşler çevrimiçi/çevrimdışı olduğunda masaüstü bildirimi göster"
+
+msgid ""
+"Send a desktop toast when another device on your network goes online or "
+"offline. Rapid bursts are coalesced into a single notification so you don't "
+"get spammed during reconnects."
+msgstr ""
+"Ağınızdaki başka bir cihaz çevrimiçi veya çevrimdışı olduğunda bir masaüstü "
+"bildirimi gönderin. Hızlı patlamalar, yeniden bağlanmalar sırasında spam "
+"almamanız için tek bir bildirimde birleştirilir."
+
+msgid "Toggle peer-change notifications"
+msgstr "Eş değişiklik bildirimlerini aç/kapat"
+
+msgid ""
+"Join or leave the mesh network. When connected, this device becomes "
+"reachable by the other peers in your account."
+msgstr ""
+"Mesh ağına katılın veya ağdan ayrılın. Bağlandığınızda bu cihaz, "
+"hesabınızdaki diğer eşler tarafından erişilebilir hale gelir."
+
+msgid "Your photo"
+msgstr "Fotoğrafınız"
+
+msgid ""
+"Each of your groups has a voice room. Join it and talk with whoever is there"
+" — the sound goes straight between you, through the network."
+msgstr ""
+"Her grubunuzun bir sesli odası var. Katılın ve orada kim varsa onunla "
+"konuşun — ses ağ üzerinden doğrudan aranızda gider."
+
+msgid "You're not in any group yet. Create one in Groups."
+msgstr "Henüz hiçbir grupta değilsiniz. Gruplar bölümünde bir tane oluşturun."
+
+msgid "People in the room"
+msgstr "Odadaki kişiler"
+
+msgid "Everyone"
+msgstr "Herkes"
+
+msgid "Who's speaking"
+msgstr "Konuşan kişi"
+
+msgid "Mute"
+msgstr "Sessize al"
+
+msgid "Mute your microphone for everyone"
+msgstr "Mikrofonunuzu herkes için kapatın"
+
+msgid "Leave"
+msgstr "Ayrıl"
+
+msgid "Which camera"
+msgstr "Hangi kamera"
+
+msgid "Include the computer's sound when sharing the screen"
+msgstr "Ekran paylaşırken bilgisayarın sesini de dahil et"
+
+msgid ""
+"Videos and music playing here go to the room too; the room's voices don't "
+"(no echo)"
+msgstr ""
+"Burada çalan videolar ve müzik de odaya gider; odadaki sesler gitmez (yankı "
+"olmaz)"
+
+msgid "Rooms unavailable"
+msgstr "Odalar kullanılamıyor"
+
+#, rust-format
+msgid "Could not turn on the camera: {error}"
+msgstr "Kamera açılamadı: {error}"
+
+#, rust-format
+msgid "Could not share the screen: {error}"
+msgstr "Ekran paylaşılamadı: {error}"
+
+#, rust-format
+msgid "Could not reach the panel: {error}"
+msgstr "Panele ulaşılamadı: {error}"
+
+msgid "Nobody here right now"
+msgstr "Şu anda burada kimse yok"
+
+#, rust-format
+msgid "In the room: {people}"
+msgstr "Odada: {people}"
+
+msgid "Join"
+msgstr "Katıl"
+
+#, rust-format
+msgid "Join the room {group}"
+msgstr "{group} odasına katıl"
+
+#, rust-format
+msgid "Could not join {group}: {error}"
+msgstr "{group} odasına katılınamadı: {error}"
+
+msgid "📺 You're showing your screen to the room"
+msgstr "📺 Ekranınızı odaya gösteriyorsunuz"
+
+msgid "📺 You're showing your screen · 1 person watching"
+msgstr "📺 Ekranınızı gösteriyorsunuz · 1 kişi izliyor"
+
+#, rust-format
+msgid "📺 You're showing your screen · {count} people watching"
+msgstr "📺 Ekranınızı gösteriyorsunuz · {count} kişi izliyor"
+
+msgid "1 person"
+msgstr "1 kişi"
+
+#, rust-format
+msgid "{count} people"
+msgstr "{count} kişi"
+
+#, rust-format
+msgid "{people} · {talking} talking"
+msgstr "{people} · {talking} konuşuyor"
+
+msgid "you"
+msgstr "siz"
+
+msgid "connecting…"
+msgstr "bağlanılıyor…"
+
+msgid "muted"
+msgstr "sessizde"
+
+msgid "talking"
+msgstr "konuşuyor"
+
+msgid "quiet"
+msgstr "sessiz"
+
+msgid "Sharing screen"
+msgstr "Ekran paylaşılıyor"
+
+msgid "In control"
+msgstr "Denetimde"
+
+msgid "Controls your screen now"
+msgstr "Şu anda ekranınızı denetliyor"
+
+msgid "Watching"
+msgstr "İzliyor"
+
+msgid "Watching your screen"
+msgstr "Ekranınızı izliyor"
+
+#, rust-format
+msgid "{user} is showing their screen"
+msgstr "{user} ekranını gösteriyor"
+
+msgid "Watch"
+msgstr "İzle"
+
+#, rust-format
+msgid "{user} asks to control your screen"
+msgstr "{user} ekranınızı denetlemek istiyor"
+
+msgid ""
+"They'll be able to use your mouse and keyboard. You can take control back at"
+" any time."
+msgstr ""
+"Fare ve klavyenizi kullanabilecek. Denetimi istediğiniz zaman geri "
+"alabilirsiniz."
+
+msgid "Deny"
+msgstr "Reddet"
+
+msgid "Allow"
+msgstr "İzin ver"
+
+msgid "Turn off camera"
+msgstr "Kamerayı kapat"
+
+msgid "Turn on camera"
+msgstr "Kamerayı aç"
+
+msgid "No camera found on this computer"
+msgstr "Bu bilgisayarda kamera bulunamadı"
+
+msgid "Stop sharing"
+msgstr "Paylaşımı durdur"
+
+msgid "Share screen"
+msgstr "Ekranı paylaş"
+
+msgid "Stop showing your screen to the room"
+msgstr "Ekranınızı odaya göstermeyi durdurun"
+
+msgid "Show your screen to everyone in the room"
+msgstr "Ekranınızı odadaki herkese gösterin"
+
+msgid "Take back control"
+msgstr "Denetimi geri al"
+
+msgid "Give control"
+msgstr "Denetimi ver"
+
+msgid "Stop them from using your mouse and keyboard"
+msgstr "Fare ve klavyenizi kullanmalarını engelleyin"
+
+msgid "Let them use your mouse and keyboard"
+msgstr "Fare ve klavyenizi kullanmalarına izin verin"
+
+msgid "Sound level"
+msgstr "Ses düzeyi"
+
+msgid "Unmute"
+msgstr "Sesi aç"
 
 msgid "This computer"
 msgstr "Bu bilgisayar"
@@ -224,17 +901,11 @@ msgstr "Video"
 msgid "Voice message"
 msgstr "Sesli mesaj"
 
-msgid "Chat"
-msgstr "Sohbet"
-
 msgid "New chat"
 msgstr "Yeni sohbet"
 
 msgid "Start a conversation with someone on the network"
 msgstr "Ağdaki biriyle sohbet başlatın"
-
-msgid "Main menu"
-msgstr "Ana Menü"
 
 msgid "Chat theme"
 msgstr "Sohbet teması"
@@ -280,9 +951,6 @@ msgstr "Vazgeç"
 
 msgid "Send voice message"
 msgstr "Sesli mesajı gönder"
-
-msgid "Cancel"
-msgstr "İptal"
 
 msgid "Copy text"
 msgstr "Metni kopyala"
@@ -468,434 +1136,6 @@ msgstr "{user} yazıyor…"
 msgid "typing…"
 msgstr "yazıyor…"
 
-msgid "System accent"
-msgstr "Sistem vurgu rengi"
-
-msgid "Blue"
-msgstr "Mavi"
-
-msgid "Teal"
-msgstr "Deniz mavisi"
-
-msgid "Green"
-msgstr "Yeşil"
-
-msgid "Purple"
-msgstr "Mor"
-
-msgid "Pink"
-msgstr "Pembe"
-
-msgid "Orange"
-msgstr "Turuncu"
-
-msgid "Red"
-msgstr "Kırmızı"
-
-msgid "Graphite"
-msgstr "Grafit"
-
-msgid "Default"
-msgstr "Varsayılan"
-
-msgid "Plain"
-msgstr "Düz"
-
-msgid "Dots"
-msgstr "Noktalar"
-
-msgid "Ocean"
-msgstr "Okyanus"
-
-msgid "Sunset"
-msgstr "Gün batımı"
-
-msgid "Forest"
-msgstr "Orman"
-
-msgid "Lavender"
-msgstr "Lavanta"
-
-msgid "Night"
-msgstr "Gece"
-
-msgid "Hi! How does this look? 😊"
-msgstr "Merhaba! Bu nasıl görünüyor? 😊"
-
-msgid "Looks great!"
-msgstr "Harika görünüyor!"
-
-msgid "Appearance"
-msgstr "Görünüm"
-
-msgid "System"
-msgstr "Sistem"
-
-msgid "Light"
-msgstr "Açık"
-
-msgid "Dark"
-msgstr "Koyu"
-
-msgid "Your messages"
-msgstr "Mesajlarınız"
-
-msgid "Background"
-msgstr "Arka plan"
-
-msgid "Picture…"
-msgstr "Resim…"
-
-msgid "Pictures"
-msgstr "Resimler"
-
-msgid "Choose a background picture"
-msgstr "Bir arka plan resmi seçin"
-
-msgid "Message"
-msgstr "Mesaj"
-
-msgid "Bold"
-msgstr "Kalın"
-
-msgid "Italic"
-msgstr "İtalik"
-
-msgid "Underline"
-msgstr "Altı çizili"
-
-msgid "Strikethrough"
-msgstr "Üstü çizili"
-
-msgid "Monospace"
-msgstr "Eş aralıklı"
-
-msgid "Create link"
-msgstr "Bağlantı oluştur"
-
-msgid "Plain text"
-msgstr "Düz metin"
-
-msgid "Formatting"
-msgstr "Biçimlendirme"
-
-msgid "Create"
-msgstr "Oluştur"
-
-msgid "Search devices"
-msgstr "Cihaz ara"
-
-msgid "Refresh"
-msgstr "Yenile"
-
-msgid "Invite"
-msgstr "Davet et"
-
-msgid "Invite someone to your network"
-msgstr "Ağınıza birini davet edin"
-
-msgid ""
-"Tailscale cannot write this device's DNS settings, so it can no longer keep "
-"peer names working. They may still resolve for now, from the configuration "
-"left over from before the failure, but that will break the next time the "
-"network changes — and BigLace will fall back to IP addresses. On most "
-"distributions `sudo resolvconf -u` repairs it."
-msgstr ""
-"Tailscale bu cihazın DNS ayarlarını yazamıyor, bu yüzden eş adlarının "
-"çalışmasını artık sağlayamıyor. Arızadan önce kalan yapılandırma sayesinde "
-"adlar şimdilik çözümlenebilir, ancak ağ bir sonraki değiştiğinde bu "
-"bozulacak — ve BigLace IP adreslerine geri dönecek. Çoğu dağıtımda `sudo "
-"resolvconf -u` bunu onarır."
-
-msgid "Not connected"
-msgstr "Bağlı değil"
-
-msgid "Press Connect on the left to join the network."
-msgstr "Ağa katılmak için soldaki Bağlan düğmesine basın."
-
-msgid "The tailscale service is not running"
-msgstr "Tailscale hizmeti çalışmıyor"
-
-msgid "BigLace needs the tailscaled background service to manage the network."
-msgstr ""
-"BigLace, ağı yönetmek için tailscaled arka plan hizmetine ihtiyaç duyar."
-
-msgid "Start service"
-msgstr "Hizmeti başlat"
-
-msgid "Join the network"
-msgstr "Ağa katıl"
-
-msgid "Choose how you're going to sign in."
-msgstr "Nasıl oturum açacağınızı seçin."
-
-msgid "Ways to sign in"
-msgstr "Oturum açma yolları"
-
-msgid "Your account was kept on this computer. No invite needed."
-msgstr "Hesabınız bu bilgisayarda tutuldu. Davet gerekmez."
-
-msgid "I have an invite"
-msgstr "Davetim var"
-
-msgid "Someone on the network sent you a link or a QR code."
-msgstr "Ağdaki biri size bir bağlantı veya QR kodu gönderdi."
-
-msgid "I have an access key"
-msgstr "Erişim anahtarım var"
-
-msgid "A key the administrator created for you (starts with hskey-auth-)."
-msgstr ""
-"Yöneticinin sizin için oluşturduğu bir anahtar (hskey-auth- ile başlar)."
-
-msgid "I'm the administrator"
-msgstr "Yöneticiyim"
-
-msgid "Sign in with the BigScale panel's admin username and password."
-msgstr "BigScale panelinin yönetici kullanıcı adı ve parolasıyla oturum açın."
-
-msgid "Connecting…"
-msgstr "Bağlanıyor…"
-
-msgid "This device"
-msgstr "Bu cihaz"
-
-msgid "Copy IP address"
-msgstr "IP adresini kopyala"
-
-msgid "Devices on the network"
-msgstr "Ağdaki cihazlar"
-
-msgid "No other devices on the network yet."
-msgstr "Ağda henüz başka cihaz yok."
-
-msgid "Mesh VPN client for BigScale/Headscale."
-msgstr "BigScale/Headscale için Mesh VPN istemcisi."
-
-msgid "Done. You will no longer need a password to connect or disconnect."
-msgstr ""
-"Tamam. Artık bağlanmak veya bağlantıyı kesmek için bir parolaya ihtiyacınız "
-"olmayacak."
-
-#, rust-format
-msgid "Failed: {error}"
-msgstr "Başarısız: {error}"
-
-msgid "Tailscale operator"
-msgstr "Tailscale operatörü"
-
-msgid "OK"
-msgstr "Tamam"
-
-msgid "Sign out of current account?"
-msgstr "Mevcut hesaptan çıkış yapılsın mı?"
-
-msgid ""
-"This will disconnect from the network, sign this device out of the current "
-"control server, and forget the saved password. You'll then be able to sign "
-"in with a different account."
-msgstr ""
-"Bu işlem ağ bağlantısını kesecek, bu cihazı mevcut kontrol sunucusundan "
-"çıkaracak ve kayıtlı parolayı unutacaktır. Ardından farklı bir hesapla "
-"oturum açabilirsiniz."
-
-msgid "Sign out"
-msgstr "Çıkış yap"
-
-msgid "Leave the network?"
-msgstr "Ağdan ayrılınsın mı?"
-
-#, rust-format
-msgid ""
-"This device leaves the network and its name becomes free. Your account {user} is kept: you can come back later from this computer, without an invite.\n"
-"\n"
-"If you won't come back, delete the account and the name {user} becomes free too."
-msgstr ""
-"Bu cihaz ağdan ayrılır ve adı serbest kalır. {user} hesabınız korunur: daha sonra bu bilgisayardan davet olmadan geri dönebilirsiniz.\n"
-"\n"
-"Geri dönmeyecekseniz hesabı silin; {user} adı da serbest kalır."
-
-msgid "Leave and delete account"
-msgstr "Ayrıl ve hesabı sil"
-
-msgid "Leave"
-msgstr "Ayrıl"
-
-msgid "Connect first to delete the account."
-msgstr "Hesabı silmek için önce bağlanın."
-
-msgid "Signing out…"
-msgstr "Oturum kapatılıyor…"
-
-#, rust-format
-msgid ""
-"Signed out. Your account was kept: {count} other device(s) still use it."
-msgstr ""
-"Oturum kapatıldı. Hesabınız korundu: {count} başka cihaz hâlâ kullanıyor."
-
-msgid ""
-"Couldn't delete the account: the panel can't be reached. Connect and try "
-"again."
-msgstr "Hesap silinemedi: panele ulaşılamıyor. Bağlanın ve tekrar deneyin."
-
-#, rust-format
-msgid "Error: {error}"
-msgstr "Hata: {error}"
-
-msgid "Signed out and account deleted."
-msgstr "Oturum kapatıldı ve hesap silindi."
-
-msgid "Signed out."
-msgstr "Çıkış yapıldı."
-
-msgid "Couldn't reach the server"
-msgstr "Sunucuya ulaşılamadı"
-
-#, rust-format
-msgid ""
-"The control server didn't confirm the sign-out: {error}\n"
-"\n"
-"You can still sign out on this computer: BigLace forgets the saved key and account and disconnects. The server keeps listing this device until an administrator removes it."
-msgstr ""
-"Denetim sunucusu oturumun kapatıldığını onaylamadı: {error}\n"
-"\n"
-"Yine de bu bilgisayarda oturumu kapatabilirsiniz: BigLace kayıtlı anahtarı ve hesabı unutur ve bağlantıyı keser. Sunucu, bir yönetici kaldırana kadar bu cihazı listelemeye devam eder."
-
-msgid "Sign out on this computer"
-msgstr "Bu bilgisayarda oturumu kapat"
-
-msgid "Sign in as administrator"
-msgstr "Yönetici olarak oturum aç"
-
-msgid "Panel administrator"
-msgstr "Panel yöneticisi"
-
-msgid ""
-"Only for whoever administers the BigScale panel: use the panel's admin "
-"username and password. This device joins the network under the name below. "
-"Everyone else joins with an invite or an access key."
-msgstr ""
-"Yalnızca BigScale panelini yöneten kişi için: panelin yönetici kullanıcı "
-"adını ve parolasını kullanın. Bu cihaz ağa aşağıdaki adla katılır. Diğer "
-"herkes bir davet veya erişim anahtarıyla katılır."
-
-msgid "Panel URL"
-msgstr "Panel URL'si"
-
-msgid ""
-"Address of your BigScale panel (e.g. panel.example.org). The https:// scheme"
-" is added automatically if you omit it."
-msgstr ""
-"BigScale panelinizin adresi (ör. panel.example.org). https:// şemasını "
-"belirtmezseniz otomatik olarak eklenir."
-
-msgid "Panel admin username"
-msgstr "Panel yöneticisi kullanıcı adı"
-
-msgid "Your panel username — the one you use to sign in to the web panel."
-msgstr "Web paneline giriş yapmak için kullandığınız panel kullanıcı adınız."
-
-msgid "Password"
-msgstr "Şifre"
-
-msgid ""
-"Your panel password. Stored in the OS keyring (libsecret on Linux, Keychain "
-"on macOS, Credential Manager on Windows)."
-msgstr ""
-"Panel şifreniz. İşletim sistemi anahtar zincirinde saklanır (Linux'ta "
-"libsecret, macOS'ta Keychain, Windows'ta Kimlik Bilgisi Yöneticisi)."
-
-msgid "Device name on the network"
-msgstr "Ağdaki cihaz adı"
-
-msgid ""
-"The name this device shows to other peers on the VPN — this is the Tailscale"
-" hostname, NOT your computer's name and NOT your user. Lowercase letters, "
-"digits and hyphens. Example: 'tales-laptop', 'francois', 'office-pc'. Pick "
-"something other peers will recognise."
-msgstr ""
-"Bu cihazın VPN'deki diğer eşlere gösterdiği ad — bu Tailscale ana bilgisayar"
-" adıdır, bilgisayarınızın adı veya kullanıcı adınız DEĞİLDİR. Küçük harfler,"
-" rakamlar ve tireler. Örnek: 'tales-laptop', 'francois', 'office-pc'. Diğer "
-"eşlerin tanıyacağı bir ad seçin."
-
-msgid "Sign in"
-msgstr "Oturum aç"
-
-msgid "Fill in URL, username and password."
-msgstr "URL, kullanıcı adı ve şifreyi doldurun."
-
-msgid "Signed in. Press Connect to join the network."
-msgstr "Oturum açıldı. Ağa katılmak için Bağlan'a basın."
-
-msgid "Rename this device"
-msgstr "Bu cihazı yeniden adlandır"
-
-msgid ""
-"The name this device shows to other peers on the VPN. Lowercase letters, "
-"digits and hyphens. Example: tales-laptop."
-msgstr ""
-"Bu cihazın VPN'deki diğer eşlere gösterdiği ad. Küçük harfler, rakamlar ve "
-"tireler. Örnek: tales-laptop."
-
-msgid "Save & apply"
-msgstr "Kaydet ve uygula"
-
-msgid "Saved. The new name will take effect the next time you connect."
-msgstr "Kaydedildi. Yeni ad, bir sonraki bağlantınızda geçerli olacak."
-
-msgid "Device renamed."
-msgstr "Cihaz yeniden adlandırıldı."
-
-#, rust-format
-msgid "Rename failed: {error}"
-msgstr "Yeniden adlandırma başarısız: {error}"
-
-msgid "The device name can't be empty."
-msgstr "Cihaz adı boş olamaz."
-
-msgid "Use 63 characters or fewer."
-msgstr "63 karakter veya daha az kullanın."
-
-msgid "The device name can't start or end with a hyphen."
-msgstr "Cihaz adı tire ile başlayamaz veya bitemez."
-
-msgid "Only lowercase letters, digits and hyphens are allowed."
-msgstr "Yalnızca küçük harfler, rakamlar ve tirelere izin verilir."
-
-msgid "Smileys & people"
-msgstr "İfadeler ve insanlar"
-
-msgid "Animals & nature"
-msgstr "Hayvanlar ve doğa"
-
-msgid "Food & drink"
-msgstr "Yiyecek ve içecek"
-
-msgid "Travel & places"
-msgstr "Seyahat ve yerler"
-
-msgid "Activities"
-msgstr "Etkinlikler"
-
-msgid "Objects"
-msgstr "Nesneler"
-
-msgid "Symbols"
-msgstr "Semboller"
-
-msgid "Flags"
-msgstr "Bayraklar"
-
-msgid "Search emoji"
-msgstr "Emoji ara"
-
-msgid "Recently used"
-msgstr "Son kullanılanlar"
-
-msgid "Search results"
-msgstr "Arama sonuçları"
-
 msgid ""
 "Groups from BigLace need a newer BigScale server. Ask your administrator to "
 "update it."
@@ -989,13 +1229,6 @@ msgstr "Bu davet hâlâ bir yöneticinin onayını bekliyor."
 msgid "Too many attempts. Wait a minute and try again."
 msgstr "Çok fazla deneme. Bir dakika bekleyip tekrar deneyin."
 
-#, rust-format
-msgid "Could not reach the panel: {error}"
-msgstr "Panele ulaşılamadı: {error}"
-
-msgid "Groups"
-msgstr "Gruplar"
-
 msgid "New group"
 msgstr "Yeni grup"
 
@@ -1060,13 +1293,6 @@ msgstr "{group} grubuna katıldınız."
 msgid "Invitation declined."
 msgstr "Davet reddedildi."
 
-msgid "1 person"
-msgstr "1 kişi"
-
-#, rust-format
-msgid "{count} people"
-msgstr "{count} kişi"
-
 msgid "Created by you"
 msgstr "Sizin oluşturdunuz"
 
@@ -1076,9 +1302,6 @@ msgstr "{user} oluşturdu"
 
 msgid "Network group (administrator)"
 msgstr "Ağ grubu (yönetici)"
-
-msgid "you"
-msgstr "siz"
 
 msgid "owner"
 msgstr "sahip"
@@ -1164,9 +1387,6 @@ msgstr "{user} ile bağlantı kurulsun mu?"
 #, rust-format
 msgid "You and {user} will reach each other's devices."
 msgstr "Siz ve {user} birbirinizin cihazlarına ulaşacaksınız."
-
-msgid "Join"
-msgstr "Katıl"
 
 msgid "Done. You can now reach each other's devices."
 msgstr "Tamam. Artık birbirinizin cihazlarına ulaşabilirsiniz."
@@ -1309,9 +1529,6 @@ msgstr "İptal edildi"
 msgid "Waiting for an administrator's approval"
 msgstr "Bir yöneticinin onayı bekleniyor"
 
-msgid "Invites"
-msgstr "Davetler"
-
 msgid "Bring someone to your network"
 msgstr "Ağınıza birini getirin"
 
@@ -1323,9 +1540,6 @@ msgstr ""
 "Bir bağlantı veya QR kodu oluşturup kişiye gönderin. Katıldığında ikiniz "
 "birbirinizin cihazlarına ulaşabilirsiniz — yönetici gerekmez. Bağlantı bir "
 "kez çalışır ve kullanılana ya da siz iptal edene kadar geçerli kalır."
-
-msgid "Invites you sent"
-msgstr "Gönderdiğiniz davetler"
 
 msgid "No invites yet"
 msgstr "Henüz davet yok"
@@ -1343,9 +1557,6 @@ msgstr "{group} grubu"
 
 msgid "Cancel this invite: the link stops working"
 msgstr "Bu daveti iptal et: bağlantı çalışmayı bırakır"
-
-msgid "Invite someone"
-msgstr "Birini davet et"
 
 msgid "The person you invite will reach your devices, and you theirs."
 msgstr ""
@@ -1409,6 +1620,295 @@ msgstr ""
 "Bu ağ her davet için bir yöneticinin onayını istiyor: bağlantı "
 "onaylandığında çalışmaya başlar. Durumu Davetler bölümünde görünür."
 
+msgid "System accent"
+msgstr "Sistem vurgu rengi"
+
+msgid "Blue"
+msgstr "Mavi"
+
+msgid "Teal"
+msgstr "Deniz mavisi"
+
+msgid "Green"
+msgstr "Yeşil"
+
+msgid "Purple"
+msgstr "Mor"
+
+msgid "Pink"
+msgstr "Pembe"
+
+msgid "Orange"
+msgstr "Turuncu"
+
+msgid "Red"
+msgstr "Kırmızı"
+
+msgid "Graphite"
+msgstr "Grafit"
+
+msgid "Default"
+msgstr "Varsayılan"
+
+msgid "Plain"
+msgstr "Düz"
+
+msgid "Dots"
+msgstr "Noktalar"
+
+msgid "Ocean"
+msgstr "Okyanus"
+
+msgid "Sunset"
+msgstr "Gün batımı"
+
+msgid "Forest"
+msgstr "Orman"
+
+msgid "Lavender"
+msgstr "Lavanta"
+
+msgid "Night"
+msgstr "Gece"
+
+msgid "Hi! How does this look? 😊"
+msgstr "Merhaba! Bu nasıl görünüyor? 😊"
+
+msgid "Looks great!"
+msgstr "Harika görünüyor!"
+
+msgid "Appearance"
+msgstr "Görünüm"
+
+msgid "Light"
+msgstr "Açık"
+
+msgid "Dark"
+msgstr "Koyu"
+
+msgid "Your messages"
+msgstr "Mesajlarınız"
+
+msgid "Background"
+msgstr "Arka plan"
+
+msgid "Picture…"
+msgstr "Resim…"
+
+msgid "Choose a background picture"
+msgstr "Bir arka plan resmi seçin"
+
+msgid "Message"
+msgstr "Mesaj"
+
+msgid "Bold"
+msgstr "Kalın"
+
+msgid "Italic"
+msgstr "İtalik"
+
+msgid "Underline"
+msgstr "Altı çizili"
+
+msgid "Strikethrough"
+msgstr "Üstü çizili"
+
+msgid "Monospace"
+msgstr "Eş aralıklı"
+
+msgid "Create link"
+msgstr "Bağlantı oluştur"
+
+msgid "Plain text"
+msgstr "Düz metin"
+
+msgid "Formatting"
+msgstr "Biçimlendirme"
+
+msgid "Create"
+msgstr "Oluştur"
+
+msgid "Mesh VPN client for BigScale/Headscale."
+msgstr "BigScale/Headscale için Mesh VPN istemcisi."
+
+msgid "Done. You will no longer need a password to connect or disconnect."
+msgstr ""
+"Tamam. Artık bağlanmak veya bağlantıyı kesmek için bir parolaya ihtiyacınız "
+"olmayacak."
+
+#, rust-format
+msgid "Failed: {error}"
+msgstr "Başarısız: {error}"
+
+msgid "Tailscale operator"
+msgstr "Tailscale operatörü"
+
+msgid "OK"
+msgstr "Tamam"
+
+msgid "Sign out of current account?"
+msgstr "Mevcut hesaptan çıkış yapılsın mı?"
+
+msgid ""
+"This will disconnect from the network, sign this device out of the current "
+"control server, and forget the saved password. You'll then be able to sign "
+"in with a different account."
+msgstr ""
+"Bu işlem ağ bağlantısını kesecek, bu cihazı mevcut kontrol sunucusundan "
+"çıkaracak ve kayıtlı parolayı unutacaktır. Ardından farklı bir hesapla "
+"oturum açabilirsiniz."
+
+msgid "Leave the network?"
+msgstr "Ağdan ayrılınsın mı?"
+
+#, rust-format
+msgid ""
+"This device leaves the network and its name becomes free. Your account {user} is kept: you can come back later from this computer, without an invite.\n"
+"\n"
+"If you won't come back, delete the account and the name {user} becomes free too."
+msgstr ""
+"Bu cihaz ağdan ayrılır ve adı serbest kalır. {user} hesabınız korunur: daha sonra bu bilgisayardan davet olmadan geri dönebilirsiniz.\n"
+"\n"
+"Geri dönmeyecekseniz hesabı silin; {user} adı da serbest kalır."
+
+msgid "Leave and delete account"
+msgstr "Ayrıl ve hesabı sil"
+
+msgid "Connect first to delete the account."
+msgstr "Hesabı silmek için önce bağlanın."
+
+msgid "Signing out…"
+msgstr "Oturum kapatılıyor…"
+
+#, rust-format
+msgid ""
+"Signed out. Your account was kept: {count} other device(s) still use it."
+msgstr ""
+"Oturum kapatıldı. Hesabınız korundu: {count} başka cihaz hâlâ kullanıyor."
+
+msgid ""
+"Couldn't delete the account: the panel can't be reached. Connect and try "
+"again."
+msgstr "Hesap silinemedi: panele ulaşılamıyor. Bağlanın ve tekrar deneyin."
+
+msgid "Signed out and account deleted."
+msgstr "Oturum kapatıldı ve hesap silindi."
+
+msgid "Signed out."
+msgstr "Çıkış yapıldı."
+
+msgid "Couldn't reach the server"
+msgstr "Sunucuya ulaşılamadı"
+
+#, rust-format
+msgid ""
+"The control server didn't confirm the sign-out: {error}\n"
+"\n"
+"You can still sign out on this computer: BigLace forgets the saved key and account and disconnects. The server keeps listing this device until an administrator removes it."
+msgstr ""
+"Denetim sunucusu oturumun kapatıldığını onaylamadı: {error}\n"
+"\n"
+"Yine de bu bilgisayarda oturumu kapatabilirsiniz: BigLace kayıtlı anahtarı ve hesabı unutur ve bağlantıyı keser. Sunucu, bir yönetici kaldırana kadar bu cihazı listelemeye devam eder."
+
+msgid "Sign out on this computer"
+msgstr "Bu bilgisayarda oturumu kapat"
+
+msgid "Sign in as administrator"
+msgstr "Yönetici olarak oturum aç"
+
+msgid "Panel administrator"
+msgstr "Panel yöneticisi"
+
+msgid ""
+"Only for whoever administers the BigScale panel: use the panel's admin "
+"username and password. This device joins the network under the name below. "
+"Everyone else joins with an invite or an access key."
+msgstr ""
+"Yalnızca BigScale panelini yöneten kişi için: panelin yönetici kullanıcı "
+"adını ve parolasını kullanın. Bu cihaz ağa aşağıdaki adla katılır. Diğer "
+"herkes bir davet veya erişim anahtarıyla katılır."
+
+msgid "Panel URL"
+msgstr "Panel URL'si"
+
+msgid ""
+"Address of your BigScale panel (e.g. panel.example.org). The https:// scheme"
+" is added automatically if you omit it."
+msgstr ""
+"BigScale panelinizin adresi (ör. panel.example.org). https:// şemasını "
+"belirtmezseniz otomatik olarak eklenir."
+
+msgid "Panel admin username"
+msgstr "Panel yöneticisi kullanıcı adı"
+
+msgid "Your panel username — the one you use to sign in to the web panel."
+msgstr "Web paneline giriş yapmak için kullandığınız panel kullanıcı adınız."
+
+msgid "Password"
+msgstr "Şifre"
+
+msgid ""
+"Your panel password. Stored in the OS keyring (libsecret on Linux, Keychain "
+"on macOS, Credential Manager on Windows)."
+msgstr ""
+"Panel şifreniz. İşletim sistemi anahtar zincirinde saklanır (Linux'ta "
+"libsecret, macOS'ta Keychain, Windows'ta Kimlik Bilgisi Yöneticisi)."
+
+msgid ""
+"The name this device shows to other peers on the VPN — this is the Tailscale"
+" hostname, NOT your computer's name and NOT your user. Lowercase letters, "
+"digits and hyphens. Example: 'tales-laptop', 'francois', 'office-pc'. Pick "
+"something other peers will recognise."
+msgstr ""
+"Bu cihazın VPN'deki diğer eşlere gösterdiği ad — bu Tailscale ana bilgisayar"
+" adıdır, bilgisayarınızın adı veya kullanıcı adınız DEĞİLDİR. Küçük harfler,"
+" rakamlar ve tireler. Örnek: 'tales-laptop', 'francois', 'office-pc'. Diğer "
+"eşlerin tanıyacağı bir ad seçin."
+
+msgid "Sign in"
+msgstr "Oturum aç"
+
+msgid "Fill in URL, username and password."
+msgstr "URL, kullanıcı adı ve şifreyi doldurun."
+
+msgid "Signed in. Press Connect to join the network."
+msgstr "Oturum açıldı. Ağa katılmak için Bağlan'a basın."
+
+msgid "Rename this device"
+msgstr "Bu cihazı yeniden adlandır"
+
+msgid ""
+"The name this device shows to other peers on the VPN. Lowercase letters, "
+"digits and hyphens. Example: tales-laptop."
+msgstr ""
+"Bu cihazın VPN'deki diğer eşlere gösterdiği ad. Küçük harfler, rakamlar ve "
+"tireler. Örnek: tales-laptop."
+
+msgid "Save & apply"
+msgstr "Kaydet ve uygula"
+
+msgid "Saved. The new name will take effect the next time you connect."
+msgstr "Kaydedildi. Yeni ad, bir sonraki bağlantınızda geçerli olacak."
+
+msgid "Device renamed."
+msgstr "Cihaz yeniden adlandırıldı."
+
+#, rust-format
+msgid "Rename failed: {error}"
+msgstr "Yeniden adlandırma başarısız: {error}"
+
+msgid "The device name can't be empty."
+msgstr "Cihaz adı boş olamaz."
+
+msgid "Use 63 characters or fewer."
+msgstr "63 karakter veya daha az kullanın."
+
+msgid "The device name can't start or end with a hyphen."
+msgstr "Cihaz adı tire ile başlayamaz veya bitemez."
+
+msgid "Only lowercase letters, digits and hyphens are allowed."
+msgstr "Yalnızca küçük harfler, rakamlar ve tirelere izin verilir."
+
 #, rust-format
 msgid ""
 "That name already belongs to an account on this network, so we suggested "
@@ -1452,9 +1952,6 @@ msgid ""
 msgstr ""
 "Bu sunucu henüz davetleri desteklemiyor. Bunun yerine bir panel hesabıyla "
 "oturum açın."
-
-msgid "Join with an invite"
-msgstr "Davetle katıl"
 
 msgid ""
 "Paste the invite link you received and type your name. Your account is "
@@ -1502,297 +1999,6 @@ msgstr "Hoş geldiniz, {name}! {group} grubuna katıldınız. Bağlanılıyor…
 msgid "Welcome, {name}! Connecting…"
 msgstr "Hoş geldiniz, {name}! Bağlanılıyor…"
 
-msgid "Open admin panel"
-msgstr "Yönetim panelini aç"
-
-msgid "Devices"
-msgstr "Cihazlar"
-
-msgid "Rooms"
-msgstr "Odalar"
-
-msgid "Choose your photo"
-msgstr "Fotoğrafınızı seçin"
-
-msgid "Photo updated. Everyone you're connected to will see it."
-msgstr "Fotoğraf güncellendi. Bağlı olduğunuz herkes görecek."
-
-#, rust-format
-msgid "Could not change the photo: {error}"
-msgstr "Fotoğraf değiştirilemedi: {error}"
-
-msgid "Sign in with an access key"
-msgstr "Erişim anahtarıyla oturum aç"
-
-msgid ""
-"Paste the key the administrator gave you. It's used once, to register this "
-"device."
-msgstr ""
-"Yöneticinin size verdiği anahtarı yapıştırın. Bu cihazı kaydetmek için bir "
-"kez kullanılır."
-
-msgid "Server URL"
-msgstr "Sunucu URL'si"
-
-msgid "Access key"
-msgstr "Erişim anahtarı"
-
-msgid ""
-"The key to this account is no longer on this computer. Join with a new "
-"invite."
-msgstr ""
-"Bu hesabın anahtarı artık bu bilgisayarda değil. Yeni bir davetle katılın."
-
-#, rust-format
-msgid "Welcome back, {name}! Connecting…"
-msgstr "Tekrar hoş geldiniz, {name}! Bağlanılıyor…"
-
-#, rust-format
-msgid ""
-"The account {user} no longer exists on this network. Join with a new invite."
-msgstr "{user} hesabı artık bu ağda yok. Yeni bir davetle katılın."
-
-msgid "Preferences"
-msgstr "Tercihler"
-
-msgid "General"
-msgstr "Genel"
-
-msgid "Behaviour"
-msgstr "Davranış"
-
-msgid "Make this user the tailscale operator"
-msgstr "Bu kullanıcıyı tailscale operatörü yap"
-
-msgid ""
-"Lets BigLace manage the connection without asking for a password each time"
-msgstr ""
-"BigLace'in bağlantıyı her seferinde parola sormadan yönetmesine izin verir"
-
-msgid "Account"
-msgstr "Hesap"
-
-msgid ""
-"Signing out removes this device's identity from BigLace. You will need a new"
-" invite or key to join again."
-msgstr ""
-"Oturumu kapatmak bu cihazın kimliğini BigLace'ten kaldırır. Yeniden katılmak"
-" için yeni bir davet veya anahtar gerekir."
-
-msgid "Change profile photo…"
-msgstr "Profil fotoğrafını değiştir…"
-
-msgid "Sign in with panel account"
-msgstr "Panel hesabıyla oturum aç"
-
-msgid "Leave the network…"
-msgstr "Ağdan ayrıl…"
-
-msgid "View tailscaled logs"
-msgstr "tailscaled günlüklerini görüntüle"
-
-msgid "About BigLace"
-msgstr "BigLace Hakkında"
-
-msgid "Connect to the network first, then open the invite link again."
-msgstr "Önce ağa bağlanın, sonra davet bağlantısını yeniden açın."
-
-#, rust-format
-msgid ""
-"This invite is for another network ({host}). Sign out first to join it."
-msgstr ""
-"Bu davet başka bir ağ için ({host}). Katılmak için önce oturumu kapatın."
-
-msgid ""
-"This device is already signed in. Sign out first to join with an invite."
-msgstr ""
-"Bu cihazda zaten oturum açık. Davetle katılmak için önce oturumu kapatın."
-
-msgid "Photo removed."
-msgstr "Fotoğraf kaldırıldı."
-
-#, rust-format
-msgid "Could not remove the photo: {error}"
-msgstr "Fotoğraf kaldırılamadı: {error}"
-
-#, rust-format
-msgid "Could not open the browser: {error}"
-msgstr "Tarayıcı açılamadı: {error}"
-
-msgid ""
-"You can't open the admin panel: you're not an administrator of this network,"
-" or the panel can't be reached."
-msgstr ""
-"Yönetim panelini açamazsınız: bu ağın yöneticisi değilsiniz ya da panele "
-"ulaşılamıyor."
-
-msgid "Enter the server URL before saving."
-msgstr "Kaydetmeden önce sunucu URL'sini girin."
-
-msgid "Enter the pre-auth key before saving."
-msgstr "Kaydetmeden önce ön yetkilendirme anahtarını girin."
-
-msgid "Setup saved"
-msgstr "Kurulum kaydedildi"
-
-msgid "Could not start the Tailscale service."
-msgstr "Tailscale hizmeti başlatılamadı."
-
-msgid "IP address copied"
-msgstr "IP adresi kopyalandı"
-
-#, rust-format
-msgid ""
-"Saved, but the pre-auth key could not be stored in the system keyring "
-"({error}). This device can still reconnect; the key is only needed again to "
-"register it anew."
-msgstr ""
-"Kaydedildi, ancak ön yetkilendirme anahtarı sistem anahtarlığına "
-"kaydedilemedi ({error}). Bu cihaz yine de yeniden bağlanabilir; anahtar "
-"yalnızca cihazı yeniden kaydetmek için gerekir."
-
-msgid "Service stopped"
-msgstr "Hizmet durduruldu"
-
-msgid "Not signed in"
-msgstr "Oturum açılmadı"
-
-msgid "Server unreachable"
-msgstr "Sunucuya ulaşılamıyor"
-
-msgid "Tailscale can't set DNS"
-msgstr "Tailscale DNS'i ayarlayamıyor"
-
-#, rust-format
-msgid "Update available: v{version}"
-msgstr "Güncelleme mevcut: v{version}"
-
-#, rust-format
-msgid "Sign in again as {user}"
-msgstr "{user} olarak yeniden oturum aç"
-
-msgid "(no device name)"
-msgstr "(cihaz adı yok)"
-
-msgid "Sign in or paste a pre-auth key"
-msgstr "Oturum açın veya ön yetkilendirme anahtarı yapıştırın"
-
-msgid "Server not set"
-msgstr "Sunucu ayarlanmamış"
-
-msgid "no other devices"
-msgstr "başka cihaz yok"
-
-#, rust-format
-msgid "{online} online"
-msgstr "{online} çevrimiçi"
-
-#, rust-format
-msgid "{online} online · {offline} offline"
-msgstr "{online} çevrimiçi · {offline} çevrimdışı"
-
-msgid "is online"
-msgstr "çevrimiçi"
-
-msgid "went offline"
-msgstr "çevrimdışı oldu"
-
-#, rust-format
-msgid "{count} devices are online"
-msgstr "{count} cihaz çevrimiçi"
-
-#, rust-format
-msgid "{count} devices went offline"
-msgstr "{count} cihaz çevrimdışı oldu"
-
-#, rust-format
-msgid "{on_count} online · {off_count} offline"
-msgstr "{on_count} çevrimiçi · {off_count} çevrimdışı"
-
-msgid "direct"
-msgstr "doğrudan"
-
-msgid "via relay"
-msgstr "aktarıcı üzerinden"
-
-msgid "Turn on over the network (Wake-on-LAN)"
-msgstr "Ağ üzerinden aç (Wake-on-LAN)"
-
-msgid "Turn on over the network"
-msgstr "Ağ üzerinden aç"
-
-#, rust-format
-msgid ""
-"Signal sent to {name} (by {via}). If it's set to turn on over the network, "
-"it shows up in a minute or two."
-msgstr ""
-"{name} cihazına sinyal gönderildi ({via} üzerinden). Ağ üzerinden açılacak "
-"şekilde ayarlıysa bir iki dakika içinde görünür."
-
-#, rust-format
-msgid "Could not turn on {name}: {error}"
-msgstr "{name} açılamadı: {error}"
-
-msgid "Unpin from top"
-msgstr "Üstten sabitlemeyi kaldır"
-
-msgid "Pin to top"
-msgstr "Üste sabitle"
-
-msgid "Pinned to top"
-msgstr "Sabitlendi"
-
-msgid "Unpinned"
-msgstr "Sabitlenmedi"
-
-msgid "Open files (SFTP)"
-msgstr "Dosyaları aç (SFTP)"
-
-msgid "Open terminal (SSH)"
-msgstr "Terminal aç (SSH)"
-
-msgid "See and control the screen"
-msgstr "Ekranı gör ve denetle"
-
-msgid "DNS name"
-msgstr "DNS adı"
-
-msgid "DNS name copied"
-msgstr "DNS adı kopyalandı"
-
-msgid "Owner"
-msgstr "Sahip"
-
-msgid "SSH login (override)"
-msgstr "SSH girişi (geçersiz kıl)"
-
-msgid "Saved"
-msgstr "Kaydedildi"
-
-msgid "Tags"
-msgstr "Etiketler"
-
-msgid "Last seen"
-msgstr "Son görülme"
-
-msgid "Use as exit node"
-msgstr "Çıkış düğümü olarak kullan"
-
-msgid "Route all traffic through this peer"
-msgstr "Tüm trafiği bu eş üzerinden yönlendir"
-
-msgid "Exit node enabled"
-msgstr "Çıkış düğümü etkin"
-
-msgid "Exit node disabled"
-msgstr "Çıkış düğümü devre dışı"
-
-msgid "Failed to update exit node"
-msgstr "Çıkış düğümü güncellenemedi"
-
-msgid "Copy"
-msgstr "Kopyala"
-
 msgid "End access"
 msgstr "Erişimi sonlandır"
 
@@ -1814,9 +2020,6 @@ msgstr ""
 #, rust-format
 msgid "Always allow {user} (no more asking)"
 msgstr "{user} için her zaman izin ver (bir daha sorma)"
-
-msgid "Deny"
-msgstr "Reddet"
 
 msgid "Allow access"
 msgstr "Erişime izin ver"
@@ -2042,325 +2245,250 @@ msgstr "{name} kişisinin ekranına erişim sona erdi: {error}"
 msgid "Give back control"
 msgstr "Denetimi geri ver"
 
-msgid ""
-"Each of your groups has a voice room. Join it and talk with whoever is there"
-" — the sound goes straight between you, through the network."
-msgstr ""
-"Her grubunuzun bir sesli odası var. Katılın ve orada kim varsa onunla "
-"konuşun — ses ağ üzerinden doğrudan aranızda gider."
+msgid "direct"
+msgstr "doğrudan"
 
-msgid "You're not in any group yet. Create one in Groups."
-msgstr "Henüz hiçbir grupta değilsiniz. Gruplar bölümünde bir tane oluşturun."
+msgid "via relay"
+msgstr "aktarıcı üzerinden"
 
-msgid "People in the room"
-msgstr "Odadaki kişiler"
+msgid "Turn on over the network (Wake-on-LAN)"
+msgstr "Ağ üzerinden aç (Wake-on-LAN)"
 
-msgid "Everyone"
-msgstr "Herkes"
-
-msgid "Who's speaking"
-msgstr "Konuşan kişi"
-
-msgid "Mute"
-msgstr "Sessize al"
-
-msgid "Mute your microphone for everyone"
-msgstr "Mikrofonunuzu herkes için kapatın"
-
-msgid "Which camera"
-msgstr "Hangi kamera"
-
-msgid "Include the computer's sound when sharing the screen"
-msgstr "Ekran paylaşırken bilgisayarın sesini de dahil et"
-
-msgid ""
-"Videos and music playing here go to the room too; the room's voices don't "
-"(no echo)"
-msgstr ""
-"Burada çalan videolar ve müzik de odaya gider; odadaki sesler gitmez (yankı "
-"olmaz)"
-
-msgid "Rooms unavailable"
-msgstr "Odalar kullanılamıyor"
+msgid "Turn on over the network"
+msgstr "Ağ üzerinden aç"
 
 #, rust-format
-msgid "Could not turn on the camera: {error}"
-msgstr "Kamera açılamadı: {error}"
+msgid ""
+"Signal sent to {name} (by {via}). If it's set to turn on over the network, "
+"it shows up in a minute or two."
+msgstr ""
+"{name} cihazına sinyal gönderildi ({via} üzerinden). Ağ üzerinden açılacak "
+"şekilde ayarlıysa bir iki dakika içinde görünür."
 
 #, rust-format
-msgid "Could not share the screen: {error}"
-msgstr "Ekran paylaşılamadı: {error}"
+msgid "Could not turn on {name}: {error}"
+msgstr "{name} açılamadı: {error}"
 
-msgid "Nobody here right now"
-msgstr "Şu anda burada kimse yok"
+msgid "Unpin from top"
+msgstr "Üstten sabitlemeyi kaldır"
+
+msgid "Pin to top"
+msgstr "Üste sabitle"
+
+msgid "Pinned to top"
+msgstr "Sabitlendi"
+
+msgid "Unpinned"
+msgstr "Sabitlenmedi"
+
+msgid "Open files (SFTP)"
+msgstr "Dosyaları aç (SFTP)"
+
+msgid "Open terminal (SSH)"
+msgstr "Terminal aç (SSH)"
+
+msgid "See and control the screen"
+msgstr "Ekranı gör ve denetle"
+
+msgid "DNS name"
+msgstr "DNS adı"
+
+msgid "DNS name copied"
+msgstr "DNS adı kopyalandı"
+
+msgid "Owner"
+msgstr "Sahip"
+
+msgid "SSH login (override)"
+msgstr "SSH girişi (geçersiz kıl)"
+
+msgid "Saved"
+msgstr "Kaydedildi"
+
+msgid "Tags"
+msgstr "Etiketler"
+
+msgid "Last seen"
+msgstr "Son görülme"
+
+msgid "Use as exit node"
+msgstr "Çıkış düğümü olarak kullan"
+
+msgid "Route all traffic through this peer"
+msgstr "Tüm trafiği bu eş üzerinden yönlendir"
+
+msgid "Exit node enabled"
+msgstr "Çıkış düğümü etkin"
+
+msgid "Exit node disabled"
+msgstr "Çıkış düğümü devre dışı"
+
+msgid "Failed to update exit node"
+msgstr "Çıkış düğümü güncellenemedi"
+
+msgid "Copy"
+msgstr "Kopyala"
+
+msgid "Smileys & people"
+msgstr "İfadeler ve insanlar"
+
+msgid "Animals & nature"
+msgstr "Hayvanlar ve doğa"
+
+msgid "Food & drink"
+msgstr "Yiyecek ve içecek"
+
+msgid "Travel & places"
+msgstr "Seyahat ve yerler"
+
+msgid "Activities"
+msgstr "Etkinlikler"
+
+msgid "Objects"
+msgstr "Nesneler"
+
+msgid "Symbols"
+msgstr "Semboller"
+
+msgid "Flags"
+msgstr "Bayraklar"
+
+msgid "Search emoji"
+msgstr "Emoji ara"
+
+msgid "Recently used"
+msgstr "Son kullanılanlar"
+
+msgid "Search results"
+msgstr "Arama sonuçları"
+
+msgid "Failed to disable start at login"
+msgstr "Oturum açılışında başlatma kapatılamadı"
+
+msgid "Failed to create the autostart folder"
+msgstr "Otomatik başlatma klasörü oluşturulamadı"
+
+msgid "Failed to enable start at login"
+msgstr "Oturum açılışında başlatma etkinleştirilemedi"
+
+msgid "only files can be sent"
+msgstr "yalnızca dosyalar gönderilebilir"
+
+msgid "the file is too big (4 GB at most)"
+msgstr "dosya çok büyük (en fazla 4 GB)"
+
+msgid "that file name can't be sent"
+msgstr "bu dosya adı gönderilemez"
 
 #, rust-format
-msgid "In the room: {people}"
-msgstr "Odada: {people}"
+msgid "{user}'s computer is off or offline — try again when it's back"
+msgstr ""
+"{user} kullanıcısının bilgisayarı kapalı veya çevrimdışı — tekrar çevrimiçi "
+"olduğunda yeniden deneyin"
+
+msgid ""
+"the file arrived different from the original (damaged on the way) — download"
+" it again"
+msgstr "dosya orijinalinden farklı ulaştı (yolda bozuldu) — yeniden indirin"
+
+msgid "the file is no longer on their computer (moved or changed)"
+msgstr "dosya artık onların bilgisayarında değil (taşındı veya değiştirildi)"
+
+msgid "the file isn't available"
+msgstr "dosya kullanılamıyor"
+
+msgid "the transfer was interrupted — try again to resume it"
+msgstr "aktarım kesildi — devam ettirmek için yeniden deneyin"
+
+msgid "message too long"
+msgstr "mesaj çok uzun"
+
+msgid "not signed in to a BigScale network"
+msgstr "bir BigScale ağında oturum açılmadı"
+
+msgid "you are not in that group"
+msgstr "bu grupta değilsiniz"
 
 #, rust-format
-msgid "Join the room {group}"
-msgstr "{group} odasına katıl"
+msgid "{emoji} (reaction to: {text})"
+msgstr "{emoji} (şuna tepki: {text})"
 
 #, rust-format
-msgid "Could not join {group}: {error}"
-msgstr "{group} odasına katılınamadı: {error}"
+msgid "✏️ (edited) {text}"
+msgstr "✏️ (düzenlendi) {text}"
 
-msgid "📺 You're showing your screen to the room"
-msgstr "📺 Ekranınızı odaya gösteriyorsunuz"
-
-msgid "📺 You're showing your screen · 1 person watching"
-msgstr "📺 Ekranınızı gösteriyorsunuz · 1 kişi izliyor"
+msgid "🗑 (deleted a message)"
+msgstr "🗑 (bir mesajı sildi)"
 
 #, rust-format
-msgid "📺 You're showing your screen · {count} people watching"
-msgstr "📺 Ekranınızı gösteriyorsunuz · {count} kişi izliyor"
+msgid "📌 (pinned: {text})"
+msgstr "📌 (sabitlendi: {text})"
+
+msgid "📌 (unpinned the message)"
+msgstr "📌 (mesajın sabitlemesini kaldırdı)"
+
+msgid "nothing was recorded — is a microphone connected?"
+msgstr "hiçbir şey kaydedilmedi — mikrofon bağlı mı?"
+
+msgid ""
+"this computer can't restart remotely (BigLace's helper isn't installed)"
+msgstr ""
+"bu bilgisayar uzaktan yeniden başlatılamaz (BigLace yardımcısı kurulu değil)"
 
 #, rust-format
-msgid "{people} · {talking} talking"
-msgstr "{people} · {talking} konuşuyor"
-
-msgid "connecting…"
-msgstr "bağlanılıyor…"
-
-msgid "muted"
-msgstr "sessizde"
-
-msgid "talking"
-msgstr "konuşuyor"
-
-msgid "quiet"
-msgstr "sessiz"
-
-msgid "Sharing screen"
-msgstr "Ekran paylaşılıyor"
-
-msgid "In control"
-msgstr "Denetimde"
-
-msgid "Controls your screen now"
-msgstr "Şu anda ekranınızı denetliyor"
-
-msgid "Watching"
-msgstr "İzliyor"
-
-msgid "Watching your screen"
-msgstr "Ekranınızı izliyor"
+msgid "could not prepare the automatic sign-in: {error}"
+msgstr "otomatik oturum açma hazırlanamadı: {error}"
 
 #, rust-format
-msgid "{user} is showing their screen"
-msgstr "{user} ekranını gösteriyor"
-
-msgid "Watch"
-msgstr "İzle"
+msgid "could not restart: {error}"
+msgstr "yeniden başlatılamadı: {error}"
 
 #, rust-format
-msgid "{user} asks to control your screen"
-msgstr "{user} ekranınızı denetlemek istiyor"
+msgid "could not restart the session: {error}"
+msgstr "oturum yeniden başlatılamadı: {error}"
+
+#, rust-format
+msgid "could not shut down: {error}"
+msgstr "kapatılamadı: {error}"
+
+msgid "the connection was lost"
+msgstr "bağlantı koptu"
 
 msgid ""
-"They'll be able to use your mouse and keyboard. You can take control back at"
-" any time."
+"the screen there is locked, and GNOME doesn't allow remote access to a "
+"locked screen — ask the person to unlock it"
 msgstr ""
-"Fare ve klavyenizi kullanabilecek. Denetimi istediğiniz zaman geri "
-"alabilirsiniz."
+"oradaki ekran kilitli ve GNOME kilitli bir ekrana uzaktan erişime izin "
+"vermiyor — kişiden kilidi açmasını isteyin"
 
-msgid "Allow"
-msgstr "İzin ver"
+msgid "access to the camera was refused"
+msgstr "kameraya erişim reddedildi"
 
-msgid "Turn off camera"
-msgstr "Kamerayı kapat"
+msgid "you are not in a room"
+msgstr "bir odada değilsiniz"
 
-msgid "Turn on camera"
-msgstr "Kamerayı aç"
+msgid "Mute or unmute the microphone in a BigLace room"
+msgstr "BigLace odasında mikrofonu kapat veya aç"
 
-msgid "No camera found on this computer"
-msgstr "Bu bilgisayarda kamera bulunamadı"
+msgid "screen sharing isn't available on this computer"
+msgstr "ekran paylaşımı bu bilgisayarda kullanılamıyor"
 
-msgid "Stop sharing"
-msgstr "Paylaşımı durdur"
+#, rust-format
+msgid "The computer's sound can't be shared: {error}"
+msgstr "Bilgisayarın sesi paylaşılamıyor: {error}"
 
-msgid "Share screen"
-msgstr "Ekranı paylaş"
+#, rust-format
+msgid "The screen share stopped: {error}"
+msgstr "Ekran paylaşımı durdu: {error}"
 
-msgid "Stop showing your screen to the room"
-msgstr "Ekranınızı odaya göstermeyi durdurun"
+msgid "BigLace doesn't know that computer's network card yet"
+msgstr "BigLace o bilgisayarın ağ kartını henüz bilmiyor"
 
-msgid "Show your screen to everyone in the room"
-msgstr "Ekranınızı odadaki herkese gösterin"
+msgid "this computer"
+msgstr "bu bilgisayar"
 
-msgid "Take back control"
-msgstr "Denetimi geri al"
-
-msgid "Give control"
-msgstr "Denetimi ver"
-
-msgid "Stop them from using your mouse and keyboard"
-msgstr "Fare ve klavyenizi kullanmalarını engelleyin"
-
-msgid "Let them use your mouse and keyboard"
-msgstr "Fare ve klavyenizi kullanmalarına izin verin"
-
-msgid "Sound level"
-msgstr "Ses düzeyi"
-
-msgid "Unmute"
-msgstr "Sesi aç"
-
-msgid "Sections"
-msgstr "Bölümler"
-
-msgid ""
-"Your identity on this mesh — the device name shown to other peers and the "
-"network you're connected to."
-msgstr ""
-"Bu ağdaki kimliğiniz — diğer eşlere gösterilen cihaz adı ve bağlı olduğunuz "
-"ağ."
-
-msgid "Change photo…"
-msgstr "Fotoğrafı değiştir…"
-
-msgid "Remove photo"
-msgstr "Fotoğrafı kaldır"
-
-msgid "Change your photo"
-msgstr "Fotoğrafınızı değiştirin"
-
-msgid "Rename this device on the network"
-msgstr "Bu cihazı ağda yeniden adlandır"
-
-msgid "Advanced: use a pre-auth key"
-msgstr "Gelişmiş: bir ön yetkilendirme anahtarı kullanın"
-
-msgid "Already have a key from your administrator? Paste it here."
-msgstr "Yöneticinizden bir anahtarınız var mı? Buraya yapıştırın."
-
-msgid ""
-"Manual setup — expand to paste a server URL and pre-auth key when you "
-"already received them from your administrator. Most users should sign in "
-"through the panel button above instead."
-msgstr ""
-"Manuel kurulum — yöneticinizden zaten aldıysanız, bir sunucu URL'si ve ön "
-"yetkilendirme anahtarı yapıştırmak için genişletin. Çoğu kullanıcı bunun "
-"yerine yukarıdaki panel düğmesi aracılığıyla oturum açmalıdır."
-
-msgid ""
-"Address of the coordination server (e.g. vpn.example.org). The https:// "
-"scheme is added automatically if you omit it."
-msgstr ""
-"Koordinasyon sunucusunun adresi (ör. vpn.example.org). Atlarsanız https:// "
-"şeması otomatik olarak eklenir."
-
-msgid "Pre-auth key"
-msgstr "Ön yetkilendirme anahtarı"
-
-msgid ""
-"One-time or reusable key created on the server (starts with 'hskey-auth-'). "
-"Used to register this device automatically without opening a browser."
-msgstr ""
-"Sunucuda oluşturulan tek kullanımlık veya yeniden kullanılabilir anahtar "
-"('hskey-auth-' ile başlar). Bir tarayıcı açmadan bu cihazı otomatik olarak "
-"kaydetmek için kullanılır."
-
-msgid ""
-"The name this device shows to other peers on the VPN — this is the Tailscale"
-" hostname, NOT your computer's name and NOT your user. Lowercase letters, "
-"digits and hyphens. Example: 'tales-laptop', 'francois', 'office-pc'."
-msgstr ""
-"Bu cihazın VPN'deki diğer eşlere gösterdiği ad — bu Tailscale ana bilgisayar"
-" adıdır, bilgisayarınızın adı VEYA kullanıcı adınız DEĞİLDİR. Küçük harfler,"
-" rakamlar ve tireler. Örnek: 'tales-dizustu', 'francois', 'ofis-pc'."
-
-msgid "Apply manual setup"
-msgstr "Manuel kurulumu uygula"
-
-msgid "Save"
-msgstr "Kaydet"
-
-msgid ""
-"Persist the server, key and device name above. Won't connect — press Connect"
-" afterwards."
-msgstr ""
-"Yukarıdaki sunucuyu, anahtarı ve cihaz adını kaydedin. Bağlanmayacak — "
-"ardından Bağlan'a basın."
-
-msgid "Connect automatically"
-msgstr "Otomatik bağlan"
-
-msgid "Join the network when BigLace starts"
-msgstr "BigLace başladığında ağa katıl"
-
-msgid ""
-"When on, BigLace runs 'tailscale up' as soon as it launches, so you join the"
-" mesh without clicking Connect every time."
-msgstr ""
-"Açıkken, BigLace başlatıldığında 'tailscale up' komutunu çalıştırır, böylece"
-" her seferinde Bağlan'a tıklamadan ağa katılırsınız."
-
-msgid "Toggle auto-connect on startup"
-msgstr "Başlangıçta otomatik bağlanmayı aç/kapat"
-
-msgid "Start BigLace with the session"
-msgstr "BigLace'i oturumla birlikte başlat"
-
-msgid "Open BigLace after you sign in to the desktop"
-msgstr "Masaüstüne giriş yaptıktan sonra BigLace'i aç"
-
-msgid ""
-"Turn this on to add BigLace to your desktop session startup. Turn it off to "
-"remove it."
-msgstr ""
-"Bunu açarak BigLace'i masaüstü oturum başlangıcına ekleyin. Kapatarak "
-"kaldırın."
-
-msgid "Toggle start with session"
-msgstr "Oturumla başlatmayı aç/kapat"
-
-msgid "Reconnect on drop"
-msgstr "Bağlantı koptuğunda yeniden bağlan"
-
-msgid "Retry with backoff when the connection is lost"
-msgstr "Bağlantı kesildiğinde gecikmeli olarak yeniden dene"
-
-msgid ""
-"If the tunnel drops (network change, sleep, server hiccup), BigLace silently"
-" retries with growing delays instead of leaving you offline until you "
-"notice."
-msgstr ""
-"Tünel kesilirse (ağ değişikliği, uyku, sunucu takılması), BigLace sizi fark "
-"edene kadar çevrimdışı bırakmak yerine artan gecikmelerle sessizce yeniden "
-"dener."
-
-msgid "Toggle auto-reconnect"
-msgstr "Otomatik yeniden bağlanmayı aç/kapat"
-
-msgid "Notify on peer changes"
-msgstr "Eş değişikliklerinde bildirim göster"
-
-msgid "Show a desktop notification when peers go online/offline"
-msgstr "Eşler çevrimiçi/çevrimdışı olduğunda masaüstü bildirimi göster"
-
-msgid ""
-"Send a desktop toast when another device on your network goes online or "
-"offline. Rapid bursts are coalesced into a single notification so you don't "
-"get spammed during reconnects."
-msgstr ""
-"Ağınızdaki başka bir cihaz çevrimiçi veya çevrimdışı olduğunda bir masaüstü "
-"bildirimi gönderin. Hızlı patlamalar, yeniden bağlanmalar sırasında spam "
-"almamanız için tek bir bildirimde birleştirilir."
-
-msgid "Toggle peer-change notifications"
-msgstr "Eş değişiklik bildirimlerini aç/kapat"
-
-msgid ""
-"Join or leave the mesh network. When connected, this device becomes "
-"reachable by the other peers in your account."
-msgstr ""
-"Mesh ağına katılın veya ağdan ayrılın. Bağlandığınızda bu cihaz, "
-"hesabınızdaki diğer eşler tarafından erişilebilir hale gelir."
-
-msgid "Your photo"
-msgstr "Fotoğrafınız"
+msgid "no computer on its network is on to send the signal"
+msgstr "ağında sinyali gönderecek açık bir bilgisayar yok"
 
 #~ msgid "Panel credentials"
 #~ msgstr "Panel kimlik bilgileri"

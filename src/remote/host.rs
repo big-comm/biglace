@@ -274,25 +274,133 @@ pub fn serve(stream: TcpStream, peer: IpAddr, headers: &HashMap<String, String>,
 }
 
 /// Where the viewer's input goes on this host.
-pub(crate) enum InputSink {
+enum SinkOut {
     #[cfg(target_os = "linux")]
     X11(Option<Box<super::input_x11::Injector>>),
     #[cfg(target_os = "linux")]
-    Portal(async_channel::Sender<Input>),
+    Portal {
+        tx: async_channel::Sender<Input>,
+        handled: Arc<std::sync::atomic::AtomicU64>,
+        sent: u64,
+    },
+}
+
+/// The viewer's input, applied here — keeping note of what is held down so
+/// it can all be let go (control changes hands or ends, the viewer leaves):
+/// a key left pressed would stay pressed on this computer.
+pub(crate) struct InputSink {
+    out: SinkOut,
+    keys: std::collections::BTreeSet<u32>,
+    buttons: std::collections::BTreeSet<u8>,
 }
 
 impl InputSink {
-    pub(crate) fn apply(&mut self, event: Input) {
-        match self {
-            #[cfg(target_os = "linux")]
-            Self::X11(Some(inj)) => inj.apply(&event),
-            #[cfg(target_os = "linux")]
-            Self::X11(None) => {}
-            #[cfg(target_os = "linux")]
-            Self::Portal(tx) => {
-                let _ = tx.send_blocking(event);
+    #[cfg(target_os = "linux")]
+    pub(crate) fn x11(inj: Option<Box<super::input_x11::Injector>>) -> Self {
+        Self { out: SinkOut::X11(inj), keys: Default::default(), buttons: Default::default() }
+    }
+
+    #[cfg(target_os = "linux")]
+    pub(crate) fn portal(tx: async_channel::Sender<Input>, handled: Arc<std::sync::atomic::AtomicU64>) -> Self {
+        Self { out: SinkOut::Portal { tx, handled, sent: 0 }, keys: Default::default(), buttons: Default::default() }
+    }
+
+    /// Wait (a little) until the compositor got everything sent so far.
+    fn flush(&self) {
+        #[cfg(target_os = "linux")]
+        if let SinkOut::Portal { handled, sent, .. } = &self.out {
+            let deadline = Instant::now() + Duration::from_millis(1500);
+            while handled.load(Ordering::Acquire) < *sent && Instant::now() < deadline {
+                std::thread::sleep(Duration::from_millis(10));
             }
         }
+    }
+
+    fn send(&mut self, event: Input) {
+        match &mut self.out {
+            #[cfg(target_os = "linux")]
+            SinkOut::X11(Some(inj)) => inj.apply(&event),
+            #[cfg(target_os = "linux")]
+            SinkOut::X11(None) => {}
+            #[cfg(target_os = "linux")]
+            SinkOut::Portal { tx, sent, .. } => {
+                if tx.send_blocking(event).is_ok() {
+                    *sent += 1;
+                }
+            }
+        }
+    }
+
+    pub(crate) fn apply(&mut self, event: Input) {
+        let event = match event {
+            // Older viewers send the shifted letter ("A"); typing it through
+            // the portal makes the compositor press a Shift of its own that
+            // nothing lets go. The letter itself is enough: the viewer's real
+            // Shift arrives as its own key.
+            Input::Key { keysym, pressed } if (0x41..=0x5a).contains(&keysym) => Input::Key { keysym: keysym + 0x20, pressed },
+            other => other,
+        };
+        match event {
+            Input::Key { keysym, pressed: true } => {
+                self.keys.insert(keysym);
+            }
+            Input::Key { keysym, pressed: false } => {
+                if !self.keys.remove(&keysym) {
+                    // Never pressed through us: nothing to let go.
+                    return;
+                }
+            }
+            Input::Button { button, pressed: true } => {
+                self.buttons.insert(button);
+            }
+            Input::Button { button, pressed: false } => {
+                self.buttons.remove(&button);
+            }
+            _ => {}
+        }
+        self.send(event);
+    }
+
+    /// Let go of every key and button still held through us, and wait
+    /// until the compositor has them: a key a session leaves pressed stays
+    /// pressed in GNOME (Mutter) even after the session is gone, until the
+    /// person logs out.
+    pub(crate) fn release_all(&mut self) {
+        let keys = std::mem::take(&mut self.keys);
+        let buttons = std::mem::take(&mut self.buttons);
+        if keys.is_empty() && buttons.is_empty() {
+            return;
+        }
+        tailscale::dbg(&format!("remote: letting go of {} key(s), {} button(s)", keys.len(), buttons.len()));
+        for keysym in keys.into_iter().rev() {
+            self.send(Input::Key { keysym, pressed: false });
+        }
+        for button in buttons {
+            self.send(Input::Button { button, pressed: false });
+        }
+        self.flush();
+    }
+}
+
+/// Every viewer input in use (to let go of everything when we quit).
+fn live_sinks() -> &'static Mutex<Vec<std::sync::Weak<Mutex<InputSink>>>> {
+    static L: OnceLock<Mutex<Vec<std::sync::Weak<Mutex<InputSink>>>>> = OnceLock::new();
+    L.get_or_init(Default::default)
+}
+
+/// Quitting (or a signal): whatever remote viewers hold down, let go.
+pub fn release_all_inputs() {
+    let sinks: Vec<_> = live_sinks().lock().map(|l| l.iter().filter_map(std::sync::Weak::upgrade).collect()).unwrap_or_default();
+    for s in sinks {
+        if let Ok(mut s) = s.lock() {
+            s.release_all();
+        }
+    }
+}
+
+impl Drop for InputSink {
+    fn drop(&mut self) {
+        self.release_all();
     }
 }
 
@@ -382,7 +490,7 @@ pub(crate) fn open_source(stop: &StopHandle, want: Pointer) -> anyhow::Result<So
             pointer,
             pipelines: wayland_zero_copy(fd, node).into_iter().chain([copy]).collect(),
             dirty: None,
-            sink: InputSink::Portal(portal.input),
+            sink: InputSink::portal(portal.input, portal.handled),
             _fd: Some(portal.fd),
         })
     } else {
@@ -399,7 +507,7 @@ pub(crate) fn open_source(stop: &StopHandle, want: Pointer) -> anyhow::Result<So
                 &format!("ximagesrc name=capture use-damage=false show-pointer={embedded} ! {X11_TAIL}"),
                 enc,
             )],
-            sink: InputSink::X11(super::input_x11::Injector::connect().map(Box::new)),
+            sink: InputSink::x11(super::input_x11::Injector::connect().map(Box::new)),
             _fd: None,
         })
     }
@@ -452,6 +560,10 @@ fn run_session(mut stream: TcpStream, stop: &StopHandle, protocol: u32, identity
     let mut keep_fd = source._fd;
     // Shared: a new source (after a resolution change) brings a new one.
     let sink = Arc::new(Mutex::new(sink));
+    if let Ok(mut l) = live_sinks().lock() {
+        l.retain(|w| w.strong_count() > 0);
+        l.push(Arc::downgrade(&sink));
+    }
     // Video and pong replies write from two threads.
     let writer = match stream.try_clone() {
         Ok(w) => Arc::new(Mutex::new(w)),
@@ -545,6 +657,10 @@ fn run_session(mut stream: TcpStream, stop: &StopHandle, protocol: u32, identity
                         Err(_) => break,
                     }
                 }
+                // The viewer is gone (or the session ends): nothing stays held.
+                if let Ok(mut sink) = sink.lock() {
+                    sink.release_all();
+                }
                 stop.stop();
             });
     }
@@ -580,7 +696,7 @@ fn run_session(mut stream: TcpStream, stop: &StopHandle, protocol: u32, identity
         #[cfg(target_os = "linux")]
         {
             if let Ok(mut s) = sink.lock() {
-                *s = InputSink::X11(None);
+                *s = InputSink::x11(None);
             }
             keep_fd = None;
         }
@@ -937,6 +1053,28 @@ pub(crate) fn stream_screen(
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    /// What's held is let go when control ends; "A" counts as "a" (older
+    /// viewers), and a release of something never pressed goes nowhere.
+    #[test]
+    fn held_keys_are_let_go() {
+        let (tx, rx) = async_channel::unbounded();
+        let handled = Arc::new(AtomicU64::new(u64::MAX));
+        let mut sink = InputSink::portal(tx, handled);
+        sink.apply(Input::Key { keysym: 0xffe1, pressed: true }); // Shift_L
+        sink.apply(Input::Key { keysym: 0x41, pressed: true }); // "A"
+        sink.apply(Input::Key { keysym: 0x61, pressed: false }); // "a" up
+        sink.apply(Input::Key { keysym: 0x62, pressed: false }); // never down
+        sink.apply(Input::Button { button: 1, pressed: true });
+        let sent: Vec<Input> = std::iter::from_fn(|| rx.try_recv().ok()).collect();
+        assert_eq!(sent.len(), 4);
+        assert!(matches!(sent[1], Input::Key { keysym: 0x61, pressed: true }));
+        drop(sink);
+        let released: Vec<Input> = std::iter::from_fn(|| rx.try_recv().ok()).collect();
+        assert!(released.iter().any(|e| matches!(e, Input::Key { keysym: 0xffe1, pressed: false })));
+        assert!(released.iter().any(|e| matches!(e, Input::Button { button: 1, pressed: false })));
+        assert_eq!(released.len(), 2);
+    }
 
     /// The GPU half of the zero-copy chain (convert + encode on VA-API) must
     /// produce H.264 wherever a VA encoder exists.

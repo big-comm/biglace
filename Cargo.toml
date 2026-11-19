@@ -1,6 +1,6 @@
 [package]
 name = "biglace"
-version = "1.46.0"
+version = "1.47.0"
 edition = "2021"
 authors = ["BigCommunity"]
 description = "Mesh VPN client with a graphical interface for Headscale/Tailscale"
@@ -66,7 +66,7 @@ gstreamer-app = "0.25"
 gstreamer-video = "0.25"
 x11rb = { version = "0.14", features = ["xtest", "damage", "xfixes"] }
 # Wayland hosts: screen and input through the desktop's remote-desktop portal.
-ashpd = { version = "0.14", default-features = false, features = ["async-io", "remote_desktop", "screencast", "global_shortcuts"] }
+ashpd = { version = "0.14", default-features = false, features = ["async-io", "remote_desktop", "screencast", "global_shortcuts", "camera"] }
 zbus = { version = "5", default-features = false, features = ["async-io"] }
 
 [target.'cfg(target_os = "windows")'.dependencies]

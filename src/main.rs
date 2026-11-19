@@ -52,7 +52,7 @@ pub static MALLOC_CONF: &[u8] = b"background_thread:true,dirty_decay_ms:1000,muz
 /// creates (feat → minor, fix/perf/docs/… → patch, breaking → major) by
 /// rewriting this assignment. Reading it from `CARGO_PKG_VERSION` hid it from
 /// gitrepo, which is how the version sat at 1.0.0 through dozens of releases.
-pub const APP_VERSION: &str = "1.46.0";
+pub const APP_VERSION: &str = "1.47.0";
 pub const APP_ID: &str = "org.communitybig.biglace";
 
 /// Date-based build stamp (`YY.MM.DD-HHMM`) — the scheme the GitHub release
@@ -89,6 +89,40 @@ pub(crate) fn test_env_lock() -> std::sync::MutexGuard<'static, ()> {
     static LOCK: std::sync::Mutex<()> = std::sync::Mutex::new(());
     LOCK.lock()
         .unwrap_or_else(std::sync::PoisonError::into_inner)
+}
+
+/// SIGTERM, SIGINT and SIGHUP quit the app the normal way (shutdown runs:
+/// keys a remote viewer holds are let go, the room is left).
+#[cfg(unix)]
+fn quit_on_signals(app: &libadwaita::Application) {
+    use gtk4::prelude::*;
+    thread_local! {
+        static APP: std::cell::RefCell<Option<gtk4::glib::WeakRef<libadwaita::Application>>> = const { std::cell::RefCell::new(None) };
+    }
+    // GLib's own (async-signal-safe) signal sources; the Rust binding left
+    // glib 0.22, the C function is in the library we already use.
+    extern "C" {
+        fn g_unix_signal_add(
+            signum: std::ffi::c_int,
+            handler: extern "C" fn(*mut std::ffi::c_void) -> std::ffi::c_int,
+            data: *mut std::ffi::c_void,
+        ) -> std::ffi::c_uint;
+    }
+    extern "C" fn on_signal(_: *mut std::ffi::c_void) -> std::ffi::c_int {
+        APP.with(|a| {
+            if let Some(app) = a.borrow().as_ref().and_then(|w| w.upgrade()) {
+                app.quit();
+            }
+        });
+        1 // keep the source
+    }
+    APP.with(|a| *a.borrow_mut() = Some(app.downgrade()));
+    for signum in [1, 2, 15] {
+        // SAFETY: a plain C callback with no data, run on the main loop.
+        unsafe {
+            g_unix_signal_add(signum, on_signal, std::ptr::null_mut());
+        }
+    }
 }
 
 fn main() {
@@ -138,7 +172,14 @@ fn main() {
 
     // Quitting leaves the voice room (the others see it at once instead of
     // after the panel's 30 s timeout).
-    app.connect_shutdown(|_| room::leave());
+    app.connect_shutdown(|_| {
+        // Keys a remote viewer still holds are let go before anything else.
+        remote::host::release_all_inputs();
+        room::leave();
+    });
+    // Asked to stop (logout, systemd, kill): quit the normal way, so the above runs.
+    #[cfg(unix)]
+    quit_on_signals(&app);
 
     // The window icon too (X11 _NET_WM_ICON): docks that draw the window's
     // own icon (XFCE's docklike, via libwnck) show the app icon, not a

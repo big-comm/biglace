@@ -70,8 +70,270 @@ msgstr "Неуспешно стартиране на pkexec tailscale set"
 msgid "Failed to set tailscale operator."
 msgstr "Неуспешно задаване на tailscale оператор."
 
+msgid "Invite someone"
+msgstr "Поканете някого"
+
+msgid "Open admin panel"
+msgstr "Отваряне на административния панел"
+
+msgid "Devices"
+msgstr "Устройства"
+
+msgid "Chat"
+msgstr "Чат"
+
+msgid "Invites"
+msgstr "Покани"
+
+msgid "Groups"
+msgstr "Групи"
+
+msgid "Rooms"
+msgstr "Стаи"
+
+msgid "Pictures"
+msgstr "Изображения"
+
+msgid "Choose your photo"
+msgstr "Изберете снимката си"
+
+msgid "Photo updated. Everyone you're connected to will see it."
+msgstr "Снимката е обновена. Всички, с които сте свързани, ще я видят."
+
+#, rust-format
+msgid "Could not change the photo: {error}"
+msgstr "Неуспешна промяна на снимката: {error}"
+
+msgid "Sign in with an access key"
+msgstr "Вход с ключ за достъп"
+
+msgid ""
+"Paste the key the administrator gave you. It's used once, to register this "
+"device."
+msgstr ""
+"Поставете ключа, който ви е дал администраторът. Използва се веднъж, за "
+"регистриране на това устройство."
+
+msgid "Server URL"
+msgstr "URL на сървъра"
+
+msgid "Access key"
+msgstr "Ключ за достъп"
+
+msgid "Device name on the network"
+msgstr "Име на устройството в мрежата"
+
+msgid "Cancel"
+msgstr "Отказ"
+
+msgid "Connect"
+msgstr "Свързване"
+
+msgid ""
+"The key to this account is no longer on this computer. Join with a new "
+"invite."
+msgstr ""
+"Ключът за този акаунт вече не е на този компютър. Присъединете се с нова "
+"покана."
+
+#, rust-format
+msgid "Welcome back, {name}! Connecting…"
+msgstr "Добре дошли отново, {name}! Свързване…"
+
+#, rust-format
+msgid "Error: {error}"
+msgstr "Грешка: {error}"
+
+#, rust-format
+msgid ""
+"The account {user} no longer exists on this network. Join with a new invite."
+msgstr ""
+"Акаунтът {user} вече не съществува в тази мрежа. Присъединете се с нова "
+"покана."
+
+msgid "Preferences"
+msgstr "Предпочитания"
+
+msgid "General"
+msgstr "Общи"
+
+msgid "Behaviour"
+msgstr "Поведение"
+
+msgid "System"
+msgstr "Системен"
+
+msgid "Make this user the tailscale operator"
+msgstr "Направете този потребител оператор на tailscale"
+
+msgid ""
+"Lets BigLace manage the connection without asking for a password each time"
+msgstr ""
+"Позволява на BigLace да управлява връзката, без да иска парола всеки път"
+
+msgid "Account"
+msgstr "Акаунт"
+
+msgid ""
+"Signing out removes this device's identity from BigLace. You will need a new"
+" invite or key to join again."
+msgstr ""
+"Излизането премахва самоличността на това устройство от BigLace. Ще ви "
+"трябва нова покана или ключ, за да се присъедините отново."
+
+msgid "Sign out"
+msgstr "Излизане"
+
+msgid "Invites you sent"
+msgstr "Изпратени покани"
+
+msgid "Change profile photo…"
+msgstr "Промяна на профилната снимка…"
+
+msgid "Join with an invite"
+msgstr "Присъединяване с покана"
+
+msgid "Sign in with panel account"
+msgstr "Вход с акаунт в панела"
+
+msgid "Leave the network…"
+msgstr "Напускане на мрежата…"
+
+msgid "View tailscaled logs"
+msgstr "Преглед на tailscaled логове"
+
+msgid "About BigLace"
+msgstr "Относно BigLace"
+
+msgid "Connect to the network first, then open the invite link again."
+msgstr ""
+"Първо се свържете с мрежата, после отворете връзката за покана отново."
+
+#, rust-format
+msgid ""
+"This invite is for another network ({host}). Sign out first to join it."
+msgstr ""
+"Тази покана е за друга мрежа ({host}). Първо излезте, за да се присъедините "
+"към нея."
+
+msgid ""
+"This device is already signed in. Sign out first to join with an invite."
+msgstr ""
+"Това устройство вече е влязло. Първо излезте, за да се присъедините с "
+"покана."
+
+msgid "Photo removed."
+msgstr "Снимката е премахната."
+
+#, rust-format
+msgid "Could not remove the photo: {error}"
+msgstr "Неуспешно премахване на снимката: {error}"
+
+#, rust-format
+msgid "Could not open the browser: {error}"
+msgstr "Неуспешно отваряне на браузъра: {error}"
+
+msgid ""
+"You can't open the admin panel: you're not an administrator of this network,"
+" or the panel can't be reached."
+msgstr ""
+"Не можете да отворите административния панел: не сте администратор на тази "
+"мрежа или панелът е недостъпен."
+
+msgid "Enter the server URL before saving."
+msgstr "Въведете URL адреса на сървъра преди да запазите."
+
+msgid "Enter the pre-auth key before saving."
+msgstr "Въведете предварителния ключ за удостоверяване преди да запазите."
+
+msgid "Setup saved"
+msgstr "Настройката е запазена"
+
+msgid "Could not start the Tailscale service."
+msgstr "Неуспешно стартиране на услугата Tailscale."
+
+msgid "IP address copied"
+msgstr "IP адресът е копиран"
+
+#, rust-format
+msgid ""
+"Saved, but the pre-auth key could not be stored in the system keyring "
+"({error}). This device can still reconnect; the key is only needed again to "
+"register it anew."
+msgstr ""
+"Запазено, но ключът за предварително удостоверяване не можа да бъде съхранен"
+" в системния ключодържател ({error}). Устройството все пак може да се "
+"свързва отново; ключът е нужен само за повторна регистрация."
+
 msgid "Connected"
 msgstr "Свързан"
+
+msgid "Service stopped"
+msgstr "Услугата е спряна"
+
+msgid "Not signed in"
+msgstr "Не сте влезли"
+
+msgid "Disconnected"
+msgstr "Прекъсната връзка"
+
+msgid "Connecting…"
+msgstr "Свързване…"
+
+msgid "Server unreachable"
+msgstr "Сървърът е недостъпен"
+
+msgid "Tailscale can't set DNS"
+msgstr "Tailscale не може да зададе DNS"
+
+#, rust-format
+msgid "Update available: v{version}"
+msgstr "Налична актуализация: v{version}"
+
+#, rust-format
+msgid "Sign in again as {user}"
+msgstr "Влезте отново като {user}"
+
+msgid "(no device name)"
+msgstr "(без име на устройство)"
+
+msgid "Sign in or paste a pre-auth key"
+msgstr "Влезте или поставете предварителен ключ"
+
+msgid "Server not set"
+msgstr "Сървърът не е зададен"
+
+msgid "Disconnect"
+msgstr "Прекъсване на връзката"
+
+msgid "no other devices"
+msgstr "няма други устройства"
+
+#, rust-format
+msgid "{online} online"
+msgstr "{online} онлайн"
+
+#, rust-format
+msgid "{online} online · {offline} offline"
+msgstr "{online} онлайн · {offline} офлайн"
+
+msgid "is online"
+msgstr "е онлайн"
+
+msgid "went offline"
+msgstr "излезе офлайн"
+
+#, rust-format
+msgid "{count} devices are online"
+msgstr "{count} устройства са онлайн"
+
+#, rust-format
+msgid "{count} devices went offline"
+msgstr "{count} устройства излязоха офлайн"
+
+#, rust-format
+msgid "{on_count} online · {off_count} offline"
+msgstr "{on_count} онлайн · {off_count} офлайн"
 
 msgid "Connected · 1 peer"
 msgstr "Свързан · 1 peer"
@@ -80,9 +342,6 @@ msgstr "Свързан · 1 peer"
 msgid "Connected · {n} peers"
 msgstr "Свързан · {n} peer-а"
 
-msgid "Disconnected"
-msgstr "Прекъсната връзка"
-
 #, rust-format
 msgid "In the room {group} · muted"
 msgstr "В стая {group} · заглушен"
@@ -90,12 +349,6 @@ msgstr "В стая {group} · заглушен"
 #, rust-format
 msgid "In the room {group}"
 msgstr "В стая {group}"
-
-msgid "Disconnect"
-msgstr "Прекъсване на връзката"
-
-msgid "Connect"
-msgstr "Свързване"
 
 msgid "Show BigLace"
 msgstr "Покажи BigLace"
@@ -115,6 +368,438 @@ msgstr "Напускане на стаята"
 
 msgid "Quit"
 msgstr "Изход"
+
+msgid "Main menu"
+msgstr "Главно меню"
+
+msgid "Search devices"
+msgstr "Търсене на устройства"
+
+msgid "Refresh"
+msgstr "Обновяване"
+
+msgid "Invite"
+msgstr "Покана"
+
+msgid "Invite someone to your network"
+msgstr "Поканете някого в мрежата си"
+
+msgid ""
+"Tailscale cannot write this device's DNS settings, so it can no longer keep "
+"peer names working. They may still resolve for now, from the configuration "
+"left over from before the failure, but that will break the next time the "
+"network changes — and BigLace will fall back to IP addresses. On most "
+"distributions `sudo resolvconf -u` repairs it."
+msgstr ""
+"Tailscale не може да записва DNS настройките на това устройство, така че "
+"вече не може да поддържа имената на пиърите работещи. Засега те може още да "
+"се разрешават от конфигурацията, останала отпреди грешката, но това ще спре "
+"при следващата промяна на мрежата — и BigLace ще премине към IP адреси. В "
+"повечето дистрибуции `sudo resolvconf -u` го поправя."
+
+msgid "Not connected"
+msgstr "Няма връзка"
+
+msgid "Press Connect on the left to join the network."
+msgstr "Натиснете Connect отляво, за да се присъедините към мрежата."
+
+msgid "The tailscale service is not running"
+msgstr "Услугата tailscale не работи"
+
+msgid "BigLace needs the tailscaled background service to manage the network."
+msgstr ""
+"BigLace се нуждае от фоновата услуга tailscaled, за да управлява мрежата."
+
+msgid "Start service"
+msgstr "Стартиране на услугата"
+
+msgid "Join the network"
+msgstr "Присъединяване към мрежата"
+
+msgid "Choose how you're going to sign in."
+msgstr "Изберете как ще влезете."
+
+msgid "Ways to sign in"
+msgstr "Начини за влизане"
+
+msgid "Your account was kept on this computer. No invite needed."
+msgstr "Акаунтът ви е запазен на този компютър. Не е нужна покана."
+
+msgid "I have an invite"
+msgstr "Имам покана"
+
+msgid "Someone on the network sent you a link or a QR code."
+msgstr "Някой от мрежата ви е изпратил връзка или QR код."
+
+msgid "I have an access key"
+msgstr "Имам ключ за достъп"
+
+msgid "A key the administrator created for you (starts with hskey-auth-)."
+msgstr "Ключ, създаден за вас от администратора (започва с hskey-auth-)."
+
+msgid "I'm the administrator"
+msgstr "Аз съм администраторът"
+
+msgid "Sign in with the BigScale panel's admin username and password."
+msgstr ""
+"Влезте с администраторското потребителско име и парола на панела BigScale."
+
+msgid "This device"
+msgstr "Това устройство"
+
+msgid "Copy IP address"
+msgstr "Копиране на IP адрес"
+
+msgid "Devices on the network"
+msgstr "Устройства в мрежата"
+
+msgid "No other devices on the network yet."
+msgstr "Все още няма други устройства в мрежата."
+
+msgid "Sections"
+msgstr "Раздели"
+
+msgid ""
+"Your identity on this mesh — the device name shown to other peers and the "
+"network you're connected to."
+msgstr ""
+"Вашата идентичност в тази мрежа — името на устройството, което се показва на"
+" другите участници, и мрежата, към която сте свързани."
+
+msgid "Change photo…"
+msgstr "Промяна на снимката…"
+
+msgid "Remove photo"
+msgstr "Премахване на снимката"
+
+msgid "Change your photo"
+msgstr "Промяна на снимката ви"
+
+msgid "Rename this device on the network"
+msgstr "Преименувайте това устройство в мрежата"
+
+msgid "Advanced: use a pre-auth key"
+msgstr "Разширени: използване на предварително удостоверен ключ"
+
+msgid "Already have a key from your administrator? Paste it here."
+msgstr "Вече имате ключ от вашия администратор? Поставете го тук."
+
+msgid ""
+"Manual setup — expand to paste a server URL and pre-auth key when you "
+"already received them from your administrator. Most users should sign in "
+"through the panel button above instead."
+msgstr ""
+"Ръчна настройка — разгънете, за да поставите URL на сървър и предварителен "
+"ключ за удостоверяване, ако вече сте ги получили от вашия администратор. "
+"Повечето потребители трябва да влязат чрез бутона на панела по-горе."
+
+msgid ""
+"Address of the coordination server (e.g. vpn.example.org). The https:// "
+"scheme is added automatically if you omit it."
+msgstr ""
+"Адрес на координационния сървър (напр. vpn.example.org). Схемата https:// се"
+" добавя автоматично, ако я пропуснете."
+
+msgid "Pre-auth key"
+msgstr "Ключ за предварително удостоверяване"
+
+msgid ""
+"One-time or reusable key created on the server (starts with 'hskey-auth-'). "
+"Used to register this device automatically without opening a browser."
+msgstr ""
+"Еднократен или многократно използваем ключ, създаден на сървъра (започва с "
+"'hskey-auth-'). Използва се за автоматично регистриране на това устройство "
+"без отваряне на браузър."
+
+msgid ""
+"The name this device shows to other peers on the VPN — this is the Tailscale"
+" hostname, NOT your computer's name and NOT your user. Lowercase letters, "
+"digits and hyphens. Example: 'tales-laptop', 'francois', 'office-pc'."
+msgstr ""
+"Името, с което това устройство се показва на другите участници във VPN — "
+"това е името на хоста в Tailscale, а НЕ името на вашия компютър и НЕ вашето "
+"потребителско име. Малки букви, цифри и тирета. Пример: 'tales-laptop', "
+"'francois', 'office-pc'."
+
+msgid "Apply manual setup"
+msgstr "Прилагане на ръчна настройка"
+
+msgid "Save"
+msgstr "Запазване"
+
+msgid ""
+"Persist the server, key and device name above. Won't connect — press Connect"
+" afterwards."
+msgstr ""
+"Запазете сървъра, ключа и името на устройството по-горе. Няма да се свърже —"
+" натиснете Свързване след това."
+
+msgid "Connect automatically"
+msgstr "Свързване автоматично"
+
+msgid "Join the network when BigLace starts"
+msgstr "Присъединете се към мрежата, когато BigLace стартира"
+
+msgid ""
+"When on, BigLace runs 'tailscale up' as soon as it launches, so you join the"
+" mesh without clicking Connect every time."
+msgstr ""
+"Когато е включено, BigLace изпълнява 'tailscale up' веднага след стартиране,"
+" така че се присъединявате към мрежата, без да кликвате върху Свързване "
+"всеки път."
+
+msgid "Toggle auto-connect on startup"
+msgstr "Превключване на автоматично свързване при стартиране"
+
+msgid "Start BigLace with the session"
+msgstr "Стартирайте BigLace със сесията"
+
+msgid "Open BigLace after you sign in to the desktop"
+msgstr "Отваряйте BigLace след влизане в десктоп средата"
+
+msgid ""
+"Turn this on to add BigLace to your desktop session startup. Turn it off to "
+"remove it."
+msgstr ""
+"Включете това, за да добавите BigLace към стартирането на вашата десктоп "
+"сесия. Изключете го, за да го премахнете."
+
+msgid "Toggle start with session"
+msgstr "Превключване на стартиране със сесията"
+
+msgid "Reconnect on drop"
+msgstr "Повторно свързване при прекъсване"
+
+msgid "Retry with backoff when the connection is lost"
+msgstr "Повторен опит с изчакване при загуба на връзка"
+
+msgid ""
+"If the tunnel drops (network change, sleep, server hiccup), BigLace silently"
+" retries with growing delays instead of leaving you offline until you "
+"notice."
+msgstr ""
+"Ако тунелът прекъсне (промяна на мрежата, заспиване, проблем със сървъра), "
+"BigLace мълчаливо опитва отново с нарастващи закъснения, вместо да ви остави"
+" офлайн, докато не забележите."
+
+msgid "Toggle auto-reconnect"
+msgstr "Превключване на автоматично повторно свързване"
+
+msgid "Notify on peer changes"
+msgstr "Уведомяване при промени в пировете"
+
+msgid "Show a desktop notification when peers go online/offline"
+msgstr "Показване на десктоп известие, когато пировете се свържат/изключат"
+
+msgid ""
+"Send a desktop toast when another device on your network goes online or "
+"offline. Rapid bursts are coalesced into a single notification so you don't "
+"get spammed during reconnects."
+msgstr ""
+"Изпращайте известие на работния плот, когато друго устройство във вашата "
+"мрежа стане онлайн или офлайн. Бързите поредици се обединяват в едно "
+"известие, за да не бъдете засипвани при повторни свързвания."
+
+msgid "Toggle peer-change notifications"
+msgstr "Превключване на известия за промени в участниците"
+
+msgid ""
+"Join or leave the mesh network. When connected, this device becomes "
+"reachable by the other peers in your account."
+msgstr ""
+"Присъединете се или напуснете мрежовата мрежа. Когато сте свързани, това "
+"устройство става достъпно за другите участници във вашия акаунт."
+
+msgid "Your photo"
+msgstr "Вашата снимка"
+
+msgid ""
+"Each of your groups has a voice room. Join it and talk with whoever is there"
+" — the sound goes straight between you, through the network."
+msgstr ""
+"Всяка от групите ви има гласова стая. Влезте и говорете с тези, които са там"
+" — звукът върви директно между вас, през мрежата."
+
+msgid "You're not in any group yet. Create one in Groups."
+msgstr "Още не сте в никоя група. Създайте такава в Групи."
+
+msgid "People in the room"
+msgstr "Хора в стаята"
+
+msgid "Everyone"
+msgstr "Всички"
+
+msgid "Who's speaking"
+msgstr "Кой говори"
+
+msgid "Mute"
+msgstr "Заглушаване"
+
+msgid "Mute your microphone for everyone"
+msgstr "Заглушаване на микрофона ви за всички"
+
+msgid "Leave"
+msgstr "Напускане"
+
+msgid "Which camera"
+msgstr "Коя камера"
+
+msgid "Include the computer's sound when sharing the screen"
+msgstr "Включване на звука на компютъра при споделяне на екрана"
+
+msgid ""
+"Videos and music playing here go to the room too; the room's voices don't "
+"(no echo)"
+msgstr ""
+"Видеата и музиката, пускани тук, също отиват в стаята; гласовете от стаята —"
+" не (без ехо)"
+
+msgid "Rooms unavailable"
+msgstr "Стаите не са налични"
+
+#, rust-format
+msgid "Could not turn on the camera: {error}"
+msgstr "Камерата не може да бъде включена: {error}"
+
+#, rust-format
+msgid "Could not share the screen: {error}"
+msgstr "Неуспешно споделяне на екрана: {error}"
+
+#, rust-format
+msgid "Could not reach the panel: {error}"
+msgstr "Неуспешна връзка с панела: {error}"
+
+msgid "Nobody here right now"
+msgstr "В момента няма никой тук"
+
+#, rust-format
+msgid "In the room: {people}"
+msgstr "В стаята: {people}"
+
+msgid "Join"
+msgstr "Присъединяване"
+
+#, rust-format
+msgid "Join the room {group}"
+msgstr "Влизане в стая {group}"
+
+#, rust-format
+msgid "Could not join {group}: {error}"
+msgstr "Неуспешно влизане в {group}: {error}"
+
+msgid "📺 You're showing your screen to the room"
+msgstr "📺 Показвате екрана си на стаята"
+
+msgid "📺 You're showing your screen · 1 person watching"
+msgstr "📺 Показвате екрана си · 1 човек гледа"
+
+#, rust-format
+msgid "📺 You're showing your screen · {count} people watching"
+msgstr "📺 Показвате екрана си · {count} души гледат"
+
+msgid "1 person"
+msgstr "1 човек"
+
+#, rust-format
+msgid "{count} people"
+msgstr "{count} души"
+
+#, rust-format
+msgid "{people} · {talking} talking"
+msgstr "{people} · {talking} говорят"
+
+msgid "you"
+msgstr "вие"
+
+msgid "connecting…"
+msgstr "свързване…"
+
+msgid "muted"
+msgstr "заглушен"
+
+msgid "talking"
+msgstr "говори"
+
+msgid "quiet"
+msgstr "мълчи"
+
+msgid "Sharing screen"
+msgstr "Споделя екрана"
+
+msgid "In control"
+msgstr "Управлява"
+
+msgid "Controls your screen now"
+msgstr "Сега управлява екрана ви"
+
+msgid "Watching"
+msgstr "Гледа"
+
+msgid "Watching your screen"
+msgstr "Гледа екрана ви"
+
+#, rust-format
+msgid "{user} is showing their screen"
+msgstr "{user} показва екрана си"
+
+msgid "Watch"
+msgstr "Гледане"
+
+#, rust-format
+msgid "{user} asks to control your screen"
+msgstr "{user} иска да управлява екрана ви"
+
+msgid ""
+"They'll be able to use your mouse and keyboard. You can take control back at"
+" any time."
+msgstr ""
+"Ще може да използва мишката и клавиатурата ви. Можете да си върнете "
+"управлението по всяко време."
+
+msgid "Deny"
+msgstr "Отказ"
+
+msgid "Allow"
+msgstr "Разрешаване"
+
+msgid "Turn off camera"
+msgstr "Изключване на камерата"
+
+msgid "Turn on camera"
+msgstr "Включване на камерата"
+
+msgid "No camera found on this computer"
+msgstr "На този компютър не е намерена камера"
+
+msgid "Stop sharing"
+msgstr "Спиране на споделянето"
+
+msgid "Share screen"
+msgstr "Споделяне на екрана"
+
+msgid "Stop showing your screen to the room"
+msgstr "Спиране на показването на екрана ви на стаята"
+
+msgid "Show your screen to everyone in the room"
+msgstr "Показване на екрана ви на всички в стаята"
+
+msgid "Take back control"
+msgstr "Връщане на управлението обратно"
+
+msgid "Give control"
+msgstr "Даване на управлението"
+
+msgid "Stop them from using your mouse and keyboard"
+msgstr "Спрете ги да използват мишката и клавиатурата ви"
+
+msgid "Let them use your mouse and keyboard"
+msgstr "Позволете им да използват мишката и клавиатурата ви"
+
+msgid "Sound level"
+msgstr "Ниво на звука"
+
+msgid "Unmute"
+msgstr "Включване на звука"
 
 msgid "This computer"
 msgstr "Този компютър"
@@ -224,17 +909,11 @@ msgstr "Видео"
 msgid "Voice message"
 msgstr "Гласово съобщение"
 
-msgid "Chat"
-msgstr "Чат"
-
 msgid "New chat"
 msgstr "Нов чат"
 
 msgid "Start a conversation with someone on the network"
 msgstr "Започнете разговор с някого в мрежата"
-
-msgid "Main menu"
-msgstr "Главно меню"
 
 msgid "Chat theme"
 msgstr "Тема на чата"
@@ -280,9 +959,6 @@ msgstr "Отхвърляне"
 
 msgid "Send voice message"
 msgstr "Изпращане на гласово съобщение"
-
-msgid "Cancel"
-msgstr "Отказ"
 
 msgid "Copy text"
 msgstr "Копиране на текста"
@@ -468,440 +1144,6 @@ msgstr "{user} пише…"
 msgid "typing…"
 msgstr "пише…"
 
-msgid "System accent"
-msgstr "Системен акцент"
-
-msgid "Blue"
-msgstr "Синьо"
-
-msgid "Teal"
-msgstr "Синьозелено"
-
-msgid "Green"
-msgstr "Зелено"
-
-msgid "Purple"
-msgstr "Лилаво"
-
-msgid "Pink"
-msgstr "Розово"
-
-msgid "Orange"
-msgstr "Оранжево"
-
-msgid "Red"
-msgstr "Червено"
-
-msgid "Graphite"
-msgstr "Графит"
-
-msgid "Default"
-msgstr "По подразбиране"
-
-msgid "Plain"
-msgstr "Обикновен"
-
-msgid "Dots"
-msgstr "Точки"
-
-msgid "Ocean"
-msgstr "Океан"
-
-msgid "Sunset"
-msgstr "Залез"
-
-msgid "Forest"
-msgstr "Гора"
-
-msgid "Lavender"
-msgstr "Лавандула"
-
-msgid "Night"
-msgstr "Нощ"
-
-msgid "Hi! How does this look? 😊"
-msgstr "Здравей! Как ти изглежда? 😊"
-
-msgid "Looks great!"
-msgstr "Изглежда страхотно!"
-
-msgid "Appearance"
-msgstr "Външен вид"
-
-msgid "System"
-msgstr "Системен"
-
-msgid "Light"
-msgstr "Светъл"
-
-msgid "Dark"
-msgstr "Тъмен"
-
-msgid "Your messages"
-msgstr "Вашите съобщения"
-
-msgid "Background"
-msgstr "Фон"
-
-msgid "Picture…"
-msgstr "Изображение…"
-
-msgid "Pictures"
-msgstr "Изображения"
-
-msgid "Choose a background picture"
-msgstr "Изберете фоново изображение"
-
-msgid "Message"
-msgstr "Съобщение"
-
-msgid "Bold"
-msgstr "Получер"
-
-msgid "Italic"
-msgstr "Курсив"
-
-msgid "Underline"
-msgstr "Подчертан"
-
-msgid "Strikethrough"
-msgstr "Зачертан"
-
-msgid "Monospace"
-msgstr "Равноширок"
-
-msgid "Create link"
-msgstr "Създаване на връзка"
-
-msgid "Plain text"
-msgstr "Обикновен текст"
-
-msgid "Formatting"
-msgstr "Форматиране"
-
-msgid "Create"
-msgstr "Създаване"
-
-msgid "Search devices"
-msgstr "Търсене на устройства"
-
-msgid "Refresh"
-msgstr "Обновяване"
-
-msgid "Invite"
-msgstr "Покана"
-
-msgid "Invite someone to your network"
-msgstr "Поканете някого в мрежата си"
-
-msgid ""
-"Tailscale cannot write this device's DNS settings, so it can no longer keep "
-"peer names working. They may still resolve for now, from the configuration "
-"left over from before the failure, but that will break the next time the "
-"network changes — and BigLace will fall back to IP addresses. On most "
-"distributions `sudo resolvconf -u` repairs it."
-msgstr ""
-"Tailscale не може да записва DNS настройките на това устройство, така че "
-"вече не може да поддържа имената на пиърите работещи. Засега те може още да "
-"се разрешават от конфигурацията, останала отпреди грешката, но това ще спре "
-"при следващата промяна на мрежата — и BigLace ще премине към IP адреси. В "
-"повечето дистрибуции `sudo resolvconf -u` го поправя."
-
-msgid "Not connected"
-msgstr "Няма връзка"
-
-msgid "Press Connect on the left to join the network."
-msgstr "Натиснете Connect отляво, за да се присъедините към мрежата."
-
-msgid "The tailscale service is not running"
-msgstr "Услугата tailscale не работи"
-
-msgid "BigLace needs the tailscaled background service to manage the network."
-msgstr ""
-"BigLace се нуждае от фоновата услуга tailscaled, за да управлява мрежата."
-
-msgid "Start service"
-msgstr "Стартиране на услугата"
-
-msgid "Join the network"
-msgstr "Присъединяване към мрежата"
-
-msgid "Choose how you're going to sign in."
-msgstr "Изберете как ще влезете."
-
-msgid "Ways to sign in"
-msgstr "Начини за влизане"
-
-msgid "Your account was kept on this computer. No invite needed."
-msgstr "Акаунтът ви е запазен на този компютър. Не е нужна покана."
-
-msgid "I have an invite"
-msgstr "Имам покана"
-
-msgid "Someone on the network sent you a link or a QR code."
-msgstr "Някой от мрежата ви е изпратил връзка или QR код."
-
-msgid "I have an access key"
-msgstr "Имам ключ за достъп"
-
-msgid "A key the administrator created for you (starts with hskey-auth-)."
-msgstr "Ключ, създаден за вас от администратора (започва с hskey-auth-)."
-
-msgid "I'm the administrator"
-msgstr "Аз съм администраторът"
-
-msgid "Sign in with the BigScale panel's admin username and password."
-msgstr ""
-"Влезте с администраторското потребителско име и парола на панела BigScale."
-
-msgid "Connecting…"
-msgstr "Свързване…"
-
-msgid "This device"
-msgstr "Това устройство"
-
-msgid "Copy IP address"
-msgstr "Копиране на IP адрес"
-
-msgid "Devices on the network"
-msgstr "Устройства в мрежата"
-
-msgid "No other devices on the network yet."
-msgstr "Все още няма други устройства в мрежата."
-
-msgid "Mesh VPN client for BigScale/Headscale."
-msgstr "Mesh VPN клиент за BigScale/Headscale."
-
-msgid "Done. You will no longer need a password to connect or disconnect."
-msgstr ""
-"Готово. Вече няма да имате нужда от парола за свързване или прекъсване на "
-"връзката."
-
-#, rust-format
-msgid "Failed: {error}"
-msgstr "Неуспешно: {error}"
-
-msgid "Tailscale operator"
-msgstr "Оператор на tailscale"
-
-msgid "OK"
-msgstr "OK"
-
-msgid "Sign out of current account?"
-msgstr "Излизане от текущия акаунт?"
-
-msgid ""
-"This will disconnect from the network, sign this device out of the current "
-"control server, and forget the saved password. You'll then be able to sign "
-"in with a different account."
-msgstr ""
-"Това ще прекъсне връзката с мрежата, ще изпише това устройство от текущия "
-"контролен сървър и ще забрави запазената парола. След това ще можете да "
-"влезете с друг акаунт."
-
-msgid "Sign out"
-msgstr "Излизане"
-
-msgid "Leave the network?"
-msgstr "Напускане на мрежата?"
-
-#, rust-format
-msgid ""
-"This device leaves the network and its name becomes free. Your account {user} is kept: you can come back later from this computer, without an invite.\n"
-"\n"
-"If you won't come back, delete the account and the name {user} becomes free too."
-msgstr ""
-"Това устройство напуска мрежата и името му се освобождава. Акаунтът ви {user} се запазва: можете да се върнете по-късно от този компютър без покана.\n"
-"\n"
-"Ако няма да се връщате, изтрийте акаунта и името {user} също ще се освободи."
-
-msgid "Leave and delete account"
-msgstr "Напускане и изтриване на акаунта"
-
-msgid "Leave"
-msgstr "Напускане"
-
-msgid "Connect first to delete the account."
-msgstr "Първо се свържете, за да изтриете акаунта."
-
-msgid "Signing out…"
-msgstr "Излизане…"
-
-#, rust-format
-msgid ""
-"Signed out. Your account was kept: {count} other device(s) still use it."
-msgstr ""
-"Излязохте. Акаунтът ви е запазен: още {count} устройство(а) го използват."
-
-msgid ""
-"Couldn't delete the account: the panel can't be reached. Connect and try "
-"again."
-msgstr ""
-"Неуспешно изтриване на акаунта: панелът е недостъпен. Свържете се и опитайте"
-" отново."
-
-#, rust-format
-msgid "Error: {error}"
-msgstr "Грешка: {error}"
-
-msgid "Signed out and account deleted."
-msgstr "Излязохте и акаунтът е изтрит."
-
-msgid "Signed out."
-msgstr "Излязохте."
-
-msgid "Couldn't reach the server"
-msgstr "Неуспешна връзка със сървъра"
-
-#, rust-format
-msgid ""
-"The control server didn't confirm the sign-out: {error}\n"
-"\n"
-"You can still sign out on this computer: BigLace forgets the saved key and account and disconnects. The server keeps listing this device until an administrator removes it."
-msgstr ""
-"Контролният сървър не потвърди излизането: {error}\n"
-"\n"
-"Все пак можете да излезете на този компютър: BigLace забравя запазения ключ и акаунт и прекъсва връзката. Сървърът ще продължи да показва това устройство, докато администратор не го премахне."
-
-msgid "Sign out on this computer"
-msgstr "Излизане на този компютър"
-
-msgid "Sign in as administrator"
-msgstr "Вход като администратор"
-
-msgid "Panel administrator"
-msgstr "Администратор на панела"
-
-msgid ""
-"Only for whoever administers the BigScale panel: use the panel's admin "
-"username and password. This device joins the network under the name below. "
-"Everyone else joins with an invite or an access key."
-msgstr ""
-"Само за този, който администрира панела BigScale: използвайте "
-"администраторското потребителско име и парола на панела. Това устройство се "
-"присъединява към мрежата с името по-долу. Всички останали се присъединяват с"
-" покана или ключ за достъп."
-
-msgid "Panel URL"
-msgstr "URL на панела"
-
-msgid ""
-"Address of your BigScale panel (e.g. panel.example.org). The https:// scheme"
-" is added automatically if you omit it."
-msgstr ""
-"Адрес на вашия BigScale панел (напр. panel.example.org). Схемата https:// се"
-" добавя автоматично, ако я пропуснете."
-
-msgid "Panel admin username"
-msgstr "Администраторско потребителско име на панела"
-
-msgid "Your panel username — the one you use to sign in to the web panel."
-msgstr ""
-"Вашето потребителско име за панела — това, с което влизате в уеб панела."
-
-msgid "Password"
-msgstr "Парола"
-
-msgid ""
-"Your panel password. Stored in the OS keyring (libsecret on Linux, Keychain "
-"on macOS, Credential Manager on Windows)."
-msgstr ""
-"Вашата парола за панела. Съхранява се в ключодържателя на операционната "
-"система (libsecret на Linux, Keychain на macOS, Credential Manager на "
-"Windows)."
-
-msgid "Device name on the network"
-msgstr "Име на устройството в мрежата"
-
-msgid ""
-"The name this device shows to other peers on the VPN — this is the Tailscale"
-" hostname, NOT your computer's name and NOT your user. Lowercase letters, "
-"digits and hyphens. Example: 'tales-laptop', 'francois', 'office-pc'. Pick "
-"something other peers will recognise."
-msgstr ""
-"Името, под което това устройство се показва на другите участници във VPN — "
-"това е името на хоста на Tailscale, а НЕ името на вашия компютър и НЕ вашето"
-" потребителско име. Малки букви, цифри и тирета. Пример: 'tales-laptop', "
-"'francois', 'office-pc'. Изберете нещо, което другите участници ще "
-"разпознаят."
-
-msgid "Sign in"
-msgstr "Вход"
-
-msgid "Fill in URL, username and password."
-msgstr "Попълнете URL, потребителско име и парола."
-
-msgid "Signed in. Press Connect to join the network."
-msgstr "Влезли сте. Натиснете Connect, за да се присъедините към мрежата."
-
-msgid "Rename this device"
-msgstr "Преименуване на това устройство"
-
-msgid ""
-"The name this device shows to other peers on the VPN. Lowercase letters, "
-"digits and hyphens. Example: tales-laptop."
-msgstr ""
-"Името, под което това устройство се показва на другите участници във VPN. "
-"Малки букви, цифри и тирета. Пример: tales-laptop."
-
-msgid "Save & apply"
-msgstr "Запазване и прилагане"
-
-msgid "Saved. The new name will take effect the next time you connect."
-msgstr "Запазено. Новото име ще влезе в сила при следващото ви свързване."
-
-msgid "Device renamed."
-msgstr "Устройството е преименувано."
-
-#, rust-format
-msgid "Rename failed: {error}"
-msgstr "Преименуването неуспешно: {error}"
-
-msgid "The device name can't be empty."
-msgstr "Името на устройството не може да бъде празно."
-
-msgid "Use 63 characters or fewer."
-msgstr "Използвайте 63 символа или по-малко."
-
-msgid "The device name can't start or end with a hyphen."
-msgstr "Името на устройството не може да започва или завършва с тире."
-
-msgid "Only lowercase letters, digits and hyphens are allowed."
-msgstr "Позволени са само малки букви, цифри и тирета."
-
-msgid "Smileys & people"
-msgstr "Усмивки и хора"
-
-msgid "Animals & nature"
-msgstr "Животни и природа"
-
-msgid "Food & drink"
-msgstr "Храна и напитки"
-
-msgid "Travel & places"
-msgstr "Пътуване и места"
-
-msgid "Activities"
-msgstr "Дейности"
-
-msgid "Objects"
-msgstr "Предмети"
-
-msgid "Symbols"
-msgstr "Символи"
-
-msgid "Flags"
-msgstr "Знамена"
-
-msgid "Search emoji"
-msgstr "Търсене на емоджи"
-
-msgid "Recently used"
-msgstr "Наскоро използвани"
-
-msgid "Search results"
-msgstr "Резултати от търсенето"
-
 msgid ""
 "Groups from BigLace need a newer BigScale server. Ask your administrator to "
 "update it."
@@ -996,13 +1238,6 @@ msgstr "Тази покана все още чака одобрение от а�
 msgid "Too many attempts. Wait a minute and try again."
 msgstr "Твърде много опити. Изчакайте минута и опитайте отново."
 
-#, rust-format
-msgid "Could not reach the panel: {error}"
-msgstr "Неуспешна връзка с панела: {error}"
-
-msgid "Groups"
-msgstr "Групи"
-
 msgid "New group"
 msgstr "Нова група"
 
@@ -1067,13 +1302,6 @@ msgstr "Присъединихте се към {group}."
 msgid "Invitation declined."
 msgstr "Поканата е отказана."
 
-msgid "1 person"
-msgstr "1 човек"
-
-#, rust-format
-msgid "{count} people"
-msgstr "{count} души"
-
 msgid "Created by you"
 msgstr "Създадена от вас"
 
@@ -1083,9 +1311,6 @@ msgstr "Създадена от {user}"
 
 msgid "Network group (administrator)"
 msgstr "Мрежова група (администратор)"
-
-msgid "you"
-msgstr "вие"
 
 msgid "owner"
 msgstr "собственик"
@@ -1172,9 +1397,6 @@ msgstr "Свързване с {user}?"
 #, rust-format
 msgid "You and {user} will reach each other's devices."
 msgstr "Вие и {user} ще достигате до устройствата си взаимно."
-
-msgid "Join"
-msgstr "Присъединяване"
 
 msgid "Done. You can now reach each other's devices."
 msgstr "Готово. Вече можете да достигате до устройствата си взаимно."
@@ -1318,9 +1540,6 @@ msgstr "Отменена"
 msgid "Waiting for an administrator's approval"
 msgstr "Чака одобрение от администратор"
 
-msgid "Invites"
-msgstr "Покани"
-
 msgid "Bring someone to your network"
 msgstr "Доведете някого в мрежата си"
 
@@ -1333,9 +1552,6 @@ msgstr ""
 "двамата ще достигате до устройствата си взаимно — без нужда от "
 "администратор. Връзката работи веднъж и е валидна, докато не бъде използвана"
 " или отменена от вас."
-
-msgid "Invites you sent"
-msgstr "Изпратени покани"
 
 msgid "No invites yet"
 msgstr "Още няма покани"
@@ -1353,9 +1569,6 @@ msgstr "група {group}"
 
 msgid "Cancel this invite: the link stops working"
 msgstr "Отмяна на поканата: връзката спира да работи"
-
-msgid "Invite someone"
-msgstr "Поканете някого"
 
 msgid "The person you invite will reach your devices, and you theirs."
 msgstr "Поканеният ще достига до вашите устройства, а вие до неговите."
@@ -1418,6 +1631,301 @@ msgstr ""
 "Тази мрежа изисква администратор да одобри всяка покана: връзката започва да"
 " работи, щом той я одобри. Състоянието ѝ се вижда в Покани."
 
+msgid "System accent"
+msgstr "Системен акцент"
+
+msgid "Blue"
+msgstr "Синьо"
+
+msgid "Teal"
+msgstr "Синьозелено"
+
+msgid "Green"
+msgstr "Зелено"
+
+msgid "Purple"
+msgstr "Лилаво"
+
+msgid "Pink"
+msgstr "Розово"
+
+msgid "Orange"
+msgstr "Оранжево"
+
+msgid "Red"
+msgstr "Червено"
+
+msgid "Graphite"
+msgstr "Графит"
+
+msgid "Default"
+msgstr "По подразбиране"
+
+msgid "Plain"
+msgstr "Обикновен"
+
+msgid "Dots"
+msgstr "Точки"
+
+msgid "Ocean"
+msgstr "Океан"
+
+msgid "Sunset"
+msgstr "Залез"
+
+msgid "Forest"
+msgstr "Гора"
+
+msgid "Lavender"
+msgstr "Лавандула"
+
+msgid "Night"
+msgstr "Нощ"
+
+msgid "Hi! How does this look? 😊"
+msgstr "Здравей! Как ти изглежда? 😊"
+
+msgid "Looks great!"
+msgstr "Изглежда страхотно!"
+
+msgid "Appearance"
+msgstr "Външен вид"
+
+msgid "Light"
+msgstr "Светъл"
+
+msgid "Dark"
+msgstr "Тъмен"
+
+msgid "Your messages"
+msgstr "Вашите съобщения"
+
+msgid "Background"
+msgstr "Фон"
+
+msgid "Picture…"
+msgstr "Изображение…"
+
+msgid "Choose a background picture"
+msgstr "Изберете фоново изображение"
+
+msgid "Message"
+msgstr "Съобщение"
+
+msgid "Bold"
+msgstr "Получер"
+
+msgid "Italic"
+msgstr "Курсив"
+
+msgid "Underline"
+msgstr "Подчертан"
+
+msgid "Strikethrough"
+msgstr "Зачертан"
+
+msgid "Monospace"
+msgstr "Равноширок"
+
+msgid "Create link"
+msgstr "Създаване на връзка"
+
+msgid "Plain text"
+msgstr "Обикновен текст"
+
+msgid "Formatting"
+msgstr "Форматиране"
+
+msgid "Create"
+msgstr "Създаване"
+
+msgid "Mesh VPN client for BigScale/Headscale."
+msgstr "Mesh VPN клиент за BigScale/Headscale."
+
+msgid "Done. You will no longer need a password to connect or disconnect."
+msgstr ""
+"Готово. Вече няма да имате нужда от парола за свързване или прекъсване на "
+"връзката."
+
+#, rust-format
+msgid "Failed: {error}"
+msgstr "Неуспешно: {error}"
+
+msgid "Tailscale operator"
+msgstr "Оператор на tailscale"
+
+msgid "OK"
+msgstr "OK"
+
+msgid "Sign out of current account?"
+msgstr "Излизане от текущия акаунт?"
+
+msgid ""
+"This will disconnect from the network, sign this device out of the current "
+"control server, and forget the saved password. You'll then be able to sign "
+"in with a different account."
+msgstr ""
+"Това ще прекъсне връзката с мрежата, ще изпише това устройство от текущия "
+"контролен сървър и ще забрави запазената парола. След това ще можете да "
+"влезете с друг акаунт."
+
+msgid "Leave the network?"
+msgstr "Напускане на мрежата?"
+
+#, rust-format
+msgid ""
+"This device leaves the network and its name becomes free. Your account {user} is kept: you can come back later from this computer, without an invite.\n"
+"\n"
+"If you won't come back, delete the account and the name {user} becomes free too."
+msgstr ""
+"Това устройство напуска мрежата и името му се освобождава. Акаунтът ви {user} се запазва: можете да се върнете по-късно от този компютър без покана.\n"
+"\n"
+"Ако няма да се връщате, изтрийте акаунта и името {user} също ще се освободи."
+
+msgid "Leave and delete account"
+msgstr "Напускане и изтриване на акаунта"
+
+msgid "Connect first to delete the account."
+msgstr "Първо се свържете, за да изтриете акаунта."
+
+msgid "Signing out…"
+msgstr "Излизане…"
+
+#, rust-format
+msgid ""
+"Signed out. Your account was kept: {count} other device(s) still use it."
+msgstr ""
+"Излязохте. Акаунтът ви е запазен: още {count} устройство(а) го използват."
+
+msgid ""
+"Couldn't delete the account: the panel can't be reached. Connect and try "
+"again."
+msgstr ""
+"Неуспешно изтриване на акаунта: панелът е недостъпен. Свържете се и опитайте"
+" отново."
+
+msgid "Signed out and account deleted."
+msgstr "Излязохте и акаунтът е изтрит."
+
+msgid "Signed out."
+msgstr "Излязохте."
+
+msgid "Couldn't reach the server"
+msgstr "Неуспешна връзка със сървъра"
+
+#, rust-format
+msgid ""
+"The control server didn't confirm the sign-out: {error}\n"
+"\n"
+"You can still sign out on this computer: BigLace forgets the saved key and account and disconnects. The server keeps listing this device until an administrator removes it."
+msgstr ""
+"Контролният сървър не потвърди излизането: {error}\n"
+"\n"
+"Все пак можете да излезете на този компютър: BigLace забравя запазения ключ и акаунт и прекъсва връзката. Сървърът ще продължи да показва това устройство, докато администратор не го премахне."
+
+msgid "Sign out on this computer"
+msgstr "Излизане на този компютър"
+
+msgid "Sign in as administrator"
+msgstr "Вход като администратор"
+
+msgid "Panel administrator"
+msgstr "Администратор на панела"
+
+msgid ""
+"Only for whoever administers the BigScale panel: use the panel's admin "
+"username and password. This device joins the network under the name below. "
+"Everyone else joins with an invite or an access key."
+msgstr ""
+"Само за този, който администрира панела BigScale: използвайте "
+"администраторското потребителско име и парола на панела. Това устройство се "
+"присъединява към мрежата с името по-долу. Всички останали се присъединяват с"
+" покана или ключ за достъп."
+
+msgid "Panel URL"
+msgstr "URL на панела"
+
+msgid ""
+"Address of your BigScale panel (e.g. panel.example.org). The https:// scheme"
+" is added automatically if you omit it."
+msgstr ""
+"Адрес на вашия BigScale панел (напр. panel.example.org). Схемата https:// се"
+" добавя автоматично, ако я пропуснете."
+
+msgid "Panel admin username"
+msgstr "Администраторско потребителско име на панела"
+
+msgid "Your panel username — the one you use to sign in to the web panel."
+msgstr ""
+"Вашето потребителско име за панела — това, с което влизате в уеб панела."
+
+msgid "Password"
+msgstr "Парола"
+
+msgid ""
+"Your panel password. Stored in the OS keyring (libsecret on Linux, Keychain "
+"on macOS, Credential Manager on Windows)."
+msgstr ""
+"Вашата парола за панела. Съхранява се в ключодържателя на операционната "
+"система (libsecret на Linux, Keychain на macOS, Credential Manager на "
+"Windows)."
+
+msgid ""
+"The name this device shows to other peers on the VPN — this is the Tailscale"
+" hostname, NOT your computer's name and NOT your user. Lowercase letters, "
+"digits and hyphens. Example: 'tales-laptop', 'francois', 'office-pc'. Pick "
+"something other peers will recognise."
+msgstr ""
+"Името, под което това устройство се показва на другите участници във VPN — "
+"това е името на хоста на Tailscale, а НЕ името на вашия компютър и НЕ вашето"
+" потребителско име. Малки букви, цифри и тирета. Пример: 'tales-laptop', "
+"'francois', 'office-pc'. Изберете нещо, което другите участници ще "
+"разпознаят."
+
+msgid "Sign in"
+msgstr "Вход"
+
+msgid "Fill in URL, username and password."
+msgstr "Попълнете URL, потребителско име и парола."
+
+msgid "Signed in. Press Connect to join the network."
+msgstr "Влезли сте. Натиснете Connect, за да се присъедините към мрежата."
+
+msgid "Rename this device"
+msgstr "Преименуване на това устройство"
+
+msgid ""
+"The name this device shows to other peers on the VPN. Lowercase letters, "
+"digits and hyphens. Example: tales-laptop."
+msgstr ""
+"Името, под което това устройство се показва на другите участници във VPN. "
+"Малки букви, цифри и тирета. Пример: tales-laptop."
+
+msgid "Save & apply"
+msgstr "Запазване и прилагане"
+
+msgid "Saved. The new name will take effect the next time you connect."
+msgstr "Запазено. Новото име ще влезе в сила при следващото ви свързване."
+
+msgid "Device renamed."
+msgstr "Устройството е преименувано."
+
+#, rust-format
+msgid "Rename failed: {error}"
+msgstr "Преименуването неуспешно: {error}"
+
+msgid "The device name can't be empty."
+msgstr "Името на устройството не може да бъде празно."
+
+msgid "Use 63 characters or fewer."
+msgstr "Използвайте 63 символа или по-малко."
+
+msgid "The device name can't start or end with a hyphen."
+msgstr "Името на устройството не може да започва или завършва с тире."
+
+msgid "Only lowercase letters, digits and hyphens are allowed."
+msgstr "Позволени са само малки букви, цифри и тирета."
+
 #, rust-format
 msgid ""
 "That name already belongs to an account on this network, so we suggested "
@@ -1459,9 +1967,6 @@ msgid ""
 "instead."
 msgstr ""
 "Този сървър още не поддържа покани. Вместо това влезте с акаунт от панела."
-
-msgid "Join with an invite"
-msgstr "Присъединяване с покана"
 
 msgid ""
 "Paste the invite link you received and type your name. Your account is "
@@ -1510,303 +2015,6 @@ msgstr "Добре дошли, {name}! Присъединихте се към г
 msgid "Welcome, {name}! Connecting…"
 msgstr "Добре дошли, {name}! Свързване…"
 
-msgid "Open admin panel"
-msgstr "Отваряне на административния панел"
-
-msgid "Devices"
-msgstr "Устройства"
-
-msgid "Rooms"
-msgstr "Стаи"
-
-msgid "Choose your photo"
-msgstr "Изберете снимката си"
-
-msgid "Photo updated. Everyone you're connected to will see it."
-msgstr "Снимката е обновена. Всички, с които сте свързани, ще я видят."
-
-#, rust-format
-msgid "Could not change the photo: {error}"
-msgstr "Неуспешна промяна на снимката: {error}"
-
-msgid "Sign in with an access key"
-msgstr "Вход с ключ за достъп"
-
-msgid ""
-"Paste the key the administrator gave you. It's used once, to register this "
-"device."
-msgstr ""
-"Поставете ключа, който ви е дал администраторът. Използва се веднъж, за "
-"регистриране на това устройство."
-
-msgid "Server URL"
-msgstr "URL на сървъра"
-
-msgid "Access key"
-msgstr "Ключ за достъп"
-
-msgid ""
-"The key to this account is no longer on this computer. Join with a new "
-"invite."
-msgstr ""
-"Ключът за този акаунт вече не е на този компютър. Присъединете се с нова "
-"покана."
-
-#, rust-format
-msgid "Welcome back, {name}! Connecting…"
-msgstr "Добре дошли отново, {name}! Свързване…"
-
-#, rust-format
-msgid ""
-"The account {user} no longer exists on this network. Join with a new invite."
-msgstr ""
-"Акаунтът {user} вече не съществува в тази мрежа. Присъединете се с нова "
-"покана."
-
-msgid "Preferences"
-msgstr "Предпочитания"
-
-msgid "General"
-msgstr "Общи"
-
-msgid "Behaviour"
-msgstr "Поведение"
-
-msgid "Make this user the tailscale operator"
-msgstr "Направете този потребител оператор на tailscale"
-
-msgid ""
-"Lets BigLace manage the connection without asking for a password each time"
-msgstr ""
-"Позволява на BigLace да управлява връзката, без да иска парола всеки път"
-
-msgid "Account"
-msgstr "Акаунт"
-
-msgid ""
-"Signing out removes this device's identity from BigLace. You will need a new"
-" invite or key to join again."
-msgstr ""
-"Излизането премахва самоличността на това устройство от BigLace. Ще ви "
-"трябва нова покана или ключ, за да се присъедините отново."
-
-msgid "Change profile photo…"
-msgstr "Промяна на профилната снимка…"
-
-msgid "Sign in with panel account"
-msgstr "Вход с акаунт в панела"
-
-msgid "Leave the network…"
-msgstr "Напускане на мрежата…"
-
-msgid "View tailscaled logs"
-msgstr "Преглед на tailscaled логове"
-
-msgid "About BigLace"
-msgstr "Относно BigLace"
-
-msgid "Connect to the network first, then open the invite link again."
-msgstr ""
-"Първо се свържете с мрежата, после отворете връзката за покана отново."
-
-#, rust-format
-msgid ""
-"This invite is for another network ({host}). Sign out first to join it."
-msgstr ""
-"Тази покана е за друга мрежа ({host}). Първо излезте, за да се присъедините "
-"към нея."
-
-msgid ""
-"This device is already signed in. Sign out first to join with an invite."
-msgstr ""
-"Това устройство вече е влязло. Първо излезте, за да се присъедините с "
-"покана."
-
-msgid "Photo removed."
-msgstr "Снимката е премахната."
-
-#, rust-format
-msgid "Could not remove the photo: {error}"
-msgstr "Неуспешно премахване на снимката: {error}"
-
-#, rust-format
-msgid "Could not open the browser: {error}"
-msgstr "Неуспешно отваряне на браузъра: {error}"
-
-msgid ""
-"You can't open the admin panel: you're not an administrator of this network,"
-" or the panel can't be reached."
-msgstr ""
-"Не можете да отворите административния панел: не сте администратор на тази "
-"мрежа или панелът е недостъпен."
-
-msgid "Enter the server URL before saving."
-msgstr "Въведете URL адреса на сървъра преди да запазите."
-
-msgid "Enter the pre-auth key before saving."
-msgstr "Въведете предварителния ключ за удостоверяване преди да запазите."
-
-msgid "Setup saved"
-msgstr "Настройката е запазена"
-
-msgid "Could not start the Tailscale service."
-msgstr "Неуспешно стартиране на услугата Tailscale."
-
-msgid "IP address copied"
-msgstr "IP адресът е копиран"
-
-#, rust-format
-msgid ""
-"Saved, but the pre-auth key could not be stored in the system keyring "
-"({error}). This device can still reconnect; the key is only needed again to "
-"register it anew."
-msgstr ""
-"Запазено, но ключът за предварително удостоверяване не можа да бъде съхранен"
-" в системния ключодържател ({error}). Устройството все пак може да се "
-"свързва отново; ключът е нужен само за повторна регистрация."
-
-msgid "Service stopped"
-msgstr "Услугата е спряна"
-
-msgid "Not signed in"
-msgstr "Не сте влезли"
-
-msgid "Server unreachable"
-msgstr "Сървърът е недостъпен"
-
-msgid "Tailscale can't set DNS"
-msgstr "Tailscale не може да зададе DNS"
-
-#, rust-format
-msgid "Update available: v{version}"
-msgstr "Налична актуализация: v{version}"
-
-#, rust-format
-msgid "Sign in again as {user}"
-msgstr "Влезте отново като {user}"
-
-msgid "(no device name)"
-msgstr "(без име на устройство)"
-
-msgid "Sign in or paste a pre-auth key"
-msgstr "Влезте или поставете предварителен ключ"
-
-msgid "Server not set"
-msgstr "Сървърът не е зададен"
-
-msgid "no other devices"
-msgstr "няма други устройства"
-
-#, rust-format
-msgid "{online} online"
-msgstr "{online} онлайн"
-
-#, rust-format
-msgid "{online} online · {offline} offline"
-msgstr "{online} онлайн · {offline} офлайн"
-
-msgid "is online"
-msgstr "е онлайн"
-
-msgid "went offline"
-msgstr "излезе офлайн"
-
-#, rust-format
-msgid "{count} devices are online"
-msgstr "{count} устройства са онлайн"
-
-#, rust-format
-msgid "{count} devices went offline"
-msgstr "{count} устройства излязоха офлайн"
-
-#, rust-format
-msgid "{on_count} online · {off_count} offline"
-msgstr "{on_count} онлайн · {off_count} офлайн"
-
-msgid "direct"
-msgstr "директно"
-
-msgid "via relay"
-msgstr "чрез ретранслатор"
-
-msgid "Turn on over the network (Wake-on-LAN)"
-msgstr "Включване по мрежата (Wake-on-LAN)"
-
-msgid "Turn on over the network"
-msgstr "Включване по мрежата"
-
-#, rust-format
-msgid ""
-"Signal sent to {name} (by {via}). If it's set to turn on over the network, "
-"it shows up in a minute or two."
-msgstr ""
-"Сигналът е изпратен до {name} (чрез {via}). Ако е настроено да се включва по"
-" мрежата, ще се появи след минута-две."
-
-#, rust-format
-msgid "Could not turn on {name}: {error}"
-msgstr "Неуспешно включване на {name}: {error}"
-
-msgid "Unpin from top"
-msgstr "Откачане от началото"
-
-msgid "Pin to top"
-msgstr "Закачане отгоре"
-
-msgid "Pinned to top"
-msgstr "Закачено най-отгоре"
-
-msgid "Unpinned"
-msgstr "Откачено"
-
-msgid "Open files (SFTP)"
-msgstr "Отваряне на файлове (SFTP)"
-
-msgid "Open terminal (SSH)"
-msgstr "Отваряне на терминал (SSH)"
-
-msgid "See and control the screen"
-msgstr "Виждане и управление на екрана"
-
-msgid "DNS name"
-msgstr "DNS име"
-
-msgid "DNS name copied"
-msgstr "DNS името е копирано"
-
-msgid "Owner"
-msgstr "Собственик"
-
-msgid "SSH login (override)"
-msgstr "SSH вход (заместване)"
-
-msgid "Saved"
-msgstr "Запазено"
-
-msgid "Tags"
-msgstr "Етикети"
-
-msgid "Last seen"
-msgstr "Последно видян"
-
-msgid "Use as exit node"
-msgstr "Използвай като изходен възел"
-
-msgid "Route all traffic through this peer"
-msgstr "Насочвай целия трафик през този peer"
-
-msgid "Exit node enabled"
-msgstr "Изходният възел е активиран"
-
-msgid "Exit node disabled"
-msgstr "Изходният възел е деактивиран"
-
-msgid "Failed to update exit node"
-msgstr "Неуспешно обновяване на изходния възел"
-
-msgid "Copy"
-msgstr "Копирай"
-
 msgid "End access"
 msgstr "Прекратяване на достъпа"
 
@@ -1828,9 +2036,6 @@ msgstr ""
 #, rust-format
 msgid "Always allow {user} (no more asking)"
 msgstr "Винаги разрешаване на {user} (без повече питане)"
-
-msgid "Deny"
-msgstr "Отказ"
 
 msgid "Allow access"
 msgstr "Разрешаване на достъпа"
@@ -2054,327 +2259,254 @@ msgstr "Достъпът до екрана на {name} приключи: {error}
 msgid "Give back control"
 msgstr "Връщане на управлението"
 
-msgid ""
-"Each of your groups has a voice room. Join it and talk with whoever is there"
-" — the sound goes straight between you, through the network."
-msgstr ""
-"Всяка от групите ви има гласова стая. Влезте и говорете с тези, които са там"
-" — звукът върви директно между вас, през мрежата."
+msgid "direct"
+msgstr "директно"
 
-msgid "You're not in any group yet. Create one in Groups."
-msgstr "Още не сте в никоя група. Създайте такава в Групи."
+msgid "via relay"
+msgstr "чрез ретранслатор"
 
-msgid "People in the room"
-msgstr "Хора в стаята"
+msgid "Turn on over the network (Wake-on-LAN)"
+msgstr "Включване по мрежата (Wake-on-LAN)"
 
-msgid "Everyone"
-msgstr "Всички"
-
-msgid "Who's speaking"
-msgstr "Кой говори"
-
-msgid "Mute"
-msgstr "Заглушаване"
-
-msgid "Mute your microphone for everyone"
-msgstr "Заглушаване на микрофона ви за всички"
-
-msgid "Which camera"
-msgstr "Коя камера"
-
-msgid "Include the computer's sound when sharing the screen"
-msgstr "Включване на звука на компютъра при споделяне на екрана"
-
-msgid ""
-"Videos and music playing here go to the room too; the room's voices don't "
-"(no echo)"
-msgstr ""
-"Видеата и музиката, пускани тук, също отиват в стаята; гласовете от стаята —"
-" не (без ехо)"
-
-msgid "Rooms unavailable"
-msgstr "Стаите не са налични"
+msgid "Turn on over the network"
+msgstr "Включване по мрежата"
 
 #, rust-format
-msgid "Could not turn on the camera: {error}"
-msgstr "Камерата не може да бъде включена: {error}"
+msgid ""
+"Signal sent to {name} (by {via}). If it's set to turn on over the network, "
+"it shows up in a minute or two."
+msgstr ""
+"Сигналът е изпратен до {name} (чрез {via}). Ако е настроено да се включва по"
+" мрежата, ще се появи след минута-две."
 
 #, rust-format
-msgid "Could not share the screen: {error}"
-msgstr "Неуспешно споделяне на екрана: {error}"
+msgid "Could not turn on {name}: {error}"
+msgstr "Неуспешно включване на {name}: {error}"
 
-msgid "Nobody here right now"
-msgstr "В момента няма никой тук"
+msgid "Unpin from top"
+msgstr "Откачане от началото"
+
+msgid "Pin to top"
+msgstr "Закачане отгоре"
+
+msgid "Pinned to top"
+msgstr "Закачено най-отгоре"
+
+msgid "Unpinned"
+msgstr "Откачено"
+
+msgid "Open files (SFTP)"
+msgstr "Отваряне на файлове (SFTP)"
+
+msgid "Open terminal (SSH)"
+msgstr "Отваряне на терминал (SSH)"
+
+msgid "See and control the screen"
+msgstr "Виждане и управление на екрана"
+
+msgid "DNS name"
+msgstr "DNS име"
+
+msgid "DNS name copied"
+msgstr "DNS името е копирано"
+
+msgid "Owner"
+msgstr "Собственик"
+
+msgid "SSH login (override)"
+msgstr "SSH вход (заместване)"
+
+msgid "Saved"
+msgstr "Запазено"
+
+msgid "Tags"
+msgstr "Етикети"
+
+msgid "Last seen"
+msgstr "Последно видян"
+
+msgid "Use as exit node"
+msgstr "Използвай като изходен възел"
+
+msgid "Route all traffic through this peer"
+msgstr "Насочвай целия трафик през този peer"
+
+msgid "Exit node enabled"
+msgstr "Изходният възел е активиран"
+
+msgid "Exit node disabled"
+msgstr "Изходният възел е деактивиран"
+
+msgid "Failed to update exit node"
+msgstr "Неуспешно обновяване на изходния възел"
+
+msgid "Copy"
+msgstr "Копирай"
+
+msgid "Smileys & people"
+msgstr "Усмивки и хора"
+
+msgid "Animals & nature"
+msgstr "Животни и природа"
+
+msgid "Food & drink"
+msgstr "Храна и напитки"
+
+msgid "Travel & places"
+msgstr "Пътуване и места"
+
+msgid "Activities"
+msgstr "Дейности"
+
+msgid "Objects"
+msgstr "Предмети"
+
+msgid "Symbols"
+msgstr "Символи"
+
+msgid "Flags"
+msgstr "Знамена"
+
+msgid "Search emoji"
+msgstr "Търсене на емоджи"
+
+msgid "Recently used"
+msgstr "Наскоро използвани"
+
+msgid "Search results"
+msgstr "Резултати от търсенето"
+
+msgid "Failed to disable start at login"
+msgstr "Неуспешно изключване на стартирането при влизане"
+
+msgid "Failed to create the autostart folder"
+msgstr "Неуспешно създаване на папката за автоматично стартиране"
+
+msgid "Failed to enable start at login"
+msgstr "Неуспешно включване на стартирането при влизане"
+
+msgid "only files can be sent"
+msgstr "могат да се изпращат само файлове"
+
+msgid "the file is too big (4 GB at most)"
+msgstr "файлът е твърде голям (най-много 4 GB)"
+
+msgid "that file name can't be sent"
+msgstr "файл с това име не може да бъде изпратен"
 
 #, rust-format
-msgid "In the room: {people}"
-msgstr "В стаята: {people}"
+msgid "{user}'s computer is off or offline — try again when it's back"
+msgstr ""
+"компютърът на {user} е изключен или офлайн — опитайте отново, когато е на "
+"линия"
+
+msgid ""
+"the file arrived different from the original (damaged on the way) — download"
+" it again"
+msgstr ""
+"файлът пристигна различен от оригинала (повреден по пътя) — изтеглете го "
+"отново"
+
+msgid "the file is no longer on their computer (moved or changed)"
+msgstr ""
+"файлът вече не е на компютъра на другата страна (преместен или променен)"
+
+msgid "the file isn't available"
+msgstr "файлът не е наличен"
+
+msgid "the transfer was interrupted — try again to resume it"
+msgstr "прехвърлянето беше прекъснато — опитайте отново, за да го продължите"
+
+msgid "message too long"
+msgstr "съобщението е твърде дълго"
+
+msgid "not signed in to a BigScale network"
+msgstr "не сте влезли в мрежа на BigScale"
+
+msgid "you are not in that group"
+msgstr "не сте в тази група"
 
 #, rust-format
-msgid "Join the room {group}"
-msgstr "Влизане в стая {group}"
+msgid "{emoji} (reaction to: {text})"
+msgstr "{emoji} (реакция на: {text})"
 
 #, rust-format
-msgid "Could not join {group}: {error}"
-msgstr "Неуспешно влизане в {group}: {error}"
+msgid "✏️ (edited) {text}"
+msgstr "✏️ (редактирано) {text}"
 
-msgid "📺 You're showing your screen to the room"
-msgstr "📺 Показвате екрана си на стаята"
-
-msgid "📺 You're showing your screen · 1 person watching"
-msgstr "📺 Показвате екрана си · 1 човек гледа"
+msgid "🗑 (deleted a message)"
+msgstr "🗑 (изтри съобщение)"
 
 #, rust-format
-msgid "📺 You're showing your screen · {count} people watching"
-msgstr "📺 Показвате екрана си · {count} души гледат"
+msgid "📌 (pinned: {text})"
+msgstr "📌 (закачено: {text})"
+
+msgid "📌 (unpinned the message)"
+msgstr "📌 (откачи съобщението)"
+
+msgid "nothing was recorded — is a microphone connected?"
+msgstr "нищо не беше записано — свързан ли е микрофон?"
+
+msgid ""
+"this computer can't restart remotely (BigLace's helper isn't installed)"
+msgstr ""
+"този компютър не може да се рестартира отдалечено (помощникът на BigLace не "
+"е инсталиран)"
 
 #, rust-format
-msgid "{people} · {talking} talking"
-msgstr "{people} · {talking} говорят"
-
-msgid "connecting…"
-msgstr "свързване…"
-
-msgid "muted"
-msgstr "заглушен"
-
-msgid "talking"
-msgstr "говори"
-
-msgid "quiet"
-msgstr "мълчи"
-
-msgid "Sharing screen"
-msgstr "Споделя екрана"
-
-msgid "In control"
-msgstr "Управлява"
-
-msgid "Controls your screen now"
-msgstr "Сега управлява екрана ви"
-
-msgid "Watching"
-msgstr "Гледа"
-
-msgid "Watching your screen"
-msgstr "Гледа екрана ви"
+msgid "could not prepare the automatic sign-in: {error}"
+msgstr "автоматичното влизане не можа да бъде подготвено: {error}"
 
 #, rust-format
-msgid "{user} is showing their screen"
-msgstr "{user} показва екрана си"
-
-msgid "Watch"
-msgstr "Гледане"
+msgid "could not restart: {error}"
+msgstr "неуспешно рестартиране: {error}"
 
 #, rust-format
-msgid "{user} asks to control your screen"
-msgstr "{user} иска да управлява екрана ви"
+msgid "could not restart the session: {error}"
+msgstr "сесията не можа да бъде рестартирана: {error}"
+
+#, rust-format
+msgid "could not shut down: {error}"
+msgstr "неуспешно изключване: {error}"
+
+msgid "the connection was lost"
+msgstr "връзката беше прекъсната"
 
 msgid ""
-"They'll be able to use your mouse and keyboard. You can take control back at"
-" any time."
+"the screen there is locked, and GNOME doesn't allow remote access to a "
+"locked screen — ask the person to unlock it"
 msgstr ""
-"Ще може да използва мишката и клавиатурата ви. Можете да си върнете "
-"управлението по всяко време."
+"екранът там е заключен, а GNOME не позволява отдалечен достъп до заключен "
+"екран — помолете човека да го отключи"
 
-msgid "Allow"
-msgstr "Разрешаване"
+msgid "access to the camera was refused"
+msgstr "достъпът до камерата беше отказан"
 
-msgid "Turn off camera"
-msgstr "Изключване на камерата"
+msgid "you are not in a room"
+msgstr "не сте в стая"
 
-msgid "Turn on camera"
-msgstr "Включване на камерата"
+msgid "Mute or unmute the microphone in a BigLace room"
+msgstr "Заглушаване или включване на микрофона в стая на BigLace"
 
-msgid "No camera found on this computer"
-msgstr "На този компютър не е намерена камера"
+msgid "screen sharing isn't available on this computer"
+msgstr "споделянето на екрана не е налично на този компютър"
 
-msgid "Stop sharing"
-msgstr "Спиране на споделянето"
+#, rust-format
+msgid "The computer's sound can't be shared: {error}"
+msgstr "Звукът на компютъра не може да бъде споделен: {error}"
 
-msgid "Share screen"
-msgstr "Споделяне на екрана"
+#, rust-format
+msgid "The screen share stopped: {error}"
+msgstr "Споделянето на екрана спря: {error}"
 
-msgid "Stop showing your screen to the room"
-msgstr "Спиране на показването на екрана ви на стаята"
+msgid "BigLace doesn't know that computer's network card yet"
+msgstr "BigLace все още не познава мрежовата карта на този компютър"
 
-msgid "Show your screen to everyone in the room"
-msgstr "Показване на екрана ви на всички в стаята"
+msgid "this computer"
+msgstr "този компютър"
 
-msgid "Take back control"
-msgstr "Връщане на управлението обратно"
-
-msgid "Give control"
-msgstr "Даване на управлението"
-
-msgid "Stop them from using your mouse and keyboard"
-msgstr "Спрете ги да използват мишката и клавиатурата ви"
-
-msgid "Let them use your mouse and keyboard"
-msgstr "Позволете им да използват мишката и клавиатурата ви"
-
-msgid "Sound level"
-msgstr "Ниво на звука"
-
-msgid "Unmute"
-msgstr "Включване на звука"
-
-msgid "Sections"
-msgstr "Раздели"
-
-msgid ""
-"Your identity on this mesh — the device name shown to other peers and the "
-"network you're connected to."
-msgstr ""
-"Вашата идентичност в тази мрежа — името на устройството, което се показва на"
-" другите участници, и мрежата, към която сте свързани."
-
-msgid "Change photo…"
-msgstr "Промяна на снимката…"
-
-msgid "Remove photo"
-msgstr "Премахване на снимката"
-
-msgid "Change your photo"
-msgstr "Промяна на снимката ви"
-
-msgid "Rename this device on the network"
-msgstr "Преименувайте това устройство в мрежата"
-
-msgid "Advanced: use a pre-auth key"
-msgstr "Разширени: използване на предварително удостоверен ключ"
-
-msgid "Already have a key from your administrator? Paste it here."
-msgstr "Вече имате ключ от вашия администратор? Поставете го тук."
-
-msgid ""
-"Manual setup — expand to paste a server URL and pre-auth key when you "
-"already received them from your administrator. Most users should sign in "
-"through the panel button above instead."
-msgstr ""
-"Ръчна настройка — разгънете, за да поставите URL на сървър и предварителен "
-"ключ за удостоверяване, ако вече сте ги получили от вашия администратор. "
-"Повечето потребители трябва да влязат чрез бутона на панела по-горе."
-
-msgid ""
-"Address of the coordination server (e.g. vpn.example.org). The https:// "
-"scheme is added automatically if you omit it."
-msgstr ""
-"Адрес на координационния сървър (напр. vpn.example.org). Схемата https:// се"
-" добавя автоматично, ако я пропуснете."
-
-msgid "Pre-auth key"
-msgstr "Ключ за предварително удостоверяване"
-
-msgid ""
-"One-time or reusable key created on the server (starts with 'hskey-auth-'). "
-"Used to register this device automatically without opening a browser."
-msgstr ""
-"Еднократен или многократно използваем ключ, създаден на сървъра (започва с "
-"'hskey-auth-'). Използва се за автоматично регистриране на това устройство "
-"без отваряне на браузър."
-
-msgid ""
-"The name this device shows to other peers on the VPN — this is the Tailscale"
-" hostname, NOT your computer's name and NOT your user. Lowercase letters, "
-"digits and hyphens. Example: 'tales-laptop', 'francois', 'office-pc'."
-msgstr ""
-"Името, с което това устройство се показва на другите участници във VPN — "
-"това е името на хоста в Tailscale, а НЕ името на вашия компютър и НЕ вашето "
-"потребителско име. Малки букви, цифри и тирета. Пример: 'tales-laptop', "
-"'francois', 'office-pc'."
-
-msgid "Apply manual setup"
-msgstr "Прилагане на ръчна настройка"
-
-msgid "Save"
-msgstr "Запазване"
-
-msgid ""
-"Persist the server, key and device name above. Won't connect — press Connect"
-" afterwards."
-msgstr ""
-"Запазете сървъра, ключа и името на устройството по-горе. Няма да се свърже —"
-" натиснете Свързване след това."
-
-msgid "Connect automatically"
-msgstr "Свързване автоматично"
-
-msgid "Join the network when BigLace starts"
-msgstr "Присъединете се към мрежата, когато BigLace стартира"
-
-msgid ""
-"When on, BigLace runs 'tailscale up' as soon as it launches, so you join the"
-" mesh without clicking Connect every time."
-msgstr ""
-"Когато е включено, BigLace изпълнява 'tailscale up' веднага след стартиране,"
-" така че се присъединявате към мрежата, без да кликвате върху Свързване "
-"всеки път."
-
-msgid "Toggle auto-connect on startup"
-msgstr "Превключване на автоматично свързване при стартиране"
-
-msgid "Start BigLace with the session"
-msgstr "Стартирайте BigLace със сесията"
-
-msgid "Open BigLace after you sign in to the desktop"
-msgstr "Отваряйте BigLace след влизане в десктоп средата"
-
-msgid ""
-"Turn this on to add BigLace to your desktop session startup. Turn it off to "
-"remove it."
-msgstr ""
-"Включете това, за да добавите BigLace към стартирането на вашата десктоп "
-"сесия. Изключете го, за да го премахнете."
-
-msgid "Toggle start with session"
-msgstr "Превключване на стартиране със сесията"
-
-msgid "Reconnect on drop"
-msgstr "Повторно свързване при прекъсване"
-
-msgid "Retry with backoff when the connection is lost"
-msgstr "Повторен опит с изчакване при загуба на връзка"
-
-msgid ""
-"If the tunnel drops (network change, sleep, server hiccup), BigLace silently"
-" retries with growing delays instead of leaving you offline until you "
-"notice."
-msgstr ""
-"Ако тунелът прекъсне (промяна на мрежата, заспиване, проблем със сървъра), "
-"BigLace мълчаливо опитва отново с нарастващи закъснения, вместо да ви остави"
-" офлайн, докато не забележите."
-
-msgid "Toggle auto-reconnect"
-msgstr "Превключване на автоматично повторно свързване"
-
-msgid "Notify on peer changes"
-msgstr "Уведомяване при промени в пировете"
-
-msgid "Show a desktop notification when peers go online/offline"
-msgstr "Показване на десктоп известие, когато пировете се свържат/изключат"
-
-msgid ""
-"Send a desktop toast when another device on your network goes online or "
-"offline. Rapid bursts are coalesced into a single notification so you don't "
-"get spammed during reconnects."
-msgstr ""
-"Изпращайте известие на работния плот, когато друго устройство във вашата "
-"мрежа стане онлайн или офлайн. Бързите поредици се обединяват в едно "
-"известие, за да не бъдете засипвани при повторни свързвания."
-
-msgid "Toggle peer-change notifications"
-msgstr "Превключване на известия за промени в участниците"
-
-msgid ""
-"Join or leave the mesh network. When connected, this device becomes "
-"reachable by the other peers in your account."
-msgstr ""
-"Присъединете се или напуснете мрежовата мрежа. Когато сте свързани, това "
-"устройство става достъпно за другите участници във вашия акаунт."
-
-msgid "Your photo"
-msgstr "Вашата снимка"
+msgid "no computer on its network is on to send the signal"
+msgstr "няма включен компютър в мрежата му, който да изпрати сигнала"
 
 #~ msgid "Panel credentials"
 #~ msgstr "Удостоверения на панела"

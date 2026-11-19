@@ -189,6 +189,7 @@ fn finish(stage: &Arc<Stage>) {
 /// Let viewer `id` control the screen (taking it from whoever had it).
 pub fn grant(id: u64) {
     let Some(s) = stage() else { return };
+    s.release_keys();
     if let Some(who) = s.viewers.lock().ok().and_then(|v| v.iter().find(|v| v.id == id).map(|v| v.who.clone())) {
         crate::access::log(&who, "", "control", "allowed");
     }
@@ -214,6 +215,7 @@ pub fn deny(id: u64) {
 /// Take control back.
 pub fn revoke() {
     let Some(s) = stage() else { return };
+    s.release_keys();
     if let Some(p) = s.controller.lock().ok().and_then(|mut c| c.take()) {
         s.tell(p, false);
     }
@@ -291,13 +293,27 @@ impl Stage {
         if let Ok(mut v) = self.viewers.lock() {
             v.retain(|x| x.id != id);
         }
-        if let Ok(mut c) = self.controller.lock() {
-            if *c == Some(id) {
+        let was_controller = self.controller.lock().is_ok_and(|mut c| {
+            let was = *c == Some(id);
+            if was {
                 *c = None;
             }
+            was
+        });
+        if was_controller {
+            self.release_keys();
         }
         if let Some(r) = room() {
             emit(r.view());
+        }
+    }
+
+    /// Whatever the one in control held down, let go (control changes hands).
+    fn release_keys(&self) {
+        if let Ok(mut sink) = self.sink.lock() {
+            if let Some(sink) = sink.as_mut() {
+                sink.release_all();
+            }
         }
     }
 
