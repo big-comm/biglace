@@ -25,6 +25,12 @@ die() {
     exit 1
 }
 
+# Give up after the state was written: undo first, leave nothing behind.
+fail() {
+    disarm
+    die "$@"
+}
+
 [[ $EUID -eq 0 ]] || die "must run as root"
 
 display_manager() {
@@ -98,7 +104,7 @@ arm() {
     printf 'dm=%s\nuser=%s\narmed=%s\n' "$dm" "$user" "$(date +%s)" >"$STATE"
     case $dm in
         sddm)
-            [[ -n $session ]] || die "no desktop session found"
+            [[ -n $session ]] || fail "no desktop session found"
             mkdir -p /etc/sddm.conf.d
             printf '[Autologin]\nUser=%s\nSession=%s.desktop\nRelogin=false\n' "$user" "$session" >"$SDDM_CONF"
             chmod 0644 "$SDDM_CONF"
@@ -123,7 +129,7 @@ arm() {
             rm -f "$tmp"
             ;;
         lightdm*)
-            [[ -n $session ]] || die "no desktop session found"
+            [[ -n $session ]] || fail "no desktop session found"
             mkdir -p /etc/lightdm/lightdm.conf.d
             printf '[Seat:*]\nautologin-user=%s\nautologin-session=%s\n' "$user" "$session" >"$LIGHTDM_CONF"
             chmod 0644 "$LIGHTDM_CONF"
@@ -135,8 +141,7 @@ arm() {
             fi
             ;;
         *)
-            disarm
-            die "unsupported login screen: ${dm:-none}"
+            fail "unsupported login screen: ${dm:-none}"
             ;;
     esac
 }

@@ -543,10 +543,13 @@ fn open_viewer_as(ip: &str, name: &str, toast: &libadwaita::ToastOverlay, stage:
                                 restarting.set(true);
                                 // Don't wait for the old connection to time
                                 // out: the tunnel goes down with the machine.
-                                let s = session.clone();
+                                let (s, still) = (session.clone(), restarting.clone());
                                 glib::timeout_add_seconds_local_once(3, move || {
-                                    if let Some(s) = s.borrow().as_ref() {
-                                        s.close();
+                                    // Unless it turned out it couldn't restart.
+                                    if still.get() {
+                                        if let Some(s) = s.borrow().as_ref() {
+                                            s.close();
+                                        }
                                     }
                                 });
                                 waiting.set_icon_name(Some("system-reboot-symbolic"));

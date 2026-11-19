@@ -491,13 +491,15 @@ fn power_action(action: &str, viewer: &Identity, writer: &Arc<Mutex<TcpStream>>)
     tailscale::dbg(&format!("remote: {}@{} asks to {action}", viewer.login, viewer.device));
     let result = match action {
         "restart" => {
-            // Tell the viewer first; a moment later the machine goes down.
-            if !crate::power::available() {
-                Err(crate::tr!("this computer can't restart remotely (BigLace's helper isn't installed)"))
-            } else {
-                reply(true, "");
-                std::thread::sleep(Duration::from_millis(400));
-                crate::power::restart_and_return(&viewer.login, &viewer.device).map(|()| false)
+            // Ready first (automatic sign-in armed), then tell the viewer;
+            // a moment later the machine goes down.
+            match crate::power::prepare_restart(&viewer.login, &viewer.device) {
+                Err(e) => Err(e),
+                Ok(()) => {
+                    reply(true, "");
+                    std::thread::sleep(Duration::from_millis(400));
+                    crate::power::reboot_now().map(|()| false)
+                }
             }
         }
         "shutdown" => {

@@ -115,8 +115,24 @@ fn run(cmd: &mut Command) -> Result<(), String> {
     }
 }
 
-/// Restart this computer and come back to the desktop for `login`@`device`.
-pub fn restart_and_return(login: &str, device: &str) -> Result<(), String> {
+/// The desktop session's file name (`plasma`, `gnome`, `xfce`): the login
+/// screen needs it to sign in automatically.
+fn session_hint() -> String {
+    let from = |var: &str| {
+        std::env::var(var).ok().map(|v| {
+            let base = v.rsplit('/').next().unwrap_or_default().trim_end_matches(".desktop").to_string();
+            base
+        })
+    };
+    from("DESKTOP_SESSION")
+        .filter(|s| !s.is_empty())
+        .or_else(|| from("XDG_SESSION_DESKTOP").map(|s| s.to_lowercase()))
+        .unwrap_or_default()
+}
+
+/// Get ready to restart and come back for `login`@`device`: the pass, the
+/// one-time start and the automatic sign-in. Nothing restarts yet.
+pub fn prepare_restart(login: &str, device: &str) -> Result<(), String> {
     if !available() {
         return Err(crate::tr!("this computer can't restart remotely (BigLace's helper isn't installed)"));
     }
@@ -130,18 +146,25 @@ pub fn restart_and_return(login: &str, device: &str) -> Result<(), String> {
         );
         let _ = write_private(&autostart_once_path(), entry.as_bytes());
     }
-    let hint = std::env::var("XDG_SESSION_DESKTOP").unwrap_or_default().to_lowercase();
-    let undo = || {
-        let _ = std::fs::remove_file(resume_path());
-        let _ = std::fs::remove_file(autostart_once_path());
-    };
+    let hint = session_hint();
     if let Err(e) = run(Command::new("pkexec").args([HELPER, "arm", &hint])) {
-        undo();
+        undo_restart();
         return Err(crate::trf!("could not prepare the automatic sign-in: {error}", "error" => e));
     }
+    Ok(())
+}
+
+fn undo_restart() {
+    let _ = std::fs::remove_file(resume_path());
+    let _ = std::fs::remove_file(autostart_once_path());
+}
+
+/// Restart now (after [`prepare_restart`]). If the system refuses — an
+/// update is being installed, for one — everything is undone.
+pub fn reboot_now() -> Result<(), String> {
     if let Err(e) = run(Command::new("systemctl").arg("reboot")) {
         let _ = run(Command::new("pkexec").args([HELPER, "disarm"]));
-        undo();
+        undo_restart();
         return Err(crate::trf!("could not restart: {error}", "error" => e));
     }
     Ok(())
