@@ -43,6 +43,8 @@ pub(super) struct Stage {
     controller: Mutex<Option<u64>>,
     sink: Mutex<Option<InputSink>>,
     group: String,
+    /// The presenter's pointer is in the frames (viewers hide their own).
+    pointer_in_video: AtomicBool,
 }
 
 fn slot() -> &'static Mutex<Option<Arc<Stage>>> {
@@ -87,12 +89,13 @@ pub fn start() -> Result<(), String> {
         controller: Mutex::new(None),
         sink: Mutex::new(None),
         group: current.group.clone(),
+        pointer_in_video: AtomicBool::new(false),
     });
     if let Ok(mut s) = slot().lock() {
         *s = Some(stage.clone());
     }
     let _ = std::thread::Builder::new().name("biglace-stage".into()).spawn(move || {
-        let source = match host::open_source(&stage.stop) {
+        let source = match host::open_source(&stage.stop, host::Pointer::Embedded) {
             Ok(s) => s,
             Err(e) => {
                 tailscale::dbg(&format!("stage: no screen source: {e}"));
@@ -101,7 +104,8 @@ pub fn start() -> Result<(), String> {
                 return;
             }
         };
-        let host::Source { pipelines, dirty, sink, .. } = source;
+        let host::Source { pipelines, dirty, sink, pointer, .. } = source;
+        stage.pointer_in_video.store(pointer == host::Pointer::Embedded, Ordering::Release);
         #[cfg(target_os = "linux")]
         let _keep_fd = source._fd;
         if let Ok(mut s) = stage.sink.lock() {
@@ -116,7 +120,7 @@ pub fn start() -> Result<(), String> {
             stage.fanout(kind, payload);
             Ok(())
         };
-        if let Err(e) = host::stream_screen(&send, &pipelines, dirty, &stage.stop, true, &stage.want_key) {
+        if let Err(e) = host::stream_screen(&send, &pipelines, dirty, &stage.stop, true, &stage.want_key, &std::sync::atomic::AtomicBool::new(false)) {
             tailscale::dbg(&format!("stage: capture ended: {e}"));
             if !stage.stop.stopped() {
                 emit(RoomEvent::Problem(crate::trf!("The screen share stopped: {error}", "error" => e)));
@@ -322,6 +326,9 @@ pub fn accept(stream: TcpStream, peer: IpAddr, headers: &HashMap<String, String>
     if let Some(info) = stage.last_info.lock().ok().and_then(|i| i.clone()) {
         let _ = tx.try_send((Kind::Info, Arc::new(info)));
     }
+    if stage.pointer_in_video.load(Ordering::Acquire) {
+        let _ = tx.try_send((Kind::Cursor, Arc::new(Vec::new())));
+    }
     if let Ok(mut v) = stage.viewers.lock() {
         v.push(Viewer {
             id,
@@ -397,6 +404,7 @@ mod tests {
             controller: Mutex::new(None),
             sink: Mutex::new(None),
             group: "familia".into(),
+            pointer_in_video: AtomicBool::new(false),
         }
     }
 

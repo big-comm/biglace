@@ -277,7 +277,20 @@ impl InputSink {
 
 /// The screen source, as the head of a GStreamer pipeline description, plus
 /// what keeps it alive (the portal's PipeWire fd) and where input goes.
+/// Where the viewer's pointer comes from.
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub(crate) enum Pointer {
+    /// The viewer draws a plain arrow (older viewers).
+    Local,
+    /// Drawn into the frames (Wayland; room shares).
+    Embedded,
+    /// The viewer's own, shaped like the host's (X11).
+    Shapes,
+}
+
 pub(crate) struct Source {
+    /// How the pointer is shown (what was asked for, as far as possible).
+    pub(crate) pointer: Pointer,
     /// Full pipeline descriptions to try, best first (see `stream_screen`).
     pub(crate) pipelines: Vec<String>,
     /// X11: raised by XDamage when the screen changed (None = always send).
@@ -329,10 +342,11 @@ fn wayland_zero_copy(fd: i32, node: u32) -> Option<String> {
 }
 
 #[cfg(target_os = "linux")]
-pub(crate) fn open_source(stop: &StopHandle) -> anyhow::Result<Source> {
+pub(crate) fn open_source(stop: &StopHandle, want: Pointer) -> anyhow::Result<Source> {
     use std::os::fd::AsRawFd;
     if super::wayland_session() {
-        let portal = super::portal::start()?;
+        let portal = super::portal::start(want != Pointer::Local)?;
+        let pointer = if portal.cursor_embedded { Pointer::Embedded } else { Pointer::Local };
         let (fd, node) = (portal.fd.as_raw_fd(), portal.node);
         let enc = encoder().ok_or_else(|| anyhow::anyhow!("no H.264 encoder"))?;
         // Copy path, for compositors or GPUs without DMA-BUF/VA-API.
@@ -344,20 +358,24 @@ pub(crate) fn open_source(stop: &StopHandle) -> anyhow::Result<Source> {
             enc,
         );
         Ok(Source {
+            pointer,
             pipelines: wayland_zero_copy(fd, node).into_iter().chain([copy]).collect(),
             dirty: None,
             sink: InputSink::Portal(portal.input),
             _fd: Some(portal.fd),
         })
     } else {
+        let embedded = want == Pointer::Embedded;
         let dirty = Arc::new(AtomicBool::new(true));
-        let watching = super::damage_x11::watch(dirty.clone(), stop.flag.clone());
+        let watching = super::damage_x11::watch(dirty.clone(), stop.flag.clone(), embedded);
         let enc = encoder().ok_or_else(|| anyhow::anyhow!("no H.264 encoder"))?;
         Ok(Source {
+            pointer: want,
             dirty: watching.then_some(dirty),
-            // The viewer draws the pointer itself (no video delay on it).
+            // Usually the viewer draws the pointer itself (no video delay
+            // on it); a room share shows the presenter's in the frames.
             pipelines: vec![pipeline_desc(
-                &format!("ximagesrc name=capture use-damage=false show-pointer=false ! {X11_TAIL}"),
+                &format!("ximagesrc name=capture use-damage=false show-pointer={embedded} ! {X11_TAIL}"),
                 enc,
             )],
             sink: InputSink::X11(super::input_x11::Injector::connect().map(Box::new)),
@@ -367,7 +385,7 @@ pub(crate) fn open_source(stop: &StopHandle) -> anyhow::Result<Source> {
 }
 
 #[cfg(not(target_os = "linux"))]
-pub(crate) fn open_source(_stop: &StopHandle) -> anyhow::Result<Source> {
+pub(crate) fn open_source(_stop: &StopHandle, _want: Pointer) -> anyhow::Result<Source> {
     anyhow::bail!("screen sharing is not available on this system")
 }
 
@@ -392,7 +410,10 @@ fn run_session(mut stream: TcpStream, stop: &StopHandle, protocol: u32, identity
     let _ = stream.set_read_timeout(None);
     let _ = stream.set_nodelay(true);
 
-    let source = match open_source(stop) {
+    // Protocol 4 viewers learn the pointer's shape (X11) or get it in the
+    // frames (Wayland).
+    let want = if protocol >= 4 { Pointer::Shapes } else { Pointer::Local };
+    let source = match open_source(stop, want) {
         Ok(s) => s,
         Err(e) => {
             tailscale::dbg(&format!("remote: no screen source: {e}"));
@@ -405,17 +426,43 @@ fn run_session(mut stream: TcpStream, stop: &StopHandle, protocol: u32, identity
             return;
         }
     };
-    let Source { pipelines, mut sink, dirty, .. } = source;
+    let Source { mut pipelines, sink, mut dirty, pointer, .. } = source;
     #[cfg(target_os = "linux")]
-    let _keep_fd = source._fd;
+    let mut keep_fd = source._fd;
+    // Shared: a new source (after a resolution change) brings a new one.
+    let sink = Arc::new(Mutex::new(sink));
     // Video and pong replies write from two threads.
     let writer = match stream.try_clone() {
         Ok(w) => Arc::new(Mutex::new(w)),
         Err(_) => return,
     };
 
+    // The pointer: in the frames (the viewer hides its own), or its shape.
+    match pointer {
+        Pointer::Embedded if protocol >= 4 => {
+            if let Ok(mut w) = writer.lock() {
+                let _ = write_frame(&mut *w, Kind::Cursor, &[]);
+            }
+        }
+        #[cfg(target_os = "linux")]
+        Pointer::Shapes => {
+            let w = writer.clone();
+            super::cursor_x11::watch(
+                move |shape| {
+                    if let Ok(mut w) = w.lock() {
+                        let _ = write_frame(&mut *w, Kind::Cursor, &shape);
+                    }
+                },
+                stop.flag.clone(),
+            );
+        }
+        _ => {}
+    }
+
     // Raised when the viewer asks for a keyframe (it switched decoders).
     let want_key = Arc::new(AtomicBool::new(false));
+    // Raised when the resolution changed: the capture starts over.
+    let restart = Arc::new(AtomicBool::new(false));
 
     // Input: replayed as it arrives, on its own thread.
     if let Ok(mut reader) = stream.try_clone() {
@@ -423,14 +470,39 @@ fn run_session(mut stream: TcpStream, stop: &StopHandle, protocol: u32, identity
         let viewer = identity.clone();
         let writer = writer.clone();
         let want_key = want_key.clone();
+        let restart = restart.clone();
+        let sink = sink.clone();
         let _ = std::thread::Builder::new()
             .name("biglace-remote-input".into())
             .spawn(move || {
+                // The viewer's resolution changes, undone when this ends.
+                let mut fitter = super::display::Fitter::default();
                 while !stop.stopped() {
                     match read_frame(&mut reader) {
+                        Ok((Kind::Resize, payload)) => {
+                            let v: serde_json::Value = serde_json::from_slice(&payload).unwrap_or_default();
+                            let size = |k: &str| v.get(k).and_then(serde_json::Value::as_u64).map(|n| n.clamp(320, 16384) as u32);
+                            let changed = if v.get("restore").and_then(serde_json::Value::as_bool) == Some(true) {
+                                fitter.restore()
+                            } else if let (Some(w), Some(h)) = (size("width"), size("height")) {
+                                fitter.fit(w, h).unwrap_or_else(|e| {
+                                    tailscale::dbg(&format!("remote: can't fit the resolution: {e}"));
+                                    false
+                                })
+                            } else {
+                                false
+                            };
+                            if changed {
+                                // Let the screen settle, then capture it anew.
+                                std::thread::sleep(Duration::from_millis(700));
+                                restart.store(true, Ordering::Release);
+                            }
+                        }
                         Ok((Kind::Input, payload)) => {
                             if let Ok(event) = serde_json::from_slice::<Input>(&payload) {
-                                sink.apply(event);
+                                if let Ok(mut sink) = sink.lock() {
+                                    sink.apply(event);
+                                }
                             }
                         }
                         Ok((Kind::KeyFrame, _)) => want_key.store(true, Ordering::Release),
@@ -452,8 +524,6 @@ fn run_session(mut stream: TcpStream, stop: &StopHandle, protocol: u32, identity
                         Err(_) => break,
                     }
                 }
-                // Dropping the sink ends the portal session too.
-                drop(sink);
                 stop.stop();
             });
     }
@@ -474,9 +544,47 @@ fn run_session(mut stream: TcpStream, stop: &StopHandle, protocol: u32, identity
         write_frame(&mut *w, kind, payload)?;
         Ok(())
     };
-    if let Err(e) = stream_screen(&send, &pipelines, dirty, stop, timestamps, &want_key) {
-        tailscale::dbg(&format!("remote: capture ended: {e}"));
+    loop {
+        match stream_screen(&send, &pipelines, dirty.clone(), stop, timestamps, &want_key, &restart) {
+            Ok(true) => {}
+            Ok(false) => break,
+            Err(e) => {
+                tailscale::dbg(&format!("remote: capture ended: {e}"));
+                break;
+            }
+        }
+        // The resolution changed: open the screen again (the portal
+        // remembers the choice, nobody is asked).
+        tailscale::dbg("remote: screen size changed — opening the capture again");
+        #[cfg(target_os = "linux")]
+        {
+            if let Ok(mut s) = sink.lock() {
+                *s = InputSink::X11(None);
+            }
+            keep_fd = None;
+        }
+        match open_source(stop, want) {
+            Ok(fresh) => {
+                pipelines = fresh.pipelines;
+                dirty = fresh.dirty;
+                if let Ok(mut s) = sink.lock() {
+                    *s = fresh.sink;
+                }
+                #[cfg(target_os = "linux")]
+                {
+                    keep_fd = fresh._fd;
+                }
+            }
+            Err(e) => {
+                tailscale::dbg(&format!("remote: can't capture the screen again: {e}"));
+                let _ = send(Kind::Error, e.to_string().as_bytes());
+                break;
+            }
+        }
     }
+    // Dropping the sink ends the portal session too.
+    #[cfg(target_os = "linux")]
+    drop(keep_fd);
 }
 
 /// The viewer asks to restart (and come back) or shut down this computer.
@@ -501,6 +609,14 @@ fn power_action(action: &str, viewer: &Identity, writer: &Arc<Mutex<TcpStream>>)
                     crate::power::reboot_now().map(|()| false)
                 }
             }
+        }
+        "relogin" => {
+            // The login screen restarts a second after the helper returns:
+            // enough to tell the viewer.
+            crate::power::restart_session(&viewer.login, &viewer.device).map(|()| {
+                reply(true, "");
+                false
+            })
         }
         "shutdown" => {
             reply(true, "");
@@ -681,6 +797,9 @@ fn stamp_and_gate(pipeline: &gstreamer::Pipeline, dirty: Option<Arc<AtomicBool>>
 /// alive; everything else waits for a change.
 const IDLE_FRAME_EVERY: Duration = Duration::from_secs(1);
 
+/// Capture, encode and `send` the screen until `stop` — or until `restart`
+/// is raised (the screen's resolution changed): then true, for the caller
+/// to open the source again (GNOME ends its screencast on a mode change).
 pub(crate) fn stream_screen(
     send: &dyn Fn(Kind, &[u8]) -> anyhow::Result<()>,
     pipelines: &[String],
@@ -688,7 +807,8 @@ pub(crate) fn stream_screen(
     stop: &StopHandle,
     timestamps: bool,
     want_key: &AtomicBool,
-) -> anyhow::Result<()> {
+    restart: &AtomicBool,
+) -> anyhow::Result<bool> {
     use gstreamer as gst;
     use gstreamer::prelude::*;
 
@@ -715,10 +835,13 @@ pub(crate) fn stream_screen(
     };
     let mut pending = Some(first);
 
-    let result = (|| -> anyhow::Result<()> {
+    let result = (|| -> anyhow::Result<bool> {
         let mut last_info: Option<VideoInfo> = None;
         let (mut frames, mut bytes, mut since) = (0u32, 0usize, std::time::Instant::now());
         while !stop.stopped() {
+            if restart.swap(false, Ordering::AcqRel) {
+                return Ok(true);
+            }
             if want_key.swap(false, Ordering::AcqRel) {
                 let event = gstreamer_video::UpstreamForceKeyUnitEvent::builder().all_headers(true).build();
                 sink.send_event(event);
@@ -771,7 +894,7 @@ pub(crate) fn stream_screen(
                 (frames, bytes, since) = (0, 0, std::time::Instant::now());
             }
         }
-        Ok(())
+        Ok(false)
     })();
     let _ = pipeline.set_state(gst::State::Null);
     result

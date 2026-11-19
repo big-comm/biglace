@@ -251,8 +251,17 @@ fn update_countdown(body: &gtk4::Widget, left: u32) {
 // ─── Viewer side ─────────────────────────────────────────────────────────────
 
 /// Open `name`'s screen (peer at `ip`) in a new window.
-pub fn open_viewer(ip: &str, name: &str, toast: &libadwaita::ToastOverlay, power: bool) {
-    open_viewer_as(ip, name, toast, None, power);
+/// What the host can do besides showing its screen.
+#[derive(Clone, Copy, Default)]
+pub struct HostCaps {
+    /// Restart / shut down.
+    pub power: bool,
+    /// Fit its resolution to this window.
+    pub resize: bool,
+}
+
+pub fn open_viewer(ip: &str, name: &str, toast: &libadwaita::ToastOverlay, caps: HostCaps) {
+    open_viewer_as(ip, name, toast, None, caps);
 }
 
 /// How long a restarted computer has to come back.
@@ -265,6 +274,12 @@ fn confirm_power(win: &libadwaita::Window, action: &'static str, name: &str, ses
             trf!("Restart {name}'s computer?", "name" => name),
             tr!("It restarts, signs in by itself and locks the screen right away; this window connects again when it's back. Unsaved work there is lost."),
             tr!("Restart"),
+        )
+    } else if action == "relogin" {
+        (
+            trf!("Restart {name}'s session?", "name" => name),
+            tr!("The open programs there close, the computer signs out and back in by itself (without restarting) and locks the screen; this window connects again. Unsaved work there is lost."),
+            tr!("Restart the session"),
         )
     } else {
         (
@@ -292,10 +307,11 @@ fn confirm_power(win: &libadwaita::Window, action: &'static str, name: &str, ses
 /// Watch the screen `name` shows to the voice room of `group` (view only,
 /// with "Request control").
 pub fn open_stage_viewer(ip: &str, name: &str, group: &str, toast: &libadwaita::ToastOverlay) {
-    open_viewer_as(ip, name, toast, Some(group.to_string()), false);
+    open_viewer_as(ip, name, toast, Some(group.to_string()), HostCaps::default());
 }
 
-fn open_viewer_as(ip: &str, name: &str, toast: &libadwaita::ToastOverlay, stage: Option<String>, power: bool) {
+fn open_viewer_as(ip: &str, name: &str, toast: &libadwaita::ToastOverlay, stage: Option<String>, caps: HostCaps) {
+    let power = caps.power;
     let watching = stage.is_some();
     let win = libadwaita::Window::builder()
         .title(trf!("Screen of {name}", "name" => name))
@@ -319,6 +335,13 @@ fn open_viewer_as(ip: &str, name: &str, toast: &libadwaita::ToastOverlay, stage:
         .tooltip_text(tr!("Mute the remote sound"))
         .build();
     header.pack_end(&btn_mute);
+    // Fit the host's resolution to this window (when it can).
+    let btn_fit = gtk4::ToggleButton::builder()
+        .icon_name("zoom-fit-best-symbolic")
+        .tooltip_text(trf!("Fit {name}'s resolution to this window", "name" => name))
+        .visible(caps.resize && !watching)
+        .build();
+    header.pack_end(&btn_fit);
     // "● LIVE": you're looking at (and controlling) someone's real screen.
     let live = gtk4::Box::new(gtk4::Orientation::Horizontal, 6);
     live.add_css_class("live-pill");
@@ -421,8 +444,10 @@ fn open_viewer_as(ip: &str, name: &str, toast: &libadwaita::ToastOverlay, stage:
         let closed = closed.clone();
         win.connect_destroy(move |_| closed.set(true));
     }
-    // Set when the host said it's restarting / shutting down.
+    // Set when the host said it's restarting / shutting down; how long to
+    // wait before knocking again.
     let restarting = Rc::new(Cell::new(false));
+    let first_wait = Rc::new(Cell::new(20u32));
     let shutting_down = Rc::new(Cell::new(false));
 
     let name_s = name.to_string();
@@ -465,6 +490,7 @@ fn open_viewer_as(ip: &str, name: &str, toast: &libadwaita::ToastOverlay, stage:
         header.pack_end(&btn_power);
         for (action, icon, label) in [
             ("restart", "system-reboot-symbolic", tr!("Restart and reconnect")),
+            ("relogin", "system-log-out-symbolic", tr!("Restart the session")),
             ("shutdown", "system-shutdown-symbolic", tr!("Shut down")),
         ] {
             let item = gtk4::Button::builder()
@@ -482,8 +508,14 @@ fn open_viewer_as(ip: &str, name: &str, toast: &libadwaita::ToastOverlay, stage:
     {
         let (win, session, stack, picture, video, title) =
             (win.clone(), session.clone(), stack.clone(), picture.clone(), video.clone(), title.clone());
-        let (waiting, connect, closed, restarting, shutting_down) =
-            (waiting.clone(), connect.clone(), closed.clone(), restarting.clone(), shutting_down.clone());
+        let (waiting, connect, closed, restarting, shutting_down, first_wait) = (
+            waiting.clone(),
+            connect.clone(),
+            closed.clone(),
+            restarting.clone(),
+            shutting_down.clone(),
+            first_wait.clone(),
+        );
         let (btn_control, control_state, live) = (btn_control.clone(), control_state.clone(), live.clone());
         let sized = Cell::new(false);
         glib::spawn_future_local(async move {
@@ -539,8 +571,10 @@ fn open_viewer_as(ip: &str, name: &str, toast: &libadwaita::ToastOverlay, stage:
                                 shutting_down.set(false);
                                 stack.set_visible_child_name("screen");
                                 super::show_toast(&toast, &trf!("{name}'s computer said: {error}", "name" => name_s, "error" => error), 8);
-                            } else if action == "restart" {
+                            } else if action == "restart" || action == "relogin" {
                                 restarting.set(true);
+                                // A session restart is quick (no boot).
+                                first_wait.set(if action == "relogin" { 6 } else { 20 });
                                 // Don't wait for the old connection to time
                                 // out: the tunnel goes down with the machine.
                                 let (s, still) = (session.clone(), restarting.clone());
@@ -552,16 +586,43 @@ fn open_viewer_as(ip: &str, name: &str, toast: &libadwaita::ToastOverlay, stage:
                                         }
                                     }
                                 });
-                                waiting.set_icon_name(Some("system-reboot-symbolic"));
-                                waiting.set_title(&trf!("Restarting {name}…", "name" => name_s));
-                                waiting.set_description(Some(&tr!(
-                                    "This window connects again by itself when the computer is back. It takes a few minutes."
-                                )));
+                                if action == "relogin" {
+                                    waiting.set_icon_name(Some("system-log-out-symbolic"));
+                                    waiting.set_title(&trf!("Restarting {name}'s session…", "name" => name_s));
+                                    waiting.set_description(Some(&tr!(
+                                        "This window connects again by itself when the session is back. It takes a few seconds."
+                                    )));
+                                } else {
+                                    waiting.set_icon_name(Some("system-reboot-symbolic"));
+                                    waiting.set_title(&trf!("Restarting {name}…", "name" => name_s));
+                                    waiting.set_description(Some(&tr!(
+                                        "This window connects again by itself when the computer is back. It takes a few minutes."
+                                    )));
+                                }
                                 stack.set_visible_child_name("waiting");
                             } else if action == "shutdown" {
                                 shutting_down.set(true);
                             }
                         }
+                        client::Event::Cursor(shape) => match shape {
+                            // Drawn in the video: no second pointer on top.
+                            None => picture.set_cursor_from_name(Some("none")),
+                            Some(c) => {
+                                crate::tailscale::dbg(&format!(
+                                    "viewer: pointer shape {}x{} (hotspot {},{})",
+                                    c.width, c.height, c.hot_x, c.hot_y
+                                ));
+                                let tex = gdk::MemoryTexture::new(
+                                    c.width as i32,
+                                    c.height as i32,
+                                    gdk::MemoryFormat::R8g8b8a8,
+                                    &c.data,
+                                    c.width as usize * 4,
+                                );
+                                let cursor = gdk::Cursor::from_texture(&tex, c.hot_x as i32, c.hot_y as i32, None);
+                                picture.set_cursor(Some(&cursor));
+                            }
+                        },
                         client::Event::Info(info) => {
                             video.set((info.width, info.height));
                             if !sized.replace(true) {
@@ -623,7 +684,7 @@ fn open_viewer_as(ip: &str, name: &str, toast: &libadwaita::ToastOverlay, stage:
                                 // Give it time to go down, then knock until it's back.
                                 stack.set_visible_child_name("waiting");
                                 back_since = Some(std::time::Instant::now());
-                                glib::timeout_future_seconds(20).await;
+                                glib::timeout_future_seconds(first_wait.get()).await;
                                 break;
                             }
                             let msg = if shutting_down.get() {
@@ -643,6 +704,38 @@ fn open_viewer_as(ip: &str, name: &str, toast: &libadwaita::ToastOverlay, stage:
                     return;
                 }
             }
+        });
+    }
+    {
+        // While on: follow this window's size (once it stops changing).
+        let session2 = session.clone();
+        btn_fit.connect_toggled(move |b| {
+            if !b.is_active() {
+                if let Some(s) = session2.borrow().as_ref() {
+                    s.restore_size();
+                }
+            }
+        });
+        let (session, picture, btn, closed) = (session.clone(), picture.clone(), btn_fit.clone(), closed.clone());
+        let (sent, seen) = (Cell::new((0u32, 0u32)), Cell::new((0u32, 0u32)));
+        glib::timeout_add_local(std::time::Duration::from_millis(500), move || {
+            if closed.get() {
+                return glib::ControlFlow::Break;
+            }
+            if !btn.is_active() {
+                sent.set((0, 0));
+                return glib::ControlFlow::Continue;
+            }
+            let scale = picture.scale_factor().max(1) as u32;
+            let size = (picture.width().max(0) as u32 * scale, picture.height().max(0) as u32 * scale);
+            let steady = seen.replace(size) == size;
+            if steady && size.0 >= 320 && size.1 >= 200 && sent.get() != size {
+                if let Some(s) = session.borrow().as_ref() {
+                    s.fit(size.0, size.1);
+                    sent.set(size);
+                }
+            }
+            glib::ControlFlow::Continue
         });
     }
     {

@@ -15,7 +15,10 @@
 pub mod client;
 pub mod host;
 #[cfg(target_os = "linux")]
+#[cfg(target_os = "linux")]
+mod cursor_x11;
 mod damage_x11;
+pub(crate) mod display;
 #[cfg(target_os = "linux")]
 mod input_x11;
 #[cfg(target_os = "linux")]
@@ -81,11 +84,21 @@ pub enum Kind {
     /// `{"action": "restart" | "shutdown"}`; host → viewer
     /// `{"action": …, "ok": bool, "error": "…"}`.
     Power = 14,
+    /// Host → viewer (protocol 4): the pointer. Empty: it's drawn in the
+    /// video (hide the viewer's own). Else width, height, hotspot x, y
+    /// (u16 BE each) and RGBA rows: the shape to give the viewer's pointer.
+    Cursor = 15,
+    /// Viewer → host (JSON): fit the screen to the viewer's window,
+    /// `{"width": …, "height": …}`, or `{"restore": true}`.
+    Resize = 16,
 }
+
+/// Announced by hosts that can fit their resolution to the viewer's window.
+pub const RESIZE_CAPABILITY: &str = "resize";
 
 /// Screen protocol revision the viewer asks for.
 /// 2: timestamped video, ping/pong. 3: plus sound.
-pub const SCREEN_PROTOCOL: &str = "3";
+pub const SCREEN_PROTOCOL: &str = "4";
 
 /// Wall clock in µs since the epoch (both ends use it for latency).
 pub fn now_us() -> u64 {
@@ -111,6 +124,8 @@ impl Kind {
             12 => Some(Self::ChatAck),
             13 => Some(Self::Control),
             14 => Some(Self::Power),
+            15 => Some(Self::Cursor),
+            16 => Some(Self::Resize),
             _ => None,
         }
     }
@@ -343,7 +358,7 @@ mod end_to_end {
                 write_frame(&mut *w, kind, payload)?;
                 Ok(())
             };
-            let _ = host::stream_screen(&send, &pipelines, None, &stop, true, &std::sync::atomic::AtomicBool::new(false));
+            let _ = host::stream_screen(&send, &pipelines, None, &stop, true, &std::sync::atomic::AtomicBool::new(false), &std::sync::atomic::AtomicBool::new(false));
         });
         let stream = TcpStream::connect(addr).unwrap();
         let (tx, rx) = async_channel::bounded(256);

@@ -4,6 +4,7 @@
 # screen right away and the remote session resumes).
 #
 #   pkexec biglace-autologin arm [session-hint]   (only for the calling user)
+#   pkexec biglace-autologin relogin [session]    (sign out and back in)
 #   biglace-autologin disarm                      (undo; also via pkexec)
 #   biglace-autologin expire                      (boot: lock + undo)
 #
@@ -158,6 +159,66 @@ expire() {
         fi
         sleep 2
     done
+    lock_and_disarm "$user"
+}
+
+# Graphical sessions (ids) of a user.
+graphical_sessions() {
+    local id
+    for id in $(loginctl list-sessions --no-legend 2>/dev/null | awk -v u="$1" '$3 == u {print $1}'); do
+        case $(loginctl show-session "$id" -p Type --value 2>/dev/null) in
+            x11 | wayland) printf '%s ' "$id" ;;
+        esac
+    done
+}
+
+# Sign out and back in, without restarting: arm the automatic sign-in and
+# restart the login screen from a service of its own (this session, and
+# whoever asked, are about to go away).
+relogin() {
+    local uid=${PKEXEC_UID:-} user other
+    if ! [[ $uid =~ ^[0-9]+$ ]] || ((uid < 1000)); then
+        die "unknown caller"
+    fi
+    user=$(getent passwd "$uid" | cut -d: -f1)
+    # Restarting the login screen ends every graphical session: never do
+    # it to someone else signed in on this computer.
+    for other in $(loginctl list-users --no-legend 2>/dev/null | awk '{print $2}'); do
+        [[ $other == "$user" ]] && continue
+        if [[ -n $(graphical_sessions "$other") ]]; then
+            die "someone else is signed in on this computer"
+        fi
+    done
+    arm "${1:-}"
+    systemd-run --quiet --collect --unit="biglace-relogin-$(date +%s)" \
+        /usr/lib/biglace/biglace-autologin relogin-run "$(graphical_sessions "$user")" ||
+        fail "could not restart the login screen"
+}
+
+# (Run by relogin's service.) Restart the login screen, wait for the new
+# session, then lock and undo like after a restart.
+relogin_run() {
+    [[ -z ${PKEXEC_UID:-} ]] || die "not for direct use"
+    [[ -f $STATE ]] || return 0
+    local user old id _ found=""
+    user=$(state_get user)
+    old=" $1 "
+    sleep 1
+    systemctl restart display-manager.service || true
+    for _ in $(seq 1 60); do
+        for id in $(graphical_sessions "$user"); do
+            [[ $old == *" $id "* ]] || found=$id
+        done
+        [[ -n $found ]] && break
+        sleep 2
+    done
+    lock_and_disarm "$user"
+}
+
+# Lock the sessions (GNOME on Wayland: leave it to BigLace, which locks when
+# the returning remote session ends) and undo the automatic sign-in.
+lock_and_disarm() {
+    local user=$1 _
     sleep 8
     # GNOME (Wayland) refuses remote access while locked: there BigLace
     # locks when the returning remote session ends. Leave it to BigLace if
@@ -188,7 +249,12 @@ gnome_wayland() {
 
 case ${1:-} in
     arm) arm "${2:-}" ;;
+    relogin) relogin "${2:-}" ;;
+    relogin-run) relogin_run "${2:-}" ;;
     disarm) disarm ;;
-    expire) expire ;;
-    *) die "usage: biglace-autologin arm [session] | disarm | expire" ;;
+    expire)
+        [[ -z ${PKEXEC_UID:-} ]] || die "not for direct use"
+        expire
+        ;;
+    *) die "usage: biglace-autologin arm [session] | relogin [session] | disarm | expire" ;;
 esac

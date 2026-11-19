@@ -50,6 +50,15 @@ pub struct Stats {
     pub audio: bool,
 }
 
+/// The host's pointer shape, RGBA rows of `width * 4` bytes.
+pub struct CursorImage {
+    pub width: u32,
+    pub height: u32,
+    pub hot_x: u32,
+    pub hot_y: u32,
+    pub data: gtk4::glib::Bytes,
+}
+
 /// What the session thread tells the window.
 pub enum Event {
     Info(VideoInfo),
@@ -57,6 +66,9 @@ pub enum Event {
     Stats(Stats),
     /// Room share: whether we may control the screen now.
     Control(bool),
+    /// The host's pointer: its shape (`Some`), or drawn in the video
+    /// (`None`: hide the viewer's own).
+    Cursor(Option<CursorImage>),
     /// The host's answer to a power action.
     Power { action: String, ok: bool, error: String },
     Ended(String),
@@ -67,6 +79,8 @@ pub(crate) enum Outgoing {
     Control(String),
     /// JSON for a `Power` frame.
     Power(String),
+    /// JSON for a `Resize` frame.
+    Resize(String),
     Input(Input),
     Ping,
     /// Ask the host for a keyframe (after switching decoders).
@@ -88,6 +102,16 @@ impl Session {
         if self.input_on.load(Ordering::Relaxed) {
             let _ = self.input.send(Outgoing::Input(event));
         }
+    }
+
+    /// Ask the host to fit its screen to a `width`×`height` window (pixels).
+    pub fn fit(&self, width: u32, height: u32) {
+        let _ = self.input.send(Outgoing::Resize(serde_json::json!({ "width": width, "height": height }).to_string()));
+    }
+
+    /// Ask the host to go back to its own resolution.
+    pub fn restore_size(&self) {
+        let _ = self.input.send(Outgoing::Resize(r#"{"restore":true}"#.into()));
     }
 
     /// Ask the host to `restart` (and come back) or `shutdown`.
@@ -226,6 +250,7 @@ fn start_session(
                     Outgoing::Ping => write_frame(&mut writer, Kind::Ping, &super::now_us().to_be_bytes()),
                     Outgoing::Control(json) => write_frame(&mut writer, Kind::Control, json.as_bytes()),
                     Outgoing::Power(json) => write_frame(&mut writer, Kind::Power, json.as_bytes()),
+                    Outgoing::Resize(json) => write_frame(&mut writer, Kind::Resize, json.as_bytes()),
                     Outgoing::KeyFrame => write_frame(&mut writer, Kind::KeyFrame, &[]),
                 };
                 if r.is_err() {
@@ -621,6 +646,28 @@ pub(crate) fn decode_loop_with(
                     .unwrap_or(false);
                 let _ = events.send_blocking(Event::Control(granted));
             }
+            Kind::Cursor => {
+                let cursor = if payload.is_empty() {
+                    None
+                } else {
+                    let field = |i: usize| u32::from(u16::from_be_bytes([payload[i], payload[i + 1]]));
+                    if payload.len() < 8 {
+                        continue;
+                    }
+                    let (w, h) = (field(0), field(2));
+                    if w == 0 || h == 0 || payload.len() != 8 + (w * h * 4) as usize {
+                        continue;
+                    }
+                    Some(CursorImage {
+                        width: w,
+                        height: h,
+                        hot_x: field(4),
+                        hot_y: field(6),
+                        data: gtk4::glib::Bytes::from(&payload[8..]),
+                    })
+                };
+                let _ = events.send_blocking(Event::Cursor(cursor));
+            }
             Kind::Power => {
                 let v: serde_json::Value = serde_json::from_slice(&payload).unwrap_or_default();
                 let text = |k: &str| v.get(k).and_then(|x| x.as_str()).unwrap_or_default().to_string();
@@ -630,7 +677,14 @@ pub(crate) fn decode_loop_with(
                     error: text("error"),
                 });
             }
-            Kind::Input | Kind::Ping | Kind::KeyFrame | Kind::Audio | Kind::RoomState | Kind::Chat | Kind::ChatAck => {}
+            Kind::Input
+            | Kind::Ping
+            | Kind::KeyFrame
+            | Kind::Audio
+            | Kind::RoomState
+            | Kind::Chat
+            | Kind::ChatAck
+            | Kind::Resize => {}
             Kind::Error => anyhow::bail!("{}", String::from_utf8_lossy(&payload)),
         }
     }
@@ -780,7 +834,7 @@ mod tests {
                     frames += 1;
                 }
                 Event::Stats(st) => stats = Some(st),
-                Event::Control(_) | Event::Power { .. } => {}
+                Event::Control(_) | Event::Power { .. } | Event::Cursor(_) => {}
                 Event::Ended(_) => break,
             }
             if frames >= 5 && stats.is_some() {

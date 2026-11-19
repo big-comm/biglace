@@ -40,6 +40,8 @@ pub struct Portal {
     pub fd: OwnedFd,
     pub node: u32,
     pub input: async_channel::Sender<Input>,
+    /// The pointer is drawn into the frames.
+    pub cursor_embedded: bool,
 }
 
 fn saved_token() -> Option<String> {
@@ -58,7 +60,7 @@ fn save_token(token: Option<&str>) {
 /// Start a portal session on its own thread. Blocks until the compositor
 /// answers (the person may have to click "Share") and returns the stream,
 /// or why it failed.
-pub fn start() -> anyhow::Result<Portal> {
+pub fn start(embed_cursor: bool) -> anyhow::Result<Portal> {
     let (ready_tx, ready_rx) = mpsc::channel::<anyhow::Result<Portal>>();
     std::thread::Builder::new()
         .name("biglace-portal".into())
@@ -88,11 +90,16 @@ pub fn start() -> anyhow::Result<Portal> {
                     // No pointer in the frames (the viewer draws its own):
                     // Hidden where offered, else Metadata (also kept out of
                     // the frames); some compositors offer only one of them.
+                    // Viewers that understand it get the pointer in the
+                    // frames instead (its real shape; the portal doesn't
+                    // tell the shape apart).
                     let modes = sc.available_cursor_modes().await.unwrap_or(CursorMode::EMBEDDED);
-                    let cursor = [CursorMode::HIDDEN, CursorMode::METADATA, CursorMode::EMBEDDED]
-                        .into_iter()
-                        .find(|m| modes.contains(*m))
-                        .unwrap_or(CursorMode::EMBEDDED);
+                    let order = if embed_cursor {
+                        [CursorMode::EMBEDDED, CursorMode::HIDDEN, CursorMode::METADATA]
+                    } else {
+                        [CursorMode::HIDDEN, CursorMode::METADATA, CursorMode::EMBEDDED]
+                    };
+                    let cursor = order.into_iter().find(|m| modes.contains(*m)).unwrap_or(CursorMode::EMBEDDED);
                     sc.select_sources(
                         &session,
                         SelectSourcesOptions::default()
@@ -109,9 +116,9 @@ pub fn start() -> anyhow::Result<Portal> {
                         .ok_or_else(|| anyhow::anyhow!("no screen was shared"))?
                         .clone();
                     let fd = sc.open_pipe_wire_remote(&session, Default::default()).await?;
-                    anyhow::Ok((rd, session, stream, fd))
+                    anyhow::Ok((rd, session, stream, fd, cursor == CursorMode::EMBEDDED))
                 };
-                let (rd, session, stream, fd) = match setup.await {
+                let (rd, session, stream, fd, cursor_embedded) = match setup.await {
                     Ok(v) => v,
                     Err(e) => {
                         let _ = ready_tx.send(Err(e));
@@ -120,7 +127,7 @@ pub fn start() -> anyhow::Result<Portal> {
                 };
                 let node = stream.pipe_wire_node_id();
                 let size = stream.size();
-                let _ = ready_tx.send(Ok(Portal { fd, node, input: input_tx }));
+                let _ = ready_tx.send(Ok(Portal { fd, node, input: input_tx, cursor_embedded }));
 
                 let (w, h) = size.map(|(w, h)| (f64::from(w), f64::from(h))).unwrap_or((1920.0, 1080.0));
                 while let Ok(first) = input_rx.recv().await {

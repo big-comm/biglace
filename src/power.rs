@@ -35,7 +35,34 @@ struct Resume {
     /// The boot (its start time) whose session was already locked.
     #[serde(default)]
     locked_boot: u64,
+    /// "Restart the session" (sign out and back in) instead of the computer.
+    #[serde(default)]
+    relogin: bool,
+    /// The session the request came from, and the one already locked
+    /// (relogin: same boot, a new session).
+    #[serde(default)]
+    asked_session: String,
+    #[serde(default)]
+    locked_session: String,
 }
+
+/// The id of this user's graphical login session (logind). Asked to
+/// logind: programs a desktop starts from systemd (GNOME's autostart) don't
+/// carry XDG_SESSION_ID.
+fn session_id() -> String {
+    use std::os::unix::fs::MetadataExt;
+    let uid = std::fs::metadata("/proc/self").map(|m| m.uid()).unwrap_or(0);
+    std::process::Command::new("loginctl")
+        .args(["show-user", &uid.to_string(), "-p", "Display", "--value"])
+        .output()
+        .ok()
+        .filter(|o| o.status.success())
+        .map(|o| String::from_utf8_lossy(&o.stdout).trim().to_string())
+        .filter(|s| !s.is_empty())
+        .or_else(|| std::env::var("XDG_SESSION_ID").ok())
+        .unwrap_or_default()
+}
+
 
 /// When this boot started (unix seconds), from the kernel.
 fn boot_time() -> u64 {
@@ -45,8 +72,12 @@ fn boot_time() -> u64 {
         .unwrap_or(0)
 }
 
-/// Lock now? Only on the first start after the restart that was asked for.
-fn should_lock(r: &Resume, boot: u64) -> bool {
+/// Lock now? Only on the first start after the restart that was asked for
+/// (a new boot — or, for a session restart, a new session).
+fn should_lock(r: &Resume, boot: u64, session: &str) -> bool {
+    if r.relogin {
+        return !session.is_empty() && r.asked_session != session && r.locked_session != session;
+    }
     boot != 0 && r.asked != 0 && r.asked < boot && r.locked_boot != boot
 }
 
@@ -130,13 +161,18 @@ fn session_hint() -> String {
         .unwrap_or_default()
 }
 
-/// Get ready to restart and come back for `login`@`device`: the pass, the
-/// one-time start and the automatic sign-in. Nothing restarts yet.
-pub fn prepare_restart(login: &str, device: &str) -> Result<(), String> {
-    if !available() {
-        return Err(crate::tr!("this computer can't restart remotely (BigLace's helper isn't installed)"));
-    }
-    let resume = Resume { login: login.into(), device: device.into(), until: now() + RESUME_SECS, asked: now(), locked_boot: 0 };
+/// The pass and the one-time start, for a restart (or a session restart).
+fn write_resume(login: &str, device: &str, relogin: bool) -> Result<(), String> {
+    let resume = Resume {
+        login: login.into(),
+        device: device.into(),
+        until: now() + RESUME_SECS,
+        asked: now(),
+        locked_boot: 0,
+        relogin,
+        asked_session: session_id(),
+        locked_session: String::new(),
+    };
     write_private(&resume_path(), &serde_json::to_vec(&resume).unwrap_or_default()).map_err(|e| e.to_string())?;
     if !crate::autostart::is_enabled() {
         let exe = std::env::current_exe().map(|p| p.to_string_lossy().into_owned()).unwrap_or_else(|_| "biglace".into());
@@ -146,6 +182,16 @@ pub fn prepare_restart(login: &str, device: &str) -> Result<(), String> {
         );
         let _ = write_private(&autostart_once_path(), entry.as_bytes());
     }
+    Ok(())
+}
+
+/// Get ready to restart and come back for `login`@`device`: the pass, the
+/// one-time start and the automatic sign-in. Nothing restarts yet.
+pub fn prepare_restart(login: &str, device: &str) -> Result<(), String> {
+    if !available() {
+        return Err(crate::tr!("this computer can't restart remotely (BigLace's helper isn't installed)"));
+    }
+    write_resume(login, device, false)?;
     let hint = session_hint();
     if let Err(e) = run(Command::new("pkexec").args([HELPER, "arm", &hint])) {
         undo_restart();
@@ -170,6 +216,20 @@ pub fn reboot_now() -> Result<(), String> {
     Ok(())
 }
 
+/// Restart the session for `login`@`device`: sign out and back in by itself
+/// (the login screen restarts), without restarting the computer.
+pub fn restart_session(login: &str, device: &str) -> Result<(), String> {
+    if !available() {
+        return Err(crate::tr!("this computer can't restart remotely (BigLace's helper isn't installed)"));
+    }
+    write_resume(login, device, true)?;
+    if let Err(e) = run(Command::new("pkexec").args([HELPER, "relogin", &session_hint()])) {
+        undo_restart();
+        return Err(crate::trf!("could not restart the session: {error}", "error" => e));
+    }
+    Ok(())
+}
+
 pub fn shutdown() -> Result<(), String> {
     run(Command::new("systemctl").arg("poweroff")).map_err(|e| crate::trf!("could not shut down: {error}", "error" => e))
 }
@@ -179,11 +239,12 @@ pub fn shutdown() -> Result<(), String> {
 pub fn after_start() {
     let _ = std::fs::remove_file(autostart_once_path());
     let Some(mut resume) = read_resume() else { return };
-    let boot = boot_time();
-    if !should_lock(&resume, boot) {
+    let (boot, session) = (boot_time(), session_id());
+    if !should_lock(&resume, boot, &session) {
         return;
     }
     resume.locked_boot = boot;
+    resume.locked_session = session;
     let _ = write_private(&resume_path(), &serde_json::to_vec(&resume).unwrap_or_default());
     // GNOME refuses remote access while locked: there the screen stays as
     // it was before the restart (open to the person helping) and locks
@@ -371,7 +432,16 @@ mod tests {
         let _env = crate::test_env_lock();
         let dir = std::env::temp_dir().join(format!("biglace-power-{}", std::process::id()));
         std::env::set_var("XDG_CONFIG_HOME", &dir);
-        let r = Resume { login: "tales".into(), device: "notebook".into(), until: now() + 60, asked: 100, locked_boot: 0 };
+        let r = Resume {
+            login: "tales".into(),
+            device: "notebook".into(),
+            until: now() + 60,
+            asked: 100,
+            locked_boot: 0,
+            relogin: false,
+            asked_session: String::new(),
+            locked_session: String::new(),
+        };
         write_private(&resume_path(), &serde_json::to_vec(&r).unwrap()).unwrap();
         assert!(resume_allows("tales", "notebook"));
         assert!(!resume_allows("tales", "outro"));
@@ -388,10 +458,24 @@ mod tests {
     /// is merely reopened (or reinstalled) before or after.
     #[test]
     fn locks_only_once_after_the_restart() {
-        let r = Resume { login: "t".into(), device: "d".into(), until: 0, asked: 1_000, locked_boot: 0 };
-        assert!(should_lock(&r, 1_100), "restarted after asking");
-        assert!(!should_lock(&r, 900), "same boot as the request");
-        assert!(!should_lock(&Resume { locked_boot: 1_100, ..r.clone() }, 1_100), "already locked this boot");
-        assert!(!should_lock(&r, 0));
+        let r = Resume {
+            login: "t".into(),
+            device: "d".into(),
+            until: 0,
+            asked: 1_000,
+            locked_boot: 0,
+            relogin: false,
+            asked_session: "3".into(),
+            locked_session: String::new(),
+        };
+        assert!(should_lock(&r, 1_100, "5"), "restarted after asking");
+        assert!(!should_lock(&r, 900, "3"), "same boot as the request");
+        assert!(!should_lock(&Resume { locked_boot: 1_100, ..r.clone() }, 1_100, "5"), "already locked this boot");
+        assert!(!should_lock(&r, 0, "5"));
+        // Session restart: same boot, a new session.
+        let s = Resume { relogin: true, ..r.clone() };
+        assert!(should_lock(&s, 900, "7"), "new session after signing back in");
+        assert!(!should_lock(&s, 900, "3"), "still the session that asked");
+        assert!(!should_lock(&Resume { locked_session: "7".into(), ..s.clone() }, 900, "7"), "already locked");
     }
 }

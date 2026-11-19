@@ -12,7 +12,7 @@ use x11rb::protocol::Event;
 /// Watch the root window until `stop` is set; `dirty` is raised on every
 /// change. Returns false when XDamage isn't available (the caller then
 /// treats the screen as always changing).
-pub fn watch(dirty: Arc<AtomicBool>, stop: Arc<AtomicBool>) -> bool {
+pub fn watch(dirty: Arc<AtomicBool>, stop: Arc<AtomicBool>, track_pointer: bool) -> bool {
     let Ok((conn, screen_num)) = x11rb::connect(None) else {
         return false;
     };
@@ -42,8 +42,20 @@ pub fn watch(dirty: Arc<AtomicBool>, stop: Arc<AtomicBool>) -> bool {
     std::thread::Builder::new()
         .name("biglace-remote-damage".into())
         .spawn(move || {
+            let mut last_pointer = (0i16, 0i16);
             while !stop.load(Ordering::Acquire) {
                 let mut changed = false;
+                // The pointer drawn in the frames: its moves are changes too
+                // (XDamage doesn't report them).
+                if track_pointer {
+                    use x11rb::protocol::xproto::ConnectionExt as _;
+                    if let Some(p) = conn.query_pointer(root).ok().and_then(|c| c.reply().ok()) {
+                        if (p.root_x, p.root_y) != last_pointer {
+                            last_pointer = (p.root_x, p.root_y);
+                            changed = true;
+                        }
+                    }
+                }
                 while let Ok(Some(event)) = conn.poll_for_event() {
                     if matches!(event, Event::DamageNotify(_)) {
                         changed = true;

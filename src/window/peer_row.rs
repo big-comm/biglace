@@ -327,8 +327,11 @@ pub fn build(peer: &Peer, ctx: &PeerCtx) -> libadwaita::ExpanderRow {
             .build();
         btn_screen.update_property(&[gtk4::accessible::Property::Label(&tr!("See and control the screen"))]);
         let (ip, name, toast) = (peer.ipv4.clone(), peer.display_name(), ctx.toast.clone());
-        let power = peer.agent.as_ref().is_some_and(|a| a.supports(crate::power::CAPABILITY));
-        btn_screen.connect_clicked(move |_| super::remote_ui::open_viewer(&ip, &name, &toast, power));
+        let caps = super::remote_ui::HostCaps {
+            power: peer.agent.as_ref().is_some_and(|a| a.supports(crate::power::CAPABILITY)),
+            resize: peer.agent.as_ref().is_some_and(|a| a.supports(crate::remote::RESIZE_CAPABILITY)),
+        };
+        btn_screen.connect_clicked(move |_| super::remote_ui::open_viewer(&ip, &name, &toast, caps));
         row.add_suffix(&btn_screen);
     }
 
