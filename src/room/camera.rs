@@ -68,10 +68,12 @@ fn store(ip: &str, sample: &gst::Sample) {
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct Device {
     pub name: String,
-    /// The V4L2 device behind it (what identifies it across restarts).
+    /// What identifies it across restarts: its V4L2 device, or
+    /// `pipewire:<node name>` for cameras that only exist in PipeWire
+    /// (e.g. BigCam's processed camera).
     pub path: String,
-    /// Its PipeWire node (`object.serial`), when PipeWire manages it.
-    pub serial: Option<String>,
+    /// Its PipeWire node name, when PipeWire manages it (how it's opened).
+    pub node: Option<String>,
 }
 
 /// Cameras plugged in (V4L2 capture devices).
@@ -88,23 +90,26 @@ pub fn devices() -> Vec<Device> {
     for d in monitor.devices() {
         let props = d.properties();
         let get = |k: &str| props.as_ref().and_then(|p| p.get::<String>(k).ok()).filter(|v| !v.is_empty());
-        let path = get("api.v4l2.path").or_else(|| get("device.path")).unwrap_or_default();
         // PipeWire lists each camera too: that's the way to open it, shared
         // with other programs instead of taking the device for ourselves.
-        let serial = get("object.serial").or_else(|| props.as_ref().and_then(|p| p.get::<i64>("object.serial").ok()).map(|n| n.to_string()));
-        if path.is_empty() {
-            continue;
-        }
+        let node = get("node.name");
+        let path = match get("api.v4l2.path").or_else(|| get("device.path")) {
+            Some(p) => p,
+            None => match &node {
+                Some(n) => format!("pipewire:{n}"),
+                None => continue,
+            },
+        };
         if let Some(known) = out.iter_mut().find(|x| x.path == path) {
-            if known.serial.is_none() {
-                known.serial = serial;
+            if known.node.is_none() {
+                known.node = node;
             }
             continue;
         }
         // Only devices that really capture (not metadata nodes).
         let caps_ok = d.caps().is_some_and(|c| c.iter().any(|s| s.name().starts_with("video/x-raw") || s.name() == "image/jpeg"));
         if caps_ok {
-            out.push(Device { name: d.display_name().to_string(), path, serial });
+            out.push(Device { name: d.display_name().to_string(), path, node });
         }
     }
     monitor.stop();
@@ -130,11 +135,9 @@ fn access() -> Result<Access, String> {
     }
     use ashpd::desktop::camera::Camera;
     let result: Result<Option<std::os::fd::OwnedFd>, Option<String>> = ashpd::zbus::block_on(async {
-        let conn = ashpd::zbus::Connection::session().await.map_err(|_| None)?;
-        if let Ok(app_id) = ashpd::AppID::try_from(crate::APP_ID) {
-            let _ = ashpd::register_host_app_with_connection(conn.clone(), app_id).await;
-        }
-        let cam = Camera::with_connection(conn).await.map_err(|_| None)?;
+        // As a host app (no app id): the portal lets it in (GNOME refused
+        // at once when we registered one — it then wants a stored permission).
+        let cam = Camera::new().await.map_err(|_| None)?;
         let request = cam.request_access(Default::default()).await.map_err(|_| None)?;
         match request.response() {
             Ok(()) => {}
@@ -167,10 +170,10 @@ fn source_desc(device: Option<&Device>, access: &Access) -> String {
                 Access::Portal(fd) => format!(" fd={}", std::os::fd::AsRawFd::as_raw_fd(fd)),
                 _ => String::new(),
             };
-            let target = device.and_then(|d| d.serial.as_deref()).map(|s| format!(" target-object={s}")).unwrap_or_default();
+            let target = device.and_then(|d| d.node.as_deref()).map(|n| format!(" target-object={n}")).unwrap_or_default();
             format!("pipewiresrc{fd}{target} always-copy=true ! decodebin")
         }
-        Access::Direct => match device {
+        Access::Direct => match device.filter(|d| d.path.starts_with("/dev/")) {
             Some(d) => format!("v4l2src device={} ! decodebin", d.path),
             None => "v4l2src ! decodebin".into(),
         },
@@ -201,7 +204,9 @@ pub fn start(path: Option<&str>, my_ip: &str, send: impl Fn(&[u8]) + Send + Sync
     let access = if fake { Access::Direct } else { access()? };
     // The chosen camera (by its device), with its PipeWire node.
     let device = if fake { None } else { path.and_then(|p| devices().into_iter().find(|d| d.path == p)) };
-    let device = device.or_else(|| path.map(|p| Device { name: String::new(), path: p.to_string(), serial: None }));
+    let device = device.or_else(|| {
+        path.map(|p| Device { name: String::new(), path: p.to_string(), node: p.strip_prefix("pipewire:").map(str::to_string) })
+    });
     let enc = encoder();
     let desc = format!(
         "{src} ! videoconvert ! videoscale ! videorate \
@@ -336,6 +341,26 @@ impl Decoder {
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    /// The real camera, through the Camera portal and PipeWire (run by hand
+    /// on a machine with a camera: `cargo test real_camera -- --ignored`).
+    #[test]
+    #[ignore]
+    fn real_camera_through_pipewire() {
+        let _turn = crate::remote::heavy_test();
+        let list = devices();
+        eprintln!("cameras: {list:?}");
+        let got = Arc::new(std::sync::atomic::AtomicUsize::new(0));
+        let g = got.clone();
+        let cap = start(list.first().map(|d| d.path.as_str()), "me", move |_| {
+            g.fetch_add(1, Ordering::Relaxed);
+        })
+        .expect("camera starts");
+        std::thread::sleep(std::time::Duration::from_secs(4));
+        drop(cap);
+        eprintln!("encoded pictures: {}", got.load(Ordering::Relaxed));
+        assert!(got.load(Ordering::Relaxed) > 10);
+    }
 
     /// A test picture goes through our capture chain and comes out of a
     /// decoder as a 640×360 frame.
