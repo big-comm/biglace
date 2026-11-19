@@ -457,6 +457,14 @@ fn chat_dir() -> PathBuf {
     gtk4::glib::user_data_dir().join("biglace").join("chat")
 }
 
+/// Where pasted pictures and recorded voice messages are kept (they're
+/// served from here when sent).
+pub fn media_dir() -> PathBuf {
+    let dir = chat_dir().join("media");
+    let _ = std::fs::create_dir_all(&dir);
+    dir
+}
+
 /// Development builds only (BIGLACE_PREVIEW=chat with BIGLACE_CHAT_DIR): a
 /// sample history to look at the chat without a second person.
 #[cfg(debug_assertions)]
@@ -537,6 +545,7 @@ pub fn seed_preview() -> Option<ConvId> {
             height: 0,
             duration_ms: 0,
             wave: vec![],
+            sha256: None,
         };
         let mut photo = offer("praia.png", std::fs::metadata(&pic).map(|m| m.len()).unwrap_or(0), FileKind::Image);
         if let Some((jpeg, w, h)) = &thumb {
@@ -715,9 +724,6 @@ fn post_with(conv: &ConvId, text: &str, file: Option<(Offer, PathBuf)>, extra: E
     if text.len() > MAX_TEXT {
         return Err(crate::tr!("message too long"));
     }
-    if file.is_some() && conv.is_group() {
-        return Err(crate::tr!("files can only be sent in direct conversations"));
-    }
     let me = me(Duration::from_secs(300)).ok_or_else(|| crate::tr!("not signed in to a BigScale network"))?;
     let recipients: Vec<String> = if conv.is_group() {
         me.groups
@@ -868,9 +874,7 @@ pub fn forward(to: &ConvId, from: &ConvId, ids: &[String]) -> Result<(), String>
         let Some(m) = all.iter().find(|m| &m.id == id && !m.deleted) else { continue };
         let author = m.forwarded_from.clone().unwrap_or_else(|| m.from.clone());
         if let Some(path) = m.file.as_ref().and_then(Attachment::local) {
-            if !to.is_group() {
-                files::send_file(to, &path)?;
-            }
+            files::send_file(to, &path)?;
         }
         if !m.text.trim().is_empty() {
             post_with(to, &m.text, None, Extra { forwarded_from: Some(author), ..Extra::default() })?;
@@ -1095,11 +1099,8 @@ fn place(wire: &Wire, sender: &str, me: &Me) -> Option<(ConvId, bool)> {
     if !wire.id.bytes().all(|c| c.is_ascii_alphanumeric()) {
         return None;
     }
-    if let Some(f) = &wire.file {
-        // Files only between two people, and only well-formed offers.
-        if wire.conv.is_group() || !f.valid() {
-            return None;
-        }
+    if wire.file.as_ref().is_some_and(|f| !f.valid()) {
+        return None;
     }
     if wire.reply_to.as_ref().is_some_and(|r| !r.valid()) || wire.forwarded_from.as_ref().is_some_and(|f| !name_ok(f)) {
         return None;

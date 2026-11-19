@@ -31,8 +31,6 @@ pub struct ChatPage {
     scroll: gtk4::ScrolledWindow,
     messages: gtk4::Box,
     composer: super::composer::Composer,
-    /// Attach (direct conversations only).
-    btn_attach: gtk4::Button,
     /// Microphone when there's nothing typed (direct conversations), send
     /// otherwise.
     action_stack: gtk4::Stack,
@@ -457,7 +455,6 @@ impl ChatPage {
             scroll,
             messages,
             composer,
-            btn_attach: btn_attach.clone(),
             action_stack,
             compose_stack,
             rec_time,
@@ -521,6 +518,11 @@ impl ChatPage {
             });
         }
         page.setup_drop(&conv_overlay);
+        {
+            // Ctrl+V with a picture or copied files: sent.
+            let page2 = page.clone();
+            page.composer.on_paste_files(move |paths| page2.send_files(paths));
+        }
         // ── Replies, edits, pins, selection, search ──
         {
             let page = page.clone();
@@ -1020,25 +1022,14 @@ impl ChatPage {
         app.send_notification(Some(&notification_id(conv)), &n);
     }
 
-    fn current_is_direct(&self) -> bool {
-        self.state.current.borrow().as_ref().is_some_and(|c| !c.is_group())
-    }
-
-    /// Attach and the microphone only in direct conversations; send when
-    /// something is typed.
+    /// Microphone when nothing is typed, send otherwise.
     fn update_actions(&self) {
-        let direct = self.current_is_direct();
-        self.btn_attach.set_visible(direct);
         let typed = self.composer.view.buffer().char_count() > 0;
-        self.action_stack.set_visible_child_name(if typed || !direct { "send" } else { "mic" });
+        self.action_stack.set_visible_child_name(if typed { "send" } else { "mic" });
     }
 
     fn send_files(&self, paths: Vec<std::path::PathBuf>) {
         let Some(id) = self.state.current.borrow().clone() else { return };
-        if id.is_group() {
-            super::show_toast(&self.toast, &tr!("Files can only be sent in direct conversations."), 5);
-            return;
-        }
         for path in paths {
             let (id, toast) = (id.clone(), self.toast.clone());
             super::run_in_background(
@@ -1071,18 +1062,9 @@ impl ChatPage {
         {
             let page = self.clone();
             target.connect_enter(move |_, _, _| {
-                let direct = page.current_is_direct();
-                page.drop_hint.set_text(&if direct {
-                    tr!("Drop to send")
-                } else {
-                    tr!("Files can only be sent in direct conversations")
-                });
+                page.drop_hint.set_text(&tr!("Drop to send"));
                 page.drop_reveal.set_reveal_child(true);
-                if direct {
-                    gtk4::gdk::DragAction::COPY
-                } else {
-                    gtk4::gdk::DragAction::empty()
-                }
+                gtk4::gdk::DragAction::COPY
             });
         }
         {
@@ -1095,7 +1077,7 @@ impl ChatPage {
                 page.drop_reveal.set_reveal_child(false);
                 let Ok(list) = value.get::<gtk4::gdk::FileList>() else { return false };
                 let paths: Vec<_> = list.files().iter().filter_map(|f| f.path()).collect();
-                if paths.is_empty() || !page.current_is_direct() {
+                if paths.is_empty() || page.state.current.borrow().is_none() {
                     return false;
                 }
                 page.send_files(paths);
@@ -1106,7 +1088,7 @@ impl ChatPage {
     }
 
     fn start_recording(&self) {
-        if self.state.recorder.borrow().is_some() || !self.current_is_direct() {
+        if self.state.recorder.borrow().is_some() || self.state.current.borrow().is_none() {
             return;
         }
         let rec = match voice::Recorder::start() {

@@ -42,7 +42,11 @@ pub struct Composer {
     pub view: gtk4::TextView,
     /// Opens the app's emoji picker (Ctrl+; and the context menu).
     emoji: OpenEmoji,
+    /// Gets pictures and files pasted with Ctrl+V.
+    paste_files: PasteFiles,
 }
+
+type PasteFiles = std::rc::Rc<std::cell::RefCell<Option<Box<dyn Fn(Vec<std::path::PathBuf>)>>>>;
 
 /// Tallest the message box grows before it scrolls.
 const MAX_INPUT_HEIGHT: i32 = 180;
@@ -138,7 +142,8 @@ impl Composer {
                 }
             });
         }
-        let c = Self { widget, view, emoji: Default::default() };
+        let c = Self { widget, view, emoji: Default::default(), paste_files: Default::default() };
+        c.setup_paste();
         c.setup_actions(win);
         c
     }
@@ -286,6 +291,69 @@ impl Composer {
         });
         dlg.present();
         entry.grab_focus();
+    }
+
+    /// Where pictures and files pasted with Ctrl+V go (sent).
+    pub fn on_paste_files(&self, send: impl Fn(Vec<std::path::PathBuf>) + 'static) {
+        *self.paste_files.borrow_mut() = Some(Box::new(send));
+    }
+
+    /// Ctrl+V with a picture (a screenshot…) or copied files in the
+    /// clipboard sends them; text pastes as usual.
+    fn setup_paste(&self) {
+        let keys = gtk4::EventControllerKey::new();
+        keys.set_propagation_phase(gtk4::PropagationPhase::Capture);
+        let (view, hook) = (self.view.clone(), self.paste_files.clone());
+        keys.connect_key_pressed(move |_, key, _, mods| {
+            let ctrl_v = mods.contains(gtk4::gdk::ModifierType::CONTROL_MASK)
+                && matches!(key, gtk4::gdk::Key::v | gtk4::gdk::Key::V);
+            if !ctrl_v || hook.borrow().is_none() {
+                return gtk4::glib::Propagation::Proceed;
+            }
+            let clipboard = view.clipboard();
+            let formats = clipboard.formats();
+            if formats.contains_type(gtk4::gdk::FileList::static_type()) {
+                let hook = hook.clone();
+                clipboard.read_value_async(
+                    gtk4::gdk::FileList::static_type(),
+                    gtk4::glib::Priority::DEFAULT,
+                    gtk4::gio::Cancellable::NONE,
+                    move |r| {
+                        let paths: Vec<_> = r
+                            .ok()
+                            .and_then(|v| v.get::<gtk4::gdk::FileList>().ok())
+                            .map(|l| l.files().iter().filter_map(|f| f.path()).collect())
+                            .unwrap_or_default();
+                        if !paths.is_empty() {
+                            if let Some(send) = hook.borrow().as_ref() {
+                                send(paths);
+                            }
+                        }
+                    },
+                );
+                return gtk4::glib::Propagation::Stop;
+            }
+            if formats.contains_type(gtk4::gdk::Texture::static_type()) && !formats.contain_mime_type("text/plain") {
+                let hook = hook.clone();
+                clipboard.read_texture_async(gtk4::gio::Cancellable::NONE, move |r| {
+                    let Ok(Some(texture)) = r else { return };
+                    let stamp = gtk4::glib::DateTime::now_local()
+                        .ok()
+                        .and_then(|d| d.format("%Y-%m-%d_%H-%M-%S").ok())
+                        .map(|s| s.to_string())
+                        .unwrap_or_default();
+                    let path = crate::chat::media_dir().join(format!("image-{stamp}.png"));
+                    if texture.save_to_png(&path).is_ok() {
+                        if let Some(send) = hook.borrow().as_ref() {
+                            send(vec![path]);
+                        }
+                    }
+                });
+                return gtk4::glib::Propagation::Stop;
+            }
+            gtk4::glib::Propagation::Proceed
+        });
+        self.view.add_controller(keys);
     }
 
     /// What Ctrl+; and "Emoji" in the context menu do.

@@ -66,11 +66,31 @@ pub struct Offer {
     pub duration_ms: u64,
     #[serde(default, skip_serializing_if = "Vec::is_empty")]
     pub wave: Vec<u8>,
+    /// SHA-256 of the file (hex): checked once it arrives.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub sha256: Option<String>,
+}
+
+/// SHA-256 of a file (hex).
+pub fn sha256_of(path: &Path) -> Result<String, String> {
+    use sha2::{Digest, Sha256};
+    let mut f = std::fs::File::open(path).map_err(|e| e.to_string())?;
+    let mut h = Sha256::new();
+    let mut buf = vec![0u8; 1 << 20];
+    loop {
+        let n = f.read(&mut buf).map_err(|e| e.to_string())?;
+        if n == 0 {
+            break;
+        }
+        h.update(&buf[..n]);
+    }
+    Ok(h.finalize().iter().map(|b| format!("{b:02x}")).collect())
 }
 
 impl Offer {
     pub fn valid(&self) -> bool {
-        safe_name(&self.name)
+        self.sha256.as_ref().is_none_or(|h| h.len() == 64 && h.bytes().all(|c| c.is_ascii_hexdigit()))
+            && safe_name(&self.name)
             && self.size <= MAX_SIZE
             && self.thumb.as_ref().is_none_or(|t| t.len() <= 96 * 1024)
             && self.wave.len() <= 128
@@ -168,7 +188,10 @@ pub fn send_file(conv: &ConvId, path: &Path) -> Result<(), String> {
         height: 0,
         duration_ms: 0,
         wave: vec![],
+        sha256: None,
     };
+    // What arrives is checked against this (a damaged copy is refused).
+    offer.sha256 = Some(sha256_of(path)?);
     let preview = match offer.kind {
         FileKind::Image => image_thumb(path),
         FileKind::Video => video_thumb(path),
@@ -204,6 +227,7 @@ pub fn send_voice(conv: &ConvId, path: &Path, duration_ms: u64, wave: Vec<u8>) -
         height: 0,
         duration_ms,
         wave,
+        sha256: sha256_of(path).ok(),
     };
     super::post(conv, "", Some((offer, path.to_path_buf()))).map(|_| ())
 }
@@ -475,6 +499,12 @@ fn fetch(conv: &ConvId, id: &str) -> Result<(), String> {
     if !last_error.is_empty() {
         return Err(last_error);
     }
+    if let Some(expected) = &file.offer.sha256 {
+        if !sha256_of(&part)?.eq_ignore_ascii_case(expected) {
+            let _ = std::fs::remove_file(&part);
+            return Err(crate::tr!("the file arrived different from the original (damaged on the way) — download it again"));
+        }
+    }
     let fin = unique_path(&dir, &file.offer.name);
     std::fs::rename(&part, &fin).map_err(|e| e.to_string())?;
     if let Ok(mut s) = store().lock() {
@@ -552,6 +582,31 @@ mod tests {
         assert_eq!(parse_path("/v1/file/abc"), None);
     }
 
+    /// The integrity check: SHA-256 of a known text.
+    #[test]
+    fn hashes_files() {
+        let path = std::env::temp_dir().join(format!("biglace-hash-{}", std::process::id()));
+        std::fs::write(&path, b"abc").unwrap();
+        assert_eq!(sha256_of(&path).unwrap(), "ba7816bf8f01cfea414140de5dae2223b00361a396177a9cb410ff61f20015ad");
+        let _ = std::fs::remove_file(&path);
+    }
+
+    /// A copy that differs from what was announced is refused and removed.
+    #[test]
+    fn damaged_downloads_are_refused() {
+        let dir = std::env::temp_dir().join(format!("biglace-damaged-{}", std::process::id()));
+        std::fs::create_dir_all(&dir).unwrap();
+        let original = dir.join("a.txt");
+        std::fs::write(&original, b"hello world").unwrap();
+        let expected = sha256_of(&original).unwrap();
+        let part = dir.join("a.part");
+        std::fs::write(&part, b"hello w0rld").unwrap();
+        assert_ne!(sha256_of(&part).unwrap(), expected);
+        std::fs::write(&part, b"hello world").unwrap();
+        assert_eq!(sha256_of(&part).unwrap(), expected);
+        let _ = std::fs::remove_dir_all(&dir);
+    }
+
     #[test]
     fn downloads_never_overwrite() {
         let dir = std::env::temp_dir().join(format!("biglace-files-test-{}", super::super::new_id()));
@@ -574,8 +629,13 @@ mod tests {
             height: 1,
             duration_ms: 0,
             wave: vec![],
+            sha256: None,
         };
         assert!(o.valid() && o.fetch_by_itself());
+        o.sha256 = Some("zz".into());
+        assert!(!o.valid(), "a malformed hash");
+        o.sha256 = Some("a".repeat(64));
+        assert!(o.valid());
         o.size = AUTO_IMAGE_MAX + 1;
         assert!(o.valid() && !o.fetch_by_itself());
         o.name = "../x".into();
