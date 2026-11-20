@@ -706,7 +706,7 @@ fn run_session(mut stream: TcpStream, stop: &StopHandle, protocol: u32, identity
         }
         // The resolution changed, here or on the viewer's request: open the
         // screen again (the portal remembers the choice, nobody is asked).
-        tailscale::dbg("remote: the capture ended or the screen size changed — opening it again");
+        tailscale::dbg("remote: the capture ended or the screen size changed, opening it again");
         #[cfg(target_os = "linux")]
         {
             if let Ok(mut s) = sink.lock() {
