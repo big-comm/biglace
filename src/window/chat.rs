@@ -1288,6 +1288,7 @@ impl ChatPage {
             .default_width(400)
             .default_height(520)
             .build();
+        super::dialogs::close_on_escape(&dlg);
         let outer = gtk4::Box::new(gtk4::Orientation::Vertical, 0);
         outer.append(&libadwaita::HeaderBar::new());
         let body = gtk4::Box::new(gtk4::Orientation::Vertical, 12);

@@ -112,6 +112,7 @@ pub fn show(
         .title(tr!("Join with an invite"))
         .default_width(480)
         .build();
+    super::dialogs::close_on_escape(&dlg);
 
     let outer = gtk4::Box::new(gtk4::Orientation::Vertical, 0);
     outer.append(&libadwaita::HeaderBar::new());

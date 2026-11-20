@@ -679,6 +679,7 @@ impl GroupsPage {
         let intro = gtk4::Label::new(Some(&tr!(
             "Choose people on your network. Each one gets the invitation in BigLace and decides whether to join."
         )));
+        super::dialogs::close_on_escape(&dlg);
         intro.set_wrap(true);
         intro.set_xalign(0.0);
         intro.add_css_class("dim-label");
@@ -860,6 +861,7 @@ impl GroupsPage {
         hint.set_margin_top(6);
         hint.set_wrap(true);
         grp.add(&hint);
+        super::dialogs::close_on_escape(&dlg);
         pref.add(&grp);
         outer.append(&pref);
 

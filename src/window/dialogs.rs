@@ -349,6 +349,7 @@ pub fn show_panel_login(
         .title(tr!("Sign in as administrator"))
         .default_width(480)
         .build();
+    close_on_escape(&dlg);
 
     let outer = gtk4::Box::new(gtk4::Orientation::Vertical, 0);
 

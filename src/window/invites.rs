@@ -448,6 +448,7 @@ pub fn show_dialog(parent: &libadwaita::ApplicationWindow, page: &InvitesPage, p
         .title(tr!("Invite someone"))
         .default_width(480)
         .build();
+    super::dialogs::close_on_escape(&dlg);
     let outer = gtk4::Box::new(gtk4::Orientation::Vertical, 0);
     outer.append(&libadwaita::HeaderBar::new());
 

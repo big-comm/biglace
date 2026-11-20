@@ -253,6 +253,7 @@ pub fn show_dialog(parent: &impl IsA<gtk4::Window>, on_change: impl Fn(&Theme) +
         .default_width(540)
         .default_height(700)
         .build();
+    super::dialogs::close_on_escape(&dlg);
     let outer = gtk4::Box::new(gtk4::Orientation::Vertical, 0);
     outer.append(&libadwaita::HeaderBar::new());
     let page = libadwaita::PreferencesPage::new();

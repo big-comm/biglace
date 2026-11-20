@@ -1203,6 +1203,7 @@ fn show_key_dialog(ctx: &Ctx) {
         .default_width(460)
         .build();
     let outer = gtk4::Box::new(gtk4::Orientation::Vertical, 0);
+    dialogs::close_on_escape(&dlg);
     outer.append(&libadwaita::HeaderBar::new());
     let page = libadwaita::PreferencesPage::new();
     let grp = libadwaita::PreferencesGroup::builder()
