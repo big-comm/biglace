@@ -357,11 +357,79 @@ impl Clock {
 
 /// GPU decoder chain for 4:2:0 streams, when this machine has VA-API: the
 /// GPU decodes and converts to RGBA (vapostproc); only the finished frame
-/// comes back to memory for the window.
+/// comes back to memory for the window. Where the driver gets that
+/// conversion's colors wrong, the CPU converts instead.
 fn gpu_decoder() -> Option<&'static str> {
     use gstreamer as gst;
-    (gst::ElementFactory::find("vah264dec").is_some() && gst::ElementFactory::find("vapostproc").is_some())
-        .then_some("vah264dec ! vapostproc")
+    static CHAIN: std::sync::OnceLock<Option<&'static str>> = std::sync::OnceLock::new();
+    *CHAIN.get_or_init(|| {
+        if gst::ElementFactory::find("vah264dec").is_none() || gst::ElementFactory::find("vapostproc").is_none() {
+            return None;
+        }
+        if va_colors_right() {
+            Some("vah264dec ! vapostproc")
+        } else {
+            crate::tailscale::dbg("viewer: this GPU's color conversion is wrong; converting on the CPU");
+            Some("vah264dec ! videoconvert n-threads=0")
+        }
+    })
+}
+
+/// A 128×128 picture: red, green, blue and gray quarters.
+const COLOR_CHECK: &[u8] = include_bytes!("color-check.h264");
+
+/// Decode [`COLOR_CHECK`] with VA-API once and look at the colors: some
+/// drivers' vapostproc swaps channels (the whole picture turns pink).
+fn va_colors_right() -> bool {
+    use gstreamer as gst;
+    use gstreamer::prelude::*;
+    use gstreamer_app as gst_app;
+    let check = || -> anyhow::Result<bool> {
+        let pipeline = gst::parse::launch(
+            "appsrc name=src caps=video/x-h264,stream-format=byte-stream,alignment=au \
+             ! h264parse ! vah264dec ! vapostproc ! video/x-raw,format=RGBA \
+             ! appsink name=sink sync=false",
+        )?
+        .downcast::<gst::Pipeline>()
+        .map_err(|_| anyhow::anyhow!("not a pipeline"))?;
+        let src = pipeline.by_name("src").and_then(|e| e.downcast::<gst_app::AppSrc>().ok()).ok_or_else(|| anyhow::anyhow!("no appsrc"))?;
+        let sink = pipeline.by_name("sink").and_then(|e| e.downcast::<gst_app::AppSink>().ok()).ok_or_else(|| anyhow::anyhow!("no appsink"))?;
+        pipeline.set_state(gst::State::Playing)?;
+        let pulled = src
+            .push_buffer(gst::Buffer::from_slice(COLOR_CHECK))
+            .ok()
+            .and_then(|_| src.end_of_stream().ok())
+            .and_then(|_| sink.try_pull_sample(gst::ClockTime::from_seconds(3)));
+        let _ = pipeline.set_state(gst::State::Null);
+        let sample = pulled.ok_or_else(|| anyhow::anyhow!("no picture"))?;
+        let caps = sample.caps().ok_or_else(|| anyhow::anyhow!("no caps"))?;
+        let info = gstreamer_video::VideoInfo::from_caps(caps)?;
+        let buffer = sample.buffer().ok_or_else(|| anyhow::anyhow!("no buffer"))?;
+        let map = buffer.map_readable()?;
+        let stride = usize::try_from(info.stride()[0])?;
+        let pixel = |x: usize, y: usize| -> anyhow::Result<[i32; 3]> {
+            let at = y * stride + x * 4;
+            let p = map.get(at..at + 3).ok_or_else(|| anyhow::anyhow!("short picture"))?;
+            Ok([i32::from(p[0]), i32::from(p[1]), i32::from(p[2])])
+        };
+        Ok(colors_right(pixel(32, 32)?, pixel(96, 32)?, pixel(32, 96)?, pixel(96, 96)?))
+    };
+    check().unwrap_or_else(|e| {
+        crate::tailscale::dbg(&format!("viewer: GPU color check failed: {e}"));
+        false
+    })
+}
+
+/// The red, green and blue quarters lead with their own channel and the
+/// gray one stays gray (each driver's matrix shifts the values a little).
+fn colors_right(red: [i32; 3], green: [i32; 3], blue: [i32; 3], gray: [i32; 3]) -> bool {
+    let leads = |p: [i32; 3], c: usize| (0..3).filter(|&o| o != c).all(|o| p[c] > p[o] + 80);
+    leads(red, 0)
+        && leads(green, 1)
+        && leads(blue, 2)
+        && (gray[0] - gray[1]).abs() < 24
+        && (gray[1] - gray[2]).abs() < 24
+        && (100..=156).contains(&gray[1])
 }
 
 #[cfg(test)]
@@ -697,6 +765,25 @@ mod tests {
     use gstreamer as gst;
     use gstreamer::prelude::*;
     use std::net::TcpListener;
+
+    /// Values read back from [`COLOR_CHECK`]: Intel VA-API (its own matrix)
+    /// and the CPU decoder pass; red and blue swapped, or a pink cast, fail.
+    #[test]
+    fn gpu_colors_judged() {
+        assert!(colors_right([240, 51, 28], [20, 169, 60], [26, 70, 229], [128, 128, 128]));
+        assert!(colors_right([222, 29, 31], [30, 187, 62], [29, 60, 219], [126, 126, 126]));
+        assert!(!colors_right([28, 51, 240], [20, 169, 60], [229, 70, 26], [128, 128, 128]));
+        assert!(!colors_right([240, 51, 28], [20, 169, 60], [26, 70, 229], [160, 110, 140]));
+    }
+
+    /// This machine's VA-API, when it has one, decodes the check picture.
+    #[test]
+    fn color_check_decodes() {
+        if gstreamer::init().is_err() || gst::ElementFactory::find("vah264dec").is_none() {
+            return;
+        }
+        assert!(va_colors_right(), "this GPU's colors come out wrong");
+    }
 
     /// Latency budget: frames encoded with the host's pipeline settings and
     /// decoded with the viewer's, pushed in real time (30 fps). Measures
