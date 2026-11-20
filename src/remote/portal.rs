@@ -297,6 +297,7 @@ async fn connect_libei(rd: &RemoteDesktop, session: &Session<RemoteDesktop>, str
         open: true,
         warned_no_device: false,
         warned_no_key: false,
+        warned_no_region: false,
     })
 }
 
@@ -324,6 +325,7 @@ struct Libei {
     open: bool,
     warned_no_device: bool,
     warned_no_key: bool,
+    warned_no_region: bool,
 }
 
 impl Libei {
@@ -386,7 +388,10 @@ impl Libei {
         match event {
             Input::Move { x, y } => {
                 let Some(pointer) = device.interface::<ei::PointerAbsolute>() else { return };
-                let Some((x, y)) = region_point(device.regions(), &self.stream, x, y) else { return };
+                let Some((x, y)) = region_point(device.regions(), &self.stream, x, y) else {
+                    log_once(&mut self.warned_no_region, "remote: no libei pointer region matches the shared screen");
+                    return;
+                };
                 pointer.motion_absolute(x, y);
             }
             Input::Button { button, pressed } => {
