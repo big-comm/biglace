@@ -286,7 +286,7 @@ impl RoomsPage {
         // The waves move only while someone speaks.
         {
             let rows = page.member_rows.clone();
-            let changes = room::stage_wakeups();
+            let changes = room::room_view_wakeups();
             glib::spawn_future_local(async move {
                 while changes.recv().await.is_ok() {
                     for (_, r) in rows.borrow().iter() {

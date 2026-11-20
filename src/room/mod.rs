@@ -119,22 +119,22 @@ fn emit(e: RoomEvent) {
     let _ = channel().0.try_send(e);
 }
 
-fn stage_listeners() -> &'static Mutex<Vec<async_channel::Sender<()>>> {
+fn room_view_listeners() -> &'static Mutex<Vec<async_channel::Sender<()>>> {
     static LISTENERS: OnceLock<Mutex<Vec<async_channel::Sender<()>>>> = OnceLock::new();
     LISTENERS.get_or_init(Mutex::default)
 }
 
 /// Wakes its listener when a camera picture arrives or a voice level is
-/// worth showing; many changes before it looks are one wakeup. Every
-/// listener hears each change.
-pub fn stage_wakeups() -> async_channel::Receiver<()> {
+/// worth showing, for the room's stage and member list; many changes before
+/// it looks are one wakeup. Every listener hears each change.
+pub fn room_view_wakeups() -> async_channel::Receiver<()> {
     let (tx, rx) = async_channel::bounded(1);
-    stage_listeners().lock().unwrap_or_else(std::sync::PoisonError::into_inner).push(tx);
+    room_view_listeners().lock().unwrap_or_else(std::sync::PoisonError::into_inner).push(tx);
     rx
 }
 
-pub fn stage_changed() {
-    stage_listeners()
+pub fn room_view_changed() {
+    room_view_listeners()
         .lock()
         .unwrap_or_else(std::sync::PoisonError::into_inner)
         .retain(|tx| !matches!(tx.try_send(()), Err(async_channel::TrySendError::Closed(()))));
@@ -480,7 +480,7 @@ fn watch_levels(p: &gstreamer::Pipeline, room: std::sync::Weak<Room>, key: Strin
             let before = room.levels.lock().ok().and_then(|mut l| l.insert(key.clone(), (level, now_us())));
             // Silence going on stays quiet; speaking, or its end, is shown.
             if speaking(level) || before.is_some_and(|(v, _)| speaking(v)) {
-                stage_changed();
+                room_view_changed();
             }
         }
         gstreamer::BusSyncReply::Drop
@@ -785,8 +785,8 @@ mod tests {
     /// The stage and the member list both redraw on the same changes.
     #[test]
     fn every_listener_hears_a_change() {
-        let (stage, members) = (stage_wakeups(), stage_wakeups());
-        stage_changed();
+        let (stage, members) = (room_view_wakeups(), room_view_wakeups());
+        room_view_changed();
         assert!(stage.try_recv().is_ok(), "the stage missed it");
         assert!(members.try_recv().is_ok(), "the member list missed it");
     }
@@ -860,7 +860,7 @@ mod tests {
             camera: Mutex::default(),
             wake: std::sync::mpsc::sync_channel(1).0,
         });
-        let changes = stage_wakeups();
+        let changes = room_view_wakeups();
         let p = gst::parse::launch(
             "audiotestsrc is-live=true samplesperbuffer=960 volume=0.3 \
              ! level name=level interval=50000000 post-messages=true ! fakesink sync=false",
