@@ -13,6 +13,7 @@
 //! input is replayed on the host (XTest on X11).
 
 pub mod client;
+#[cfg_attr(not(test), expect(dead_code, reason = "host::encoder serves only tests since can_host stopped probing; host.rs should mark it #[cfg(test)]"))]
 pub mod host;
 #[cfg(target_os = "linux")]
 mod cursor_x11;
