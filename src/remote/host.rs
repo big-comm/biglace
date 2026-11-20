@@ -919,27 +919,41 @@ fn start_pipeline(
         .and_then(|e| e.downcast::<gst_app::AppSink>().ok())
         .ok_or_else(|| anyhow::anyhow!("no appsink"))?;
     stamp_and_gate(&pipeline, dirty);
+    match first_sample(&pipeline, &sink) {
+        Ok(sample) => Ok((pipeline, sink, sample)),
+        Err(e) => {
+            let _ = pipeline.set_state(gst::State::Null);
+            Err(e)
+        }
+    }
+}
+
+/// Plays `pipeline` until `sink`'s first sample, giving up at the
+/// pipeline's first error instead of at the deadline.
+fn first_sample(pipeline: &gstreamer::Pipeline, sink: &gstreamer_app::AppSink) -> anyhow::Result<gstreamer::Sample> {
+    use gstreamer as gst;
+    use gstreamer::prelude::*;
+    let bus = pipeline.bus().ok_or_else(|| anyhow::anyhow!("no bus"))?;
+    let error = || {
+        let msg = bus.pop_filtered(&[gst::MessageType::Error])?;
+        match msg.view() {
+            gst::MessageView::Error(e) => Some(anyhow::anyhow!("{}", e.error())),
+            _ => None,
+        }
+    };
     if pipeline.set_state(gst::State::Playing).is_err() {
-        let _ = pipeline.set_state(gst::State::Null);
-        anyhow::bail!("could not start");
+        return Err(error().unwrap_or_else(|| anyhow::anyhow!("could not start")));
     }
     let deadline = Instant::now() + FIRST_FRAME_WITHIN;
     while Instant::now() < deadline {
-        if let Some(sample) = sink.try_pull_sample(gst::ClockTime::from_mseconds(200)) {
-            return Ok((pipeline, sink, sample));
+        if let Some(sample) = sink.try_pull_sample(gst::ClockTime::from_mseconds(100)) {
+            return Ok(sample);
         }
-        if let Some(bus) = pipeline.bus() {
-            if let Some(msg) = bus.pop_filtered(&[gst::MessageType::Error]) {
-                let _ = pipeline.set_state(gst::State::Null);
-                if let gst::MessageView::Error(e) = msg.view() {
-                    anyhow::bail!("{}", e.error());
-                }
-                anyhow::bail!("pipeline error");
-            }
+        if let Some(e) = error() {
+            return Err(e);
         }
     }
-    let _ = pipeline.set_state(gst::State::Null);
-    anyhow::bail!("no frame within {:?}", FIRST_FRAME_WITHIN)
+    anyhow::bail!("no frame within {FIRST_FRAME_WITHIN:?}")
 }
 
 /// A pipeline that hasn't produced a frame by then is given up on.
@@ -1339,6 +1353,19 @@ mod tests {
         let (want_key, restart) = (AtomicBool::new(false), AtomicBool::new(false));
         let ended = stream_screen(&send, &pipelines, None, &StopHandle::detached(), true, &want_key, &restart);
         assert!(ended.as_ref().is_err_and(|e| e.is::<CaptureEnded>()), "{ended:?}");
+    }
+
+    /// A pipeline whose element fails on the first frame reports why at
+    /// once, well before the deadline.
+    #[test]
+    fn failing_start_returns_the_reason_early() {
+        gst::init().unwrap();
+        let started = Instant::now();
+        let Err(reason) = start_pipeline("videotestsrc num-buffers=1 ! identity error-after=1 ! appsink name=sink", None) else {
+            panic!("the pipeline started");
+        };
+        assert!(started.elapsed() < FIRST_FRAME_WITHIN / 2, "took {:?}", started.elapsed());
+        assert!(!reason.to_string().starts_with("no frame within"), "{reason}");
     }
 
     /// The capture time a frame carries is when it was captured, so the
