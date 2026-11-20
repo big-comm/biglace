@@ -283,7 +283,7 @@ impl RoomsPage {
             presenting: Rc::default(),
             room_hook: Rc::default(),
         };
-        // The waves move while someone speaks, not every frame.
+        // The waves move only while someone speaks.
         {
             let rows = page.member_rows.clone();
             let changes = room::stage_changes();

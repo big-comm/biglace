@@ -157,7 +157,7 @@ impl Stage {
             speaker: Rc::new(RefCell::new((String::new(), std::time::Instant::now()))),
             recheck: Rc::default(),
         };
-        // Redrawn when a picture or a voice changes, not every frame.
+        // Redrawn only when a picture or a voice changes.
         {
             let s = stage.clone();
             let changes = room::stage_changes();

@@ -363,7 +363,7 @@ mod tests {
         assert!(got.load(Ordering::Relaxed) > 10);
     }
 
-    /// A new picture wakes the stage: it redraws on pictures, not on a timer.
+    /// A new picture wakes the stage.
     #[test]
     fn a_new_picture_wakes_the_stage() {
         gst::init().unwrap();
