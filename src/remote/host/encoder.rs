@@ -1,6 +1,6 @@
-//! Which H.264 encoder a screen share runs. Hardware first; each candidate
-//! must encode a test frame before it is used, and a software encoder always
-//! stays in reserve.
+//! Which H.264 encoder a screen share runs, and the bitrate it is held to.
+//! Hardware first; each candidate must encode a test frame before it is used,
+//! and a software encoder always stays in reserve.
 
 use std::path::Path;
 use std::sync::OnceLock;
@@ -44,29 +44,123 @@ impl Encoder {
         }
     }
 
-    /// The element with its low-latency settings: no B-frames, one
-    /// reference, a keyframe at least every 120 frames.
+    pub(crate) fn from_element(name: &str) -> Option<Self> {
+        Self::ALL.into_iter().find(|e| e.element() == name)
+    }
+
+    /// The bitrate a share starts at, and returns to when the link allows.
+    pub(crate) fn ceiling_kbps(self) -> u32 {
+        match self {
+            Encoder::OpenH264 => 6_000,
+            Encoder::VaH264 | Encoder::NvH264 | Encoder::X264 => 30_000,
+        }
+    }
+
+    /// The element with its low-latency settings (no B-frames, one
+    /// reference, a keyframe at least every 120 frames) at its ceiling.
     pub(crate) fn description(self) -> String {
+        let kbps = self.ceiling_kbps();
+        let vbv = vbv_kbits(kbps);
         match self {
             // Slices let the viewer's decoder work on one frame in parallel.
-            Encoder::VaH264 => "vah264enc name=enc rate-control=cqp qpi=20 qpp=22 key-int-max=120 b-frames=0 ref-frames=1 \
+            Encoder::VaH264 => format!(
+                "vah264enc name=enc rate-control=cbr bitrate={kbps} cpb-size={vbv} key-int-max=120 b-frames=0 ref-frames=1 \
                  target-usage=4 num-slices=4"
-                .to_string(),
-            Encoder::NvH264 => "nvh264enc name=enc preset=low-latency-hq rc-mode=cbr bitrate=30000 gop-size=120 bframes=0 \
-                 zerolatency=true"
-                .to_string(),
+            ),
+            Encoder::NvH264 => format!(
+                "nvh264enc name=enc preset=low-latency-hq rc-mode=cbr bitrate={kbps} vbv-buffer-size={vbv} gop-size=120 \
+                 bframes=0 zerolatency=true"
+            ),
             // At most half the cores: the person at this computer keeps using
-            // it while it's shared. Constant quality (CRF 20: crisp text)
-            // capped at 30 Mbit/s with a short VBV.
+            // it while it's shared. Constant quality (CRF 20: crisp text),
+            // with the bitrate as its cap.
             Encoder::X264 => {
                 let threads = std::thread::available_parallelism().map_or(2, |n| (n.get() / 2).clamp(1, 4));
                 format!(
                     "x264enc name=enc tune=zerolatency speed-preset=ultrafast sliced-threads=true threads={threads} \
-                     pass=qual quantizer=20 bitrate=30000 vbv-buf-capacity=100 key-int-max=120 bframes=0 b-adapt=false"
+                     pass=qual quantizer=20 bitrate={kbps} vbv-buf-capacity={VBV_MS} key-int-max=120 bframes=0 b-adapt=false"
                 )
             }
-            Encoder::OpenH264 => "openh264enc name=enc bitrate=6000000 gop-size=60 complexity=low".to_string(),
+            // Frame skipping is what holds openh264 to its bitrate.
+            Encoder::OpenH264 => format!(
+                "openh264enc name=enc rate-control=bitrate bitrate={bps} max-bitrate={bps} enable-frame-skip=true \
+                 gop-size=60 complexity=low",
+                bps = kbps * 1000
+            ),
         }
+    }
+
+    /// Set a running encoder (`element`, built from [`Self::description`])
+    /// to `kbps`.
+    pub(crate) fn retune(self, element: &gstreamer::Element, kbps: u32) {
+        use gstreamer::prelude::*;
+        match self {
+            Encoder::VaH264 => {
+                element.set_property("bitrate", kbps);
+                element.set_property("cpb-size", vbv_kbits(kbps));
+            }
+            Encoder::NvH264 => {
+                element.set_property("bitrate", kbps);
+                element.set_property("vbv-buffer-size", vbv_kbits(kbps));
+            }
+            Encoder::X264 => element.set_property("bitrate", kbps),
+            Encoder::OpenH264 => {
+                element.set_property("bitrate", kbps.saturating_mul(1000));
+                element.set_property("max-bitrate", kbps.saturating_mul(1000));
+            }
+        }
+    }
+}
+
+/// The encoder's buffer: 3 frames at 60 fps, so a frame bigger than the link
+/// carries is cut down instead of queued.
+const VBV_MS: u32 = 50;
+
+fn vbv_kbits(kbps: u32) -> u32 {
+    (kbps * VBV_MS / 1000).max(1)
+}
+
+/// Holds the bitrate to what the viewer's link carries: the socket's send
+/// buffer filling up (sending blocks) is the sign of a link slower than the
+/// video. Optimistic start, quick retreat, slow return.
+pub(crate) struct RateControl {
+    ceiling: u32,
+    current: u32,
+    healthy_windows: u32,
+}
+
+/// How long one window of sending is.
+pub(crate) const RATE_WINDOW: std::time::Duration = std::time::Duration::from_millis(500);
+/// Never below this, whatever the link does.
+const FLOOR_KBPS: u32 = 300;
+/// Windows of free sending before the rate goes up again, so a quiet moment
+/// in a bad patch does not undo the retreat.
+const HEALTHY_WINDOWS_BEFORE_RAISING: u32 = 4;
+
+impl RateControl {
+    pub(crate) fn new(ceiling_kbps: u32) -> Self {
+        Self { ceiling: ceiling_kbps, current: ceiling_kbps, healthy_windows: 0 }
+    }
+
+    /// One window: the socket took `sent` bytes in `window`, `blocked` of it
+    /// spent waiting for room. The new rate, when it changed.
+    pub(crate) fn observe(&mut self, sent: u64, blocked: std::time::Duration, window: std::time::Duration) -> Option<u32> {
+        let previous = self.current;
+        if blocked * 4 >= window {
+            self.healthy_windows = 0;
+            // What the link carried, with room for the queue to drain. A
+            // backlog still draining at that rate is no reason to go lower.
+            let millis = u64::try_from(window.as_millis()).unwrap_or(u64::MAX).max(1);
+            let carried = u32::try_from(sent * 8 / millis).unwrap_or(u32::MAX);
+            self.current = (carried / 5 * 4).min(self.current).max(FLOOR_KBPS);
+        } else {
+            self.healthy_windows += 1;
+            if self.healthy_windows >= HEALTHY_WINDOWS_BEFORE_RAISING && self.current < self.ceiling {
+                self.healthy_windows = 0;
+                self.current = (self.current / 10 * 11).min(self.ceiling);
+            }
+        }
+        (self.current != previous).then_some(self.current)
     }
 }
 
@@ -154,6 +248,93 @@ pub(crate) fn usable() -> &'static [(Encoder, String)] {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use std::time::Duration;
+
+    const WINDOW: Duration = RATE_WINDOW;
+
+    #[test]
+    fn fast_link_keeps_the_ceiling() {
+        let mut rate = RateControl::new(30_000);
+        for _ in 0..20 {
+            assert_eq!(rate.observe(1_000_000, Duration::from_millis(10), WINDOW), None);
+        }
+    }
+
+    /// 2 Mbit/s carried while sending waited half the window: the rate drops
+    /// at once below what the link carried, stays there while the backlog
+    /// drains, then climbs back a tenth at a time once sending flows freely.
+    #[test]
+    fn slow_link_cuts_then_recovers() {
+        let mut rate = RateControl::new(30_000);
+        let carried = 2_000 * 1000 / 8 / 2;
+        assert_eq!(rate.observe(carried, WINDOW / 2, WINDOW), Some(1_600));
+        assert_eq!(rate.observe(carried, WINDOW, WINDOW), None);
+        assert_eq!(rate.observe(carried / 2, WINDOW, WINDOW), Some(800));
+        for _ in 0..3 {
+            assert_eq!(rate.observe(1_000, Duration::ZERO, WINDOW), None);
+        }
+        assert_eq!(rate.observe(1_000, Duration::ZERO, WINDOW), Some(880));
+        let mut last = 880;
+        for _ in 0..200 {
+            if let Some(kbps) = rate.observe(1_000, Duration::ZERO, WINDOW) {
+                assert!(kbps > last && kbps <= 30_000);
+                last = kbps;
+            }
+        }
+        assert_eq!(last, 30_000);
+    }
+
+    #[test]
+    fn rate_stays_above_floor() {
+        let mut rate = RateControl::new(30_000);
+        assert_eq!(rate.observe(0, WINDOW, WINDOW), Some(FLOOR_KBPS));
+        assert_eq!(rate.observe(0, WINDOW, WINDOW), None);
+    }
+
+    /// Each encoder present here, retuned while it runs, holds its output
+    /// near the new rate on content that would fill any ceiling.
+    #[test]
+    fn retuned_encoder_follows_new_rate() {
+        use gstreamer as gst;
+        use gstreamer::prelude::*;
+        let _turn = crate::remote::heavy_test();
+        gst::init().unwrap();
+        const TARGET: u32 = 1_000;
+        // Bytes over the stretch of picture they cover (an encoder may skip frames).
+        let kbps_of = |frames: &[(u64, usize)]| {
+            let millis = (frames[frames.len() - 1].0 - frames[0].0).max(1);
+            frames.iter().map(|f| f.1 as u64).sum::<u64>() * 8 / millis
+        };
+        for kind in Encoder::ALL.into_iter().filter(|e| gst::ElementFactory::find(e.element()).is_some()) {
+            let desc = format!(
+                "videotestsrc pattern=snow num-buffers=150 ! video/x-raw,format={},width=640,height=480,framerate=30/1 \
+                 ! {} ! appsink name=sink sync=false max-buffers=1",
+                kind.format(),
+                kind.description()
+            );
+            let pipeline = gst::parse::launch(&desc).unwrap().downcast::<gst::Pipeline>().unwrap();
+            let sink = pipeline.by_name("sink").unwrap().downcast::<gstreamer_app::AppSink>().unwrap();
+            let enc = pipeline.by_name("enc").unwrap();
+            pipeline.set_state(gst::State::Playing).unwrap();
+            // (milliseconds into the picture, bytes)
+            let mut frames: Vec<(u64, usize)> = Vec::new();
+            let mut start = None;
+            while let Some(sample) = sink.try_pull_sample(gst::ClockTime::from_seconds(5)) {
+                let buffer = sample.buffer().unwrap();
+                let pts = buffer.pts().unwrap().mseconds();
+                let at = pts - *start.get_or_insert(pts);
+                if frames.last().is_some_and(|f| f.0 < 2000) && at >= 2000 {
+                    kind.retune(&enc, TARGET);
+                }
+                frames.push((at, buffer.size()));
+            }
+            pipeline.set_state(gst::State::Null).unwrap();
+            let span = |from: u64, to: u64| frames.iter().copied().filter(|f| (from..to).contains(&f.0)).collect::<Vec<_>>();
+            let (before, after) = (kbps_of(&span(500, 2000)), kbps_of(&span(3000, 5000)));
+            assert!(before > u64::from(TARGET) * 3, "{kind:?} started at {before} kbit/s");
+            assert!(after < u64::from(TARGET) * 3 / 2, "{kind:?} stayed at {after} kbit/s");
+        }
+    }
 
     #[test]
     fn driver_decides_hardware_encoder() {
@@ -176,7 +357,7 @@ mod tests {
     }
 
     #[test]
-    fn the_first_card_with_a_driver_decides() {
+    fn first_card_driver_decides() {
         let root = std::env::temp_dir().join(format!("biglace-drm-{}", std::process::id()));
         let _ = std::fs::remove_dir_all(&root);
         let card = |name: &str, driver: Option<&str>| {

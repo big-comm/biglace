@@ -1053,10 +1053,16 @@ pub(crate) fn stream_screen(
         return Err(last_err);
     };
     let mut pending = Some(first);
+    let mut tuning = pipeline.by_name("enc").and_then(|element| {
+        let kind = encoder::Encoder::from_element(&element.factory()?.name())?;
+        Some((element, kind, encoder::RateControl::new(kind.ceiling_kbps())))
+    });
 
     let result = (|| -> anyhow::Result<bool> {
         let mut last_info: Option<VideoInfo> = None;
         let (mut frames, mut bytes, mut since) = (0u32, 0usize, std::time::Instant::now());
+        // This rate window: bytes the socket took, time spent waiting for it.
+        let (mut window_bytes, mut blocked, mut window_start) = (0u64, Duration::ZERO, Instant::now());
         while !stop.stopped() {
             if restart.swap(false, Ordering::AcqRel) {
                 return Ok(true);
@@ -1086,6 +1092,7 @@ pub(crate) fn stream_screen(
             }
             let Some(buffer) = sample.buffer() else { continue };
             let map = buffer.map_readable()?;
+            let sending = Instant::now();
             if timestamps {
                 // When the frame was captured, on this host's wall clock:
                 // now, minus how long it spent in the pipeline.
@@ -1100,6 +1107,17 @@ pub(crate) fn stream_screen(
                 send(Kind::VideoTs, &payload)?;
             } else {
                 send(Kind::Video, map.as_slice())?;
+            }
+            blocked += sending.elapsed();
+            window_bytes += map.len() as u64;
+            if window_start.elapsed() >= encoder::RATE_WINDOW {
+                if let Some((element, kind, rate)) = &mut tuning {
+                    if let Some(kbps) = rate.observe(window_bytes, blocked, window_start.elapsed()) {
+                        kind.retune(element, kbps);
+                        tailscale::dbg(&format!("remote: video bitrate {kbps} kbit/s"));
+                    }
+                }
+                (window_bytes, blocked, window_start) = (0, Duration::ZERO, Instant::now());
             }
             frames += 1;
             bytes += map.len();
@@ -1179,6 +1197,65 @@ mod tests {
     }
     use gstreamer as gst;
     use gstreamer::prelude::*;
+
+    /// A viewer whose link carries 2 Mbit/s: the bitrate comes down to it,
+    /// so frames keep flowing instead of a few huge ones a second.
+    #[test]
+    fn a_slow_link_lowers_the_bitrate() {
+        use std::io::Read;
+        use std::net::{TcpListener, TcpStream};
+        let _turn = crate::remote::heavy_test();
+        gst::init().unwrap();
+        let Some(enc) = encoder() else {
+            eprintln!("no H.264 encoder here; skipping");
+            return;
+        };
+        let listener = TcpListener::bind("127.0.0.1:0").unwrap();
+        let addr = listener.local_addr().unwrap();
+        let head = "videotestsrc is-live=true pattern=snow ! video/x-raw,width=640,height=480,framerate=30/1 \
+                    ! identity name=capture ! videoconvert";
+        let pipelines = [pipeline_desc(head, enc)];
+        let host = std::thread::spawn(move || {
+            let (stream, _) = listener.accept().unwrap();
+            let sock = socket2::SockRef::from(&stream);
+            sock.set_send_buffer_size(SEND_BUFFER).unwrap();
+            sock.set_tcp_notsent_lowat(NOTSENT_LOWAT).unwrap();
+            let stop = StopHandle::new(&stream);
+            let writer = Mutex::new(stream);
+            let send = |kind: Kind, payload: &[u8]| -> anyhow::Result<()> {
+                write_frame(&mut *writer.lock().unwrap(), kind, payload)?;
+                Ok(())
+            };
+            let (want_key, restart) = (AtomicBool::new(false), AtomicBool::new(false));
+            let _ = stream_screen(&send, &pipelines, None, &stop, true, &want_key, &restart);
+        });
+        let socket = socket2::Socket::new(socket2::Domain::IPV4, socket2::Type::STREAM, None).unwrap();
+        socket.set_recv_buffer_size(64 * 1024).unwrap();
+        socket.connect(&addr.into()).unwrap();
+        let mut viewer = TcpStream::from(socket);
+        // 2 Mbit/s: 2500 bytes every 10 ms.
+        struct Throttled<'a>(&'a mut TcpStream);
+        impl Read for Throttled<'_> {
+            fn read(&mut self, buf: &mut [u8]) -> std::io::Result<usize> {
+                std::thread::sleep(Duration::from_millis(10));
+                let n = buf.len().min(2500);
+                self.0.read(&mut buf[..n])
+            }
+        }
+        let start = Instant::now();
+        let mut late_frames = 0u32;
+        while start.elapsed() < Duration::from_secs(12) {
+            let (kind, _) = read_frame(&mut Throttled(&mut viewer)).unwrap();
+            if kind == Kind::VideoTs && start.elapsed() >= Duration::from_secs(8) {
+                late_frames += 1;
+            }
+        }
+        let _ = viewer.shutdown(Shutdown::Both);
+        drop(viewer);
+        host.join().unwrap();
+        let fps = f64::from(late_frames) / 4.0;
+        assert!(fps >= 10.0, "{fps:.1} fps over a 2 Mbit/s link");
+    }
 
     /// A capture that ends by itself (GNOME closes its screencast when the
     /// host's resolution changes) is told apart from a failure.
