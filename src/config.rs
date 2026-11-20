@@ -366,56 +366,64 @@ mod tests {
     #[cfg(target_os = "linux")]
     #[test]
     fn loading_leaves_the_keyring_alone() {
+        use std::io::Read;
         use std::os::unix::net::UnixListener;
         use std::process::{Command, Stdio};
 
         const CHILD: &str = "BIGLACE_TEST_LOAD_CHILD";
-        if std::env::var_os(CHILD).is_some() {
+        if let Some(expected) = std::env::var_os(CHILD) {
             let loaded = load();
-            assert!(loaded.enrolled);
+            assert_eq!(loaded.enrolled, expected == "enrolled");
             assert!(loaded.authkey.is_empty());
             return;
         }
 
         let (_guard, dir) = isolated_env("lazykey");
-        let cfg = Config {
-            server_url: "https://vpn.example.org".into(),
-            enrolled: true,
-            ..Config::default()
-        };
-        save(&cfg).expect("config saved");
-        // A bus that never answers: a keyring lookup would connect to it and
-        // wait, so the test watches the socket while the child loads.
-        let bus = dir.join("session-bus");
-        let listener = UnixListener::bind(&bus).expect("fake session bus");
-        listener.set_nonblocking(true).unwrap();
-        let mut child = Command::new(std::env::current_exe().unwrap())
-            .args(["--exact", "config::tests::loading_leaves_the_keyring_alone", "--test-threads=1"])
-            .env(CHILD, "1")
-            .env("DBUS_SESSION_BUS_ADDRESS", format!("unix:path={}", bus.display()))
-            .stdout(Stdio::null())
-            .stderr(Stdio::null())
-            .spawn()
-            .expect("test child started");
+        for enrolled in [true, false] {
+            let cfg = Config {
+                server_url: "https://vpn.example.org".into(),
+                enrolled,
+                ..Config::default()
+            };
+            save(&cfg).expect("config saved");
+            // A bus that never answers: a keyring lookup would connect to it and
+            // wait, so the test watches the socket while the child loads.
+            let bus = dir.join("session-bus");
+            let _ = fs::remove_file(&bus);
+            let listener = UnixListener::bind(&bus).expect("fake session bus");
+            listener.set_nonblocking(true).unwrap();
+            let mut child = Command::new(std::env::current_exe().unwrap())
+                .args(["--exact", "config::tests::loading_leaves_the_keyring_alone", "--test-threads=1"])
+                .env(CHILD, if enrolled { "enrolled" } else { "not enrolled" })
+                .env("DBUS_SESSION_BUS_ADDRESS", format!("unix:path={}", bus.display()))
+                .stdout(Stdio::piped())
+                .stderr(Stdio::null())
+                .spawn()
+                .expect("test child started");
 
-        let deadline = std::time::Instant::now() + std::time::Duration::from_secs(5);
-        let mut connected = false;
-        let status = loop {
-            if listener.accept().is_ok() {
-                connected = true;
-            }
-            if let Some(status) = child.try_wait().unwrap() {
-                break status;
-            }
-            if std::time::Instant::now() > deadline {
-                let _ = child.kill();
-                break child.wait().unwrap();
-            }
-            std::thread::sleep(std::time::Duration::from_millis(10));
-        };
-        connected |= listener.accept().is_ok();
-        assert!(!connected, "loading the config connected to the session bus");
-        assert!(status.success(), "the load failed in the child: {status}");
+            let deadline = std::time::Instant::now() + std::time::Duration::from_secs(5);
+            let mut connected = false;
+            let status = loop {
+                if listener.accept().is_ok() {
+                    connected = true;
+                }
+                if let Some(status) = child.try_wait().unwrap() {
+                    break status;
+                }
+                if std::time::Instant::now() > deadline {
+                    let _ = child.kill();
+                    break child.wait().unwrap();
+                }
+                std::thread::sleep(std::time::Duration::from_millis(10));
+            };
+            connected |= listener.accept().is_ok();
+            let mut report = String::new();
+            child.stdout.take().unwrap().read_to_string(&mut report).unwrap();
+            assert!(!connected, "loading the config (enrolled: {enrolled}) connected to the session bus");
+            assert!(status.success(), "the load failed in the child (enrolled: {enrolled}): {status}");
+            // An `--exact` name that matches nothing also exits 0.
+            assert!(report.contains("test result: ok. 1 passed"), "the child ran no test: {report}");
+        }
         let _ = fs::remove_dir_all(&dir);
     }
 

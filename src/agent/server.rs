@@ -538,13 +538,12 @@ mod tests {
         drop(again);
     }
 
-    /// An idle agent sleeps in `accept`: its thread makes no voluntary
-    /// context switches (a 50 ms poll made about ten in half a second).
+    /// An idle agent sleeps in `accept` instead of polling.
     #[cfg(target_os = "linux")]
     #[test]
     fn idle_agent_sleeps_in_accept() {
         let agent_threads = || -> Vec<String> {
-            std::fs::read_dir("/proc/thread-self/..")
+            std::fs::read_dir("/proc/self/task")
                 .unwrap()
                 .flatten()
                 .filter(|t| std::fs::read_to_string(t.path().join("comm")).is_ok_and(|c| c.trim_end() == "biglace-agent"))
@@ -552,7 +551,7 @@ mod tests {
                 .collect()
         };
         let switches = |tid: &str| -> Option<u64> {
-            std::fs::read_to_string(format!("/proc/thread-self/../{tid}/status"))
+            std::fs::read_to_string(format!("/proc/self/task/{tid}/status"))
                 .ok()?
                 .lines()
                 .find_map(|l| l.strip_prefix("voluntary_ctxt_switches:"))

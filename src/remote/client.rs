@@ -732,10 +732,11 @@ mod tests {
         let _turn = crate::remote::heavy_test();
         use std::time::Instant;
         gst::init().unwrap();
-        let Some(enc) = crate::remote::host::encoder() else { return };
-        if gst::ElementFactory::find("avdec_h264").is_none() {
+        let (Some(enc), Some(_)) = (crate::remote::host::encoder(), gst::ElementFactory::find("avdec_h264")) else {
+            // allow-noisy-log: a test run must say this test was skipped, not passed.
+            eprintln!("no H.264 encoder or avdec_h264 here; skipping");
             return;
-        }
+        };
         let measure = |dec: &str, enc: (&str, &str), fps: u64| -> f64 {
             let host = gst::parse::launch(&crate::remote::host::pipeline_desc(
                 &format!("videotestsrc is-live=true num-buffers={} pattern=ball ! video/x-raw,width=1280,height=720,framerate={fps}/1 ! videoconvert", fps * 4),
@@ -832,7 +833,12 @@ mod tests {
 
     fn h264_available() -> bool {
         gst::init().unwrap();
-        gst::ElementFactory::find("x264enc").is_some() && gst::ElementFactory::find("avdec_h264").is_some()
+        let available = gst::ElementFactory::find("x264enc").is_some() && gst::ElementFactory::find("avdec_h264").is_some();
+        if !available {
+            // allow-noisy-log: a test run must say this test was skipped, not passed.
+            eprintln!("x264enc/avdec_h264 missing; skipping");
+        }
+        available
     }
 
     /// A decoder that stops taking frames must stall the reader (so TCP backs
@@ -887,6 +893,8 @@ mod tests {
     fn late_sound_keeps_only_60_ms() {
         gst::init().unwrap();
         if gst::ElementFactory::find("opusenc").is_none() {
+            // allow-noisy-log: a test run must say this test was skipped, not passed.
+            eprintln!("opusenc missing; skipping");
             return;
         }
         let enc = gst::parse::launch(

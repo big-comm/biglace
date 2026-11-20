@@ -1142,10 +1142,10 @@ pub fn connect(server: &str, authkey: &str, pending_key: bool, hostname: &str) -
         dbg("connect: keyless reconnect didn't take — (re)authenticating with the key");
     }
 
-    // From here we need the key to register / re-authenticate. Otherwise read
-    // the key stored at enrollment here, on the worker thread: reading it with
-    // the config would make a locked keyring prompt at every start, even when
-    // the keyless reconnect above needs no key.
+    // Registering needs the key. Without one from the caller, the key stored
+    // at enrollment is read only here, on the worker thread: read with the
+    // config, a locked keyring would prompt at every start, even when the
+    // keyless reconnect above needs no key.
     let stored = if authkey.is_empty() {
         match crate::secrets::load_authkey(server) {
             Ok(key) => key.unwrap_or_default(),

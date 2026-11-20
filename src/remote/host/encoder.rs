@@ -68,7 +68,7 @@ impl Encoder {
                  target-usage=4 num-slices=4"
             ),
             Encoder::NvH264 => format!(
-                "nvh264enc name=enc preset=low-latency-hq rc-mode=cbr bitrate={kbps} vbv-buffer-size={vbv} gop-size=120 \
+                "nvh264enc name=enc preset=p4 tune=low-latency rc-mode=cbr bitrate={kbps} vbv-buffer-size={vbv} gop-size=120 \
                  bframes=0 zerolatency=true"
             ),
             // At most half the cores: the person at this computer keeps using
@@ -180,11 +180,11 @@ fn candidates(installed: impl Fn(&str) -> bool, nvidia: bool) -> Vec<Encoder> {
 
 /// The candidates that `works`, up to and including the first software one:
 /// a hardware encoder can still refuse a capture's size or format later.
-fn working(candidates: Vec<Encoder>, works: impl Fn(Encoder) -> bool) -> Vec<Encoder> {
+fn working(candidates: Vec<Encoder>, works: impl Fn(Encoder) -> anyhow::Result<()>) -> Vec<Encoder> {
     let mut found = Vec::new();
     for encoder in candidates {
-        if !works(encoder) {
-            crate::tailscale::dbg(&format!("remote: {} failed to encode a test frame", encoder.element()));
+        if let Err(e) = works(encoder) {
+            crate::tailscale::dbg(&format!("remote: {} failed to encode a test frame: {e:#}", encoder.element()));
             continue;
         }
         found.push(encoder);
@@ -195,8 +195,9 @@ fn working(candidates: Vec<Encoder>, works: impl Fn(Encoder) -> bool) -> Vec<Enc
     found
 }
 
-/// Whether the primary GPU (the first `cardN` with a driver) runs NVIDIA's
-/// own driver. `drm` is `/sys/class/drm`.
+/// Whether the primary GPU runs NVIDIA's own driver: the card the firmware
+/// booted on (`boot_vga`), else the first `cardN` with a driver. `drm` is
+/// `/sys/class/drm`.
 fn nvidia_driver(drm: &Path) -> bool {
     let Ok(entries) = std::fs::read_dir(drm) else { return false };
     let mut cards: Vec<String> = entries
@@ -205,14 +206,18 @@ fn nvidia_driver(drm: &Path) -> bool {
         .filter(|name| name.strip_prefix("card").is_some_and(|n| !n.is_empty() && n.bytes().all(|b| b.is_ascii_digit())))
         .collect();
     cards.sort();
-    cards
+    let driver = |card: &String| std::fs::read_link(drm.join(card).join("device/driver")).ok();
+    let booted = cards
         .iter()
-        .find_map(|card| std::fs::read_link(drm.join(card).join("device/driver")).ok())
+        .find(|card| std::fs::read_to_string(drm.join(card).join("device/boot_vga")).is_ok_and(|v| v.trim() == "1"));
+    booted
+        .and_then(driver)
+        .or_else(|| cards.iter().find_map(driver))
         .is_some_and(|driver| driver.file_name().is_some_and(|m| m == "nvidia"))
 }
 
 /// Encode one frame with `encoder`'s own settings.
-fn encodes_a_frame(encoder: Encoder) -> bool {
+fn encodes_a_frame(encoder: Encoder) -> anyhow::Result<()> {
     use gstreamer as gst;
     use gstreamer::prelude::*;
     let desc = format!(
@@ -220,15 +225,46 @@ fn encodes_a_frame(encoder: Encoder) -> bool {
         encoder.format(),
         encoder.description()
     );
-    let Ok(pipeline) = gst::parse::launch(&desc).map(|p| p.downcast::<gst::Pipeline>()) else { return false };
-    let Ok(pipeline) = pipeline else { return false };
-    let Some(sink) = pipeline.by_name("sink").and_then(|e| e.downcast::<gstreamer_app::AppSink>().ok()) else {
-        return false;
-    };
-    let encoded = pipeline.set_state(gst::State::Playing).is_ok() && sink.try_pull_sample(gst::ClockTime::from_seconds(5)).is_some();
-    let _ = pipeline.set_state(gst::State::Null);
+    let pipeline = gst::parse::launch(&desc)?.downcast::<gst::Pipeline>().map_err(|_| anyhow::anyhow!("not a pipeline"))?;
+    let sink = pipeline
+        .by_name("sink")
+        .and_then(|e| e.downcast::<gstreamer_app::AppSink>().ok())
+        .ok_or_else(|| anyhow::anyhow!("no appsink"))?;
+    let encoded = first_sample(&pipeline, &sink);
+    let _ = pipeline.set_state(gstreamer::State::Null);
     encoded
 }
+
+/// Waits for `sink`'s first sample, giving up at the pipeline's first error
+/// instead of at the deadline.
+fn first_sample(pipeline: &gstreamer::Pipeline, sink: &gstreamer_app::AppSink) -> anyhow::Result<()> {
+    use gstreamer as gst;
+    use gstreamer::prelude::*;
+    let bus = pipeline.bus().ok_or_else(|| anyhow::anyhow!("no bus"))?;
+    let error = || {
+        let msg = bus.pop_filtered(&[gst::MessageType::Error])?;
+        match msg.view() {
+            gst::MessageView::Error(e) => Some(anyhow::anyhow!("{}", e.error())),
+            _ => None,
+        }
+    };
+    if pipeline.set_state(gst::State::Playing).is_err() {
+        return Err(error().unwrap_or_else(|| anyhow::anyhow!("could not start")));
+    }
+    let deadline = std::time::Instant::now() + PROBE_WITHIN;
+    while std::time::Instant::now() < deadline {
+        if sink.try_pull_sample(gst::ClockTime::from_mseconds(100)).is_some() {
+            return Ok(());
+        }
+        if let Some(e) = error() {
+            return Err(e);
+        }
+    }
+    anyhow::bail!("no frame within {PROBE_WITHIN:?}")
+}
+
+/// A test frame not encoded by then means the encoder does not work here.
+const PROBE_WITHIN: std::time::Duration = std::time::Duration::from_secs(5);
 
 /// The encoders that work here, best first, with their descriptions
 /// (probed once).
@@ -336,6 +372,12 @@ mod tests {
         }
     }
 
+    /// `can_host` answers from this list without probing.
+    #[test]
+    fn can_host_knows_every_encoder() {
+        assert_eq!(crate::remote::H264_ENCODERS, Encoder::ALL.map(Encoder::element));
+    }
+
     #[test]
     fn driver_decides_hardware_encoder() {
         let all = |_: &str| true;
@@ -350,10 +392,28 @@ mod tests {
     #[test]
     fn failing_encoder_falls_back() {
         let all = vec![Encoder::VaH264, Encoder::X264, Encoder::OpenH264];
-        assert_eq!(working(all.clone(), |e| e != Encoder::VaH264), [Encoder::X264]);
-        assert_eq!(working(all.clone(), |_| true), [Encoder::VaH264, Encoder::X264]);
-        assert_eq!(working(all.clone(), |e| e == Encoder::OpenH264), [Encoder::OpenH264]);
-        assert!(working(all, |_| false).is_empty());
+        let only = |pass: bool| if pass { Ok(()) } else { Err(anyhow::anyhow!("refused")) };
+        assert_eq!(working(all.clone(), |e| only(e != Encoder::VaH264)), [Encoder::X264]);
+        assert_eq!(working(all.clone(), |_| only(true)), [Encoder::VaH264, Encoder::X264]);
+        assert_eq!(working(all.clone(), |e| only(e == Encoder::OpenH264)), [Encoder::OpenH264]);
+        assert!(working(all, |_| only(false)).is_empty());
+    }
+
+    /// A pipeline whose element fails on the first frame reports why at
+    /// once, well before the probe's deadline.
+    #[test]
+    fn failing_probe_returns_the_reason_early() {
+        use gstreamer as gst;
+        use gstreamer::prelude::*;
+        gst::init().unwrap();
+        let desc = "videotestsrc num-buffers=1 ! identity error-after=1 ! appsink name=sink";
+        let pipeline = gst::parse::launch(desc).unwrap().downcast::<gst::Pipeline>().unwrap();
+        let sink = pipeline.by_name("sink").unwrap().downcast::<gstreamer_app::AppSink>().unwrap();
+        let started = std::time::Instant::now();
+        let reason = first_sample(&pipeline, &sink).unwrap_err().to_string();
+        let _ = pipeline.set_state(gst::State::Null);
+        assert!(started.elapsed() < PROBE_WITHIN / 2, "took {:?}", started.elapsed());
+        assert!(!reason.starts_with("no frame within"), "{reason}");
     }
 
     #[test]
@@ -375,6 +435,28 @@ mod tests {
         assert!(nvidia_driver(&root));
         card("card0", Some("i915"));
         assert!(!nvidia_driver(&root));
+        let _ = std::fs::remove_dir_all(&root);
+    }
+
+    /// Intel and NVIDIA together: the card the firmware booted on decides,
+    /// whatever its number.
+    #[test]
+    fn boot_vga_card_decides() {
+        let root = std::env::temp_dir().join(format!("biglace-bootvga-{}", std::process::id()));
+        let _ = std::fs::remove_dir_all(&root);
+        let card = |name: &str, driver: &str, boot_vga: &str| {
+            let device = root.join(name).join("device");
+            std::fs::create_dir_all(&device).unwrap();
+            let _ = std::fs::remove_file(device.join("driver"));
+            std::os::unix::fs::symlink(format!("../../../bus/pci/drivers/{driver}"), device.join("driver")).unwrap();
+            std::fs::write(device.join("boot_vga"), boot_vga).unwrap();
+        };
+        card("card0", "nvidia", "0\n");
+        card("card1", "i915", "1\n");
+        assert!(!nvidia_driver(&root));
+        card("card0", "nvidia", "1\n");
+        card("card1", "i915", "0\n");
+        assert!(nvidia_driver(&root));
         let _ = std::fs::remove_dir_all(&root);
     }
 }

@@ -13,6 +13,7 @@
 //! input is replayed on the host (XTest on X11).
 
 pub mod client;
+#[cfg_attr(not(test), expect(dead_code, reason = "host::encoder serves only tests since can_host stopped probing; host.rs should mark it #[cfg(test)]"))]
 pub mod host;
 #[cfg(target_os = "linux")]
 mod cursor_x11;
@@ -271,6 +272,10 @@ pub fn wayland_session() -> bool {
         || std::env::var("XDG_SESSION_TYPE").is_ok_and(|t| t == "wayland")
 }
 
+/// Every H.264 encoder element the host can run (`host::encoder`'s list).
+#[cfg(target_os = "linux")]
+const H264_ENCODERS: [&str; 4] = ["vah264enc", "nvh264enc", "x264enc", "openh264enc"];
+
 /// Whether this device can be a remote-screen host: Linux with the GStreamer
 /// pieces the host pipeline needs — X11 (XTest) or Wayland (portal +
 /// PipeWire).
@@ -279,7 +284,9 @@ pub fn can_host() -> bool {
     {
         static OK: OnceLock<bool> = OnceLock::new();
         *OK.get_or_init(|| {
-            if gstreamer::init().is_err() || host::encoder().is_none() {
+            // Presence only: test-encoding loads hardware drivers (CUDA for
+            // NVENC), which waits for the first share.
+            if gstreamer::init().is_err() || !H264_ENCODERS.iter().any(|e| gstreamer::ElementFactory::find(e).is_some()) {
                 return false;
             }
             if wayland_session() {
@@ -594,10 +601,14 @@ mod send_queue {
     fn screen_socket_holds_little_unsent() {
         let listener = TcpListener::bind("127.0.0.1:0").unwrap();
         let stream = TcpStream::connect(listener.local_addr().unwrap()).unwrap();
-        super::limit_send_queue(&stream);
         let sock = socket2::SockRef::from(&stream);
-        // Linux doubles the requested size for its own bookkeeping.
-        assert!(sock.send_buffer_size().unwrap() <= 2 * super::SEND_BUFFER);
+        // Start above the cap, so only the call can bring the buffer down.
+        sock.set_send_buffer_size(8 * super::SEND_BUFFER).unwrap();
+        super::limit_send_queue(&stream);
+        let wmem_max: usize = std::fs::read_to_string("/proc/sys/net/core/wmem_max").unwrap().trim().parse().unwrap();
+        // Linux caps the request at wmem_max and doubles it for its own
+        // bookkeeping; below SEND_BUFFER the call has nothing to lower.
+        assert_eq!(sock.send_buffer_size().unwrap(), 2 * super::SEND_BUFFER.min(wmem_max));
         assert_eq!(sock.tcp_notsent_lowat().unwrap(), super::NOTSENT_LOWAT);
     }
 }

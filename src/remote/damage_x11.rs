@@ -77,8 +77,8 @@ pub fn watch(dirty: Arc<super::host::Damage>, track_pointer: bool) -> Option<Wat
 mod tests {
     use super::*;
 
-    /// Needs an X server of its own (`env -u WAYLAND_DISPLAY xvfb-run`): a
-    /// desktop's Xwayland is the person's session, left alone.
+    /// Runs only with `DISPLAY` set and no `WAYLAND_DISPLAY`, an X server of
+    /// its own (`env -u WAYLAND_DISPLAY xvfb-run cargo test`); it skips otherwise.
     #[test]
     fn dropping_the_watch_ends_its_thread() {
         if std::env::var_os("DISPLAY").is_none() || std::env::var_os("WAYLAND_DISPLAY").is_some() {
