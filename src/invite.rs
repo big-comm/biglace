@@ -261,6 +261,73 @@ pub fn rejoin(
     }
 }
 
+/// This computer asking to join the account of whoever approves it from a
+/// device already in (the phone scans the QR code): what to show, and the
+/// secret this computer asks with.
+#[derive(Debug, Clone, Deserialize)]
+pub struct LinkRequest {
+    /// `https://<panel>/link#<code>`: shown as a QR code.
+    pub link: String,
+    /// Kept here; the panel hands the key only to whoever holds it.
+    pub poll: String,
+    /// When it stops working (ms since the epoch).
+    pub expires: u64,
+}
+
+/// What the panel says about a [`LinkRequest`].
+#[derive(Debug)]
+pub enum LinkAnswer {
+    Pending,
+    Approved(Joined),
+}
+
+fn https_panel(panel_url: &str) -> std::result::Result<&str, JoinError> {
+    let panel_url = panel_url.trim_end_matches('/');
+    if panel_url.starts_with("https://") || panel::url_is_loopback(panel_url) {
+        Ok(panel_url)
+    } else {
+        Err(JoinError::Other("panel address without HTTPS".into()))
+    }
+}
+
+/// Ask the panel at `panel_url` for a code to show, as `hostname`. Blocking.
+pub fn start_link(panel_url: &str, hostname: &str) -> std::result::Result<LinkRequest, JoinError> {
+    let panel_url = https_panel(panel_url)?;
+    let agent = panel::shared_agent().map_err(|e| JoinError::Other(e.to_string()))?;
+    let body = serde_json::json!({ "hostname": hostname, "device_key": crate::device_key::public_key() });
+    match agent
+        .post(&format!("{panel_url}/api/link"))
+        .set("Content-Type", "application/json")
+        .set("Accept", "application/json")
+        .send_json(body)
+    {
+        Ok(resp) => panel::read_json_limited(resp).map_err(|e| JoinError::Other(e.to_string())),
+        Err(ureq::Error::Status(code, resp)) => Err(status_error(code, resp)),
+        Err(e) => Err(JoinError::Other(e.to_string())),
+    }
+}
+
+/// Whether the code was approved yet; the key comes once. Blocking.
+pub fn poll_link(panel_url: &str, poll: &str) -> std::result::Result<LinkAnswer, JoinError> {
+    let panel_url = https_panel(panel_url)?;
+    let agent = panel::shared_agent().map_err(|e| JoinError::Other(e.to_string()))?;
+    match agent
+        .post(&format!("{panel_url}/api/link/poll"))
+        .set("Content-Type", "application/json")
+        .set("Accept", "application/json")
+        .send_json(serde_json::json!({ "poll": poll }))
+    {
+        Ok(resp) if resp.status() == 202 => Ok(LinkAnswer::Pending),
+        Ok(resp) => {
+            let joined: Joined = panel::read_json_limited(resp).map_err(|e| JoinError::Other(e.to_string()))?;
+            check_joined(panel_url, &joined)?;
+            Ok(LinkAnswer::Approved(joined))
+        }
+        Err(ureq::Error::Status(code, resp)) => Err(status_error(code, resp)),
+        Err(e) => Err(JoinError::Other(e.to_string())),
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -521,6 +588,48 @@ mod tests {
             Err(JoinError::Other(_))
         ));
     }
+
+    /// The panel's /api/link contract: the code to show, then 202 while
+    /// waiting, the key once approved, 410 once gone.
+    #[test]
+    fn link_waits_then_joins() {
+        use std::io::Write;
+        let listener = std::net::TcpListener::bind("127.0.0.1:0").unwrap();
+        let addr = listener.local_addr().unwrap();
+        let server = std::thread::spawn(move || {
+            let mut seen = Vec::new();
+            for (code, reason, body) in [
+                (200, "OK", r#"{"code":"c","poll":"secret","link":"https://vpn.example.org/link#c","expires":5}"#),
+                (202, "Accepted", r#"{"status":"pending"}"#),
+                (200, "OK", r#"{"authkey":"hskey-auth-z","server_url":"https://vpn.example.org","user":"dimas"}"#),
+                (410, "Gone", r#"{"error":"expired"}"#),
+            ] {
+                let (mut s, _) = listener.accept().unwrap();
+                seen.push(read_request(&mut s));
+                write!(
+                    s,
+                    "HTTP/1.1 {code} {reason}\r\nContent-Type: application/json\r\nContent-Length: {}\r\nConnection: close\r\n\r\n{body}",
+                    body.len()
+                )
+                .unwrap();
+            }
+            seen
+        });
+
+        let panel = format!("http://{addr}");
+        let req = start_link(&panel, "dimas-pc").unwrap();
+        assert_eq!(req.poll, "secret");
+        assert!(matches!(poll_link(&panel, &req.poll).unwrap(), LinkAnswer::Pending));
+        match poll_link(&panel, &req.poll).unwrap() {
+            LinkAnswer::Approved(joined) => assert_eq!((joined.user.as_str(), joined.authkey.as_str()), ("dimas", "hskey-auth-z")),
+            LinkAnswer::Pending => panic!("approved, not pending"),
+        }
+        assert_eq!(poll_link(&panel, &req.poll).unwrap_err(), JoinError::InviteUnusable("expired".into()));
+        let seen = server.join().unwrap();
+        assert!(seen[0].starts_with("POST /api/link HTTP/1.1") && seen[0].contains("\"hostname\":\"dimas-pc\""));
+        assert!(seen[1].starts_with("POST /api/link/poll HTTP/1.1") && seen[1].contains("\"poll\":\"secret\""));
+        assert!(matches!(start_link("http://vpn.example.org", "h"), Err(JoinError::Other(_))), "no HTTPS");
+    }
 }
 
 // ─── Inviting (any member, over the tailnet) ─────────────────────────────────
@@ -709,6 +818,9 @@ pub struct GroupInfo {
     pub owner: Option<String>,
     #[serde(default)]
     pub members: Vec<String>,
+    /// Names it had before (renamed by its owner).
+    #[serde(default)]
+    pub former: Vec<String>,
 }
 
 impl GroupInfo {
@@ -752,6 +864,16 @@ pub fn my_groups() -> std::result::Result<MyGroups, MemberError> {
 
 pub fn create_group(name: &str) -> std::result::Result<GroupInfo, MemberError> {
     let r = member_call("POST", "/api/me/groups", Some(serde_json::json!({ "name": name })))?;
+    panel::read_json_limited(r).map_err(|e| MemberError::Other(e.to_string()))
+}
+
+/// Give a group we own a new name; the panel answers with the renamed group. Blocking.
+pub fn rename_group(name: &str, new_name: &str) -> std::result::Result<GroupInfo, MemberError> {
+    let r = member_call(
+        "PATCH",
+        &format!("/api/me/groups/{}", segment(name)?),
+        Some(serde_json::json!({ "name": new_name })),
+    )?;
     panel::read_json_limited(r).map_err(|e| MemberError::Other(e.to_string()))
 }
 

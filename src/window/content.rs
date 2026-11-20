@@ -268,6 +268,12 @@ fn build_not_signed_in_page() -> (libadwaita::StatusPage, gtk4::Box, libadwaita:
         "win.rejoin",
     );
     row_rejoin.set_visible(false);
+    let row_phone = choice(
+        "phone-symbolic",
+        &tr!("Sign in with my phone"),
+        &tr!("Your phone is already on the network with BigLace: scan a code with it."),
+        "win.phone-sign-in",
+    );
     let row_invite = choice(
         "mail-send-symbolic",
         &tr!("I have an invite"),
@@ -288,6 +294,7 @@ fn build_not_signed_in_page() -> (libadwaita::StatusPage, gtk4::Box, libadwaita:
         "win.panel-login",
     );
     choices.append(&row_rejoin);
+    choices.append(&row_phone);
     choices.append(&row_invite);
     choices.append(&row_key);
     choices.append(&row_admin);

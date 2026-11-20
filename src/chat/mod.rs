@@ -252,6 +252,39 @@ impl Store {
         }
     }
 
+    /// Group `from` is called `to` now: its history and outbox move over
+    /// (merged, without repeats, when both already exist). True if anything moved.
+    fn rename_group(&mut self, from: &str, to: &str) -> bool {
+        let (old, new) = (ConvId::group(from), ConvId::group(to));
+        let Some(moved) = self.convs.remove(&old) else { return false };
+        match self.convs.get_mut(&new) {
+            Some(kept) => {
+                for m in moved.messages {
+                    if !kept.messages.iter().any(|k| k.id == m.id) {
+                        kept.messages.push(m);
+                    }
+                }
+                kept.messages.sort_by_key(|m| m.at);
+                kept.unread = kept.unread.saturating_add(moved.unread);
+                kept.pinned = kept.pinned.take().or(moved.pinned);
+            }
+            None => {
+                self.convs.insert(new.clone(), moved);
+            }
+        }
+        self.save(&new);
+        let _ = std::fs::remove_file(self.dir.join(format!("{}.json", old.key())));
+        let mut outbox_changed = false;
+        for p in self.outbox.iter_mut().filter(|p| p.wire.conv == old) {
+            p.wire.conv = new.clone();
+            outbox_changed = true;
+        }
+        if outbox_changed {
+            self.save_outbox();
+        }
+        true
+    }
+
     fn save_outbox(&self) {
         if let Ok(json) = serde_json::to_vec(&self.outbox) {
             write_private(&self.dir.join("outbox"), &json);
@@ -415,6 +448,7 @@ fn me(max_age: Duration) -> Option<Me> {
     }
     match crate::invite::my_groups() {
         Ok(mine) => {
+            follow_renames(&mine.groups);
             let owners = mine
                 .groups
                 .iter()
@@ -433,6 +467,24 @@ fn me(max_age: Duration) -> Option<Me> {
             Some(fresh)
         }
         Err(_) => (!cur.user.is_empty()).then_some(cur),
+    }
+}
+
+/// Groups renamed by their owner: their conversation and photo follow the new name.
+fn follow_renames(groups: &[crate::invite::GroupInfo]) {
+    for g in groups {
+        for old in &g.former {
+            group_renamed(old, &g.name);
+        }
+    }
+}
+
+/// Group `from` is called `to` now: its conversation and photo move over.
+pub fn group_renamed(from: &str, to: &str) {
+    let moved = store().lock().is_ok_and(|mut s| s.rename_group(from, to));
+    crate::avatars::group_renamed(from, to);
+    if moved {
+        emit(ChatEvent::Changed(ConvId::group(to)));
     }
 }
 
@@ -1271,6 +1323,48 @@ mod tests {
         let mut big = wire(ConvId::direct("tales"));
         big.text = "a".repeat(MAX_TEXT + 1);
         assert_eq!(place(&big, "bruna", &me), None);
+    }
+
+    /// A renamed group keeps its history, merged without repeats, and its outbox.
+    #[test]
+    fn renamed_group_keeps_history() {
+        let dir = std::env::temp_dir().join(format!("biglace-chat-rename-{}", new_id()));
+        let (old, new) = (ConvId::group("familia"), ConvId::group("familia-silva"));
+        let mut s = Store::open(&dir);
+        let msg = |id: &str, at: u64| Message {
+            id: id.into(),
+            from: "bruna".into(),
+            device: String::new(),
+            text: "oi".into(),
+            at,
+            mine: false,
+            delivered: vec![],
+            file: None,
+            reply_to: None,
+            forwarded_from: None,
+            reactions: BTreeMap::new(),
+            edited_at: 0,
+            deleted: false,
+        };
+        s.add(&old, msg("m1", 1), true);
+        s.add(&old, msg("m3", 3), true);
+        s.add(&new, msg("m2", 2), false);
+        s.add(&new, msg("m3", 3), false);
+        let wire = Wire { id: "w".into(), conv: old.clone(), text: "x".into(), at: 4, file: None, reply_to: None, forwarded_from: None, op: None };
+        s.outbox.push(Pending { wire, to_user: "bruna".into(), node: "n".into() });
+        s.save(&old);
+
+        assert!(s.rename_group("familia", "familia-silva"));
+        assert!(!s.convs.contains_key(&old));
+        let ids: Vec<_> = s.convs[&new].messages.iter().map(|m| m.id.as_str()).collect();
+        assert_eq!(ids, ["m1", "m2", "m3"]);
+        assert_eq!(s.convs[&new].unread, 2);
+        assert_eq!(s.outbox[0].wire.conv, new);
+        assert!(!dir.join("group-familia.json").exists());
+        let again = Store::open(&dir);
+        assert_eq!(again.convs[&new].messages.len(), 3);
+        assert!(!s.rename_group("familia", "familia-silva"), "nothing left to move");
+        let _ = std::fs::remove_dir_all(&dir);
     }
 
     /// Reactions toggle per person; only the author edits or deletes;

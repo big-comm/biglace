@@ -276,6 +276,22 @@ fn fetch(keys: &[String]) {
     }
 }
 
+/// Group `from` is called `to` now: our photo of it (we created it) moves to
+/// the new name; a copy of someone else's is asked for again under that name.
+pub fn group_renamed(from: &str, to: &str) {
+    let (old, new) = (own_group_path(from), own_group_path(to));
+    if old.is_file() && !new.exists() {
+        if let Err(e) = std::fs::rename(&old, &new) {
+            crate::tailscale::dbg(&format!("avatars: group photo {from} → {to}: {e}"));
+        }
+    }
+    remove_cached(&group_key(from));
+    if let Ok(mut k) = known().lock() {
+        k.remove(&group_key(from));
+        k.remove(&group_key(to));
+    }
+}
+
 /// No photo for `key`: drop any copy.
 fn forget(key: &str) {
     if let Ok(mut k) = known().lock() {

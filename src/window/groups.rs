@@ -228,7 +228,7 @@ impl GroupsPage {
         };
         for b in [&btn_new, &btn_first] {
             let page = page.clone();
-            b.connect_clicked(move |_| page.show_create());
+            b.connect_clicked(move |_| page.show_name_dialog(None));
         }
         {
             let page = page.clone();
@@ -478,6 +478,18 @@ impl GroupsPage {
                 });
             }
             actions.append(&photo_btn);
+            let rename = gtk4::Button::builder()
+                .icon_name("document-edit-symbolic")
+                .tooltip_text(tr!("Rename group"))
+                .css_classes(["flat", "circular"])
+                .valign(gtk4::Align::Center)
+                .build();
+            rename.update_property(&[gtk4::accessible::Property::Label(&tr!("Rename group"))]);
+            {
+                let (page, group) = (self.clone(), g.name.clone());
+                rename.connect_clicked(move |_| page.show_name_dialog(Some(group.clone())));
+            }
+            actions.append(&rename);
             let del = gtk4::Button::builder()
                 .label(tr!("Delete group"))
                 .css_classes(["destructive-action"])
@@ -667,6 +679,7 @@ impl GroupsPage {
             .default_width(460)
             .default_height(560)
             .build();
+        super::dialogs::close_on_escape(&dlg);
         let outer = gtk4::Box::new(gtk4::Orientation::Vertical, 0);
         outer.append(&libadwaita::HeaderBar::new());
 
@@ -679,7 +692,6 @@ impl GroupsPage {
         let intro = gtk4::Label::new(Some(&tr!(
             "Choose people on your network. Each one gets the invitation in BigLace and decides whether to join."
         )));
-        super::dialogs::close_on_escape(&dlg);
         intro.set_wrap(true);
         intro.set_xalign(0.0);
         intro.add_css_class("dim-label");
@@ -837,32 +849,22 @@ impl GroupsPage {
         search.grab_focus();
     }
 
-    fn show_create(&self) {
+    /// A new group's name, or a new name for `renaming` (a group we own).
+    fn show_name_dialog(&self, renaming: Option<String>) {
+        let title = match &renaming {
+            Some(group) => trf!("Rename {group}", "group" => group.as_str()),
+            None => tr!("New group"),
+        };
         let dlg = libadwaita::Window::builder()
             .transient_for(&self.win)
             .modal(true)
-            .title(tr!("New group"))
+            .title(title)
             .default_width(440)
             .build();
+        super::dialogs::close_on_escape(&dlg);
         let outer = gtk4::Box::new(gtk4::Orientation::Vertical, 0);
         outer.append(&libadwaita::HeaderBar::new());
-        let pref = libadwaita::PreferencesPage::new();
-        let grp = libadwaita::PreferencesGroup::builder()
-            .description(tr!(
-                "You'll be the group's owner: you invite people into it and can remove them. Everyone in the group reaches each other's devices."
-            ))
-            .build();
-        let entry = libadwaita::EntryRow::builder().title(tr!("Group name")).build();
-        grp.add(&entry);
-        let hint = gtk4::Label::new(None);
-        hint.add_css_class("dim-label");
-        hint.add_css_class("caption");
-        hint.set_xalign(0.0);
-        hint.set_margin_top(6);
-        hint.set_wrap(true);
-        grp.add(&hint);
-        super::dialogs::close_on_escape(&dlg);
-        pref.add(&grp);
+        let (pref, entry, hint) = name_form(renaming.as_deref());
         outer.append(&pref);
 
         let err = gtk4::Label::new(None);
@@ -872,7 +874,7 @@ impl GroupsPage {
         err.set_margin_end(16);
         outer.append(&err);
         let btn = gtk4::Button::builder()
-            .label(tr!("Create group"))
+            .label(if renaming.is_some() { tr!("Rename") } else { tr!("Create group") })
             .css_classes(["suggested-action", "pill"])
             .halign(gtk4::Align::Center)
             .margin_top(6)
@@ -882,58 +884,101 @@ impl GroupsPage {
         outer.append(&btn);
         dlg.set_content(Some(&outer));
 
-        hint.set_text(&tr!("For example: family, work, friends."));
-        {
-            let (hint, btn) = (hint.clone(), btn.clone());
-            entry.connect_changed(move |e| {
-                let name = group_name_from(&e.text());
-                btn.set_sensitive(invite::group_name_ok(&name));
-                hint.set_text(&if name.is_empty() {
-                    tr!("For example: family, work, friends.")
-                } else {
-                    trf!("It will be called \"{name}\".", "name" => name)
-                });
-            });
-        }
-        {
-            let btn = btn.clone();
-            entry.connect_entry_activated(move |_| {
-                if btn.is_sensitive() {
-                    btn.emit_clicked();
-                }
-            });
-        }
+        wire_name_entry(&entry, &hint, &btn, renaming.clone());
         {
             let (page, dlg, entry, err) = (self.clone(), dlg.clone(), entry.clone(), err.clone());
             btn.connect_clicked(move |b| {
-                let name = group_name_from(&entry.text());
                 err.set_text("");
                 b.set_sensitive(false);
-                let (page, dlg, err, b) = (page.clone(), dlg.clone(), err.clone(), b.clone());
-                let n = name.clone();
-                super::run_in_background(
-                    move || invite::create_group(&n),
-                    move |r| match r {
-                        Ok(g) => {
-                            dlg.close();
-                            super::show_toast(
-                                &page.toast,
-                                &trf!("Group {group} created. Now invite people into it.", "group" => g.name),
-                                5,
-                            );
-                            page.refresh();
-                        }
-                        Err(e) => {
-                            b.set_sensitive(true);
-                            err.set_text(&explain(&e));
-                        }
-                    },
-                );
+                page.submit_name(renaming.clone(), group_name_from(&entry.text()), &dlg, &err, b);
             });
         }
         dlg.present();
         entry.grab_focus();
     }
+
+    /// Create the group `name`, or rename `renaming` to it; close `dlg` when done.
+    fn submit_name(&self, renaming: Option<String>, name: String, dlg: &libadwaita::Window, err: &gtk4::Label, btn: &gtk4::Button) {
+        let (page, dlg, err, btn) = (self.clone(), dlg.clone(), err.clone(), btn.clone());
+        super::run_in_background(
+            move || match &renaming {
+                Some(old) => {
+                    let g = invite::rename_group(old, &name)?;
+                    // Ours moves now; the others' when they next learn their groups.
+                    crate::chat::group_renamed(old, &g.name);
+                    Ok(g)
+                }
+                None => invite::create_group(&name),
+            },
+            move |r| match r {
+                Ok(g) => {
+                    dlg.close();
+                    let done = if g.former.is_empty() {
+                        trf!("Group {group} created. Now invite people into it.", "group" => g.name)
+                    } else {
+                        trf!("The group is called {group} now.", "group" => g.name)
+                    };
+                    super::show_toast(&page.toast, &done, 5);
+                    page.refresh();
+                }
+                Err(e) => {
+                    btn.set_sensitive(true);
+                    err.set_text(&explain(&e));
+                }
+            },
+        );
+    }
+}
+
+/// As the name is typed: what the group will be called, and the button only
+/// for a valid name that differs from `renaming`'s; Enter presses it.
+fn wire_name_entry(entry: &libadwaita::EntryRow, hint: &gtk4::Label, btn: &gtk4::Button, renaming: Option<String>) {
+    hint.set_text(&tr!("For example: family, work, friends."));
+    {
+        let (hint, btn) = (hint.clone(), btn.clone());
+        entry.connect_changed(move |e| {
+            let name = group_name_from(&e.text());
+            btn.set_sensitive(invite::group_name_ok(&name) && Some(&name) != renaming.as_ref());
+            hint.set_text(&if name.is_empty() {
+                tr!("For example: family, work, friends.")
+            } else {
+                trf!("It will be called \"{name}\".", "name" => name)
+            });
+        });
+    }
+    let btn = btn.clone();
+    entry.connect_entry_activated(move |_| {
+        if btn.is_sensitive() {
+            btn.emit_clicked();
+        }
+    });
+}
+
+/// The name field (filled with `renaming`, the group's current name, when
+/// renaming) and the hint under it.
+fn name_form(renaming: Option<&str>) -> (libadwaita::PreferencesPage, libadwaita::EntryRow, gtk4::Label) {
+    let pref = libadwaita::PreferencesPage::new();
+    let description = match renaming {
+        Some(_) => tr!("Its members, conversation, room and photo keep going under the new name."),
+        None => tr!(
+            "You'll be the group's owner: you invite people into it and can remove them. Everyone in the group reaches each other's devices."
+        ),
+    };
+    let grp = libadwaita::PreferencesGroup::builder().description(description).build();
+    let entry = libadwaita::EntryRow::builder().title(tr!("Group name")).build();
+    if let Some(group) = renaming {
+        entry.set_text(group);
+    }
+    grp.add(&entry);
+    let hint = gtk4::Label::new(None);
+    hint.add_css_class("dim-label");
+    hint.add_css_class("caption");
+    hint.set_xalign(0.0);
+    hint.set_margin_top(6);
+    hint.set_wrap(true);
+    grp.add(&hint);
+    pref.add(&grp);
+    (pref, entry, hint)
 }
 
 fn notification_id(request: &str) -> String {

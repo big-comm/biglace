@@ -13,6 +13,7 @@ mod join_dialog;
 mod launcher_badge;
 mod peer_row;
 mod phone_link;
+mod phone_signin;
 mod remote_ui;
 mod room_stage;
 mod rooms;
@@ -1202,8 +1203,8 @@ fn show_key_dialog(ctx: &Ctx) {
         .title(tr!("Sign in with an access key"))
         .default_width(460)
         .build();
-    let outer = gtk4::Box::new(gtk4::Orientation::Vertical, 0);
     dialogs::close_on_escape(&dlg);
+    let outer = gtk4::Box::new(gtk4::Orientation::Vertical, 0);
     outer.append(&libadwaita::HeaderBar::new());
     let page = libadwaita::PreferencesPage::new();
     let grp = libadwaita::PreferencesGroup::builder()
@@ -1439,6 +1440,7 @@ fn setup_menu(ctx: &Ctx) {
     let account = gtk4::gio::Menu::new();
     account.append(Some(&tr!("Change profile photo…")), Some("win.avatar-change"));
     account.append(Some(&tr!("Join with an invite")), Some("win.join-invite::"));
+    account.append(Some(&tr!("Sign in with my phone")), Some("win.phone-sign-in"));
     account.append(
         Some(&tr!("Sign in with panel account")),
         Some("win.panel-login"),
@@ -1492,6 +1494,15 @@ fn setup_menu(ctx: &Ctx) {
         let sidebar_w = ctx.ui.sidebar.clone();
         action.connect_activate(move |_, _| {
             dialogs::show_panel_login(&win_w, &toast_w, &cfg2, &sidebar_w);
+        });
+        ctx.ui.win.add_action(&action);
+    }
+
+    {
+        let action = gtk4::gio::SimpleAction::new("phone-sign-in", None);
+        let ctx2 = ctx.clone();
+        action.connect_activate(move |_, _| {
+            phone_signin::sign_in_with_phone(&ctx2.ui.win, &ctx2.ui.toast, &ctx2.cfg, &ctx2.ui.sidebar);
         });
         ctx.ui.win.add_action(&action);
     }
@@ -2399,12 +2410,10 @@ fn apply_state(ctx: &Ctx, state: AppState, status: &Status, peers: &[Peer]) {
     {
         act.set_enabled(!configured);
     }
-    if let Some(act) = ui
-        .win
-        .lookup_action("join-invite")
-        .and_downcast::<gtk4::gio::SimpleAction>()
-    {
-        act.set_enabled(!configured);
+    for name in ["join-invite", "phone-sign-in"] {
+        if let Some(act) = ui.win.lookup_action(name).and_downcast::<gtk4::gio::SimpleAction>() {
+            act.set_enabled(!configured);
+        }
     }
     if let Some(act) = ui
         .win
