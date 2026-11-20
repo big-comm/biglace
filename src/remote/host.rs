@@ -694,11 +694,21 @@ fn run_session(mut stream: TcpStream, stop: &StopHandle, protocol: u32, identity
         write_frame(&mut *w, kind, payload)?;
         Ok(())
     };
+    let screen_size = || super::display::query().and_then(|s| s.current).map(|m| (m.width, m.height));
+    let mut opened_at = screen_size();
+    let mut reopened_after_end = 0;
     loop {
         match stream_screen(&send, &pipelines, dirty.clone(), stop, timestamps, &want_key, &restart) {
             Ok(true) => {}
             Ok(false) => break,
-            Err(e) if e.is::<CaptureEnded>() && !stop.stopped() => {}
+            Err(e) if e.is::<CaptureEnded>() && !stop.stopped() => {
+                if !reopen_after_end(opened_at, screen_size(), reopened_after_end) {
+                    tailscale::dbg("remote: the capture ended with the screen size unchanged, so the share was stopped here");
+                    let _ = send(Kind::Error, crate::tr!("sharing was stopped on that computer").as_bytes());
+                    break;
+                }
+                reopened_after_end += 1;
+            }
             Err(e) => {
                 tailscale::dbg(&format!("remote: capture failed: {e}"));
                 break;
@@ -719,6 +729,7 @@ fn run_session(mut stream: TcpStream, stop: &StopHandle, protocol: u32, identity
             Ok(fresh) => {
                 pipelines = fresh.pipelines;
                 dirty = fresh.dirty;
+                opened_at = screen_size();
                 if let Ok(mut s) = sink.lock() {
                     *s = fresh.sink;
                 }
@@ -989,8 +1000,20 @@ fn stamp_and_gate(pipeline: &gstreamer::Pipeline, dirty: Option<Arc<Damage>>) {
 /// alive; everything else waits for a change.
 const IDLE_FRAME_EVERY: Duration = Duration::from_secs(1);
 
-/// The capture ended by itself: GNOME closes its screencast when this
-/// screen's resolution changes, which a new capture picks up.
+/// Reopened captures per session, a bound on a screen whose size keeps
+/// changing.
+const MAX_REOPENS_AFTER_END: u32 = 10;
+
+/// Whether a capture that ended by itself opens again. The person stopping
+/// the share and GNOME closing its screencast on a mode change look the
+/// same to the portal and to PipeWire; only a screen size different from
+/// when the capture opened tells the mode change apart.
+fn reopen_after_end(opened_at: Option<(u32, u32)>, now: Option<(u32, u32)>, reopened: u32) -> bool {
+    reopened < MAX_REOPENS_AFTER_END && opened_at.is_some() && now.is_some() && opened_at != now
+}
+
+/// The capture ended by itself: the person stopped sharing, or GNOME closed
+/// its screencast on a resolution change.
 #[derive(Debug)]
 pub(crate) struct CaptureEnded;
 
@@ -1294,6 +1317,18 @@ mod tests {
         let ages = ages.into_inner().unwrap();
         assert!(!ages.is_empty(), "no frame sent");
         assert!(ages.iter().all(|us| (50_000..1_000_000).contains(us)), "ages in µs: {ages:?}");
+    }
+
+    /// A share the person stopped stays stopped; only a new screen size
+    /// brings the capture back, and not without end.
+    #[test]
+    fn size_change_alone_reopens_capture() {
+        let (hd, fhd) = (Some((1280, 720)), Some((1920, 1080)));
+        assert!(!reopen_after_end(fhd, fhd, 0), "stopped by the person");
+        assert!(reopen_after_end(fhd, hd, 0), "mode change");
+        assert!(!reopen_after_end(None, hd, 0), "size unknown when opened");
+        assert!(!reopen_after_end(fhd, None, 0), "size unknown now");
+        assert!(!reopen_after_end(fhd, hd, MAX_REOPENS_AFTER_END), "too many");
     }
 
     /// A still X11 screen holds back the next grab until it changes, or
