@@ -12,6 +12,8 @@ use super::{emit, read_frame, write_frame, ConsentRequest, HostEvent, HostSessio
 use crate::device_key;
 use crate::tailscale::{self, Identity};
 
+mod encoder;
+
 /// Signed requests must be this fresh (either way, for clock skew).
 const SKEW: Duration = Duration::from_secs(120);
 /// How long the person at the screen has to answer.
@@ -473,11 +475,11 @@ thread_local! {
 /// Zero-copy Wayland pipeline: the compositor's frames stay in GPU memory
 /// (DMA-BUF), the GPU converts them (vapostproc) and encodes them
 /// (vah264enc) — no readback, no CPU conversion. What gnome-remote-desktop
-/// does on GPUs; None when this machine has no VA-API encoder.
+/// does on GPUs; None when this machine has no working VA-API encoder.
 #[cfg(target_os = "linux")]
 fn wayland_zero_copy(capture: &str) -> Option<String> {
     use gstreamer as gst;
-    let (enc, _) = encoder().filter(|(e, _)| e.starts_with("vah264enc"))?;
+    let (_, enc) = encoder::usable().iter().find(|(e, _)| *e == encoder::Encoder::VaH264)?;
     gst::ElementFactory::find("vapostproc")?;
     Some(format!(
         "{capture} ! video/x-raw(memory:DMABuf) ! vapostproc \
@@ -509,12 +511,11 @@ pub(crate) fn open_source(_stop: &StopHandle, want: Pointer) -> anyhow::Result<S
         let portal = super::portal::start(want == Pointer::Embedded)?;
         let pointer = if portal.cursor_embedded { Pointer::Embedded } else { Pointer::Local };
         let capture = pipewire_capture(portal.fd.as_raw_fd(), portal.node, portal.serial);
-        let enc = encoder().ok_or_else(|| anyhow::anyhow!("no H.264 encoder"))?;
         // Copy path, for compositors or GPUs without DMA-BUF/VA-API.
-        let copy = pipeline_desc(&format!("{capture} use-bufferpool=false ! {WAYLAND_TAIL}"), enc);
+        let copy = each_encoder(&format!("{capture} use-bufferpool=false ! {WAYLAND_TAIL}"))?;
         Ok(Source {
             pointer,
-            pipelines: wayland_zero_copy(&capture).into_iter().chain([copy]).collect(),
+            pipelines: wayland_zero_copy(&capture).into_iter().chain(copy).collect(),
             dirty: None,
             sink: InputSink::portal(portal.input, portal.handled),
             _fd: Some(portal.fd),
@@ -524,17 +525,14 @@ pub(crate) fn open_source(_stop: &StopHandle, want: Pointer) -> anyhow::Result<S
         let embedded = want == Pointer::Embedded;
         let dirty = Arc::new(Damage::default());
         dirty.raise();
+        // Usually the viewer draws the pointer itself (no video delay on
+        // it); a room share shows the presenter's in the frames.
+        let pipelines = each_encoder(&format!("ximagesrc name=capture use-damage=false show-pointer={embedded} ! {X11_TAIL}"))?;
         let watch = super::damage_x11::watch(dirty.clone(), embedded);
-        let enc = encoder().ok_or_else(|| anyhow::anyhow!("no H.264 encoder"))?;
         Ok(Source {
             pointer: want,
             dirty: watch.is_some().then_some(dirty),
-            // Usually the viewer draws the pointer itself (no video delay
-            // on it); a room share shows the presenter's in the frames.
-            pipelines: vec![pipeline_desc(
-                &format!("ximagesrc name=capture use-damage=false show-pointer={embedded} ! {X11_TAIL}"),
-                enc,
-            )],
+            pipelines,
             sink: InputSink::x11(super::input_x11::Injector::connect().map(Box::new)),
             _fd: None,
             _damage: watch,
@@ -803,42 +801,19 @@ fn power_action(action: &str, viewer: &Identity, writer: &Arc<Mutex<TcpStream>>)
     }
 }
 
-/// H.264 encoder to use — hardware (VA-API) first, then software — and the
-/// raw format it takes. VA-API elements are only registered when a usable
-/// device exists, so finding the factory is enough.
+/// The best H.264 encoder that works here, and the raw format it takes.
 pub fn encoder() -> Option<(&'static str, &'static str)> {
-    use gstreamer as gst;
-    // Software encoding takes at most half the cores: the person at this
-    // computer keeps using it while it's being shared.
-    static X264: OnceLock<String> = OnceLock::new();
-    let x264: &'static str = X264.get_or_init(|| {
-        let threads = std::thread::available_parallelism().map_or(2, |n| (n.get() / 2).clamp(1, 4));
-        // Constant quality (CRF 20: crisp text) capped at 30 Mbit/s with a
-        // short VBV, full chroma (4:4:4 — colored text edges stay sharp,
-        // what RDP's AVC444 is for).
-        format!(
-            "x264enc tune=zerolatency speed-preset=ultrafast sliced-threads=true threads={threads} \
-             pass=qual quantizer=20 bitrate=30000 vbv-buf-capacity=100 key-int-max=120 bframes=0 b-adapt=false"
-        )
-    });
-    for (name, desc, format) in [
-        // Low-latency settings (GStreamer docs): no B-frames, one reference,
-        // fastest preset, a CPB of ~2 frames, slices so the viewer's decoder
-        // can work on one frame in parallel.
-        // Hardware: constant quality too (4:2:0 only on VA-API).
-        (
-            "vah264enc",
-            "vah264enc rate-control=cqp qpi=20 qpp=22 key-int-max=120 b-frames=0 ref-frames=1 target-usage=4 num-slices=4",
-            "NV12",
-        ),
-        ("x264enc", x264, "Y444"),
-        ("openh264enc", "openh264enc bitrate=6000000 gop-size=60 complexity=low", "I420"),
-    ] {
-        if gst::ElementFactory::find(name).is_some() {
-            return Some((desc, format));
-        }
+    encoder::usable().first().map(|(e, desc)| (desc.as_str(), e.format()))
+}
+
+/// `head` into each encoder that works here, best first: one that refuses
+/// this capture gives way to the next.
+fn each_encoder(head: &str) -> anyhow::Result<Vec<String>> {
+    let pipelines: Vec<String> = encoder::usable().iter().map(|(e, desc)| pipeline_desc(head, (desc, e.format()))).collect();
+    if pipelines.is_empty() {
+        anyhow::bail!("no H.264 encoder");
     }
-    None
+    Ok(pipelines)
 }
 
 /// What plays on this computer (the default output's monitor), as Opus:
@@ -1281,17 +1256,10 @@ mod tests {
             return;
         }
         // Every encoder present on this machine, not just the preferred one.
-        let encoders = [
-            ("vah264enc", ("vah264enc rate-control=cqp qpi=20 qpp=22 key-int-max=120 b-frames=0 ref-frames=1 target-usage=4 num-slices=4", "NV12")),
-            ("x264enc", ("x264enc tune=zerolatency speed-preset=ultrafast sliced-threads=true threads=2 pass=qual quantizer=20 bitrate=30000 vbv-buf-capacity=100 key-int-max=120 bframes=0 b-adapt=false", "Y444")),
-            ("openh264enc", ("openh264enc bitrate=6000000 gop-size=60 complexity=low", "I420")),
-        ];
-        for (tail, (name, enc)) in [WAYLAND_TAIL, X11_TAIL]
-            .iter()
-            .flat_map(|t| encoders.iter().map(move |e| (*t, *e)))
-            .filter(|(_, (name, _))| gst::ElementFactory::find(name).is_some())
-        {
-            let _ = name;
+        let present = encoder::Encoder::ALL.into_iter().filter(|e| gst::ElementFactory::find(e.element()).is_some());
+        for (tail, kind) in present.flat_map(|e| [(WAYLAND_TAIL, e), (X11_TAIL, e)]) {
+            let description = kind.description();
+            let enc = (description.as_str(), kind.format());
             let head = format!("videotestsrc num-buffers=20 ! video/x-raw,width=320,height=240 ! videoconvert ! {tail}");
             let desc = pipeline_desc(&head, enc);
             let pipeline = gst::parse::launch(&desc)
