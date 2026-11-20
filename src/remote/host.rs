@@ -530,7 +530,7 @@ pub(crate) fn open_source(want: Pointer, rate: RateMode) -> anyhow::Result<Sourc
         // Usually the viewer draws the pointer itself (no video delay on
         // it); a room share shows the presenter's in the frames.
         let pipelines = each_encoder(&format!("ximagesrc name=capture use-damage=false show-pointer={embedded} ! {X11_TAIL}"), rate)?;
-        let watch = super::damage_x11::watch(dirty.clone(), embedded);
+        let watch = super::damage_x11::watch(dirty.clone(), want);
         Ok(Source {
             pointer: want,
             dirty: watch.is_some().then_some(dirty),
@@ -540,13 +540,6 @@ pub(crate) fn open_source(want: Pointer, rate: RateMode) -> anyhow::Result<Sourc
             _damage: watch,
         })
     }
-}
-
-/// X11: the thread raising `dirty`, for a source whose first one was
-/// dropped while nobody watched.
-#[cfg(target_os = "linux")]
-pub(crate) fn watch_damage(dirty: &Arc<Damage>, track_pointer: bool) -> Option<super::damage_x11::Watch> {
-    super::damage_x11::watch(dirty.clone(), track_pointer)
 }
 
 #[cfg(not(target_os = "linux"))]
