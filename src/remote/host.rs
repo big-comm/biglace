@@ -310,6 +310,16 @@ impl InputSink {
         Self { out: SinkOut::Portal { tx, handled, sent: 0 }, keys: Default::default(), buttons: Default::default() }
     }
 
+    /// The portal ended its session by itself, its input lost.
+    pub(crate) fn portal_closed(&self) -> bool {
+        match &self.out {
+            #[cfg(target_os = "linux")]
+            SinkOut::X11(_) => false,
+            #[cfg(target_os = "linux")]
+            SinkOut::Portal { tx, .. } => tx.is_closed(),
+        }
+    }
+
     /// Wait (a little) until the compositor got everything sent so far.
     fn flush(&self) {
         #[cfg(target_os = "linux")]
@@ -710,13 +720,15 @@ fn run_session(mut stream: TcpStream, stop: &StopHandle, protocol: u32, identity
             Ok(true) => {}
             Ok(false) => break,
             Err(e) if e.is::<CaptureEnded>() && !stop.stopped() => {
+                // The portal ends its own session once it lost libei input.
+                let input_lost = sink.lock().is_ok_and(|s| s.portal_closed());
                 // GNOME ends the screencast as soon as the viewer's fit changes
                 // the mode, before the fit raises `restart`.
-                let refit = restart_follows(&restart);
+                let refit = !input_lost && restart_follows(&restart);
                 let size = screen_size();
-                if !reopen_after_end(refit, opened_at, size, &mut reopens, Instant::now()) {
+                if input_lost || !reopen_after_end(refit, opened_at, size, &mut reopens, Instant::now()) {
                     // Without both sizes nothing tells the person's stop from a mode change.
-                    let why = if opened_at.is_some() && size.is_some() {
+                    let why = if input_lost || (opened_at.is_some() && size.is_some()) {
                         crate::tr!("sharing was stopped on that computer")
                     } else {
                         crate::tr!("the screen capture ended")
@@ -1227,6 +1239,16 @@ pub(crate) fn stream_screen(
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    #[test]
+    fn portal_closes_with_its_input() {
+        let (tx, rx) = async_channel::unbounded();
+        let sink = InputSink::portal(tx, Arc::new(AtomicU64::new(0)));
+        assert!(!sink.portal_closed());
+        drop(rx);
+        assert!(sink.portal_closed());
+        assert!(!InputSink::x11(None).portal_closed());
+    }
 
     /// What's held is let go when control ends; "A" counts as "a" (older
     /// viewers), and a release of something never pressed goes nowhere.

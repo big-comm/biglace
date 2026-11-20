@@ -170,9 +170,15 @@ pub fn start(embed_cursor: bool) -> anyhow::Result<Portal> {
                         crate::tailscale::dbg("remote: portal input goes through libei (ConnectToEIS)");
                         Some(libei)
                     }
-                    Err(e) => {
+                    Err(NoLibei::Notify(e)) => {
                         crate::tailscale::dbg(&format!("remote: portal input goes through the portal's Notify calls: {e:#}"));
                         None
+                    }
+                    Err(NoLibei::Lost(e)) => {
+                        crate::tailscale::dbg(&format!("remote: libei failed after ConnectToEIS, closing the portal session: {e:#}"));
+                        drop(input_rx);
+                        let _ = session.close().await;
+                        return;
                     }
                 };
                 // Input that came while there was nowhere to send it would
@@ -184,7 +190,11 @@ pub fn start(embed_cursor: bool) -> anyhow::Result<Portal> {
                 handled.fetch_add(stale, std::sync::atomic::Ordering::AcqRel);
                 let (w, h) = size.map(|(w, h)| (f64::from(w), f64::from(h))).unwrap_or((1920.0, 1080.0));
                 loop {
-                    let next = match libei.as_mut().filter(|libei| libei.open) {
+                    let next = match libei.as_mut() {
+                        Some(libei) if !libei.open => {
+                            crate::tailscale::dbg("remote: closing the portal session, its libei input is gone");
+                            break;
+                        }
                         Some(libei) => {
                             let woke = {
                                 let recv = pin!(input_rx.recv());
@@ -225,6 +235,9 @@ pub fn start(embed_cursor: bool) -> anyhow::Result<Portal> {
                     }
                     handled.fetch_add(count, std::sync::atomic::Ordering::AcqRel);
                 }
+                // Closed before the session: its end ends the capture, and the
+                // host then reads a closed input as input that was lost.
+                drop(input_rx);
                 if let Some(libei) = libei {
                     libei.end();
                 }
@@ -280,20 +293,44 @@ const MAX_UNSENT_EVENTS: usize = 2048;
 /// A compositor that never answers must not keep input waiting for good.
 const LIBEI_TIMEOUT: Duration = Duration::from_secs(10);
 
-/// Ask the portal for a libei socket and handshake as a sender. An error
-/// here leaves input to the Notify* calls.
-async fn connect_libei(rd: &RemoteDesktop, session: &Session<RemoteDesktop>, stream: StreamPlace) -> anyhow::Result<Libei> {
+/// Why input can't go through libei.
+enum NoLibei {
+    /// The portal handed out no socket: its Notify* calls still work.
+    Notify(anyhow::Error),
+    /// The portal handed out a socket, and refuses Notify* from then on.
+    Lost(anyhow::Error),
+}
+
+impl NoLibei {
+    fn after(socket_handed_out: bool, error: anyhow::Error) -> Self {
+        if socket_handed_out {
+            Self::Lost(error)
+        } else {
+            Self::Notify(error)
+        }
+    }
+}
+
+/// Ask the portal for a libei socket and handshake as a sender.
+async fn connect_libei(rd: &RemoteDesktop, session: &Session<RemoteDesktop>, stream: StreamPlace) -> Result<Libei, NoLibei> {
     if !offers_libei(rd.version()) {
-        anyhow::bail!("portal version {} has no ConnectToEIS", rd.version());
+        return Err(NoLibei::Notify(anyhow::anyhow!("portal version {} has no ConnectToEIS", rd.version())));
     }
     let connect = async {
-        let fd = rd.connect_to_eis(session, Default::default()).await?;
-        let context = ei::Context::new(UnixStream::from(fd))?;
-        anyhow::Ok(context.handshake_async_io("BigLace", ei::handshake::ContextType::Sender).await?)
+        let fd = rd.connect_to_eis(session, Default::default()).await.map_err(|e| NoLibei::after(false, e.into()))?;
+        let context = ei::Context::new(UnixStream::from(fd)).map_err(|e| NoLibei::after(true, e.into()))?;
+        context
+            .handshake_async_io("BigLace", ei::handshake::ContextType::Sender)
+            .await
+            .map_err(|e| NoLibei::after(true, e.into()))
     };
     let (connection, events) = match select(pin!(connect), async_io::Timer::after(LIBEI_TIMEOUT)).await {
         Either::Left((connected, _)) => connected?,
-        Either::Right(_) => anyhow::bail!("ConnectToEIS got no answer in {} s", LIBEI_TIMEOUT.as_secs()),
+        // The call may have handed out a socket meanwhile.
+        Either::Right(_) => {
+            let late = anyhow::anyhow!("ConnectToEIS got no answer in {} s", LIBEI_TIMEOUT.as_secs());
+            return Err(NoLibei::after(true, late));
+        }
     };
     Ok(Libei {
         connection,
@@ -613,6 +650,13 @@ mod tests {
         assert!(!offers_libei(1));
         assert!(offers_libei(2));
         assert!(offers_libei(5));
+    }
+
+    /// The RemoteDesktop portal refuses Notify* once ConnectToEIS succeeded.
+    #[test]
+    fn notify_only_before_libei_socket() {
+        assert!(matches!(NoLibei::after(false, anyhow::anyhow!("refused")), NoLibei::Notify(_)));
+        assert!(matches!(NoLibei::after(true, anyhow::anyhow!("handshake")), NoLibei::Lost(_)));
     }
 
     fn region(x: u32, y: u32, width: u32, height: u32, mapping_id: Option<&str>) -> Region {
