@@ -15,8 +15,8 @@
 pub mod client;
 pub mod host;
 #[cfg(target_os = "linux")]
-#[cfg(target_os = "linux")]
 mod cursor_x11;
+#[cfg(target_os = "linux")]
 mod damage_x11;
 pub(crate) mod display;
 #[cfg(target_os = "linux")]
