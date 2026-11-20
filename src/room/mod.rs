@@ -799,6 +799,8 @@ mod tests {
         use gstreamer::prelude::*;
         let _turn = crate::remote::heavy_test();
         if gst::init().is_err() || gst::ElementFactory::find("level").is_none() {
+            // allow-noisy-log: a test run must say this test was skipped, not passed.
+            eprintln!("no level element here; skipping");
             return;
         }
         let measure = |wave: &str| -> f32 {
@@ -841,6 +843,8 @@ mod tests {
         use gstreamer::prelude::*;
         let _turn = crate::remote::heavy_test();
         if gst::init().is_err() || gst::ElementFactory::find("level").is_none() {
+            // allow-noisy-log: a test run must say this test was skipped, not passed.
+            eprintln!("no level element here; skipping");
             return;
         }
         let room = Arc::new(Room {
