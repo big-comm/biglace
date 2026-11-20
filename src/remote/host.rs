@@ -472,16 +472,26 @@ thread_local! {
 /// (vah264enc) — no readback, no CPU conversion. What gnome-remote-desktop
 /// does on GPUs; None when this machine has no VA-API encoder.
 #[cfg(target_os = "linux")]
-fn wayland_zero_copy(fd: i32, node: u32) -> Option<String> {
+fn wayland_zero_copy(capture: &str) -> Option<String> {
     use gstreamer as gst;
     let (enc, _) = encoder().filter(|(e, _)| e.starts_with("vah264enc"))?;
     gst::ElementFactory::find("vapostproc")?;
     Some(format!(
-        "pipewiresrc name=capture fd={fd} path={node} do-timestamp=true keepalive-time=1000 \
-         ! video/x-raw(memory:DMABuf) ! vapostproc \
+        "{capture} ! video/x-raw(memory:DMABuf) ! vapostproc \
          ! video/x-raw(memory:VAMemory),format=NV12 ! {}",
         encode_tail(enc)
     ))
+}
+
+/// `pipewiresrc` on the stream the portal shared, by its serial where the
+/// portal gives one: a node id can be handed to another producer.
+#[cfg(target_os = "linux")]
+fn pipewire_capture(fd: i32, node: u32, serial: Option<u64>) -> String {
+    let target = match serial {
+        Some(serial) => format!("target-object={serial}"),
+        None => format!("path={node}"),
+    };
+    format!("pipewiresrc name=capture fd={fd} {target} do-timestamp=true keepalive-time=1000")
 }
 
 #[cfg(target_os = "linux")]
@@ -494,19 +504,13 @@ pub(crate) fn open_source(stop: &StopHandle, want: Pointer) -> anyhow::Result<So
         // drawn in the video comes back late.
         let portal = super::portal::start(want == Pointer::Embedded)?;
         let pointer = if portal.cursor_embedded { Pointer::Embedded } else { Pointer::Local };
-        let (fd, node) = (portal.fd.as_raw_fd(), portal.node);
+        let capture = pipewire_capture(portal.fd.as_raw_fd(), portal.node, portal.serial);
         let enc = encoder().ok_or_else(|| anyhow::anyhow!("no H.264 encoder"))?;
         // Copy path, for compositors or GPUs without DMA-BUF/VA-API.
-        let copy = pipeline_desc(
-            &format!(
-                "pipewiresrc name=capture fd={fd} path={node} do-timestamp=true keepalive-time=1000 always-copy=true \
-                 ! {WAYLAND_TAIL}"
-            ),
-            enc,
-        );
+        let copy = pipeline_desc(&format!("{capture} use-bufferpool=false ! {WAYLAND_TAIL}"), enc);
         Ok(Source {
             pointer,
-            pipelines: wayland_zero_copy(fd, node).into_iter().chain([copy]).collect(),
+            pipelines: wayland_zero_copy(&capture).into_iter().chain([copy]).collect(),
             dirty: None,
             sink: InputSink::portal(portal.input, portal.handled),
             _fd: Some(portal.fd),
@@ -1124,6 +1128,25 @@ mod tests {
     }
     use gstreamer as gst;
     use gstreamer::prelude::*;
+
+    /// Deprecated `pipewiresrc` properties (`path`, `always-copy`) go away
+    /// in a later GStreamer; the serial must survive above `u32::MAX`.
+    #[test]
+    fn pipewire_capture_names_no_deprecated_property() {
+        gst::init().unwrap();
+        if gst::ElementFactory::find("pipewiresrc").is_none() {
+            eprintln!("no pipewiresrc here; skipping");
+            return;
+        }
+        let serial = u64::from(u32::MAX) + 7;
+        let desc = format!("{} use-bufferpool=false", pipewire_capture(3, 42, Some(serial)));
+        assert!(desc.contains(&format!("target-object={serial}")), "{desc}");
+        let element = gst::parse::launch(&desc).unwrap();
+        for setting in desc.split_whitespace().filter_map(|w| w.split_once('=')) {
+            let spec = element.find_property(setting.0).unwrap_or_else(|| panic!("{}: no such property", setting.0));
+            assert!(!spec.flags().contains(gst::glib::ParamFlags::DEPRECATED), "{} is deprecated", setting.0);
+        }
+    }
 
     /// Both host pipelines, with a test source in place of the screen, must
     /// parse and actually produce H.264 access units at the appsink.

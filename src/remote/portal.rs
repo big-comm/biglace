@@ -39,6 +39,8 @@ const BTN_MIDDLE: i32 = 0x112;
 pub struct Portal {
     pub fd: OwnedFd,
     pub node: u32,
+    /// The node's `object.serial` (portal v6+), which PipeWire never reuses.
+    pub serial: Option<u64>,
     pub input: async_channel::Sender<Input>,
     /// How many input events the compositor has been handed so far (sent
     /// ones can then be awaited: key releases must land before we go).
@@ -138,9 +140,10 @@ pub fn start(embed_cursor: bool) -> anyhow::Result<Portal> {
                     }
                 };
                 let node = stream.pipe_wire_node_id();
+                let serial = stream.pipewire_serial();
                 let size = stream.size();
                 let handled = std::sync::Arc::new(std::sync::atomic::AtomicU64::new(0));
-                let _ = ready_tx.send(Ok(Portal { fd, node, input: input_tx, handled: handled.clone(), cursor_embedded }));
+                let _ = ready_tx.send(Ok(Portal { fd, node, serial, input: input_tx, handled: handled.clone(), cursor_embedded }));
 
                 let (w, h) = size.map(|(w, h)| (f64::from(w), f64::from(h))).unwrap_or((1920.0, 1080.0));
                 while let Ok(first) = input_rx.recv().await {
