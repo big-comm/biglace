@@ -494,7 +494,8 @@ fn pipewire_capture(fd: i32, node: u32, serial: Option<u64>) -> String {
         Some(serial) => format!("target-object={serial}"),
         None => format!("path={node}"),
     };
-    format!("pipewiresrc name=capture fd={fd} {target} do-timestamp=true keepalive-time=1000")
+    // A closed screencast ends the stream (EOS) instead of leaving it silent.
+    format!("pipewiresrc name=capture fd={fd} {target} do-timestamp=true keepalive-time=1000 on-disconnect=eos")
 }
 
 #[cfg(target_os = "linux")]
@@ -713,14 +714,15 @@ fn run_session(mut stream: TcpStream, stop: &StopHandle, protocol: u32, identity
         match stream_screen(&send, &pipelines, dirty.clone(), stop, timestamps, &want_key, &restart) {
             Ok(true) => {}
             Ok(false) => break,
+            Err(e) if e.is::<CaptureEnded>() && !stop.stopped() => {}
             Err(e) => {
-                tailscale::dbg(&format!("remote: capture ended: {e}"));
+                tailscale::dbg(&format!("remote: capture failed: {e}"));
                 break;
             }
         }
-        // The resolution changed: open the screen again (the portal
-        // remembers the choice, nobody is asked).
-        tailscale::dbg("remote: screen size changed — opening the capture again");
+        // The resolution changed, here or on the viewer's request: open the
+        // screen again (the portal remembers the choice, nobody is asked).
+        tailscale::dbg("remote: the capture ended or the screen size changed — opening it again");
         #[cfg(target_os = "linux")]
         {
             if let Ok(mut s) = sink.lock() {
@@ -1026,6 +1028,19 @@ fn stamp_and_gate(pipeline: &gstreamer::Pipeline, dirty: Option<Arc<Damage>>) {
 /// alive; everything else waits for a change.
 const IDLE_FRAME_EVERY: Duration = Duration::from_secs(1);
 
+/// The capture ended by itself: GNOME closes its screencast when this
+/// screen's resolution changes, which a new capture picks up.
+#[derive(Debug)]
+pub(crate) struct CaptureEnded;
+
+impl std::fmt::Display for CaptureEnded {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        f.write_str("capture stopped")
+    }
+}
+
+impl std::error::Error for CaptureEnded {}
+
 /// Capture, encode and `send` the screen until `stop` — or until `restart`
 /// is raised (the screen's resolution changed): then true, for the caller
 /// to open the source again (GNOME ends its screencast on a mode change).
@@ -1077,7 +1092,7 @@ pub(crate) fn stream_screen(
             }
             let Some(sample) = pending.take().or_else(|| sink.try_pull_sample(gst::ClockTime::from_mseconds(500))) else {
                 if sink.is_eos() {
-                    anyhow::bail!("capture stopped");
+                    return Err(CaptureEnded.into());
                 }
                 continue;
             };
@@ -1189,6 +1204,24 @@ mod tests {
     }
     use gstreamer as gst;
     use gstreamer::prelude::*;
+
+    /// A capture that ends by itself (GNOME closes its screencast when the
+    /// host's resolution changes) is told apart from a failure.
+    #[test]
+    fn capture_end_is_reported_as_such() {
+        let _turn = crate::remote::heavy_test();
+        gst::init().unwrap();
+        let Some(enc) = encoder() else {
+            eprintln!("no H.264 encoder here; skipping");
+            return;
+        };
+        let head = "videotestsrc num-buffers=3 ! video/x-raw,width=320,height=240 ! identity name=capture ! videoconvert";
+        let pipelines = [pipeline_desc(head, enc)];
+        let send = |_: Kind, _: &[u8]| -> anyhow::Result<()> { Ok(()) };
+        let (want_key, restart) = (AtomicBool::new(false), AtomicBool::new(false));
+        let ended = stream_screen(&send, &pipelines, None, &StopHandle::detached(), true, &want_key, &restart);
+        assert!(ended.as_ref().is_err_and(|e| e.is::<CaptureEnded>()), "{ended:?}");
+    }
 
     /// A still X11 screen holds back the next grab until it changes, or
     /// until the keepalive frame is due.
