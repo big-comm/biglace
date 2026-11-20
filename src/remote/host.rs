@@ -310,6 +310,16 @@ impl InputSink {
         Self { out: SinkOut::Portal { tx, handled, sent: 0 }, keys: Default::default(), buttons: Default::default() }
     }
 
+    /// The portal ended its session by itself, its input lost.
+    pub(crate) fn portal_closed(&self) -> bool {
+        match &self.out {
+            #[cfg(target_os = "linux")]
+            SinkOut::X11(_) => false,
+            #[cfg(target_os = "linux")]
+            SinkOut::Portal { tx, .. } => tx.is_closed(),
+        }
+    }
+
     /// Wait (a little) until the compositor got everything sent so far.
     fn flush(&self) {
         #[cfg(target_os = "linux")]
@@ -709,14 +719,16 @@ fn run_session(mut stream: TcpStream, stop: &StopHandle, protocol: u32, identity
         match stream_screen(&send, &pipelines, dirty.clone(), stop, timestamps, &want_key, &restart) {
             Ok(true) => {}
             Ok(false) => break,
-            // GNOME ends the screencast as soon as the viewer's fit changes
-            // the mode, before the fit raises `restart`.
-            Err(e) if e.is::<CaptureEnded>() && !stop.stopped() && restart_follows(&restart) => {}
             Err(e) if e.is::<CaptureEnded>() && !stop.stopped() => {
+                // The portal ends its own session once it lost libei input.
+                let input_lost = sink.lock().is_ok_and(|s| s.portal_closed());
+                // GNOME ends the screencast as soon as the viewer's fit changes
+                // the mode, before the fit raises `restart`.
+                let refit = !input_lost && restart_follows(&restart);
                 let size = screen_size();
-                if !reopen_after_end(opened_at, size, &mut reopens, Instant::now()) {
+                if input_lost || !reopen_after_end(refit, opened_at, size, &mut reopens, Instant::now()) {
                     // Without both sizes nothing tells the person's stop from a mode change.
-                    let why = if opened_at.is_some() && size.is_some() {
+                    let why = if input_lost || (opened_at.is_some() && size.is_some()) {
                         crate::tr!("sharing was stopped on that computer")
                     } else {
                         crate::tr!("the screen capture ended")
@@ -1040,10 +1052,19 @@ const IDLE_FRAME_EVERY: Duration = Duration::from_secs(1);
 const MAX_REOPENS_PER_MINUTE: usize = 10;
 
 /// Whether a capture that ended by itself opens again (`reopens`: when it
-/// did before). Only a new screen size tells GNOME's mode change from the person's stop.
-fn reopen_after_end(opened_at: Option<(u32, u32)>, size: Option<(u32, u32)>, reopens: &mut Vec<Instant>, now: Instant) -> bool {
+/// did before). Only a viewer's fit (`refit`) or a new screen size tells
+/// GNOME's mode change from the person's stop, and both count: a viewer
+/// that keeps fitting must not outlast that stop.
+fn reopen_after_end(
+    refit: bool,
+    opened_at: Option<(u32, u32)>,
+    size: Option<(u32, u32)>,
+    reopens: &mut Vec<Instant>,
+    now: Instant,
+) -> bool {
     reopens.retain(|at| now.duration_since(*at) < Duration::from_secs(60));
-    let reopen = reopens.len() < MAX_REOPENS_PER_MINUTE && opened_at.is_some() && size.is_some() && opened_at != size;
+    let resized = opened_at.is_some() && size.is_some() && opened_at != size;
+    let reopen = reopens.len() < MAX_REOPENS_PER_MINUTE && (refit || resized);
     if reopen {
         reopens.push(now);
     }
@@ -1218,6 +1239,16 @@ pub(crate) fn stream_screen(
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    #[test]
+    fn portal_closes_with_its_input() {
+        let (tx, rx) = async_channel::unbounded();
+        let sink = InputSink::portal(tx, Arc::new(AtomicU64::new(0)));
+        assert!(!sink.portal_closed());
+        drop(rx);
+        assert!(sink.portal_closed());
+        assert!(!InputSink::x11(None).portal_closed());
+    }
 
     /// What's held is let go when control ends; "A" counts as "a" (older
     /// viewers), and a release of something never pressed goes nowhere.
@@ -1398,16 +1429,30 @@ mod tests {
     fn size_change_alone_reopens_capture() {
         let (hd, fhd) = (Some((1280, 720)), Some((1920, 1080)));
         let now = Instant::now();
-        assert!(!reopen_after_end(fhd, fhd, &mut Vec::new(), now), "stopped by the person");
-        assert!(reopen_after_end(fhd, hd, &mut Vec::new(), now), "mode change");
-        assert!(!reopen_after_end(None, hd, &mut Vec::new(), now), "size unknown when opened");
-        assert!(!reopen_after_end(fhd, None, &mut Vec::new(), now), "size unknown now");
+        assert!(!reopen_after_end(false, fhd, fhd, &mut Vec::new(), now), "stopped by the person");
+        assert!(reopen_after_end(false, fhd, hd, &mut Vec::new(), now), "mode change");
+        assert!(!reopen_after_end(false, None, hd, &mut Vec::new(), now), "size unknown when opened");
+        assert!(!reopen_after_end(false, fhd, None, &mut Vec::new(), now), "size unknown now");
         let mut reopens = Vec::new();
         for _ in 0..MAX_REOPENS_PER_MINUTE {
-            assert!(reopen_after_end(fhd, hd, &mut reopens, now));
+            assert!(reopen_after_end(false, fhd, hd, &mut reopens, now));
         }
-        assert!(!reopen_after_end(fhd, hd, &mut reopens, now), "too many");
-        assert!(reopen_after_end(fhd, hd, &mut reopens, now + Duration::from_secs(60)), "a minute later");
+        assert!(!reopen_after_end(false, fhd, hd, &mut reopens, now), "too many");
+        assert!(reopen_after_end(false, fhd, hd, &mut reopens, now + Duration::from_secs(60)), "a minute later");
+    }
+
+    /// A viewer's fit reopens a capture of the same size, but only as often
+    /// as a mode change could: one that keeps fitting can't outlast a stop.
+    #[test]
+    fn refits_count_toward_the_reopen_cap() {
+        let fhd = Some((1920, 1080));
+        let now = Instant::now();
+        let mut reopens = Vec::new();
+        for _ in 0..MAX_REOPENS_PER_MINUTE {
+            assert!(reopen_after_end(true, fhd, fhd, &mut reopens, now));
+        }
+        assert!(!reopen_after_end(true, fhd, fhd, &mut reopens, now), "too many refits");
+        assert!(!reopen_after_end(true, None, None, &mut reopens, now), "sizes unknown");
     }
 
     /// The capture ending on the viewer's own fit waits for that fit's

@@ -170,14 +170,31 @@ pub fn start(embed_cursor: bool) -> anyhow::Result<Portal> {
                         crate::tailscale::dbg("remote: portal input goes through libei (ConnectToEIS)");
                         Some(libei)
                     }
-                    Err(e) => {
+                    Err(NoLibei::Notify(e)) => {
                         crate::tailscale::dbg(&format!("remote: portal input goes through the portal's Notify calls: {e:#}"));
                         None
                     }
+                    Err(NoLibei::Lost(e)) => {
+                        crate::tailscale::dbg(&format!("remote: libei failed after ConnectToEIS, closing the portal session: {e:#}"));
+                        drop(input_rx);
+                        let _ = session.close().await;
+                        return;
+                    }
                 };
+                // Input that came while there was nowhere to send it would
+                // land at once, long after the viewer's hand moved on.
+                let mut stale = 0;
+                while input_rx.try_recv().is_ok() {
+                    stale += 1;
+                }
+                handled.fetch_add(stale, std::sync::atomic::Ordering::AcqRel);
                 let (w, h) = size.map(|(w, h)| (f64::from(w), f64::from(h))).unwrap_or((1920.0, 1080.0));
                 loop {
-                    let next = match libei.as_mut().filter(|libei| libei.open) {
+                    let next = match libei.as_mut() {
+                        Some(libei) if !libei.open => {
+                            crate::tailscale::dbg("remote: closing the portal session, its libei input is gone");
+                            break;
+                        }
                         Some(libei) => {
                             let woke = {
                                 let recv = pin!(input_rx.recv());
@@ -213,11 +230,14 @@ pub fn start(embed_cursor: bool) -> anyhow::Result<Portal> {
                             }
                         }
                     }
-                    if let Some(libei) = &libei {
+                    if let Some(libei) = &mut libei {
                         libei.flush();
                     }
                     handled.fetch_add(count, std::sync::atomic::Ordering::AcqRel);
                 }
+                // Closed before the session: its end ends the capture, and the
+                // host then reads a closed input as input that was lost.
+                drop(input_rx);
                 if let Some(libei) = libei {
                     libei.end();
                 }
@@ -267,35 +287,63 @@ fn offers_libei(portal_version: u32) -> bool {
     portal_version >= 2
 }
 
+/// A few seconds of pointer moves, tens of KiB.
+const MAX_UNSENT_EVENTS: usize = 2048;
+
 /// A compositor that never answers must not keep input waiting for good.
 const LIBEI_TIMEOUT: Duration = Duration::from_secs(10);
 
-/// Ask the portal for a libei socket and handshake as a sender. An error
-/// here leaves input to the Notify* calls.
-async fn connect_libei(rd: &RemoteDesktop, session: &Session<RemoteDesktop>, stream: StreamPlace) -> anyhow::Result<Libei> {
+/// Why input can't go through libei.
+enum NoLibei {
+    /// The portal handed out no socket: its Notify* calls still work.
+    Notify(anyhow::Error),
+    /// The portal handed out a socket, and refuses Notify* from then on.
+    Lost(anyhow::Error),
+}
+
+impl NoLibei {
+    fn after(socket_handed_out: bool, error: anyhow::Error) -> Self {
+        if socket_handed_out {
+            Self::Lost(error)
+        } else {
+            Self::Notify(error)
+        }
+    }
+}
+
+/// Ask the portal for a libei socket and handshake as a sender.
+async fn connect_libei(rd: &RemoteDesktop, session: &Session<RemoteDesktop>, stream: StreamPlace) -> Result<Libei, NoLibei> {
     if !offers_libei(rd.version()) {
-        anyhow::bail!("portal version {} has no ConnectToEIS", rd.version());
+        return Err(NoLibei::Notify(anyhow::anyhow!("portal version {} has no ConnectToEIS", rd.version())));
     }
     let connect = async {
-        let fd = rd.connect_to_eis(session, Default::default()).await?;
-        let context = ei::Context::new(UnixStream::from(fd))?;
-        anyhow::Ok(context.handshake_async_io("BigLace", ei::handshake::ContextType::Sender).await?)
+        let fd = rd.connect_to_eis(session, Default::default()).await.map_err(|e| NoLibei::after(false, e.into()))?;
+        let context = ei::Context::new(UnixStream::from(fd)).map_err(|e| NoLibei::after(true, e.into()))?;
+        context
+            .handshake_async_io("BigLace", ei::handshake::ContextType::Sender)
+            .await
+            .map_err(|e| NoLibei::after(true, e.into()))
     };
     let (connection, events) = match select(pin!(connect), async_io::Timer::after(LIBEI_TIMEOUT)).await {
         Either::Left((connected, _)) => connected?,
-        Either::Right(_) => anyhow::bail!("ConnectToEIS got no answer in {} s", LIBEI_TIMEOUT.as_secs()),
+        // The call may have handed out a socket meanwhile.
+        Either::Right(_) => {
+            let late = anyhow::anyhow!("ConnectToEIS got no answer in {} s", LIBEI_TIMEOUT.as_secs());
+            return Err(NoLibei::after(true, late));
+        }
     };
     Ok(Libei {
         connection,
         events,
         stream,
         resumed: Vec::new(),
-        keymap: None,
-        group: 0,
-        held: HashMap::new(),
+        keys: Keys::default(),
         sequence: 0,
+        unsent: 0,
         open: true,
         warned_no_device: false,
+        warned_no_key: false,
+        warned_no_region: false,
     })
 }
 
@@ -313,15 +361,14 @@ struct Libei {
     stream: StreamPlace,
     /// Only devices the server resumed, and we started emulating on, take input.
     resumed: Vec<Device>,
-    keymap: Option<xkb::Keymap>,
-    /// The keyboard's active layout.
-    group: u32,
-    /// The evdev keycode pressed for each held keysym, so its release lifts
-    /// the same key.
-    held: HashMap<u32, u32>,
+    keys: Keys,
     sequence: u32,
+    /// Events sent since the socket last took everything.
+    unsent: usize,
     open: bool,
     warned_no_device: bool,
+    warned_no_key: bool,
+    warned_no_region: bool,
 }
 
 impl Libei {
@@ -346,7 +393,7 @@ impl Libei {
             EiEvent::DeviceAdded(added) => {
                 if let Some(keymap) = added.device.keymap() {
                     match load_keymap(keymap) {
-                        Ok(keymap) => self.keymap = Some(keymap),
+                        Ok(keymap) => self.keys.set_keymap(keymap),
                         Err(e) => crate::tailscale::dbg(&format!("remote: can't read the libei keymap: {e:#}")),
                     }
                 }
@@ -358,9 +405,14 @@ impl Libei {
                     self.resumed.push(resumed.device);
                 }
             }
-            EiEvent::DevicePaused(paused) => self.resumed.retain(|d| *d != paused.device),
+            EiEvent::DevicePaused(paused) => {
+                if paused.device.has_capability(DeviceCapability::Keyboard) {
+                    self.keys.let_go();
+                }
+                self.resumed.retain(|d| *d != paused.device);
+            }
             EiEvent::DeviceRemoved(removed) => self.resumed.retain(|d| *d != removed.device),
-            EiEvent::KeyboardModifiers(modifiers) => self.group = modifiers.group,
+            EiEvent::KeyboardModifiers(modifiers) => self.keys.set_group(modifiers.group),
             EiEvent::Disconnected(gone) => {
                 crate::tailscale::dbg(&format!("remote: libei disconnected us: {:?} {:?}", gone.reason, gone.explanation));
                 self.open = false;
@@ -371,6 +423,9 @@ impl Libei {
     }
 
     fn send(&mut self, event: Input) {
+        if !self.open {
+            return;
+        }
         let capability = match event {
             Input::Move { .. } => DeviceCapability::PointerAbsolute,
             Input::Button { .. } => DeviceCapability::Button,
@@ -378,16 +433,16 @@ impl Libei {
             Input::Key { .. } => DeviceCapability::Keyboard,
         };
         let Some(device) = self.resumed.iter().find(|d| d.has_capability(capability)).cloned() else {
-            if !self.warned_no_device {
-                crate::tailscale::dbg("remote: libei has no resumed device for the viewer's input yet");
-                self.warned_no_device = true;
-            }
+            log_once(&mut self.warned_no_device, "remote: libei has no resumed device for the viewer's input yet");
             return;
         };
         match event {
             Input::Move { x, y } => {
                 let Some(pointer) = device.interface::<ei::PointerAbsolute>() else { return };
-                let Some((x, y)) = region_point(device.regions(), &self.stream, x, y) else { return };
+                let Some((x, y)) = region_point(device.regions(), &self.stream, x, y) else {
+                    log_once(&mut self.warned_no_region, "remote: no libei pointer region matches the shared screen");
+                    return;
+                };
                 pointer.motion_absolute(x, y);
             }
             Input::Button { button, pressed } => {
@@ -404,14 +459,14 @@ impl Libei {
             Input::Key { keysym, pressed } => {
                 let Some(keyboard) = device.interface::<ei::Keyboard>() else { return };
                 let code = if pressed {
-                    let Some(code) = self.keymap.as_ref().and_then(|k| evdev_keycode(k, keysym, self.group)) else {
-                        crate::tailscale::dbg(&format!("remote: no key here types keysym {keysym:#x}"));
+                    let Some(code) = self.keys.press(keysym) else {
+                        // Which keys, never: the log would record what the viewer types.
+                        log_once(&mut self.warned_no_key, "remote: the viewer typed keys this keyboard layout has not");
                         return;
                     };
-                    self.held.insert(keysym, code);
                     code
                 } else {
-                    let Some(code) = self.held.remove(&keysym) else { return };
+                    let Some(code) = self.keys.release(keysym) else { return };
                     code
                 };
                 let state = if pressed { ei::keyboard::KeyState::Press } else { ei::keyboard::KeyState::Released };
@@ -419,23 +474,41 @@ impl Libei {
             }
         }
         device.device().frame(self.connection.serial(), now_micros());
+        self.unsent += 1;
     }
 
-    fn flush(&self) {
+    /// reis keeps what the socket did not take, so a server that stops
+    /// reading would have it grow with every event: past a bound, the
+    /// connection counts as lost.
+    fn flush(&mut self) {
         match self.connection.flush() {
-            // What is left goes out with the next flush.
-            Ok(()) | Err(rustix::io::Errno::AGAIN) => {}
-            Err(e) => crate::tailscale::dbg(&format!("remote: can't send libei input: {e}")),
+            Ok(()) => self.unsent = 0,
+            Err(rustix::io::Errno::AGAIN) if self.unsent <= MAX_UNSENT_EVENTS => {}
+            Err(rustix::io::Errno::AGAIN) => {
+                crate::tailscale::dbg("remote: the libei server stopped reading input");
+                self.open = false;
+            }
+            Err(e) => {
+                crate::tailscale::dbg(&format!("remote: can't send libei input: {e}"));
+                self.open = false;
+            }
         }
     }
 
-    fn end(self) {
+    fn end(mut self) {
         let serial = self.connection.serial();
         for device in &self.resumed {
             device.device().stop_emulating(serial);
         }
         self.connection.connection().disconnect();
         self.flush();
+    }
+}
+
+fn log_once(logged: &mut bool, message: &str) {
+    if !*logged {
+        crate::tailscale::dbg(message);
+        *logged = true;
     }
 }
 
@@ -482,24 +555,71 @@ fn load_keymap(keymap: &reis::event::Keymap) -> anyhow::Result<xkb::Keymap> {
         .ok_or_else(|| anyhow::anyhow!("libxkbcommon refused it"))
 }
 
-/// The evdev keycode of the key that types `keysym`: in the active layout
+/// The server's keymap as the keys that type each keysym, and the key each
+/// held keysym went down on.
+#[derive(Default)]
+struct Keys {
+    keymap: Option<xkb::Keymap>,
+    /// The keyboard's active layout.
+    group: u32,
+    /// Keysym to evdev keycode, for `keymap` and `group`.
+    codes: HashMap<u32, u32>,
+    /// So a release lifts the key its press went down on.
+    held: HashMap<u32, u32>,
+}
+
+impl Keys {
+    fn set_keymap(&mut self, keymap: xkb::Keymap) {
+        self.codes = keycode_map(&keymap, self.group);
+        self.keymap = Some(keymap);
+    }
+
+    fn set_group(&mut self, group: u32) {
+        if group != self.group {
+            self.group = group;
+            if let Some(keymap) = &self.keymap {
+                self.codes = keycode_map(keymap, group);
+            }
+        }
+    }
+
+    fn press(&mut self, keysym: u32) -> Option<u32> {
+        let code = *self.codes.get(&keysym)?;
+        self.held.insert(keysym, code);
+        Some(code)
+    }
+
+    fn release(&mut self, keysym: u32) -> Option<u32> {
+        self.held.remove(&keysym)
+    }
+
+    /// A paused keyboard starts over with every key up.
+    fn let_go(&mut self) {
+        self.held.clear();
+    }
+}
+
+/// Keysym to the evdev keycode of the key that types it: in layout `group`
 /// first, then at the lowest shift level (the viewer sends its own Shift).
-fn evdev_keycode(keymap: &xkb::Keymap, keysym: u32, group: u32) -> Option<u32> {
-    let wanted = xkb::Keysym::new(keysym);
-    let mut best: Option<(bool, u32, u32)> = None;
+fn keycode_map(keymap: &xkb::Keymap, group: u32) -> HashMap<u32, u32> {
+    let mut best: HashMap<u32, (bool, u32, u32)> = HashMap::new();
     for raw in keymap.min_keycode().raw()..=keymap.max_keycode().raw() {
+        // XKB keycodes are evdev ones plus 8.
+        let Some(code) = raw.checked_sub(8) else { continue };
         let key = xkb::Keycode::new(raw);
         for layout in 0..keymap.num_layouts_for_key(key) {
             for level in 0..keymap.num_levels_for_key(key, layout) {
-                let rank = (layout != group, level, raw);
-                if keymap.key_get_syms_by_level(key, layout, level).contains(&wanted) && best.is_none_or(|b| rank < b) {
-                    best = Some(rank);
+                let rank = (layout != group, level, code);
+                for sym in keymap.key_get_syms_by_level(key, layout, level) {
+                    let kept = best.entry(sym.raw()).or_insert(rank);
+                    if rank < *kept {
+                        *kept = rank;
+                    }
                 }
             }
         }
     }
-    // XKB keycodes are evdev ones plus 8.
-    best.and_then(|(_, _, raw)| raw.checked_sub(8))
+    best.into_iter().map(|(sym, (_, _, code))| (sym, code)).collect()
 }
 
 /// libei timestamps are CLOCK_MONOTONIC microseconds.
@@ -532,6 +652,13 @@ mod tests {
         assert!(offers_libei(5));
     }
 
+    /// The RemoteDesktop portal refuses Notify* once ConnectToEIS succeeded.
+    #[test]
+    fn notify_only_before_libei_socket() {
+        assert!(matches!(NoLibei::after(false, anyhow::anyhow!("refused")), NoLibei::Notify(_)));
+        assert!(matches!(NoLibei::after(true, anyhow::anyhow!("handshake")), NoLibei::Lost(_)));
+    }
+
     fn region(x: u32, y: u32, width: u32, height: u32, mapping_id: Option<&str>) -> Region {
         Region { x, y, width, height, scale: 1.0, mapping_id: mapping_id.map(str::to_owned) }
     }
@@ -558,19 +685,43 @@ mod tests {
             .expect("xkeyboard-config has the us and de layouts")
     }
 
+    #[test]
+    fn release_lifts_its_pressed_key() {
+        let mut keys = Keys::default();
+        keys.set_keymap(keymap("us,de"));
+        assert_eq!(keys.press(0x79), Some(21)); // y on KEY_Y in us
+        keys.set_group(1);
+        assert_eq!(keys.release(0x79), Some(21), "not KEY_Z, where de has y");
+        assert_eq!(keys.release(0x79), None, "already up");
+        assert_eq!(keys.release(0x7a), None, "never pressed");
+        assert_eq!(keys.press(0x6c6), None, "on no key here");
+        assert_eq!(keys.release(0x6c6), None);
+    }
+
+    #[test]
+    fn paused_keyboard_holds_no_key() {
+        let mut keys = Keys::default();
+        keys.set_keymap(keymap("us"));
+        assert_eq!(keys.press(0x61), Some(30));
+        keys.let_go();
+        assert_eq!(keys.release(0x61), None, "the pause lifted it");
+        assert_eq!(keys.press(0x61), Some(30), "typing goes on after the resume");
+    }
+
     /// Expected codes from linux/input-event-codes.h.
     #[test]
     fn keysym_finds_its_evdev_key() {
         let us = keymap("us");
-        assert_eq!(evdev_keycode(&us, 0x61, 0), Some(30)); // a: KEY_A
-        assert_eq!(evdev_keycode(&us, 0x21, 0), Some(2)); // exclam: KEY_1, shifted
-        assert_eq!(evdev_keycode(&us, 0xff0d, 0), Some(28)); // Return: KEY_ENTER
-        assert_eq!(evdev_keycode(&us, 0xffe1, 0), Some(42)); // Shift_L: KEY_LEFTSHIFT
-        assert_eq!(evdev_keycode(&us, 0x6c6, 0), None); // Cyrillic_ef: not on a us keyboard
+        let us = keycode_map(&us, 0);
+        assert_eq!(us.get(&0x61), Some(&30)); // a: KEY_A
+        assert_eq!(us.get(&0x21), Some(&2)); // exclam: KEY_1, shifted
+        assert_eq!(us.get(&0xff0d), Some(&28)); // Return: KEY_ENTER
+        assert_eq!(us.get(&0xffe1), Some(&42)); // Shift_L: KEY_LEFTSHIFT
+        assert_eq!(us.get(&0x6c6), None); // Cyrillic_ef: not on a us keyboard
 
         let us_de = keymap("us,de");
-        assert_eq!(evdev_keycode(&us_de, 0x79, 0), Some(21)); // y: KEY_Y in us
-        assert_eq!(evdev_keycode(&us_de, 0x79, 1), Some(44)); // y: KEY_Z in de
-        assert_eq!(evdev_keycode(&us_de, 0xfc, 0), Some(26)); // udiaeresis: KEY_LEFTBRACE, de only
+        assert_eq!(keycode_map(&us_de, 0).get(&0x79), Some(&21)); // y: KEY_Y in us
+        assert_eq!(keycode_map(&us_de, 1).get(&0x79), Some(&44)); // y: KEY_Z in de
+        assert_eq!(keycode_map(&us_de, 0).get(&0xfc), Some(&26)); // udiaeresis: KEY_LEFTBRACE, de only
     }
 }

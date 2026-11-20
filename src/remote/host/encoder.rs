@@ -243,13 +243,14 @@ fn nvidia_driver(drm: &Path) -> bool {
 
 /// Encode one frame with `encoder`'s own settings for `rate`.
 fn encodes_a_frame(encoder: Encoder, rate: RateMode) -> anyhow::Result<()> {
+    use gstreamer::prelude::*;
     let desc = format!(
         "videotestsrc num-buffers=1 ! video/x-raw,format={},width=640,height=480 ! {} ! appsink name=sink sync=false",
         encoder.format(),
         encoder.description(rate)
     );
     let (pipeline, _, _) = super::start_pipeline(&desc, None)?;
-    let _ = gstreamer::prelude::ElementExt::set_state(&pipeline, gstreamer::State::Null);
+    let _ = pipeline.set_state(gstreamer::State::Null);
     Ok(())
 }
 
