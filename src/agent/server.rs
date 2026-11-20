@@ -156,6 +156,16 @@ fn handle(stream: TcpStream, peer: SocketAddr, auth: &Authenticator) {
         }
         return;
     }
+    // The photo of a group we created (its members only).
+    if path.starts_with(crate::avatars::GROUP_PREFIX) {
+        match (&identity, method.as_str()) {
+            (Some(id), "GET") => crate::avatars::serve_group(stream, &path, &id.login),
+            _ => {
+                let _ = respond(&stream, 403, "forbidden");
+            }
+        }
+        return;
+    }
     // Wake a computer on our local network for someone.
     if path.starts_with(crate::wake::PATH_PREFIX) {
         match (&identity, method.as_str()) {

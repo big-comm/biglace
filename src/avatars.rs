@@ -4,6 +4,11 @@
 //! who can reach whom). Others keep a copy, so the face still shows while
 //! its owner is offline. Widgets ask through [`bind`]; a photo that
 //! arrives later fills them in.
+//!
+//! A group's photo works the same way: it lives on the devices of the person
+//! who created the group (only they set it) and is handed to the group's
+//! members at `/v1/group-avatar/<group>`. Photos are kept by key: an account
+//! name, or `group.<name>` (account names never hold a dot).
 
 use std::collections::HashMap;
 use std::path::PathBuf;
@@ -23,6 +28,28 @@ fn name_ok(user: &str) -> bool {
     !user.is_empty() && user.len() <= 64 && user.bytes().all(|c| c.is_ascii_alphanumeric() || c == b'-' || c == b'_')
 }
 
+const GROUP_KEY: &str = "group.";
+
+fn group_key(group: &str) -> String {
+    format!("{GROUP_KEY}{group}")
+}
+
+/// An account name, or `group.<name>` for a group's photo.
+fn key_ok(key: &str) -> bool {
+    match key.strip_prefix(GROUP_KEY) {
+        Some(group) => crate::invite::group_name_ok(group),
+        None => name_ok(key),
+    }
+}
+
+/// `file` is a cached photo of `key`: `<key>-<16 hex digits>`, so `big`
+/// never takes `big-plasma`'s photo.
+fn is_cached_of(file: &str, key: &str) -> bool {
+    file.strip_prefix(key)
+        .and_then(|rest| rest.strip_prefix('-'))
+        .is_some_and(|hash| hash.len() == 16 && hash.bytes().all(|c| c.is_ascii_hexdigit()))
+}
+
 /// What we know per account: the photo version (None: no photo) and when.
 type Known = Mutex<HashMap<String, (Option<String>, Instant)>>;
 
@@ -37,11 +64,10 @@ fn cached_path(user: &str, hash: &str) -> PathBuf {
 
 /// The cached photo file for `user`, if any (whatever its version).
 fn cached_any(user: &str) -> Option<PathBuf> {
-    let prefix = format!("{user}-");
     std::fs::read_dir(cache_dir())
         .ok()?
         .flatten()
-        .filter(|e| e.file_name().to_string_lossy().starts_with(&prefix))
+        .filter(|e| is_cached_of(&e.file_name().to_string_lossy(), user))
         .max_by_key(|e| e.metadata().and_then(|m| m.modified()).ok())
         .map(|e| e.path())
 }
@@ -64,8 +90,17 @@ fn texture_for(user: &str) -> Option<gdk::Texture> {
 
 /// Show `user`'s photo in `avatar` (now if cached, else when it arrives).
 pub fn bind(avatar: &libadwaita::Avatar, user: &str) {
+    bind_key(avatar, user);
+}
+
+/// Show group `group`'s photo in `avatar` (now if cached, else when it arrives).
+pub fn bind_group(avatar: &libadwaita::Avatar, group: &str) {
+    bind_key(avatar, &group_key(group));
+}
+
+fn bind_key(avatar: &libadwaita::Avatar, user: &str) {
     unbind(avatar);
-    if !name_ok(user) {
+    if !key_ok(user) {
         return;
     }
     if let Some(t) = texture_for(user) {
@@ -133,7 +168,7 @@ pub fn request(users: Vec<String>) {
             .and_then(|k| k.get(u).map(|(_, at)| now.duration_since(*at) < RECHECK))
             .unwrap_or(false)
     };
-    let wanted: Vec<String> = users.into_iter().filter(|u| name_ok(u) && !fresh(u)).collect();
+    let wanted: Vec<String> = users.into_iter().filter(|u| key_ok(u) && !fresh(u)).collect();
     if wanted.is_empty() {
         return;
     }
@@ -163,9 +198,17 @@ const MAX_PHOTO: u64 = 64 * 1024;
 pub const PATH: &str = "/v1/avatar";
 pub const HASH_PATH: &str = "/v1/avatar/hash";
 
+/// Agent path prefix of a group's photo: `<prefix><group>`, and `/hash` after it.
+pub const GROUP_PREFIX: &str = "/v1/group-avatar/";
+
 /// Our own photo (set here, served to the others).
 fn own_path() -> PathBuf {
     glib::user_config_dir().join("biglace").join("avatar.jpg")
+}
+
+/// The photo of a group we created (set here, served to its members).
+fn own_group_path(group: &str) -> PathBuf {
+    glib::user_config_dir().join("biglace").join("groups").join(format!("{group}.jpg"))
 }
 
 fn hash_of(bytes: &[u8]) -> String {
@@ -184,9 +227,9 @@ fn agent_url(ip: &str, path: &str) -> String {
     format!("http://{ip}:{}{path}", crate::agent::PORT)
 }
 
-fn ask_hash(ip: &str) -> Remote {
+fn ask_hash(ip: &str, hash_path: &str) -> Remote {
     let agent = ureq::AgentBuilder::new().timeout(Duration::from_secs(4)).build();
-    match agent.get(&agent_url(ip, HASH_PATH)).call() {
+    match agent.get(&agent_url(ip, hash_path)).call() {
         Ok(r) => match r.into_string() {
             Ok(h) if !h.is_empty() && h.len() <= 64 && h.bytes().all(|c| c.is_ascii_hexdigit()) => Remote::Photo(h),
             _ => Remote::Unreachable,
@@ -196,93 +239,117 @@ fn ask_hash(ip: &str) -> Remote {
     }
 }
 
-fn download(ip: &str) -> Option<Vec<u8>> {
+fn download(ip: &str, photo_path: &str) -> Option<Vec<u8>> {
     use std::io::Read;
     let agent = ureq::AgentBuilder::new().timeout(Duration::from_secs(8)).build();
-    let r = agent.get(&agent_url(ip, PATH)).call().ok()?;
+    let r = agent.get(&agent_url(ip, photo_path)).call().ok()?;
     let mut body = Vec::new();
     r.into_reader().take(MAX_PHOTO + 1).read_to_end(&mut body).ok()?;
     (body.len() as u64 <= MAX_PHOTO && is_image(&body)).then_some(body)
 }
 
-fn fetch(users: &[String]) {
-    if users.is_empty() {
+fn fetch(keys: &[String]) {
+    if keys.is_empty() {
         return;
     }
     let me = crate::chat::my_user();
     let peers = crate::tailscale::get_peers();
     let _ = std::fs::create_dir_all(cache_dir());
-    for u in users {
-        // Ours: straight from the file.
-        if me.as_deref() == Some(u.as_str()) {
-            let bytes = std::fs::read(own_path()).ok().filter(|b| is_image(b));
-            let hash = bytes.as_deref().map(hash_of);
-            let changed = match (&hash, &bytes) {
-                (Some(h), Some(b)) if !cached_path(u, h).exists() => {
-                    remove_cached(u);
-                    let _ = std::fs::write(cached_path(u, h), b);
-                    true
-                }
-                (None, _) if cached_any(u).is_some() => {
-                    remove_cached(u);
-                    true
-                }
-                _ => false,
-            };
+    for key in keys {
+        // Whose devices hold the photo, and where on their agent.
+        let (holder, local, photo_path) = match key.strip_prefix(GROUP_KEY) {
+            Some(group) => {
+                let Some(owner) = crate::chat::group_owner(group) else {
+                    // A network group (no creator), or not ours to see: no photo.
+                    forget(key);
+                    continue;
+                };
+                (owner, own_group_path(group), format!("{GROUP_PREFIX}{group}"))
+            }
+            None => (key.clone(), own_path(), PATH.to_string()),
+        };
+        if me.as_deref() == Some(holder.as_str()) {
+            take_local(key, &local);
+        } else {
+            take_remote(key, &holder, &photo_path, &peers);
+        }
+    }
+}
+
+/// No photo for `key`: drop any copy.
+fn forget(key: &str) {
+    if let Ok(mut k) = known().lock() {
+        k.insert(key.to_string(), (None, Instant::now()));
+    }
+    if cached_any(key).is_some() {
+        remove_cached(key);
+        let _ = updates().0.try_send(key.to_string());
+    }
+}
+
+/// Ours: straight from the file.
+fn take_local(key: &str, file: &std::path::Path) {
+    let bytes = std::fs::read(file).ok().filter(|b| is_image(b));
+    let hash = bytes.as_deref().map(hash_of);
+    let changed = match (&hash, &bytes) {
+        (Some(h), Some(b)) if !cached_path(key, h).exists() => {
+            remove_cached(key);
+            let _ = std::fs::write(cached_path(key, h), b);
+            true
+        }
+        (None, _) if cached_any(key).is_some() => {
+            remove_cached(key);
+            true
+        }
+        _ => false,
+    };
+    if let Ok(mut k) = known().lock() {
+        k.insert(key.to_string(), (hash, Instant::now()));
+    }
+    if changed {
+        let _ = updates().0.try_send(key.to_string());
+    }
+}
+
+/// Theirs: from one of `holder`'s computers that's on.
+fn take_remote(key: &str, holder: &str, photo_path: &str, peers: &[crate::tailscale::Peer]) {
+    let hash_path = format!("{photo_path}/hash");
+    let mut answer = Remote::Unreachable;
+    let mut from_ip = String::new();
+    for p in peers.iter().filter(|p| p.user == holder && p.online && !p.ipv4.is_empty()) {
+        match ask_hash(&p.ipv4, &hash_path) {
+            Remote::Unreachable => continue,
+            Remote::NoPhoto if matches!(answer, Remote::Unreachable) => answer = Remote::NoPhoto,
+            Remote::NoPhoto => {}
+            photo @ Remote::Photo(_) => {
+                answer = photo;
+                from_ip = p.ipv4.clone();
+                break;
+            }
+        }
+    }
+    let now = Instant::now();
+    match answer {
+        // Nobody to ask now: keep what we have, ask again later.
+        Remote::Unreachable => {
             if let Ok(mut k) = known().lock() {
-                k.insert(u.clone(), (hash, Instant::now()));
+                k.insert(key.to_string(), (None, now - RECHECK + Duration::from_secs(60)));
             }
-            if changed {
-                let _ = updates().0.try_send(u.clone());
-            }
-            continue;
-        }
-        // Theirs: from one of their computers that's on.
-        let mut answer = Remote::Unreachable;
-        let mut from_ip = String::new();
-        for p in peers.iter().filter(|p| p.user == *u && p.online && !p.ipv4.is_empty()) {
-            match ask_hash(&p.ipv4) {
-                Remote::Unreachable => continue,
-                Remote::NoPhoto if matches!(answer, Remote::Unreachable) => answer = Remote::NoPhoto,
-                Remote::NoPhoto => {}
-                photo @ Remote::Photo(_) => {
-                    answer = photo;
-                    from_ip = p.ipv4.clone();
-                    break;
-                }
+            if cached_any(key).is_some() {
+                let _ = updates().0.try_send(key.to_string());
             }
         }
-        let now = Instant::now();
-        match answer {
-            // Nobody to ask now: keep what we have, ask again later.
-            Remote::Unreachable => {
-                if let Ok(mut k) = known().lock() {
-                    k.insert(u.clone(), (None, now - RECHECK + Duration::from_secs(60)));
-                }
-                if cached_any(u).is_some() {
-                    let _ = updates().0.try_send(u.clone());
-                }
+        Remote::NoPhoto => forget(key),
+        Remote::Photo(h) => {
+            if let Ok(mut k) = known().lock() {
+                k.insert(key.to_string(), (Some(h.clone()), now));
             }
-            Remote::NoPhoto => {
-                if let Ok(mut k) = known().lock() {
-                    k.insert(u.clone(), (None, now));
-                }
-                if cached_any(u).is_some() {
-                    remove_cached(u);
-                    let _ = updates().0.try_send(u.clone());
-                }
-            }
-            Remote::Photo(h) => {
-                if let Ok(mut k) = known().lock() {
-                    k.insert(u.clone(), (Some(h.clone()), now));
-                }
-                if !cached_path(u, &h).exists() {
-                    if let Some(bytes) = download(&from_ip) {
-                        remove_cached(u);
-                        // Named by what it really is, not what was claimed.
-                        let _ = std::fs::write(cached_path(u, &hash_of(&bytes)), &bytes);
-                        let _ = updates().0.try_send(u.clone());
-                    }
+            if !cached_path(key, &h).exists() {
+                if let Some(bytes) = download(&from_ip, photo_path) {
+                    remove_cached(key);
+                    // Named by what it really is, not what was claimed.
+                    let _ = std::fs::write(cached_path(key, &hash_of(&bytes)), &bytes);
+                    let _ = updates().0.try_send(key.to_string());
                 }
             }
         }
@@ -290,16 +357,49 @@ fn fetch(users: &[String]) {
 }
 
 /// Another computer asks for our photo (agent thread).
-pub fn serve(mut stream: std::net::TcpStream, path: &str) {
+pub fn serve(stream: std::net::TcpStream, path: &str) {
+    send_photo(stream, &own_path(), path == HASH_PATH);
+}
+
+/// A member asks for the photo of a group we created (agent thread):
+/// `<GROUP_PREFIX><group>` or `…/hash`. Nobody outside the group gets it.
+pub fn serve_group(stream: std::net::TcpStream, path: &str, caller: &str) {
+    let rest = path.strip_prefix(GROUP_PREFIX).unwrap_or_default();
+    let (group, want_hash) = match rest.strip_suffix("/hash") {
+        Some(g) => (g, true),
+        None => (rest, false),
+    };
+    let member = |caller: &str| crate::chat::group_members(group).iter().any(|m| m == caller);
+    // Someone who just joined isn't in what we learned yet: ask the panel
+    // again (it answers from memory for 30 s, so this can't flood it).
+    if crate::invite::group_name_ok(group) && !member(caller) {
+        crate::chat::my_groups_refresh();
+    }
+    let me = crate::chat::my_user();
+    let allowed = crate::invite::group_name_ok(group)
+        && me.is_some()
+        && crate::chat::group_owner(group) == me
+        && member(caller);
+    if !allowed {
+        use std::io::Write;
+        let mut stream = stream;
+        let _ = write!(stream, "HTTP/1.1 403 Forbidden\r\nContent-Length: 0\r\nConnection: close\r\n\r\n");
+        return;
+    }
+    send_photo(stream, &own_group_path(group), want_hash);
+}
+
+/// The photo at `file` (or just its version), 404 when there is none.
+fn send_photo(mut stream: std::net::TcpStream, file: &std::path::Path, want_hash: bool) {
     use std::io::Write;
-    let photo = std::fs::read(own_path()).ok().filter(|b| is_image(b) && b.len() as u64 <= MAX_PHOTO);
-    let _ = match (photo, path) {
-        (None, _) => write!(stream, "HTTP/1.1 404 Not Found\r\nContent-Length: 0\r\nConnection: close\r\n\r\n"),
-        (Some(b), HASH_PATH) => {
+    let photo = std::fs::read(file).ok().filter(|b| is_image(b) && b.len() as u64 <= MAX_PHOTO);
+    let _ = match photo {
+        None => write!(stream, "HTTP/1.1 404 Not Found\r\nContent-Length: 0\r\nConnection: close\r\n\r\n"),
+        Some(b) if want_hash => {
             let h = hash_of(&b);
             write!(stream, "HTTP/1.1 200 OK\r\nContent-Type: text/plain\r\nContent-Length: {}\r\nConnection: close\r\n\r\n{h}", h.len())
         }
-        (Some(b), _) => {
+        Some(b) => {
             let kind = if b.starts_with(&[0xff, 0xd8]) { "image/jpeg" } else { "image/png" };
             write!(stream, "HTTP/1.1 200 OK\r\nContent-Type: {kind}\r\nContent-Length: {}\r\nConnection: close\r\n\r\n", b.len())
                 .and_then(|()| stream.write_all(&b))
@@ -309,10 +409,9 @@ pub fn serve(mut stream: std::net::TcpStream, path: &str) {
 }
 
 fn remove_cached(user: &str) {
-    let prefix = format!("{user}-");
     if let Ok(entries) = std::fs::read_dir(cache_dir()) {
         for e in entries.flatten() {
-            if e.file_name().to_string_lossy().starts_with(&prefix) {
+            if is_cached_of(&e.file_name().to_string_lossy(), user) {
                 let _ = std::fs::remove_file(e.path());
             }
         }
@@ -337,6 +436,16 @@ pub fn prepare(path: &std::path::Path) -> Result<Vec<u8>, String> {
     let square = src.new_subpixbuf((w - side) / 2, (h - side) / 2, side, side);
     let size = side.min(256);
     let small = square.scale_simple(size, size, InterpType::Bilinear).ok_or("could not resize the picture")?;
+    // JPEG has no transparency (older glycin refuses to encode it at all):
+    // lay the picture on white first.
+    let small = if small.has_alpha() {
+        let flat = Pixbuf::new(gtk4::gdk_pixbuf::Colorspace::Rgb, false, 8, size, size).ok_or("could not resize the picture")?;
+        flat.fill(0xffff_ffff);
+        small.composite(&flat, 0, 0, size, size, 0.0, 0.0, 1.0, 1.0, InterpType::Nearest, 255);
+        flat
+    } else {
+        small
+    };
     for quality in ["88", "78", "65", "50"] {
         let bytes = small.save_to_bufferv("jpeg", &[("quality", quality)]).map_err(|e| e.to_string())?;
         if bytes.len() <= 44 * 1024 {
@@ -349,31 +458,43 @@ pub fn prepare(path: &std::path::Path) -> Result<Vec<u8>, String> {
 /// Set (or remove) our photo: kept on this computer, shown right away,
 /// and handed to the others when they ask.
 pub fn set_own(user: &str, bytes: Option<&[u8]>) -> Result<(), String> {
+    set_photo(&own_path(), user, bytes)
+}
+
+/// Set (or remove) the photo of a group we created: kept on this computer,
+/// shown right away, and handed to its members when they ask.
+pub fn set_group(group: &str, bytes: Option<&[u8]>) -> Result<(), String> {
+    if !crate::invite::group_name_ok(group) {
+        return Err("invalid group name".into());
+    }
+    set_photo(&own_group_path(group), &group_key(group), bytes)
+}
+
+fn set_photo(path: &std::path::Path, key: &str, bytes: Option<&[u8]>) -> Result<(), String> {
     match bytes {
         Some(b) => {
-            let path = own_path();
             if let Some(dir) = path.parent() {
                 std::fs::create_dir_all(dir).map_err(|e| e.to_string())?;
             }
             let tmp = path.with_extension("tmp");
-            std::fs::write(&tmp, b).and_then(|()| std::fs::rename(&tmp, &path)).map_err(|e| e.to_string())?;
+            std::fs::write(&tmp, b).and_then(|()| std::fs::rename(&tmp, path)).map_err(|e| e.to_string())?;
         }
-        None => match std::fs::remove_file(own_path()) {
+        None => match std::fs::remove_file(path) {
             Ok(()) => {}
             Err(e) if e.kind() == std::io::ErrorKind::NotFound => {}
             Err(e) => return Err(e.to_string()),
         },
     }
-    if !name_ok(user) {
+    if !key_ok(key) {
         return Ok(());
     }
-    remove_cached(user);
+    remove_cached(key);
     if let Some(b) = bytes {
         let _ = std::fs::create_dir_all(cache_dir());
-        let _ = std::fs::write(cached_path(user, &hash_of(b)), b);
+        let _ = std::fs::write(cached_path(key, &hash_of(b)), b);
     }
     if let Ok(mut k) = known().lock() {
-        k.remove(user);
+        k.remove(key);
     }
     Ok(())
 }
@@ -385,9 +506,33 @@ pub fn refresh_mine(user: &str) {
     }
 }
 
+/// Show a group's new photo everywhere (main thread, after [`set_group`]).
+pub fn refresh_group(group: &str) {
+    refresh_widgets(&group_key(group));
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    #[test]
+    fn photo_keys() {
+        assert!(key_ok("bigrato-2"));
+        assert!(key_ok("group.familia"));
+        assert!(!key_ok("group.Familia"));
+        assert!(!key_ok("group.../x"));
+        assert!(!key_ok("a.b"));
+    }
+
+    /// One account's copy never matches another whose name starts the same.
+    #[test]
+    fn cached_files_by_exact_key() {
+        assert!(is_cached_of("big-0123456789abcdef", "big"));
+        assert!(!is_cached_of("big-plasma-0123456789abcdef", "big"));
+        assert!(is_cached_of("group.familia-0123456789abcdef", "group.familia"));
+        assert!(!is_cached_of("familia-0123456789abcdef", "group.familia"));
+        assert!(!is_cached_of("big-0123", "big"));
+    }
 
     #[test]
     fn only_jpeg_and_png() {

@@ -393,7 +393,10 @@ impl GroupsPage {
             .title(glib::markup_escape_text(&g.name).as_str())
             .subtitle(glib::markup_escape_text(&format!("{origin} · {people}")).as_str())
             .build();
-        row.add_prefix(&gtk4::Image::from_icon_name("system-users-symbolic"));
+        let photo = libadwaita::Avatar::new(36, Some(&g.name), false);
+        photo.set_icon_name(Some("system-users-symbolic"));
+        crate::avatars::bind_group(&photo, &g.name);
+        row.add_prefix(&photo);
 
         for m in &g.members {
             let mut tags = Vec::new();
@@ -445,6 +448,36 @@ impl GroupsPage {
         spacer.set_hexpand(true);
         actions.append(&spacer);
         if g.is_member_group() && owner_is_me {
+            // The group's photo: set here, seen by everyone in the group.
+            let photo_menu = gtk4::Box::new(gtk4::Orientation::Vertical, 2);
+            let change = gtk4::Button::builder().label(tr!("Change the group's photo")).css_classes(["flat"]).build();
+            let remove = gtk4::Button::builder().label(tr!("Remove the group's photo")).css_classes(["flat"]).build();
+            photo_menu.append(&change);
+            photo_menu.append(&remove);
+            let popover = gtk4::Popover::builder().child(&photo_menu).build();
+            let photo_btn = gtk4::MenuButton::builder()
+                .icon_name("camera-photo-symbolic")
+                .tooltip_text(tr!("Change the group's photo"))
+                .css_classes(["flat", "circular"])
+                .valign(gtk4::Align::Center)
+                .popover(&popover)
+                .build();
+            photo_btn.update_property(&[gtk4::accessible::Property::Label(&tr!("Change the group's photo"))]);
+            {
+                let (page, group, popover) = (self.clone(), g.name.clone(), popover.clone());
+                change.connect_clicked(move |_| {
+                    popover.popdown();
+                    page.change_group_photo(&group);
+                });
+            }
+            {
+                let (page, group, popover) = (self.clone(), g.name.clone(), popover.clone());
+                remove.connect_clicked(move |_| {
+                    popover.popdown();
+                    page.set_group_photo(&group, None);
+                });
+            }
+            actions.append(&photo_btn);
             let del = gtk4::Button::builder()
                 .label(tr!("Delete group"))
                 .css_classes(["destructive-action"])
@@ -483,6 +516,38 @@ impl GroupsPage {
     }
 
     /// Run a group call in the background, then refresh or explain.
+    fn change_group_photo(&self, group: &str) {
+        let (page, group) = (self.clone(), group.to_string());
+        super::pick_picture(&self.win, &tr!("Choose the group's photo"), move |path| page.set_group_photo(&group, Some(path)));
+    }
+
+    /// Set (a picture file) or remove the photo of a group we created.
+    fn set_group_photo(&self, group: &str, picture: Option<std::path::PathBuf>) {
+        let (page, g) = (self.clone(), group.to_string());
+        let removing = picture.is_none();
+        super::run_in_background(
+            move || -> Result<(), String> {
+                let jpeg = picture.as_deref().map(crate::avatars::prepare).transpose()?;
+                crate::avatars::set_group(&g, jpeg.as_deref())
+            },
+            {
+                let group = group.to_string();
+                move |r: Result<(), String>| match r {
+                    Ok(()) => {
+                        crate::avatars::refresh_group(&group);
+                        let done = if removing {
+                            tr!("Group photo removed.")
+                        } else {
+                            tr!("Group photo updated. Everyone in the group will see it.")
+                        };
+                        super::show_toast(&page.toast, &done, 4);
+                    }
+                    Err(e) => super::show_toast(&page.toast, &trf!("Could not change the photo: {error}", "error" => e), 8),
+                }
+            },
+        );
+    }
+
     fn run(&self, call: impl FnOnce() -> Result<(), MemberError> + Send + 'static, done: String) {
         let page = self.clone();
         super::run_in_background(call, move |r| {

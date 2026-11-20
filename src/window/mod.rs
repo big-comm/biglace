@@ -1122,8 +1122,8 @@ fn url_host(url: &str) -> Option<&str> {
     (!host.is_empty()).then_some(host)
 }
 
-/// "Change photo…": pick a picture, square it, send it to the panel.
-fn change_photo(ui: &Ui) {
+/// Ask for a picture file (JPEG, PNG or WebP); `then` gets its path.
+pub(crate) fn pick_picture(win: &libadwaita::ApplicationWindow, title: &str, then: impl Fn(std::path::PathBuf) + 'static) {
     let filter = gtk4::FileFilter::new();
     filter.set_name(Some(&tr!("Pictures")));
     filter.add_mime_type("image/jpeg");
@@ -1131,17 +1131,19 @@ fn change_photo(ui: &Ui) {
     filter.add_mime_type("image/webp");
     let filters = gtk4::gio::ListStore::new::<gtk4::FileFilter>();
     filters.append(&filter);
-    let dialog = gtk4::FileDialog::builder()
-        .title(tr!("Choose your photo"))
-        .modal(true)
-        .filters(&filters)
-        .default_filter(&filter)
-        .build();
-    let ui = ui.clone();
-    dialog.open(Some(&ui.win.clone()), gtk4::gio::Cancellable::NONE, move |res| {
-        let Ok(file) = res else { return };
-        let Some(path) = file.path() else { return };
-        let ui2 = ui.clone();
+    let dialog = gtk4::FileDialog::builder().title(title).modal(true).filters(&filters).default_filter(&filter).build();
+    dialog.open(Some(win), gtk4::gio::Cancellable::NONE, move |res| {
+        if let Some(path) = res.ok().and_then(|f| f.path()) {
+            then(path);
+        }
+    });
+}
+
+/// "Change photo…": pick a picture, square it, keep it as ours.
+fn change_photo(ui: &Ui) {
+    let ui2 = ui.clone();
+    pick_picture(&ui.win, &tr!("Choose your photo"), move |path| {
+        let ui3 = ui2.clone();
         run_in_background(
             move || -> Result<(String, Vec<u8>), String> {
                 let jpeg = crate::avatars::prepare(&path)?;
@@ -1152,9 +1154,9 @@ fn change_photo(ui: &Ui) {
             move |r| match r {
                 Ok((me, _)) => {
                     crate::avatars::refresh_mine(&me);
-                    show_toast(&ui2.toast, &tr!("Photo updated. Everyone you're connected to will see it."), 4);
+                    show_toast(&ui3.toast, &tr!("Photo updated. Everyone you're connected to will see it."), 4);
                 }
-                Err(e) => show_toast(&ui2.toast, &trf!("Could not change the photo: {error}", "error" => e), 8),
+                Err(e) => show_toast(&ui3.toast, &trf!("Could not change the photo: {error}", "error" => e), 8),
             },
         );
     });

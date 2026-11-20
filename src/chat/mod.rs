@@ -396,6 +396,8 @@ struct Me {
     user: String,
     /// Group → its members.
     groups: HashMap<String, Vec<String>>,
+    /// Group → who created it (BigLace groups only).
+    owners: HashMap<String, String>,
     fetched: Option<Instant>,
 }
 
@@ -413,9 +415,16 @@ fn me(max_age: Duration) -> Option<Me> {
     }
     match crate::invite::my_groups() {
         Ok(mine) => {
+            let owners = mine
+                .groups
+                .iter()
+                .filter(|g| g.is_member_group())
+                .filter_map(|g| g.owner.clone().map(|o| (g.name.clone(), o)))
+                .collect();
             let fresh = Me {
                 user: mine.user,
                 groups: mine.groups.into_iter().map(|g| (g.name, g.members)).collect(),
+                owners,
                 fetched: Some(Instant::now()),
             };
             if let Ok(mut slot) = me_slot().lock() {
@@ -436,6 +445,11 @@ pub fn my_groups_refresh() -> Option<String> {
 /// Our account name, if known.
 pub fn my_user() -> Option<String> {
     me_slot().lock().ok().map(|m| m.user.clone()).filter(|u| !u.is_empty())
+}
+
+/// Who created group `name` (as last learned): only they set its photo.
+pub fn group_owner(name: &str) -> Option<String> {
+    me_slot().lock().ok().and_then(|m| m.owners.get(name).cloned())
 }
 
 /// The members of group `name` (as last learned), if we're in it.
@@ -1229,6 +1243,7 @@ mod tests {
         Me {
             user: "tales".into(),
             groups: HashMap::from([("familia".into(), vec!["tales".into(), "bruna".into()])]),
+            owners: HashMap::new(),
             fetched: None,
         }
     }

@@ -868,7 +868,7 @@ impl ChatPage {
             self.conv_avatar.set_text(Some(&id.name));
             self.conv_avatar.set_icon_name(Some("system-users-symbolic"));
             self.conv_avatar.set_show_initials(false);
-            crate::avatars::unbind(&self.conv_avatar);
+            crate::avatars::bind_group(&self.conv_avatar, &id.name);
             self.conv_subtitle.set_text(&tr!("Group"));
         } else {
             self.conv_avatar.set_text(Some(&id.name));
@@ -1332,6 +1332,7 @@ impl ChatPage {
                     let avatar = libadwaita::Avatar::new(32, Some(&id.name), !id.is_group());
                     if id.is_group() {
                         avatar.set_icon_name(Some("system-users-symbolic"));
+                        crate::avatars::bind_group(&avatar, &id.name);
                     } else {
                         crate::avatars::bind(&avatar, &id.name);
                     }
@@ -1409,6 +1410,7 @@ fn conv_row(c: &chat::Summary, online: Option<bool>) -> gtk4::ListBoxRow {
     let avatar = libadwaita::Avatar::new(42, Some(&c.id.name), !c.id.is_group());
     if c.id.is_group() {
         avatar.set_icon_name(Some("system-users-symbolic"));
+        crate::avatars::bind_group(&avatar, &c.id.name);
     } else {
         crate::avatars::bind(&avatar, &c.id.name);
     }
