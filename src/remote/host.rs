@@ -703,7 +703,13 @@ fn run_session(mut stream: TcpStream, stop: &StopHandle, protocol: u32, identity
         write_frame(&mut *w, kind, payload)?;
         Ok(())
     };
-    let screen_size = || super::display::query().and_then(|s| s.current).map(|m| (m.width, m.height));
+    // Only a Wayland capture ends by itself, the one case that needs the size.
+    let screen_size = || {
+        if !super::wayland_session() {
+            return None;
+        }
+        super::display::query().and_then(|s| s.current).map(|m| (m.width, m.height))
+    };
     let mut opened_at = screen_size();
     let mut reopens = Vec::new();
     loop {

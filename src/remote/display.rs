@@ -59,7 +59,7 @@ pub fn available() -> bool {
 }
 
 fn output(cmd: &mut Command) -> Option<String> {
-    let out = cmd.output().ok()?;
+    let out = crate::tailscale::command_output_timeout(cmd, std::time::Duration::from_secs(5)).ok()?;
     out.status.success().then(|| String::from_utf8_lossy(&out.stdout).into_owned())
 }
 
