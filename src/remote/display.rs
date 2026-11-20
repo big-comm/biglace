@@ -379,6 +379,13 @@ impl Fitter {
     /// Fit to a `width`×`height` window. True when the resolution changed.
     pub fn fit(&mut self, width: u32, height: u32) -> Result<bool, String> {
         let screen = query().ok_or("this screen's resolution can't be changed from here")?;
+        self.fit_screen(screen, width, height)
+    }
+
+    fn fit_screen(&mut self, screen: Screen, width: u32, height: u32) -> Result<bool, String> {
+        if screen.current.as_ref().is_some_and(|c| c.width == width && c.height == height) {
+            return Ok(false);
+        }
         let mode = pick(&screen.modes, width, height).ok_or("no screen modes")?.clone();
         if self.original.is_none() {
             if let Some(cur) = screen.current.clone() {
@@ -554,6 +561,15 @@ Logical monitors:
     fn big_screens_listed_and_custom_argv() {
         assert_eq!(big_screens_set_args("HDMI-A-1", "--mode", "1280x720@59.940"), ["set", "HDMI-A-1", "--mode", "1280x720@59.940"]);
         assert_eq!(big_screens_set_args("HDMI-A-1", "--custom-mode", "1366x700"), ["set", "HDMI-A-1", "--custom-mode", "1366x700"]);
+    }
+
+    #[test]
+    fn big_screens_keeps_fitting_custom_mode() {
+        let json = format!(r#"{{"outputs":[{}]}}"#, big_screens_output("HDMI-A-1", true, r#"{"width":1366,"height":700,"refresh_mhz":59990,"preferred":false}"#));
+        let screen = parse_big_screens(&json).unwrap();
+        let mut fitter = Fitter::default();
+        assert_eq!(fitter.fit_screen(screen, 1366, 700), Ok(false));
+        assert!(fitter.original.is_none());
     }
 
     #[test]
