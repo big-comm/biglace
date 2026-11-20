@@ -195,6 +195,9 @@ impl Drop for Capture {
     }
 }
 
+/// Where each encoded picture goes.
+type Sender = Arc<dyn Fn(&[u8]) + Send + Sync>;
+
 /// Start our camera (`path`, or the first one): `send` gets each encoded
 /// picture (capture time µs + H.264 access unit); our own preview goes to
 /// `frame(my_ip)`.
@@ -207,6 +210,32 @@ pub fn start(path: Option<&str>, my_ip: &str, send: impl Fn(&[u8]) + Send + Sync
     let device = device.or_else(|| {
         path.map(|p| Device { name: String::new(), path: p.to_string(), node: p.strip_prefix("pipewire:").map(str::to_string) })
     });
+    let send: Sender = Arc::new(send);
+    let (pipeline, access) = match run(&source_desc(device.as_ref(), &access), my_ip, &send) {
+        Ok(p) => (p, access),
+        // A PipeWire that won't link the camera ("target not found") while
+        // the device itself is free: open the device.
+        Err(e) if !matches!(access, Access::Direct) => {
+            let Some(d) = device.as_ref().filter(|d| d.path.starts_with("/dev/")) else { return Err(e) };
+            crate::tailscale::dbg(&format!("room: camera through PipeWire failed ({e}), opening {}", d.path));
+            (run(&format!("v4l2src device={} ! decodebin", d.path), my_ip, &send)?, Access::Direct)
+        }
+        Err(e) => return Err(e),
+    };
+    crate::tailscale::dbg(&format!(
+        "room: camera through {}",
+        match access {
+            Access::Portal(_) => "the camera portal (PipeWire)",
+            Access::PipeWire => "PipeWire",
+            Access::Direct => "the device",
+        }
+    ));
+    Ok(Capture { pipeline, alive: Arc::new(AtomicBool::new(true)), _access: access })
+}
+
+/// Build and start the capture pipeline from `src`; an error when the
+/// camera can't open (busy, unplugged, not linked).
+fn run(src: &str, my_ip: &str, send: &Sender) -> Result<gst::Pipeline, String> {
     let enc = encoder();
     let desc = format!(
         "{src} ! videoconvert ! videoscale ! videorate \
@@ -216,14 +245,12 @@ pub fn start(path: Option<&str>, my_ip: &str, send: impl Fn(&[u8]) + Send + Sync
             ! video/x-raw,format=RGBA ! appsink name=preview sync=false max-buffers=1 drop=true \
          t. ! queue max-size-buffers=2 leaky=downstream ! {enc} \
             ! h264parse config-interval=-1 ! video/x-h264,stream-format=byte-stream,alignment=au \
-            ! appsink name=enc sync=false max-buffers=4 drop=true",
-        src = source_desc(device.as_ref(), &access)
+            ! appsink name=enc sync=false max-buffers=4 drop=true"
     );
     let pipeline = gst::parse::launch(&desc)
         .map_err(|e| e.to_string())?
         .downcast::<gst::Pipeline>()
         .map_err(|_| "not a pipeline".to_string())?;
-    let alive = Arc::new(AtomicBool::new(true));
     let preview = pipeline.by_name("preview").and_then(|e| e.downcast::<gst_app::AppSink>().ok()).ok_or("no preview")?;
     let me = my_ip.to_string();
     preview.set_callbacks(
@@ -237,6 +264,7 @@ pub fn start(path: Option<&str>, my_ip: &str, send: impl Fn(&[u8]) + Send + Sync
             .build(),
     );
     let encoded = pipeline.by_name("enc").and_then(|e| e.downcast::<gst_app::AppSink>().ok()).ok_or("no encoder")?;
+    let send = send.clone();
     encoded.set_callbacks(
         gst_app::AppSinkCallbacks::builder()
             .new_sample(move |s| {
@@ -253,8 +281,10 @@ pub fn start(path: Option<&str>, my_ip: &str, send: impl Fn(&[u8]) + Send + Sync
             })
             .build(),
     );
-    pipeline.set_state(gst::State::Playing).map_err(|e| e.to_string())?;
-    // A camera that can't open (busy, unplugged) says so right away.
+    if let Err(e) = pipeline.set_state(gst::State::Playing) {
+        let _ = pipeline.set_state(gst::State::Null);
+        return Err(e.to_string());
+    }
     if let Some(bus) = pipeline.bus() {
         if let Some(msg) = bus.timed_pop_filtered(gst::ClockTime::from_mseconds(1500), &[gst::MessageType::Error]) {
             let _ = pipeline.set_state(gst::State::Null);
@@ -263,15 +293,7 @@ pub fn start(path: Option<&str>, my_ip: &str, send: impl Fn(&[u8]) + Send + Sync
             }
         }
     }
-    crate::tailscale::dbg(&format!(
-        "room: camera through {}",
-        match access {
-            Access::Portal(_) => "the camera portal (PipeWire)",
-            Access::PipeWire => "PipeWire",
-            Access::Direct => "the device",
-        }
-    ));
-    Ok(Capture { pipeline, alive, _access: access })
+    Ok(pipeline)
 }
 
 /// A light, low-delay H.264 encoder: the GPU's when there is one.
