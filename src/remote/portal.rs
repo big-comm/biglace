@@ -39,6 +39,8 @@ const BTN_MIDDLE: i32 = 0x112;
 pub struct Portal {
     pub fd: OwnedFd,
     pub node: u32,
+    /// The node's `object.serial` (portal v6+), which PipeWire never reuses.
+    pub serial: Option<u64>,
     pub input: async_channel::Sender<Input>,
     /// How many input events the compositor has been handed so far (sent
     /// ones can then be awaited: key releases must land before we go).
@@ -54,9 +56,18 @@ fn saved_token() -> Option<String> {
         .filter(|t| !t.is_empty() && t.len() < 512)
 }
 
+/// No token back means the portal will not restore this session: a kept one
+/// would be offered again, and refused, every time.
 fn save_token(token: Option<&str>) {
-    if let Some(t) = token {
-        let _ = crate::config::write_private_file(TOKEN_FILE, t.as_bytes());
+    let saved = match token {
+        Some(t) => crate::config::write_private_file(TOKEN_FILE, t.as_bytes()),
+        None => match std::fs::remove_file(crate::config::private_file(TOKEN_FILE)) {
+            Err(e) if e.kind() == std::io::ErrorKind::NotFound => Ok(()),
+            other => other,
+        },
+    };
+    if let Err(e) = saved {
+        crate::tailscale::dbg(&format!("remote: can't keep the portal's restore token: {e}"));
     }
 }
 
@@ -129,9 +140,10 @@ pub fn start(embed_cursor: bool) -> anyhow::Result<Portal> {
                     }
                 };
                 let node = stream.pipe_wire_node_id();
+                let serial = stream.pipewire_serial();
                 let size = stream.size();
                 let handled = std::sync::Arc::new(std::sync::atomic::AtomicU64::new(0));
-                let _ = ready_tx.send(Ok(Portal { fd, node, input: input_tx, handled: handled.clone(), cursor_embedded }));
+                let _ = ready_tx.send(Ok(Portal { fd, node, serial, input: input_tx, handled: handled.clone(), cursor_embedded }));
 
                 let (w, h) = size.map(|(w, h)| (f64::from(w), f64::from(h))).unwrap_or((1920.0, 1080.0));
                 while let Ok(first) = input_rx.recv().await {
@@ -193,4 +205,22 @@ pub fn start(embed_cursor: bool) -> anyhow::Result<Portal> {
             });
         })?;
     ready_rx.recv()?
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn missing_token_forgets_saved_one() {
+        let _env = crate::test_env_lock();
+        let dir = std::env::temp_dir().join(format!("biglace-portal-{}", std::process::id()));
+        std::env::set_var("XDG_CONFIG_HOME", &dir);
+        save_token(Some("restore-me"));
+        assert_eq!(saved_token().as_deref(), Some("restore-me"));
+        save_token(None);
+        assert_eq!(saved_token(), None);
+        save_token(None);
+        let _ = std::fs::remove_dir_all(&dir);
+    }
 }
