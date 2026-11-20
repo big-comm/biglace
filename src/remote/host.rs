@@ -1081,9 +1081,16 @@ pub(crate) fn stream_screen(
             let sending = Instant::now();
             if timestamps {
                 // When the frame was captured, on this host's wall clock:
-                // now, minus how long it spent in the pipeline.
-                let in_pipeline = match (pipeline.current_running_time(), buffer.pts()) {
-                    (Some(now), Some(pts)) if now > pts => (now - pts).useconds(),
+                // now, minus how long it spent in the pipeline. The PTS is
+                // the capture's running time once the encoder's segment
+                // (which shifts timestamps by 1000 h) is taken out.
+                let captured_at = sample
+                    .segment()
+                    .and_then(|segment| segment.downcast_ref::<gst::ClockTime>())
+                    .zip(buffer.pts())
+                    .and_then(|(segment, pts)| segment.to_running_time(pts));
+                let in_pipeline = match (pipeline.current_running_time(), captured_at) {
+                    (Some(now), Some(captured_at)) if now > captured_at => (now - captured_at).useconds(),
                     _ => 0,
                 };
                 let captured = super::now_us().saturating_sub(in_pipeline);
@@ -1258,6 +1265,35 @@ mod tests {
         let (want_key, restart) = (AtomicBool::new(false), AtomicBool::new(false));
         let ended = stream_screen(&send, &pipelines, None, &StopHandle::detached(), true, &want_key, &restart);
         assert!(ended.as_ref().is_err_and(|e| e.is::<CaptureEnded>()), "{ended:?}");
+    }
+
+    /// The capture time a frame carries is when it was captured, so the
+    /// latency a viewer shows includes the host's own processing (50 ms
+    /// held here) and encoding.
+    #[test]
+    fn frames_carry_their_capture_time() {
+        let _turn = crate::remote::heavy_test();
+        gst::init().unwrap();
+        let Some(enc) = encoder() else {
+            eprintln!("no H.264 encoder here; skipping");
+            return;
+        };
+        let head = "videotestsrc is-live=true num-buffers=8 ! video/x-raw,width=320,height=240,framerate=10/1 \
+                    ! identity name=capture ! identity sleep-time=50000 ! videoconvert";
+        let pipelines = [pipeline_desc(head, enc)];
+        let ages = Mutex::new(Vec::new());
+        let send = |kind: Kind, payload: &[u8]| -> anyhow::Result<()> {
+            if kind == Kind::VideoTs {
+                let captured = u64::from_be_bytes(payload[..8].try_into()?);
+                ages.lock().unwrap().push(crate::remote::now_us().saturating_sub(captured));
+            }
+            Ok(())
+        };
+        let (want_key, restart) = (AtomicBool::new(false), AtomicBool::new(false));
+        let _ = stream_screen(&send, &pipelines, None, &StopHandle::detached(), true, &want_key, &restart);
+        let ages = ages.into_inner().unwrap();
+        assert!(!ages.is_empty(), "no frame sent");
+        assert!(ages.iter().all(|us| (50_000..1_000_000).contains(us)), "ages in µs: {ages:?}");
     }
 
     /// A still X11 screen holds back the next grab until it changes, or
