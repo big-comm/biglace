@@ -55,7 +55,9 @@ pub const PEER_OUT_DESC: &str = "appsrc name=asrc is-live=true format=time do-ti
      ! opusdec plc=true ! level name=level interval=50000000 post-messages=true \
      ! audioconvert ! audioresample ! autoaudiosink sync=false";
 /// A sound level older than this is silence (DTX: nothing arrives then).
-const LEVEL_STALE_US: u64 = 250_000;
+pub const LEVEL_STALE_US: u64 = 250_000;
+/// A level from here up shows the person as speaking.
+pub const SPEAKING: f32 = 0.06;
 
 /// One participant, as the window shows it.
 #[derive(Debug, Clone, PartialEq, Eq)]
@@ -110,6 +112,23 @@ pub fn events() -> async_channel::Receiver<RoomEvent> {
 
 fn emit(e: RoomEvent) {
     let _ = channel().0.try_send(e);
+}
+
+type Wakeup = (async_channel::Sender<()>, async_channel::Receiver<()>);
+
+fn stage_channel() -> &'static Wakeup {
+    static CH: OnceLock<Wakeup> = OnceLock::new();
+    CH.get_or_init(|| async_channel::bounded(1))
+}
+
+/// Wakes the stage when a camera picture arrives or a voice level is worth
+/// showing; many changes before it looks are one wakeup.
+pub fn stage_changes() -> async_channel::Receiver<()> {
+    stage_channel().1.clone()
+}
+
+pub fn stage_changed() {
+    let _ = stage_channel().0.try_send(());
 }
 
 /// A live connection to one peer.
@@ -437,9 +456,11 @@ fn watch_levels(p: &gstreamer::Pipeline, room: std::sync::Weak<Room>, key: Strin
             if room.stop.load(Ordering::Acquire) {
                 break;
             }
-            if let Ok(mut l) = room.levels.lock() {
-                l.insert(key.clone(), (level, now_us()));
-            };
+            let before = room.levels.lock().ok().and_then(|mut l| l.insert(key.clone(), (level, now_us())));
+            // Silence going on stays quiet; speaking, or its end, is shown.
+            if level >= SPEAKING || before.is_some_and(|(v, _)| v >= SPEAKING) {
+                stage_changed();
+            }
         }
     });
 }

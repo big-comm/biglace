@@ -19,10 +19,10 @@ use crate::tailscale::{self, Identity};
 
 /// How often the supervisor re-checks the tailnet address.
 const SUPERVISE_EVERY: Duration = Duration::from_secs(15);
-/// The accept loop polls a non-blocking listener this often, which is also
-/// the longest a shutdown waits. Polling (rather than a blocking `accept`
-/// woken by a self-connect) is what lets the socket close promptly even
-/// after the tailnet address has vanished from the machine.
+/// Pause after a failed `accept` (EMFILE, …). Elsewhere than Linux the
+/// listener is non-blocking and polled this often, the longest a shutdown waits
+/// there; on Linux shutting the socket down wakes a blocked `accept` at once,
+/// even after the tailnet address has vanished from the machine.
 const ACCEPT_POLL: Duration = Duration::from_millis(50);
 /// Requests handled at once; anything beyond gets a 503 instead of a thread.
 const MAX_IN_FLIGHT: usize = 32;
@@ -42,6 +42,8 @@ pub type Authenticator = Arc<dyn Fn(IpAddr) -> Option<Identity> + Send + Sync>;
 /// closes the socket within [`ACCEPT_POLL`].
 pub struct Running {
     stop: Arc<AtomicBool>,
+    /// The listening socket, shut down to wake the accept thread.
+    waker: socket2::Socket,
     thread: Option<JoinHandle<()>>,
     addr: SocketAddr,
 }
@@ -56,6 +58,7 @@ impl Running {
 impl Drop for Running {
     fn drop(&mut self) {
         self.stop.store(true, Ordering::Release);
+        let _ = self.waker.shutdown(std::net::Shutdown::Both);
         if let Some(t) = self.thread.take() {
             let _ = t.join();
         }
@@ -75,7 +78,9 @@ impl Drop for Slot {
 /// Bind `addr` and serve until the returned handle is dropped.
 pub fn serve(addr: SocketAddr, auth: Authenticator) -> io::Result<Running> {
     let listener = TcpListener::bind(addr)?;
+    #[cfg(not(target_os = "linux"))]
     listener.set_nonblocking(true)?;
+    let waker = socket2::Socket::from(listener.try_clone()?);
     let bound = listener.local_addr()?;
     let stop = Arc::new(AtomicBool::new(false));
     let stop_flag = stop.clone();
@@ -88,9 +93,10 @@ pub fn serve(addr: SocketAddr, auth: Authenticator) -> io::Result<Running> {
                 let (stream, peer) = match listener.accept() {
                     Ok(conn) => conn,
                     Err(e) if e.kind() == io::ErrorKind::Interrupted => continue,
+                    Err(_) if stop_flag.load(Ordering::Acquire) => break,
                     Err(_) => {
-                        // WouldBlock (idle) or a transient error such as
-                        // EMFILE: wait instead of spinning.
+                        // WouldBlock (idle, polled) or a transient error such
+                        // as EMFILE: wait instead of spinning.
                         std::thread::sleep(ACCEPT_POLL);
                         continue;
                     }
@@ -114,6 +120,7 @@ pub fn serve(addr: SocketAddr, auth: Authenticator) -> io::Result<Running> {
         })?;
     Ok(Running {
         stop,
+        waker,
         thread: Some(thread),
         addr: bound,
     })
@@ -529,6 +536,39 @@ mod tests {
         assert!(TcpStream::connect_timeout(&addr, Duration::from_millis(200)).is_err());
         let again = serve(addr, Arc::new(|_| None)).expect("port free after drop");
         drop(again);
+    }
+
+    /// An idle agent sleeps in `accept`: its thread makes no voluntary
+    /// context switches (a 50 ms poll made about ten in half a second).
+    #[cfg(target_os = "linux")]
+    #[test]
+    fn idle_agent_sleeps_in_accept() {
+        let agent_threads = || -> Vec<String> {
+            std::fs::read_dir("/proc/thread-self/..")
+                .unwrap()
+                .flatten()
+                .filter(|t| std::fs::read_to_string(t.path().join("comm")).is_ok_and(|c| c.trim_end() == "biglace-agent"))
+                .map(|t| t.file_name().to_string_lossy().into_owned())
+                .collect()
+        };
+        let switches = |tid: &str| -> Option<u64> {
+            std::fs::read_to_string(format!("/proc/thread-self/../{tid}/status"))
+                .ok()?
+                .lines()
+                .find_map(|l| l.strip_prefix("voluntary_ctxt_switches:"))
+                .and_then(|n| n.trim().parse().ok())
+        };
+        let before = agent_threads();
+        let running = serve("127.0.0.1:0".parse().unwrap(), Arc::new(|_| None)).unwrap();
+        std::thread::sleep(Duration::from_millis(100));
+        let ours: Vec<String> = agent_threads().into_iter().filter(|t| !before.contains(t)).collect();
+        let start: Vec<Option<u64>> = ours.iter().map(|t| switches(t)).collect();
+        std::thread::sleep(Duration::from_millis(500));
+        // Another test's agent may have started meanwhile (and ended): the
+        // quietest one still running is ours.
+        let woke = ours.iter().zip(start).filter_map(|(t, s)| Some(switches(t)? - s?)).min();
+        drop(running);
+        assert!(woke.is_some_and(|n| n <= 1), "wakeups in 500 ms idle: {woke:?}");
     }
 
     #[test]
