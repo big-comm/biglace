@@ -286,7 +286,7 @@ impl RoomsPage {
         // The waves move only while someone speaks.
         {
             let rows = page.member_rows.clone();
-            let changes = room::stage_changes();
+            let changes = room::stage_wakeups();
             glib::spawn_future_local(async move {
                 while changes.recv().await.is_ok() {
                     for (_, r) in rows.borrow().iter() {
@@ -854,17 +854,18 @@ fn member_row(m: &MemberView, page: &RoomsPage) -> MemberRow {
     row.add_suffix(&btn_control);
 
     let muted = Rc::new(std::cell::Cell::new(m.muted));
-    let shown = Rc::new(std::cell::Cell::new(0.0_f64));
+    let shown = Rc::new(std::cell::Cell::new(0.0_f32));
     {
         let shown = shown.clone();
         wave.set_draw_func(move |w, cr, width, height| {
             let level = shown.get();
+            let speaking = room::speaking(level);
+            let level = f64::from(level);
             let t = w.frame_clock().map_or(0, |c| c.frame_time()) as f64 / 1_000_000.0;
             let (bars, gap) = (5, 4.0);
             let bar_w = (f64::from(width) - gap * f64::from(bars - 1)) / f64::from(bars);
             let h = f64::from(height);
             let accent = w.color();
-            let speaking = level > f64::from(room::SPEAKING);
             for i in 0..bars {
                 // Each bar has its own phase, so the waves ripple.
                 let phase = t * 9.0 + f64::from(i) * 1.3;
@@ -906,7 +907,7 @@ struct Voice {
     ip: String,
     ring: gtk4::Box,
     /// Rises fast with the voice, falls gently.
-    shown: Rc<std::cell::Cell<f64>>,
+    shown: Rc<std::cell::Cell<f32>>,
     muted: Rc<std::cell::Cell<bool>>,
     /// A tick callback runs on the wave until the voice settles.
     animating: Rc<std::cell::Cell<bool>>,
@@ -916,7 +917,7 @@ impl Voice {
     /// Animate `wave` from the voice level until it falls quiet; a quiet
     /// wave is drawn once and costs no frame after that.
     fn animate(&self, wave: &gtk4::DrawingArea) {
-        let quiet = self.target() <= f64::from(room::SPEAKING) && self.shown.get() <= f64::from(room::SPEAKING);
+        let quiet = !room::speaking(self.target()) && !room::speaking(self.shown.get());
         if quiet || !wave.is_mapped() || self.animating.replace(true) {
             return;
         }
@@ -933,7 +934,7 @@ impl Voice {
                 prev + (target - prev) * 0.12
             };
             voice.shown.set(next);
-            let speaking = next > f64::from(room::SPEAKING);
+            let speaking = room::speaking(next);
             if speaking {
                 voice.ring.add_css_class("speaking");
                 w.add_css_class("speaking");
@@ -942,7 +943,7 @@ impl Voice {
                 w.remove_css_class("speaking");
             }
             w.queue_draw();
-            if speaking || target > f64::from(room::SPEAKING) {
+            if speaking || room::speaking(target) {
                 return glib::ControlFlow::Continue;
             }
             voice.animating.set(false);
@@ -950,8 +951,8 @@ impl Voice {
         });
     }
 
-    fn target(&self) -> f64 {
-        if self.muted.get() { 0.0 } else { f64::from(room::level(&self.ip)) }
+    fn target(&self) -> f32 {
+        if self.muted.get() { 0.0 } else { room::level(&self.ip) }
     }
 }
 

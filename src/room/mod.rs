@@ -57,7 +57,12 @@ pub const PEER_OUT_DESC: &str = "appsrc name=asrc is-live=true format=time do-ti
 /// A sound level older than this is silence (DTX: nothing arrives then).
 pub const LEVEL_STALE_US: u64 = 250_000;
 /// A level from here up shows the person as speaking.
-pub const SPEAKING: f32 = 0.06;
+const SPEAKING: f32 = 0.06;
+
+/// Whether `level` (0–1, as [`level`] gives it) shows the person as speaking.
+pub fn speaking(level: f32) -> bool {
+    level >= SPEAKING
+}
 
 /// One participant, as the window shows it.
 #[derive(Debug, Clone, PartialEq, Eq)]
@@ -122,7 +127,7 @@ fn stage_listeners() -> &'static Mutex<Vec<async_channel::Sender<()>>> {
 /// Wakes its listener when a camera picture arrives or a voice level is
 /// worth showing; many changes before it looks are one wakeup. Every
 /// listener hears each change.
-pub fn stage_changes() -> async_channel::Receiver<()> {
+pub fn stage_wakeups() -> async_channel::Receiver<()> {
     let (tx, rx) = async_channel::bounded(1);
     stage_listeners().lock().unwrap_or_else(std::sync::PoisonError::into_inner).push(tx);
     rx
@@ -448,7 +453,7 @@ fn watch_levels(p: &gstreamer::Pipeline, room: std::sync::Weak<Room>, key: Strin
         if let (Some(level), Some(room)) = (level, room.upgrade().filter(|r| !r.stop.load(Ordering::Acquire))) {
             let before = room.levels.lock().ok().and_then(|mut l| l.insert(key.clone(), (level, now_us())));
             // Silence going on stays quiet; speaking, or its end, is shown.
-            if level >= SPEAKING || before.is_some_and(|(v, _)| v >= SPEAKING) {
+            if speaking(level) || before.is_some_and(|(v, _)| speaking(v)) {
                 stage_changed();
             }
         }
@@ -742,7 +747,7 @@ mod tests {
     /// The stage and the member list both redraw on the same changes.
     #[test]
     fn every_listener_hears_a_change() {
-        let (stage, members) = (stage_changes(), stage_changes());
+        let (stage, members) = (stage_wakeups(), stage_wakeups());
         stage_changed();
         assert!(stage.try_recv().is_ok(), "the stage missed it");
         assert!(members.try_recv().is_ok(), "the member list missed it");
@@ -812,7 +817,7 @@ mod tests {
             levels: Mutex::default(),
             camera: Mutex::default(),
         });
-        let changes = stage_changes();
+        let changes = stage_wakeups();
         let p = gst::parse::launch(
             "audiotestsrc is-live=true samplesperbuffer=960 volume=0.3 \
              ! level name=level interval=50000000 post-messages=true ! fakesink sync=false",
@@ -835,7 +840,7 @@ mod tests {
             .filter_map(|t| std::fs::read_to_string(t.ok()?.path().join("comm")).ok())
             .collect();
         p.set_state(gst::State::Null).unwrap();
-        assert!(level.is_some_and(|v| v >= SPEAKING), "level {level:?}");
+        assert!(level.is_some_and(speaking), "level {level:?}");
         assert!(changes.try_recv().is_ok(), "the stage was not told");
         assert!(!threads.iter().any(|t| t.starts_with("biglace-room-le")), "a thread waits on the bus");
     }
