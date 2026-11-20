@@ -720,13 +720,13 @@ fn run_session(mut stream: TcpStream, stop: &StopHandle, protocol: u32, identity
             Ok(true) => {}
             Ok(false) => break,
             Err(e) if e.is::<CaptureEnded>() && !stop.stopped() => {
-                // The portal ends its own session once it lost libei input.
+                // GNOME ends the whole portal session, libei included, as soon as
+                // the viewer's fit changes the mode, before the fit raises
+                // `restart`; a reopen starts a new portal session.
                 let input_lost = sink.lock().is_ok_and(|s| s.portal_closed());
-                // GNOME ends the screencast as soon as the viewer's fit changes
-                // the mode, before the fit raises `restart`.
-                let refit = !input_lost && restart_follows(&restart);
+                let refit = restart_follows(&restart);
                 let size = screen_size();
-                if input_lost || !reopen_after_end(refit, opened_at, size, &mut reopens, Instant::now()) {
+                if !reopen_after_end(refit, opened_at, size, &mut reopens, Instant::now()) {
                     // Without both sizes nothing tells the person's stop from a mode change.
                     let why = if input_lost || (opened_at.is_some() && size.is_some()) {
                         crate::tr!("sharing was stopped on that computer")
