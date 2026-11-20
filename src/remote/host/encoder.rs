@@ -367,6 +367,12 @@ mod tests {
         }
     }
 
+    /// `can_host` answers from this list without probing.
+    #[test]
+    fn can_host_knows_every_encoder() {
+        assert_eq!(crate::remote::H264_ENCODERS, Encoder::ALL.map(Encoder::element));
+    }
+
     #[test]
     fn driver_decides_hardware_encoder() {
         let all = |_: &str| true;
