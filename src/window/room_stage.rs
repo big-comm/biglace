@@ -76,9 +76,10 @@ impl Tile {
         let _ = &self.name;
     }
 
-    /// New camera picture (and the speaking glow). Whether they speak.
+    /// Show a new camera picture and the speaking glow; returns whether
+    /// they speak.
     fn refresh(&self) -> bool {
-        let speaking = room::level(&self.ip) > room::SPEAKING;
+        let speaking = room::speaking(room::level(&self.ip));
         if speaking {
             self.root.add_css_class("speaking");
         } else {
@@ -157,10 +158,10 @@ impl Stage {
             speaker: Rc::new(RefCell::new((String::new(), std::time::Instant::now()))),
             recheck: Rc::default(),
         };
-        // Redrawn when a picture or a voice changes, not every frame.
+        // Redrawn only when a picture or a voice changes.
         {
             let s = stage.clone();
-            let changes = room::stage_changes();
+            let changes = room::stage_wakeups();
             glib::spawn_future_local(async move {
                 while changes.recv().await.is_ok() {
                     s.refresh();

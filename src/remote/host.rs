@@ -501,7 +501,7 @@ fn pipewire_capture(fd: i32, node: u32, serial: Option<u64>) -> String {
 }
 
 #[cfg(target_os = "linux")]
-pub(crate) fn open_source(_stop: &StopHandle, want: Pointer) -> anyhow::Result<Source> {
+pub(crate) fn open_source(want: Pointer) -> anyhow::Result<Source> {
     use std::os::fd::AsRawFd;
     if super::wayland_session() {
         // Only a room's shared screen keeps the pointer in the video (the
@@ -540,8 +540,15 @@ pub(crate) fn open_source(_stop: &StopHandle, want: Pointer) -> anyhow::Result<S
     }
 }
 
+/// X11: the thread raising `dirty`, for a source whose first one was
+/// dropped while nobody watched.
+#[cfg(target_os = "linux")]
+pub(crate) fn watch_damage(dirty: &Arc<Damage>, track_pointer: bool) -> Option<super::damage_x11::Watch> {
+    super::damage_x11::watch(dirty.clone(), track_pointer)
+}
+
 #[cfg(not(target_os = "linux"))]
-pub(crate) fn open_source(_stop: &StopHandle, _want: Pointer) -> anyhow::Result<Source> {
+pub(crate) fn open_source(_want: Pointer) -> anyhow::Result<Source> {
     anyhow::bail!("screen sharing is not available on this system")
 }
 
@@ -555,7 +562,7 @@ fn run_session(mut stream: TcpStream, stop: &StopHandle, protocol: u32, identity
     // Protocol 4 viewers learn the pointer's shape (X11) or get it in the
     // frames (Wayland).
     let want = if protocol >= 4 { Pointer::Shapes } else { Pointer::Local };
-    let source = match open_source(stop, want) {
+    let source = match open_source(want) {
         Ok(s) => s,
         Err(e) => {
             tailscale::dbg(&format!("remote: no screen source: {e}"));
@@ -694,11 +701,21 @@ fn run_session(mut stream: TcpStream, stop: &StopHandle, protocol: u32, identity
         write_frame(&mut *w, kind, payload)?;
         Ok(())
     };
+    let screen_size = || super::display::query().and_then(|s| s.current).map(|m| (m.width, m.height));
+    let mut opened_at = screen_size();
+    let mut reopened_after_end = 0;
     loop {
         match stream_screen(&send, &pipelines, dirty.clone(), stop, timestamps, &want_key, &restart) {
             Ok(true) => {}
             Ok(false) => break,
-            Err(e) if e.is::<CaptureEnded>() && !stop.stopped() => {}
+            Err(e) if e.is::<CaptureEnded>() && !stop.stopped() => {
+                if !reopen_after_end(opened_at, screen_size(), reopened_after_end) {
+                    tailscale::dbg("remote: the capture ended with the screen size unchanged, so the share was stopped here");
+                    let _ = send(Kind::Error, crate::tr!("sharing was stopped on that computer").as_bytes());
+                    break;
+                }
+                reopened_after_end += 1;
+            }
             Err(e) => {
                 tailscale::dbg(&format!("remote: capture failed: {e}"));
                 break;
@@ -706,7 +723,7 @@ fn run_session(mut stream: TcpStream, stop: &StopHandle, protocol: u32, identity
         }
         // The resolution changed, here or on the viewer's request: open the
         // screen again (the portal remembers the choice, nobody is asked).
-        tailscale::dbg("remote: the capture ended or the screen size changed — opening it again");
+        tailscale::dbg("remote: the capture ended or the screen size changed, opening it again");
         #[cfg(target_os = "linux")]
         {
             if let Ok(mut s) = sink.lock() {
@@ -715,10 +732,11 @@ fn run_session(mut stream: TcpStream, stop: &StopHandle, protocol: u32, identity
             keep_fd = None;
             keep_damage = None;
         }
-        match open_source(stop, want) {
+        match open_source(want) {
             Ok(fresh) => {
                 pipelines = fresh.pipelines;
                 dirty = fresh.dirty;
+                opened_at = screen_size();
                 if let Ok(mut s) = sink.lock() {
                     *s = fresh.sink;
                 }
@@ -989,8 +1007,20 @@ fn stamp_and_gate(pipeline: &gstreamer::Pipeline, dirty: Option<Arc<Damage>>) {
 /// alive; everything else waits for a change.
 const IDLE_FRAME_EVERY: Duration = Duration::from_secs(1);
 
-/// The capture ended by itself: GNOME closes its screencast when this
-/// screen's resolution changes, which a new capture picks up.
+/// Reopened captures per session, a bound on a screen whose size keeps
+/// changing.
+const MAX_REOPENS_AFTER_END: u32 = 10;
+
+/// Whether a capture that ended by itself opens again. The person stopping
+/// the share and GNOME closing its screencast on a mode change look the
+/// same to the portal and to PipeWire; only a screen size different from
+/// when the capture opened tells the mode change apart.
+fn reopen_after_end(opened_at: Option<(u32, u32)>, now: Option<(u32, u32)>, reopened: u32) -> bool {
+    reopened < MAX_REOPENS_AFTER_END && opened_at.is_some() && now.is_some() && opened_at != now
+}
+
+/// The capture ended by itself: the person stopped sharing, or GNOME closed
+/// its screencast on a resolution change.
 #[derive(Debug)]
 pub(crate) struct CaptureEnded;
 
@@ -1002,9 +1032,10 @@ impl std::fmt::Display for CaptureEnded {
 
 impl std::error::Error for CaptureEnded {}
 
-/// Capture, encode and `send` the screen until `stop` — or until `restart`
-/// is raised (the screen's resolution changed): then true, for the caller
-/// to open the source again (GNOME ends its screencast on a mode change).
+/// Capture, encode and `send` the screen until `stop`, or until `restart`
+/// is raised: then true, and the caller decides what comes next (a session
+/// opens the source again after a resolution change, a room share waits
+/// for someone to watch).
 pub(crate) fn stream_screen(
     send: &dyn Fn(Kind, &[u8]) -> anyhow::Result<()>,
     pipelines: &[String],
@@ -1081,9 +1112,16 @@ pub(crate) fn stream_screen(
             let sending = Instant::now();
             if timestamps {
                 // When the frame was captured, on this host's wall clock:
-                // now, minus how long it spent in the pipeline.
-                let in_pipeline = match (pipeline.current_running_time(), buffer.pts()) {
-                    (Some(now), Some(pts)) if now > pts => (now - pts).useconds(),
+                // now, minus how long it spent in the pipeline. The PTS is
+                // the capture's running time once the encoder's segment
+                // (which shifts timestamps by 1000 h) is taken out.
+                let captured_at = sample
+                    .segment()
+                    .and_then(|segment| segment.downcast_ref::<gst::ClockTime>())
+                    .zip(buffer.pts())
+                    .and_then(|(segment, pts)| segment.to_running_time(pts));
+                let in_pipeline = match (pipeline.current_running_time(), captured_at) {
+                    (Some(now), Some(captured_at)) if now > captured_at => (now - captured_at).useconds(),
                     _ => 0,
                 };
                 let captured = super::now_us().saturating_sub(in_pipeline);
@@ -1258,6 +1296,47 @@ mod tests {
         let (want_key, restart) = (AtomicBool::new(false), AtomicBool::new(false));
         let ended = stream_screen(&send, &pipelines, None, &StopHandle::detached(), true, &want_key, &restart);
         assert!(ended.as_ref().is_err_and(|e| e.is::<CaptureEnded>()), "{ended:?}");
+    }
+
+    /// The capture time a frame carries is when it was captured, so the
+    /// latency a viewer shows includes the host's own processing (50 ms
+    /// held here) and encoding.
+    #[test]
+    fn frames_carry_their_capture_time() {
+        let _turn = crate::remote::heavy_test();
+        gst::init().unwrap();
+        let Some(enc) = encoder() else {
+            eprintln!("no H.264 encoder here; skipping");
+            return;
+        };
+        let head = "videotestsrc is-live=true num-buffers=8 ! video/x-raw,width=320,height=240,framerate=10/1 \
+                    ! identity name=capture ! identity sleep-time=50000 ! videoconvert";
+        let pipelines = [pipeline_desc(head, enc)];
+        let ages = Mutex::new(Vec::new());
+        let send = |kind: Kind, payload: &[u8]| -> anyhow::Result<()> {
+            if kind == Kind::VideoTs {
+                let captured = u64::from_be_bytes(payload[..8].try_into()?);
+                ages.lock().unwrap().push(crate::remote::now_us().saturating_sub(captured));
+            }
+            Ok(())
+        };
+        let (want_key, restart) = (AtomicBool::new(false), AtomicBool::new(false));
+        let _ = stream_screen(&send, &pipelines, None, &StopHandle::detached(), true, &want_key, &restart);
+        let ages = ages.into_inner().unwrap();
+        assert!(!ages.is_empty(), "no frame sent");
+        assert!(ages.iter().all(|us| (50_000..1_000_000).contains(us)), "ages in µs: {ages:?}");
+    }
+
+    /// A share the person stopped stays stopped; only a new screen size
+    /// brings the capture back, and not without end.
+    #[test]
+    fn size_change_alone_reopens_capture() {
+        let (hd, fhd) = (Some((1280, 720)), Some((1920, 1080)));
+        assert!(!reopen_after_end(fhd, fhd, 0), "stopped by the person");
+        assert!(reopen_after_end(fhd, hd, 0), "mode change");
+        assert!(!reopen_after_end(None, hd, 0), "size unknown when opened");
+        assert!(!reopen_after_end(fhd, None, 0), "size unknown now");
+        assert!(!reopen_after_end(fhd, hd, MAX_REOPENS_AFTER_END), "too many");
     }
 
     /// A still X11 screen holds back the next grab until it changes, or
