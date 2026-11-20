@@ -10,6 +10,7 @@ mod dialogs;
 mod groups;
 mod invites;
 mod join_dialog;
+mod launcher_badge;
 mod peer_row;
 mod phone_link;
 mod remote_ui;
@@ -487,6 +488,22 @@ pub fn build(app: &libadwaita::Application, start_hidden: bool) {
             }
             if room.is_some() {
                 crate::room::shortcut::ensure();
+            }
+        });
+    }
+    // The unread count on the tray icon and on our launcher in the dock.
+    {
+        let (tray, app) = (ctx.tray.clone(), ctx.ui.win.application());
+        let shown: Rc<Cell<Option<u32>>> = Rc::default();
+        ctx.ui.chat.on_unread_change(move |count| {
+            if shown.replace(Some(count)) == Some(count) {
+                return;
+            }
+            if let Some(h) = tray.borrow().as_ref() {
+                h.update_unread(count);
+            }
+            if let Some(app) = &app {
+                launcher_badge::show_launcher_badge(app, count);
             }
         });
     }

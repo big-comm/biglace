@@ -9,6 +9,7 @@ pub struct HandleImpl;
 impl HandleImpl {
     pub fn update(&self, _connected: bool, _peer_count: usize) {}
     pub fn update_room(&self, _room: Option<(String, bool)>) {}
+    pub fn update_unread(&self, _count: u32) {}
 }
 
 pub fn spawn() -> Option<(async_channel::Receiver<Command>, HandleImpl)> {

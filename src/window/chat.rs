@@ -88,6 +88,8 @@ fn signature(m: &Message) -> String {
 /// Quick reactions offered first (like Telegram's).
 const QUICK_REACTIONS: [&str; 6] = ["❤️", "👍", "👀", "🙏", "🤓", "😢"];
 
+type UnreadHook = RefCell<Option<Box<dyn Fn(u32)>>>;
+
 #[derive(Default)]
 struct State {
     current: RefCell<Option<ConvId>>,
@@ -113,6 +115,8 @@ struct State {
     /// Search hits (message ids, oldest first) and where we are.
     search_hits: RefCell<Vec<String>>,
     search_pos: Cell<usize>,
+    /// Told the unread total each time the sidebar badge is set.
+    unread_hook: UnreadHook,
 }
 
 impl ChatPage {
@@ -812,6 +816,15 @@ impl ChatPage {
         let n = chat::unread_total();
         self.badge.set_text(&if n > 99 { "99+".to_string() } else { n.to_string() });
         self.badge.set_visible(n > 0);
+        if let Some(hook) = self.state.unread_hook.borrow().as_ref() {
+            hook(n);
+        }
+    }
+
+    /// Run `hook` with the unread total now and whenever it's shown again.
+    pub fn on_unread_change(&self, hook: impl Fn(u32) + 'static) {
+        hook(chat::unread_total());
+        *self.state.unread_hook.borrow_mut() = Some(Box::new(hook));
     }
 
     /// Rebuild the conversation list (groups always listed).

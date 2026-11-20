@@ -65,6 +65,12 @@ impl Handle {
     pub fn update_room(&self, room: Option<(String, bool)>) {
         self.inner.update_room(room);
     }
+
+    /// The unread messages: their count over the icon, and a short animation
+    /// when it grows.
+    pub fn update_unread(&self, count: u32) {
+        self.inner.update_unread(count);
+    }
 }
 
 /// Spawn the platform-appropriate tray service. Returns `None` when the
