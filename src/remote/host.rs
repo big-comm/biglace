@@ -834,7 +834,7 @@ fn power_action(action: &str, viewer: &Identity, writer: &Arc<Mutex<TcpStream>>)
 /// the raw format it takes.
 #[cfg(test)]
 pub fn encoder() -> Option<(&'static str, &'static str)> {
-    static BEST: OnceLock<Option<(String, &'static str)>> = OnceLock::new();
+    static BEST: OnceLock<Option<(String, &str)>> = OnceLock::new();
     let best = BEST.get_or_init(|| encoder::usable().first().map(|e| (e.description(RateMode::FollowsLink), e.format())));
     best.as_ref().map(|(desc, format)| (desc.as_str(), *format))
 }
