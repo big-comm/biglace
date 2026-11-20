@@ -1207,6 +1207,7 @@ mod tests {
         let _turn = crate::remote::heavy_test();
         gst::init().unwrap();
         let Some(enc) = encoder() else {
+            // allow-noisy-log: a test run must say this test was skipped, not passed.
             eprintln!("no H.264 encoder here; skipping");
             return;
         };

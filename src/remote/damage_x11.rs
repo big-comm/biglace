@@ -82,6 +82,7 @@ mod tests {
     #[test]
     fn dropping_the_watch_ends_its_thread() {
         if std::env::var_os("DISPLAY").is_none() || std::env::var_os("WAYLAND_DISPLAY").is_some() {
+            // allow-noisy-log: a test run must say this test was skipped, not passed.
             eprintln!("no X server of its own; skipping");
             return;
         }
