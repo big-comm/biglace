@@ -720,9 +720,16 @@ fn run_session(mut stream: TcpStream, stop: &StopHandle, protocol: u32, identity
             // the mode, before the fit raises `restart`.
             Err(e) if e.is::<CaptureEnded>() && !stop.stopped() && restart_follows(&restart) => {}
             Err(e) if e.is::<CaptureEnded>() && !stop.stopped() => {
-                if !reopen_after_end(opened_at, screen_size(), &mut reopens, Instant::now()) {
-                    tailscale::dbg("remote: the capture ended with the screen size unchanged, so the share was stopped here");
-                    let _ = send(Kind::Error, crate::tr!("sharing was stopped on that computer").as_bytes());
+                let size = screen_size();
+                if !reopen_after_end(opened_at, size, &mut reopens, Instant::now()) {
+                    // Without both sizes nothing tells the person's stop from a mode change.
+                    let why = if opened_at.is_some() && size.is_some() {
+                        crate::tr!("sharing was stopped on that computer")
+                    } else {
+                        crate::tr!("the screen capture ended")
+                    };
+                    tailscale::dbg(&format!("remote: the capture ended (screen size {opened_at:?}, then {size:?}), not reopened"));
+                    let _ = send(Kind::Error, why.as_bytes());
                     break;
                 }
             }
