@@ -316,12 +316,7 @@ pub(crate) fn decoder() -> &'static str {
 /// Viewer pipeline: H.264 access units in, RGBA frames out, nothing queued
 /// for later (stale frames are dropped, not shown late).
 pub(crate) fn decode_desc(decoder: &str) -> String {
-    format!(
-        "appsrc name=src is-live=true format=time do-timestamp=false \
-           caps=video/x-h264,stream-format=byte-stream,alignment=au \
-         ! h264parse ! {decoder} ! videoconvert n-threads=0 ! video/x-raw,format=RGBA \
-         ! appsink name=sink sync=false max-buffers=1 drop=true"
-    )
+    decode_desc_with(decoder, false)
 }
 
 /// Host clock − viewer clock, from the ping with the shortest round trip
@@ -370,10 +365,12 @@ pub(crate) fn gpu_decoder_available() -> bool {
 }
 
 /// Viewer pipeline for `decoder` (CPU: `decoder()`, GPU: `gpu_decoder()`).
+/// A decoder that falls behind blocks the reader after two access units, so
+/// TCP backs up and the host drops frames instead of latency growing here.
 fn decode_desc_with(decoder: &str, gpu: bool) -> String {
     let convert = if gpu { "" } else { "! videoconvert n-threads=0 " };
     format!(
-        "appsrc name=src is-live=true format=time do-timestamp=false \
+        "appsrc name=src is-live=true format=time do-timestamp=false block=true max-buffers=2 max-bytes=0 \
            caps=video/x-h264,stream-format=byte-stream,alignment=au \
          ! h264parse ! {decoder} {convert}! video/x-raw,format=RGBA \
          ! appsink name=sink sync=false max-buffers=1 drop=true"
@@ -425,6 +422,24 @@ fn start_decoder(gpu: bool, events: &async_channel::Sender<Event>, shared: &Arc<
         .ok_or_else(|| anyhow::anyhow!("no appsink"))?;
     shared.gpu.store(gpu, Ordering::Relaxed);
 
+    // A stream that stopped leaves the appsrc full: ending it wakes a reader
+    // blocked in push_buffer, from any thread and without a state change.
+    let release_reader = {
+        let src = src.clone();
+        move || {
+            let _ = src.end_of_stream();
+        }
+    };
+    if let Some(bus) = pipeline.bus() {
+        let release_reader = release_reader.clone();
+        bus.set_sync_handler(move |_, msg| {
+            if let gst::MessageView::Error(_) = msg.view() {
+                release_reader();
+            }
+            gst::BusSyncReply::Pass
+        });
+    }
+
     // Decoded frames go straight to the window (newest wins: drop=true).
     let events = events.clone();
     let shared_cb = shared.clone();
@@ -463,6 +478,7 @@ fn start_decoder(gpu: bool, events: &async_channel::Sender<Event>, shared: &Arc<
                 };
                 // A closed window ends the session.
                 if events.try_send(Event::Frame(frame)).is_err() && events.is_closed() {
+                    release_reader();
                     return Err(gst::FlowError::Eos);
                 }
                 Ok(gst::FlowSuccess::Ok)
@@ -603,6 +619,9 @@ pub(crate) fn decode_loop_with(
                 };
                 let dec = decoder.as_ref().expect("decoder started above");
                 let pushed = dec.src.push_buffer(buffer).is_ok();
+                if !pushed && events.is_closed() {
+                    return Ok(());
+                }
                 let failed = decoder_failed(dec).or_else(|| (!pushed).then(|| "decoder stopped".into()));
                 if let Some(why) = failed {
                     if !dec.gpu {
@@ -774,23 +793,14 @@ mod tests {
         }
     }
 
-    /// Encode a test pattern like a host does, send it over a real TCP
-    /// connection in session frames, and decode it like the viewer does:
-    /// RGBA frames of the right size must come out.
-    #[test]
-    fn host_frames_decode_on_the_viewer() {
-        let _turn = crate::remote::heavy_test();
-        gst::init().unwrap();
-        if gst::ElementFactory::find("x264enc").is_none() || gst::ElementFactory::find("avdec_h264").is_none() {
-            eprintln!("x264enc/avdec_h264 missing; skipping");
-            return;
-        }
-        let pipeline = gst::parse::launch(
-            "videotestsrc num-buffers=75 ! video/x-raw,width=320,height=240,framerate=30/1 ! videoconvert \
+    /// `count` H.264 access units of a 320x240 test pattern, a keyframe every 10.
+    fn h264_units(count: u32) -> Vec<Vec<u8>> {
+        let pipeline = gst::parse::launch(&format!(
+            "videotestsrc num-buffers={count} ! video/x-raw,width=320,height=240,framerate=30/1 ! videoconvert \
              ! video/x-raw,format=I420 ! x264enc tune=zerolatency speed-preset=ultrafast key-int-max=10 \
              ! h264parse config-interval=-1 ! video/x-h264,stream-format=byte-stream,alignment=au \
-             ! appsink name=sink sync=false",
-        )
+             ! appsink name=sink sync=false"
+        ))
         .unwrap()
         .downcast::<gst::Pipeline>()
         .unwrap();
@@ -801,6 +811,107 @@ mod tests {
             units.push(s.buffer().unwrap().map_readable().unwrap().as_slice().to_vec());
         }
         pipeline.set_state(gst::State::Null).unwrap();
+        units
+    }
+
+    fn h264_available() -> bool {
+        gst::init().unwrap();
+        gst::ElementFactory::find("x264enc").is_some() && gst::ElementFactory::find("avdec_h264").is_some()
+    }
+
+    /// A decoder that stops taking frames must stall the reader (so TCP backs
+    /// up to the host) instead of queuing every frame that arrives.
+    #[test]
+    fn a_stalled_decoder_blocks_the_reader() {
+        let _turn = crate::remote::heavy_test();
+        if !h264_available() {
+            return;
+        }
+        let units = h264_units(40);
+        let pipeline = gst::parse::launch(&decode_desc(decoder())).unwrap().downcast::<gst::Pipeline>().unwrap();
+        let src = pipeline.by_name("src").unwrap().downcast::<gstreamer_app::AppSrc>().unwrap();
+        let sink = pipeline.by_name("sink").unwrap().downcast::<gstreamer_app::AppSink>().unwrap();
+        let (open_gate, gate) = mpsc::channel::<()>();
+        let gate = std::sync::Mutex::new(gate);
+        sink.set_callbacks(
+            gstreamer_app::AppSinkCallbacks::builder()
+                .new_sample(move |sink| {
+                    let _ = sink.pull_sample();
+                    let _ = gate.lock().unwrap().recv();
+                    Ok(gst::FlowSuccess::Ok)
+                })
+                .build(),
+        );
+        pipeline.set_state(gst::State::Playing).unwrap();
+        let pushed = Arc::new(AtomicU64::new(0));
+        let pusher = {
+            let (src, pushed, total) = (src.clone(), pushed.clone(), units.len());
+            std::thread::spawn(move || {
+                for (n, u) in units.into_iter().enumerate() {
+                    let mut buf = gst::Buffer::from_slice(u);
+                    buf.get_mut().unwrap().set_pts(gst::ClockTime::from_mseconds(n as u64 * 33));
+                    if src.push_buffer(buf).is_err() {
+                        break;
+                    }
+                    pushed.fetch_add(1, Ordering::Relaxed);
+                }
+                total
+            })
+        };
+        std::thread::sleep(Duration::from_secs(1));
+        let queued = pushed.load(Ordering::Relaxed);
+        drop(open_gate);
+        let total = pusher.join().unwrap();
+        pipeline.set_state(gst::State::Null).unwrap();
+        assert!(queued < 10, "{queued} of {total} frames pushed into a stalled decoder");
+    }
+
+    /// Closing the window ends the reader even while the host keeps sending
+    /// and the reader is blocked on a full decoder.
+    #[test]
+    fn closed_window_ends_blocked_reader() {
+        let _turn = crate::remote::heavy_test();
+        if !h264_available() {
+            return;
+        }
+        let units = h264_units(30);
+        let listener = TcpListener::bind("127.0.0.1:0").unwrap();
+        let addr = listener.local_addr().unwrap();
+        std::thread::spawn(move || {
+            let (mut s, _) = listener.accept().unwrap();
+            let info = serde_json::to_vec(&VideoInfo { width: 320, height: 240, chroma: None }).unwrap();
+            write_frame(&mut s, Kind::Info, &info).unwrap();
+            for u in units.iter().cycle() {
+                if write_frame(&mut s, Kind::Video, u).is_err() {
+                    break;
+                }
+            }
+        });
+        let stream = TcpStream::connect(addr).unwrap();
+        let (tx, rx) = async_channel::bounded(4);
+        let (done_tx, done) = mpsc::channel();
+        std::thread::spawn(move || {
+            let _ = done_tx.send(decode_loop(BufReader::new(stream), &tx).is_ok());
+        });
+        while let Ok(ev) = rx.recv_blocking() {
+            if let Event::Frame(_) = ev {
+                break;
+            }
+        }
+        drop(rx);
+        assert_eq!(done.recv_timeout(Duration::from_secs(5)), Ok(true), "the reader did not end");
+    }
+
+    /// Encode a test pattern like a host does, send it over a real TCP
+    /// connection in session frames, and decode it like the viewer does:
+    /// RGBA frames of the right size must come out.
+    #[test]
+    fn host_frames_decode_on_the_viewer() {
+        let _turn = crate::remote::heavy_test();
+        if !h264_available() {
+            return;
+        }
+        let units = h264_units(75);
         assert!(units.len() >= 10, "encoder produced {} units", units.len());
 
         let listener = TcpListener::bind("127.0.0.1:0").unwrap();
@@ -810,11 +921,14 @@ mod tests {
             let info = serde_json::to_vec(&VideoInfo { width: 320, height: 240, chroma: None }).unwrap();
             write_frame(&mut s, Kind::Info, &info).unwrap();
             // Protocol 2: each unit carries its capture time; paced like a
-            // live 30 fps source so the viewer reports stats.
+            // live 30 fps source so the viewer reports stats. The viewer
+            // hangs up once the test has seen enough.
             for u in units {
                 let mut payload = crate::remote::now_us().to_be_bytes().to_vec();
                 payload.extend_from_slice(&u);
-                write_frame(&mut s, Kind::VideoTs, &payload).unwrap();
+                if write_frame(&mut s, Kind::VideoTs, &payload).is_err() {
+                    break;
+                }
                 std::thread::sleep(Duration::from_millis(33));
             }
             // Give the decoder time to drain before the connection closes.
