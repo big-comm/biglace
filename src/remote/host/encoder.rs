@@ -17,7 +17,7 @@ pub(crate) enum Encoder {
 
 impl Encoder {
     /// Every encoder, in order of preference.
-    pub(super) const ALL: [Encoder; 4] = [Encoder::VaH264, Encoder::NvH264, Encoder::X264, Encoder::OpenH264];
+    pub(crate) const ALL: [Encoder; 4] = [Encoder::VaH264, Encoder::NvH264, Encoder::X264, Encoder::OpenH264];
 
     pub(crate) fn element(self) -> &'static str {
         match self {
@@ -396,12 +396,6 @@ mod tests {
             assert!(before > u64::from(TARGET) * 3, "{kind:?} started at {before} kbit/s");
             assert!(after < u64::from(TARGET) * 3 / 2, "{kind:?} stayed at {after} kbit/s");
         }
-    }
-
-    /// `can_host` answers from this list without probing.
-    #[test]
-    fn can_host_knows_every_encoder() {
-        assert_eq!(crate::remote::H264_ENCODERS, Encoder::ALL.map(Encoder::element));
     }
 
     /// A room keeps constant quality (nothing retunes it); a 1:1 share

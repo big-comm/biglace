@@ -14,7 +14,7 @@ use crate::tailscale::{self, Identity};
 
 mod encoder;
 
-pub(crate) use encoder::RateMode;
+pub(crate) use encoder::{Encoder, RateMode};
 
 /// Signed requests must be this fresh (either way, for clock skew).
 const SKEW: Duration = Duration::from_secs(120);
@@ -481,7 +481,7 @@ thread_local! {
 #[cfg(target_os = "linux")]
 fn wayland_zero_copy(capture: &str, rate: RateMode) -> Option<String> {
     use gstreamer as gst;
-    let enc = encoder::usable().iter().find(|e| **e == encoder::Encoder::VaH264)?.description(rate);
+    let enc = encoder::usable().iter().find(|e| **e == Encoder::VaH264)?.description(rate);
     gst::ElementFactory::find("vapostproc")?;
     Some(format!(
         "{capture} ! video/x-raw(memory:DMABuf) ! vapostproc \
@@ -1114,7 +1114,7 @@ pub(crate) fn stream_screen(
     };
     let mut pending = Some(first);
     let mut tuning = pipeline.by_name("enc").and_then(|element| {
-        let kind = encoder::Encoder::from_element(&element.factory()?.name())?;
+        let kind = Encoder::from_element(&element.factory()?.name())?;
         Some((element, kind, encoder::RateControl::new(kind.ceiling_kbps())))
     });
 
@@ -1466,7 +1466,7 @@ mod tests {
             return;
         }
         // Every encoder present on this machine, not just the preferred one.
-        let present = encoder::Encoder::ALL.into_iter().filter(|e| gst::ElementFactory::find(e.element()).is_some());
+        let present = Encoder::ALL.into_iter().filter(|e| gst::ElementFactory::find(e.element()).is_some());
         let setups = [WAYLAND_TAIL, X11_TAIL].into_iter().flat_map(|tail| [(tail, RateMode::FollowsLink), (tail, RateMode::ConstantQuality)]);
         for (kind, (tail, rate)) in present.flat_map(|e| setups.clone().map(move |setup| (e, setup))) {
             let description = kind.description(rate);
