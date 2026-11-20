@@ -1244,6 +1244,17 @@ mod tests {
     use super::*;
 
     #[test]
+    fn closed_portal_lets_go_at_once() {
+        let (tx, rx) = async_channel::unbounded();
+        let mut sink = InputSink::portal(tx, Arc::new(AtomicU64::new(0)));
+        sink.apply(Input::Key { keysym: 0x61, pressed: true });
+        drop(rx);
+        let started = Instant::now();
+        sink.release_all();
+        assert!(started.elapsed() < Duration::from_millis(500), "{:?}", started.elapsed());
+    }
+
+    #[test]
     fn portal_closes_with_its_input() {
         let (tx, rx) = async_channel::unbounded();
         let sink = InputSink::portal(tx, Arc::new(AtomicU64::new(0)));
