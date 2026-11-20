@@ -35,12 +35,15 @@ pub struct Frame {
     pub height: u32,
     pub stride: usize,
     pub data: gtk4::glib::Bytes,
+    /// When decoding finished: the window adds its own time to draw it.
+    pub decoded_at: std::time::Instant,
 }
 
 /// Live numbers about the session, once a second.
 #[derive(Debug, Clone, Copy)]
 pub struct Stats {
-    /// Capture on the host → decoded here (both clocks reconciled).
+    /// Capture on the host → decoded here (both clocks reconciled). Drawing
+    /// it on screen comes on top.
     pub latency_ms: f64,
     pub fps: f64,
     pub mbps: f64,
@@ -475,6 +478,7 @@ fn start_decoder(gpu: bool, events: &async_channel::Sender<Event>, shared: &Arc<
                     height: info.height(),
                     stride: info.stride()[0] as usize,
                     data: gtk4::glib::Bytes::from_owned(mapped),
+                    decoded_at: std::time::Instant::now(),
                 };
                 // A closed window ends the session.
                 if events.try_send(Event::Frame(frame)).is_err() && events.is_closed() {

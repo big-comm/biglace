@@ -9,7 +9,7 @@ use std::io::{BufReader, Write};
 use std::net::{IpAddr, TcpStream};
 use std::sync::atomic::{AtomicBool, AtomicU64, AtomicUsize, Ordering};
 use std::sync::mpsc::{self, SyncSender, TrySendError};
-use std::sync::{Arc, Mutex, OnceLock};
+use std::sync::{Arc, Condvar, Mutex, OnceLock};
 use std::time::{Duration, Instant};
 
 use super::{emit, room, share_audio, RoomEvent, STAGE_PREFIX};
@@ -47,6 +47,10 @@ struct Viewer {
 pub(super) struct Stage {
     stop: StopHandle,
     viewers: Mutex<Vec<Viewer>>,
+    /// Signaled when someone starts watching or the share stops.
+    audience_changed: Condvar,
+    /// The last viewer left: capture and encoding pause until the next.
+    no_viewers: AtomicBool,
     want_key: Arc<AtomicBool>,
     /// A keyframe was asked for and waits for [`KEY_INTERVAL`] to pass.
     key_pending: AtomicBool,
@@ -97,6 +101,8 @@ pub fn start(with_sound: bool) -> Result<(), String> {
     let stage = Arc::new(Stage {
         stop: StopHandle::detached(),
         viewers: Mutex::new(Vec::new()),
+        audience_changed: Condvar::new(),
+        no_viewers: AtomicBool::new(false),
         want_key: Arc::new(AtomicBool::new(false)),
         key_pending: AtomicBool::new(false),
         last_forced_key: Mutex::new(None),
@@ -154,10 +160,17 @@ pub fn start(with_sound: bool) -> Result<(), String> {
             stage.fanout(kind, payload);
             Ok(())
         };
-        if let Err(e) = host::stream_screen(&send, &pipelines, dirty, &stage.stop, true, &stage.want_key, &std::sync::atomic::AtomicBool::new(false)) {
-            tailscale::dbg(&format!("stage: capture ended: {e}"));
-            if !stage.stop.stopped() {
-                emit(RoomEvent::Problem(crate::trf!("The screen share stopped: {error}", "error" => e)));
+        while stage.wait_for_viewers() {
+            match host::stream_screen(&send, &pipelines, dirty.clone(), &stage.stop, true, &stage.want_key, &stage.no_viewers) {
+                Ok(true) => tailscale::dbg("stage: nobody watching, capture paused"),
+                Ok(false) => break,
+                Err(e) => {
+                    tailscale::dbg(&format!("stage: capture ended: {e}"));
+                    if !stage.stop.stopped() {
+                        emit(RoomEvent::Problem(crate::trf!("The screen share stopped: {error}", "error" => e)));
+                    }
+                    break;
+                }
             }
         }
         finish(&stage);
@@ -190,6 +203,7 @@ fn finish(stage: &Arc<Stage>) {
             let _ = viewer.stream.shutdown(std::net::Shutdown::Both);
         }
     }
+    stage.audience_changed.notify_all();
     if let Ok(mut sink) = stage.sink.lock() {
         // Dropping the sink ends the portal session too.
         sink.take();
@@ -304,7 +318,22 @@ impl Stage {
         }
         if !gone.is_empty() {
             viewers.retain(|v| !gone.contains(&v.id));
+            if viewers.is_empty() {
+                self.no_viewers.store(true, Ordering::Release);
+            }
         }
+    }
+
+    /// Block until someone watches; false once the share stopped.
+    fn wait_for_viewers(&self) -> bool {
+        let Ok(mut viewers) = self.viewers.lock() else { return false };
+        while viewers.is_empty() && !self.stop.stopped() {
+            viewers = match self.audience_changed.wait(viewers) {
+                Ok(v) => v,
+                Err(_) => return false,
+            };
+        }
+        !self.stop.stopped()
     }
 
     /// Ask for a keyframe, at most once per [`KEY_INTERVAL`].
@@ -336,6 +365,9 @@ impl Stage {
     fn remove(&self, id: u64) {
         if let Ok(mut v) = self.viewers.lock() {
             v.retain(|x| x.id != id);
+            if v.is_empty() {
+                self.no_viewers.store(true, Ordering::Release);
+            }
         }
         let was_controller = self.controller.lock().is_ok_and(|mut c| {
             let was = *c == Some(id);
@@ -425,6 +457,7 @@ pub fn accept(stream: TcpStream, peer: IpAddr, headers: &HashMap<String, String>
             skip_until_key: AtomicBool::new(true),
         });
     }
+    stage.audience_changed.notify_all();
     stage.request_key();
     tailscale::dbg(&format!("stage: {}@{} watching", identity.login, identity.device));
     crate::access::log(&identity.login, &identity.device, "watch", "allowed");
@@ -490,6 +523,8 @@ mod tests {
         Stage {
             stop: StopHandle::detached(),
             viewers: Mutex::new(Vec::new()),
+            audience_changed: Condvar::new(),
+            no_viewers: AtomicBool::new(false),
             want_key: Arc::new(AtomicBool::new(false)),
             key_pending: AtomicBool::new(false),
             last_forced_key: Mutex::new(None),
@@ -593,6 +628,36 @@ mod tests {
         *stage.last_forced_key.lock().unwrap() = Instant::now().checked_sub(KEY_INTERVAL);
         stage.fanout(Kind::VideoTs, &frame(false));
         assert!(stage.want_key.load(Ordering::Acquire), "the waiting one is forced once the interval passed");
+    }
+
+    /// Nobody watching: capture waits for the first viewer and pauses
+    /// again when the last one leaves.
+    #[test]
+    fn capture_runs_only_while_someone_watches() {
+        let stage = Arc::new(test_stage());
+        let waiter = {
+            let stage = stage.clone();
+            std::thread::spawn(move || stage.wait_for_viewers())
+        };
+        std::thread::sleep(Duration::from_millis(100));
+        assert!(!waiter.is_finished(), "capture started with nobody watching");
+        let rx = viewer(&stage, 1, CHANNEL);
+        stage.audience_changed.notify_all();
+        assert!(waiter.join().unwrap(), "the first viewer starts the capture");
+        stage.remove(1);
+        drop(rx);
+        assert!(stage.no_viewers.load(Ordering::Acquire), "the last one leaving pauses it");
+
+        let waiter = {
+            let stage = stage.clone();
+            std::thread::spawn(move || stage.wait_for_viewers())
+        };
+        stage.stop.stop();
+        // As finish() does: through the lock, so a waiter between its check
+        // and its wait still hears it.
+        drop(stage.viewers.lock().unwrap());
+        stage.audience_changed.notify_all();
+        assert!(!waiter.join().unwrap(), "stopping the share ends the wait");
     }
 
     /// Input counts only from the viewer holding control.
