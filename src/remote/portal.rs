@@ -213,7 +213,7 @@ pub fn start(embed_cursor: bool) -> anyhow::Result<Portal> {
                             }
                         }
                     }
-                    if let Some(libei) = &libei {
+                    if let Some(libei) = &mut libei {
                         libei.flush();
                     }
                     handled.fetch_add(count, std::sync::atomic::Ordering::AcqRel);
@@ -267,6 +267,9 @@ fn offers_libei(portal_version: u32) -> bool {
     portal_version >= 2
 }
 
+/// A few seconds of pointer moves, tens of KiB.
+const MAX_UNSENT_EVENTS: usize = 2048;
+
 /// A compositor that never answers must not keep input waiting for good.
 const LIBEI_TIMEOUT: Duration = Duration::from_secs(10);
 
@@ -292,6 +295,7 @@ async fn connect_libei(rd: &RemoteDesktop, session: &Session<RemoteDesktop>, str
         resumed: Vec::new(),
         keys: Keys::default(),
         sequence: 0,
+        unsent: 0,
         open: true,
         warned_no_device: false,
         warned_no_key: false,
@@ -315,6 +319,8 @@ struct Libei {
     resumed: Vec<Device>,
     keys: Keys,
     sequence: u32,
+    /// Events sent since the socket last took everything.
+    unsent: usize,
     open: bool,
     warned_no_device: bool,
     warned_no_key: bool,
@@ -373,6 +379,9 @@ impl Libei {
     }
 
     fn send(&mut self, event: Input) {
+        if !self.open {
+            return;
+        }
         let capability = match event {
             Input::Move { .. } => DeviceCapability::PointerAbsolute,
             Input::Button { .. } => DeviceCapability::Button,
@@ -421,17 +430,28 @@ impl Libei {
             }
         }
         device.device().frame(self.connection.serial(), now_micros());
+        self.unsent += 1;
     }
 
-    fn flush(&self) {
+    /// reis keeps what the socket did not take, so a server that stops
+    /// reading would have it grow with every event: past a bound, the
+    /// connection counts as lost.
+    fn flush(&mut self) {
         match self.connection.flush() {
-            // What is left goes out with the next flush.
-            Ok(()) | Err(rustix::io::Errno::AGAIN) => {}
-            Err(e) => crate::tailscale::dbg(&format!("remote: can't send libei input: {e}")),
+            Ok(()) => self.unsent = 0,
+            Err(rustix::io::Errno::AGAIN) if self.unsent <= MAX_UNSENT_EVENTS => {}
+            Err(rustix::io::Errno::AGAIN) => {
+                crate::tailscale::dbg("remote: the libei server stopped reading input");
+                self.open = false;
+            }
+            Err(e) => {
+                crate::tailscale::dbg(&format!("remote: can't send libei input: {e}"));
+                self.open = false;
+            }
         }
     }
 
-    fn end(self) {
+    fn end(mut self) {
         let serial = self.connection.serial();
         for device in &self.resumed {
             device.device().stop_emulating(serial);
