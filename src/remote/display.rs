@@ -255,18 +255,6 @@ fn parse_big_screens(json: &str) -> Option<Screen> {
     Some(Screen { tool: Tool::BigScreens, output, scale: None, current_unlisted, modes, current })
 }
 
-/// What a `big-screens` exit status other than 0 means.
-fn big_screens_failure(code: Option<i32>) -> Option<&'static str> {
-    match code {
-        Some(0) => None,
-        Some(1) => Some("the compositor refused, cancelled or did not keep the change"),
-        Some(2) => Some("usage error"),
-        Some(3) => Some("no compositor to ask, no such screen or no such mode"),
-        Some(_) => Some("unknown exit status"),
-        None => Some("killed"),
-    }
-}
-
 /// `--custom-mode` to set back a current mode the screen does not list.
 fn big_screens_mode_option(screen: &Screen, mode: &Mode) -> &'static str {
     if screen.current_unlisted && screen.current.as_ref() == Some(mode) { "--custom-mode" } else { "--mode" }
@@ -274,18 +262,8 @@ fn big_screens_mode_option(screen: &Screen, mode: &Mode) -> &'static str {
 
 /// `option` is `--mode` (a listed mode) or `--custom-mode`. Never
 /// `--persistent`: the change lasts for this session only.
-fn big_screens_set_args<'a>(output: &'a str, option: &'a str, mode: &'a str) -> [&'a str; 4] {
-    ["set", output, option, mode]
-}
-
 fn big_screens_set(output: &str, option: &str, mode: &str) -> Result<(), String> {
-    let mut cmd = Command::new("big-screens");
-    cmd.args(big_screens_set_args(output, option, mode));
-    let out = crate::tailscale::command_output_timeout(&mut cmd, std::time::Duration::from_secs(5)).map_err(|e| format!("big-screens: {e}"))?;
-    match big_screens_failure(out.status.code()) {
-        None => Ok(()),
-        Some(why) => Err(format!("big-screens: {why}: {}", String::from_utf8_lossy(&out.stderr).trim())),
-    }
+    run(Command::new("big-screens").args(["set", output, option, mode])).map(drop)
 }
 
 /// The screen as it is now (None: no tool, several monitors…).
@@ -565,12 +543,6 @@ Logical monitors:
     }
 
     #[test]
-    fn big_screens_listed_and_custom_argv() {
-        assert_eq!(big_screens_set_args("HDMI-A-1", "--mode", "1280x720@59.940"), ["set", "HDMI-A-1", "--mode", "1280x720@59.940"]);
-        assert_eq!(big_screens_set_args("HDMI-A-1", "--custom-mode", "1366x700"), ["set", "HDMI-A-1", "--custom-mode", "1366x700"]);
-    }
-
-    #[test]
     fn big_screens_keeps_fitting_custom_mode() {
         let json = format!(r#"{{"outputs":[{}]}}"#, big_screens_output("HDMI-A-1", true, r#"{"width":1366,"height":700,"refresh_mhz":59990,"preferred":false}"#));
         let screen = parse_big_screens(&json).unwrap();
@@ -585,23 +557,12 @@ Logical monitors:
             let json = format!(r#"{{"outputs":[{}]}}"#, big_screens_output("HDMI-A-1", true, current));
             let s = parse_big_screens(&json).unwrap();
             let original = s.current.clone().unwrap();
-            big_screens_set_args(&s.output, big_screens_mode_option(&s, &original), &original.id).map(String::from)
+            (big_screens_mode_option(&s, &original), original.id)
         };
-        assert_eq!(restore_args(BIG_CURRENT), ["set", "HDMI-A-1", "--mode", "1280x720@59.940"]);
+        assert_eq!(restore_args(BIG_CURRENT), ("--mode", "1280x720@59.940".into()));
         let custom = r#"{"width":1366,"height":700,"refresh_mhz":59990,"preferred":false}"#;
-        assert_eq!(restore_args(custom), ["set", "HDMI-A-1", "--custom-mode", "1366x700@59.990"]);
+        assert_eq!(restore_args(custom), ("--custom-mode", "1366x700@59.990".into()));
         let listed_size_other_refresh = r#"{"width":1280,"height":720,"refresh_mhz":75000,"preferred":false}"#;
-        assert_eq!(restore_args(listed_size_other_refresh), ["set", "HDMI-A-1", "--custom-mode", "1280x720@75.000"]);
-    }
-
-    #[test]
-    fn big_screens_exit_statuses() {
-        assert_eq!(big_screens_failure(Some(0)), None);
-        for code in [Some(1), Some(2), Some(3), Some(4), None] {
-            assert!(big_screens_failure(code).is_some(), "{code:?}");
-        }
-        assert!(big_screens_failure(Some(1)).is_some_and(|why| why.contains("refused")));
-        assert!(big_screens_failure(Some(2)).is_some_and(|why| why.contains("usage")));
-        assert!(big_screens_failure(Some(3)).is_some_and(|why| why.contains("no such screen")));
+        assert_eq!(restore_args(listed_size_other_refresh), ("--custom-mode", "1280x720@75.000".into()));
     }
 }
