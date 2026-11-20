@@ -393,7 +393,10 @@ impl InputSink {
         for button in buttons {
             self.send(Input::Button { button, pressed: false });
         }
-        self.flush();
+        // A closed portal answers nothing, so waiting would only hold the lock.
+        if !self.portal_closed() {
+            self.flush();
+        }
     }
 }
 
