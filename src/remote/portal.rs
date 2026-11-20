@@ -54,9 +54,18 @@ fn saved_token() -> Option<String> {
         .filter(|t| !t.is_empty() && t.len() < 512)
 }
 
+/// No token back means the portal will not restore this session: a kept one
+/// would be offered again, and refused, every time.
 fn save_token(token: Option<&str>) {
-    if let Some(t) = token {
-        let _ = crate::config::write_private_file(TOKEN_FILE, t.as_bytes());
+    let saved = match token {
+        Some(t) => crate::config::write_private_file(TOKEN_FILE, t.as_bytes()),
+        None => match std::fs::remove_file(crate::config::private_file(TOKEN_FILE)) {
+            Err(e) if e.kind() == std::io::ErrorKind::NotFound => Ok(()),
+            other => other,
+        },
+    };
+    if let Err(e) = saved {
+        crate::tailscale::dbg(&format!("remote: can't keep the portal's restore token: {e}"));
     }
 }
 
@@ -193,4 +202,22 @@ pub fn start(embed_cursor: bool) -> anyhow::Result<Portal> {
             });
         })?;
     ready_rx.recv()?
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn missing_token_forgets_saved_one() {
+        let _env = crate::test_env_lock();
+        let dir = std::env::temp_dir().join(format!("biglace-portal-{}", std::process::id()));
+        std::env::set_var("XDG_CONFIG_HOME", &dir);
+        save_token(Some("restore-me"));
+        assert_eq!(saved_token().as_deref(), Some("restore-me"));
+        save_token(None);
+        assert_eq!(saved_token(), None);
+        save_token(None);
+        let _ = std::fs::remove_dir_all(&dir);
+    }
 }
