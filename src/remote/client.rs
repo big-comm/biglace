@@ -724,10 +724,9 @@ mod tests {
     use gstreamer::prelude::*;
     use std::net::TcpListener;
 
-    /// Latency budget: frames encoded with the host's pipeline settings and
-    /// decoded with the viewer's, pushed in real time (30 fps). Measures
-    /// capture-to-decoded time per frame. Prints the numbers; fails above a
-    /// generous bound so a regression (e.g. frame threading) is caught.
+    /// Capture-to-decoded time per frame with the host's encoder and the
+    /// viewer's decoder, the first frames (encoder start-up) left out; a
+    /// generous bound still catches a frame held back (frame threading).
     #[test]
     fn encode_decode_latency_is_low() {
         let _turn = crate::remote::heavy_test();
@@ -753,8 +752,6 @@ mod tests {
             src.set_property("do-timestamp", false);
             let vsink = viewer.by_name("sink").unwrap().downcast::<gstreamer_app::AppSink>().unwrap();
             viewer.set_state(gst::State::Playing).unwrap();
-            let start = Instant::now();
-            let captured_at = |n: u64| start + Duration::from_micros(n * 1_000_000 / fps);
             let collector = std::thread::spawn(move || {
                 let mut lat = Vec::new();
                 while let Some(s) = vsink.try_pull_sample(gst::ClockTime::from_seconds(2)) {
@@ -768,7 +765,19 @@ mod tests {
             });
             host.set_state(gst::State::Playing).unwrap();
             let mut frame = 0u64;
+            let mut captured_at = Vec::new();
             while let Some(s) = hsink.try_pull_sample(gst::ClockTime::from_seconds(3)) {
+                // Captured now minus its time in the host pipeline. The PTS is
+                // the capture's running time once the encoder's segment (which
+                // shifts timestamps by 1000 h) is taken out.
+                let taken = s
+                    .segment()
+                    .and_then(|seg| seg.downcast_ref::<gst::ClockTime>())
+                    .zip(s.buffer().and_then(|b| b.pts()))
+                    .and_then(|(seg, pts)| seg.to_running_time(pts))
+                    .expect("the encoder keeps capture timestamps");
+                let running = host.current_running_time().expect("the host pipeline runs");
+                captured_at.push(Instant::now() - Duration::from_nanos(running.nseconds().saturating_sub(taken.nseconds())));
                 let mut buf = gst::Buffer::from_mut_slice(s.buffer().unwrap().map_readable().unwrap().as_slice().to_vec());
                 buf.get_mut().unwrap().set_pts(gst::ClockTime::from_nseconds(frame * 1_000_000_000 / fps + 1_000_000));
                 src.push_buffer(buf).unwrap();
@@ -780,7 +789,7 @@ mod tests {
             viewer.set_state(gst::State::Null).unwrap();
             let ms: Vec<f64> = lat
                 .iter()
-                .map(|(n, at)| at.saturating_duration_since(captured_at(*n)).as_secs_f64() * 1000.0)
+                .map(|(n, at)| at.saturating_duration_since(captured_at[*n as usize]).as_secs_f64() * 1000.0)
                 .collect();
             ms.iter().sum::<f64>() / ms.len().max(1) as f64
         };
