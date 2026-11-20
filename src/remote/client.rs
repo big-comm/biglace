@@ -35,12 +35,15 @@ pub struct Frame {
     pub height: u32,
     pub stride: usize,
     pub data: gtk4::glib::Bytes,
+    /// When decoding finished: the window adds its own time to draw it.
+    pub decoded_at: std::time::Instant,
 }
 
 /// Live numbers about the session, once a second.
 #[derive(Debug, Clone, Copy)]
 pub struct Stats {
-    /// Capture on the host → decoded here (both clocks reconciled).
+    /// Capture on the host → decoded here (both clocks reconciled). Drawing
+    /// it on screen comes on top.
     pub latency_ms: f64,
     pub fps: f64,
     pub mbps: f64,
@@ -318,12 +321,7 @@ pub(crate) fn decoder() -> &'static str {
 /// Viewer pipeline: H.264 access units in, RGBA frames out, nothing queued
 /// for later (stale frames are dropped, not shown late).
 pub(crate) fn decode_desc(decoder: &str) -> String {
-    format!(
-        "appsrc name=src is-live=true format=time do-timestamp=false \
-           caps=video/x-h264,stream-format=byte-stream,alignment=au \
-         ! h264parse ! {decoder} ! videoconvert n-threads=0 ! video/x-raw,format=RGBA \
-         ! appsink name=sink sync=false max-buffers=1 drop=true"
-    )
+    decode_desc_with(decoder, false)
 }
 
 /// Host clock − viewer clock, from the ping with the shortest round trip
@@ -440,10 +438,12 @@ pub(crate) fn gpu_decoder_available() -> bool {
 }
 
 /// Viewer pipeline for `decoder` (CPU: `decoder()`, GPU: `gpu_decoder()`).
+/// A decoder that falls behind blocks the reader after two access units, so
+/// TCP backs up and the host drops frames instead of latency growing here.
 fn decode_desc_with(decoder: &str, gpu: bool) -> String {
     let convert = if gpu { "" } else { "! videoconvert n-threads=0 " };
     format!(
-        "appsrc name=src is-live=true format=time do-timestamp=false \
+        "appsrc name=src is-live=true format=time do-timestamp=false block=true max-buffers=2 max-bytes=0 \
            caps=video/x-h264,stream-format=byte-stream,alignment=au \
          ! h264parse ! {decoder} {convert}! video/x-raw,format=RGBA \
          ! appsink name=sink sync=false max-buffers=1 drop=true"
@@ -495,6 +495,24 @@ fn start_decoder(gpu: bool, events: &async_channel::Sender<Event>, shared: &Arc<
         .ok_or_else(|| anyhow::anyhow!("no appsink"))?;
     shared.gpu.store(gpu, Ordering::Relaxed);
 
+    // A stream that stopped leaves the appsrc full: ending it wakes a reader
+    // blocked in push_buffer, from any thread and without a state change.
+    let release_reader = {
+        let src = src.clone();
+        move || {
+            let _ = src.end_of_stream();
+        }
+    };
+    if let Some(bus) = pipeline.bus() {
+        let release_reader = release_reader.clone();
+        bus.set_sync_handler(move |_, msg| {
+            if let gst::MessageView::Error(_) = msg.view() {
+                release_reader();
+            }
+            gst::BusSyncReply::Pass
+        });
+    }
+
     // Decoded frames go straight to the window (newest wins: drop=true).
     let events = events.clone();
     let shared_cb = shared.clone();
@@ -530,9 +548,11 @@ fn start_decoder(gpu: bool, events: &async_channel::Sender<Event>, shared: &Arc<
                     height: info.height(),
                     stride: info.stride()[0] as usize,
                     data: gtk4::glib::Bytes::from_owned(mapped),
+                    decoded_at: std::time::Instant::now(),
                 };
                 // A closed window ends the session.
                 if events.try_send(Event::Frame(frame)).is_err() && events.is_closed() {
+                    release_reader();
                     return Err(gst::FlowError::Eos);
                 }
                 Ok(gst::FlowSuccess::Ok)
@@ -571,7 +591,10 @@ impl Drop for AudioOut {
 
 /// Opus in, the default output out. Played as it arrives (a small buffer
 /// absorbs network jitter): sound follows the picture instead of a clock.
+/// After a stall, all but the newest 60 ms (six 10 ms packets) waiting are
+/// dropped, so the backlog never plays late for the rest of the session.
 pub(crate) const AUDIO_OUT_DESC: &str = "appsrc name=asrc is-live=true format=time do-timestamp=true \
+       max-buffers=6 max-bytes=0 leaky-type=downstream \
        caps=audio/x-opus,channel-mapping-family=0,channels=2,rate=48000 \
      ! opusdec plc=true ! audioconvert ! audioresample ! volume name=vol \
      ! autoaudiosink name=out sync=false";
@@ -673,6 +696,9 @@ pub(crate) fn decode_loop_with(
                 };
                 let dec = decoder.as_ref().expect("decoder started above");
                 let pushed = dec.src.push_buffer(buffer).is_ok();
+                if !pushed && events.is_closed() {
+                    return Ok(());
+                }
                 let failed = decoder_failed(dec).or_else(|| (!pushed).then(|| "decoder stopped".into()));
                 if let Some(why) = failed {
                     if !dec.gpu {
@@ -809,19 +835,19 @@ mod tests {
         assert!(va_colors_right(), "this GPU's colors come out wrong");
     }
 
-    /// Latency budget: frames encoded with the host's pipeline settings and
-    /// decoded with the viewer's, pushed in real time (30 fps). Measures
-    /// capture-to-decoded time per frame. Prints the numbers; fails above a
-    /// generous bound so a regression (e.g. frame threading) is caught.
+    /// Capture-to-decoded time per frame with the host's encoder and the
+    /// viewer's decoder, the first frames (encoder start-up) left out; a
+    /// generous bound still catches a frame held back (frame threading).
     #[test]
     fn encode_decode_latency_is_low() {
         let _turn = crate::remote::heavy_test();
         use std::time::Instant;
         gst::init().unwrap();
-        let Some(enc) = crate::remote::host::encoder() else { return };
-        if gst::ElementFactory::find("avdec_h264").is_none() {
+        let (Some(enc), Some(_)) = (crate::remote::host::encoder(), gst::ElementFactory::find("avdec_h264")) else {
+            // allow-noisy-log: a test run must say this test was skipped, not passed.
+            eprintln!("no H.264 encoder or avdec_h264 here; skipping");
             return;
-        }
+        };
         let measure = |dec: &str, enc: (&str, &str), fps: u64| -> f64 {
             let host = gst::parse::launch(&crate::remote::host::pipeline_desc(
                 &format!("videotestsrc is-live=true num-buffers={} pattern=ball ! video/x-raw,width=1280,height=720,framerate={fps}/1 ! videoconvert", fps * 4),
@@ -838,8 +864,6 @@ mod tests {
             src.set_property("do-timestamp", false);
             let vsink = viewer.by_name("sink").unwrap().downcast::<gstreamer_app::AppSink>().unwrap();
             viewer.set_state(gst::State::Playing).unwrap();
-            let start = Instant::now();
-            let captured_at = |n: u64| start + Duration::from_micros(n * 1_000_000 / fps);
             let collector = std::thread::spawn(move || {
                 let mut lat = Vec::new();
                 while let Some(s) = vsink.try_pull_sample(gst::ClockTime::from_seconds(2)) {
@@ -853,7 +877,19 @@ mod tests {
             });
             host.set_state(gst::State::Playing).unwrap();
             let mut frame = 0u64;
+            let mut captured_at = Vec::new();
             while let Some(s) = hsink.try_pull_sample(gst::ClockTime::from_seconds(3)) {
+                // Captured now minus its time in the host pipeline. The PTS is
+                // the capture's running time once the encoder's segment (which
+                // shifts timestamps by 1000 h) is taken out.
+                let taken = s
+                    .segment()
+                    .and_then(|seg| seg.downcast_ref::<gst::ClockTime>())
+                    .zip(s.buffer().and_then(|b| b.pts()))
+                    .and_then(|(seg, pts)| seg.to_running_time(pts))
+                    .expect("the encoder keeps capture timestamps");
+                let running = host.current_running_time().expect("the host pipeline runs");
+                captured_at.push(Instant::now() - Duration::from_nanos(running.nseconds().saturating_sub(taken.nseconds())));
                 let mut buf = gst::Buffer::from_mut_slice(s.buffer().unwrap().map_readable().unwrap().as_slice().to_vec());
                 buf.get_mut().unwrap().set_pts(gst::ClockTime::from_nseconds(frame * 1_000_000_000 / fps + 1_000_000));
                 src.push_buffer(buf).unwrap();
@@ -865,7 +901,7 @@ mod tests {
             viewer.set_state(gst::State::Null).unwrap();
             let ms: Vec<f64> = lat
                 .iter()
-                .map(|(n, at)| at.saturating_duration_since(captured_at(*n)).as_secs_f64() * 1000.0)
+                .map(|(n, at)| at.saturating_duration_since(captured_at[*n as usize]).as_secs_f64() * 1000.0)
                 .collect();
             ms.iter().sum::<f64>() / ms.len().max(1) as f64
         };
@@ -885,23 +921,14 @@ mod tests {
         }
     }
 
-    /// Encode a test pattern like a host does, send it over a real TCP
-    /// connection in session frames, and decode it like the viewer does:
-    /// RGBA frames of the right size must come out.
-    #[test]
-    fn host_frames_decode_on_the_viewer() {
-        let _turn = crate::remote::heavy_test();
-        gst::init().unwrap();
-        if gst::ElementFactory::find("x264enc").is_none() || gst::ElementFactory::find("avdec_h264").is_none() {
-            eprintln!("x264enc/avdec_h264 missing; skipping");
-            return;
-        }
-        let pipeline = gst::parse::launch(
-            "videotestsrc num-buffers=75 ! video/x-raw,width=320,height=240,framerate=30/1 ! videoconvert \
+    /// `count` H.264 access units of a 320x240 test pattern, a keyframe every 10.
+    fn h264_units(count: u32) -> Vec<Vec<u8>> {
+        let pipeline = gst::parse::launch(&format!(
+            "videotestsrc num-buffers={count} ! video/x-raw,width=320,height=240,framerate=30/1 ! videoconvert \
              ! video/x-raw,format=I420 ! x264enc tune=zerolatency speed-preset=ultrafast key-int-max=10 \
              ! h264parse config-interval=-1 ! video/x-h264,stream-format=byte-stream,alignment=au \
-             ! appsink name=sink sync=false",
-        )
+             ! appsink name=sink sync=false"
+        ))
         .unwrap()
         .downcast::<gst::Pipeline>()
         .unwrap();
@@ -912,6 +939,162 @@ mod tests {
             units.push(s.buffer().unwrap().map_readable().unwrap().as_slice().to_vec());
         }
         pipeline.set_state(gst::State::Null).unwrap();
+        units
+    }
+
+    fn h264_available() -> bool {
+        gst::init().unwrap();
+        let available = gst::ElementFactory::find("x264enc").is_some() && gst::ElementFactory::find("avdec_h264").is_some();
+        if !available {
+            // allow-noisy-log: a test run must say this test was skipped, not passed.
+            eprintln!("x264enc/avdec_h264 missing; skipping");
+        }
+        available
+    }
+
+    /// A decoder that stops taking frames must stall the reader (so TCP backs
+    /// up to the host) instead of queuing every frame that arrives.
+    #[test]
+    fn a_stalled_decoder_blocks_the_reader() {
+        let _turn = crate::remote::heavy_test();
+        if !h264_available() {
+            return;
+        }
+        let units = h264_units(40);
+        let pipeline = gst::parse::launch(&decode_desc(decoder())).unwrap().downcast::<gst::Pipeline>().unwrap();
+        let src = pipeline.by_name("src").unwrap().downcast::<gstreamer_app::AppSrc>().unwrap();
+        let sink = pipeline.by_name("sink").unwrap().downcast::<gstreamer_app::AppSink>().unwrap();
+        let (open_gate, gate) = mpsc::channel::<()>();
+        let gate = std::sync::Mutex::new(gate);
+        sink.set_callbacks(
+            gstreamer_app::AppSinkCallbacks::builder()
+                .new_sample(move |sink| {
+                    let _ = sink.pull_sample();
+                    let _ = gate.lock().unwrap().recv();
+                    Ok(gst::FlowSuccess::Ok)
+                })
+                .build(),
+        );
+        pipeline.set_state(gst::State::Playing).unwrap();
+        let pushed = Arc::new(AtomicU64::new(0));
+        let pusher = {
+            let (src, pushed, total) = (src.clone(), pushed.clone(), units.len());
+            std::thread::spawn(move || {
+                for (n, u) in units.into_iter().enumerate() {
+                    let mut buf = gst::Buffer::from_slice(u);
+                    buf.get_mut().unwrap().set_pts(gst::ClockTime::from_mseconds(n as u64 * 33));
+                    if src.push_buffer(buf).is_err() {
+                        break;
+                    }
+                    pushed.fetch_add(1, Ordering::Relaxed);
+                }
+                total
+            })
+        };
+        std::thread::sleep(Duration::from_secs(1));
+        let queued = pushed.load(Ordering::Relaxed);
+        drop(open_gate);
+        let total = pusher.join().unwrap();
+        pipeline.set_state(gst::State::Null).unwrap();
+        assert!(queued < 10, "{queued} of {total} frames pushed into a stalled decoder");
+    }
+
+    /// A burst of sound after a stall keeps only the newest 60 ms waiting.
+    #[test]
+    fn late_sound_keeps_only_60_ms() {
+        gst::init().unwrap();
+        if gst::ElementFactory::find("opusenc").is_none() {
+            // allow-noisy-log: a test run must say this test was skipped, not passed.
+            eprintln!("opusenc missing; skipping");
+            return;
+        }
+        let enc = gst::parse::launch(
+            "audiotestsrc num-buffers=50 samplesperbuffer=480 ! audio/x-raw,rate=48000,channels=2 \
+             ! opusenc frame-size=10 ! appsink name=sink sync=false",
+        )
+        .unwrap()
+        .downcast::<gst::Pipeline>()
+        .unwrap();
+        let sink = enc.by_name("sink").unwrap().downcast::<gstreamer_app::AppSink>().unwrap();
+        enc.set_state(gst::State::Playing).unwrap();
+        let mut packets = Vec::new();
+        while let Some(s) = sink.try_pull_sample(gst::ClockTime::from_seconds(5)) {
+            packets.push(s.buffer().unwrap().map_readable().unwrap().as_slice().to_vec());
+        }
+        enc.set_state(gst::State::Null).unwrap();
+        assert!(packets.len() >= 40, "encoder produced {} packets", packets.len());
+
+        let desc = AUDIO_OUT_DESC.replace("autoaudiosink name=out", "appsink name=out");
+        assert_ne!(desc, AUDIO_OUT_DESC);
+        let out = start_audio(&desc).unwrap();
+        let stalled = out.pipeline.by_name("out").unwrap().downcast::<gstreamer_app::AppSink>().unwrap();
+        let (open_gate, gate) = mpsc::channel::<()>();
+        let gate = std::sync::Mutex::new(gate);
+        stalled.set_callbacks(
+            gstreamer_app::AppSinkCallbacks::builder()
+                .new_sample(move |sink| {
+                    let _ = sink.pull_sample();
+                    let _ = gate.lock().unwrap().recv();
+                    Ok(gst::FlowSuccess::Ok)
+                })
+                .build(),
+        );
+        for p in &packets {
+            out.src.push_buffer(gst::Buffer::from_slice(p.clone())).unwrap();
+        }
+        std::thread::sleep(Duration::from_millis(200));
+        let waiting = out.src.property::<u64>("current-level-buffers");
+        drop(open_gate);
+        drop(out);
+        assert!(waiting <= 6, "{waiting} of {} packets waiting to play", packets.len());
+    }
+
+    /// Closing the window ends the reader even while the host keeps sending
+    /// and the reader is blocked on a full decoder.
+    #[test]
+    fn closed_window_ends_blocked_reader() {
+        let _turn = crate::remote::heavy_test();
+        if !h264_available() {
+            return;
+        }
+        let units = h264_units(30);
+        let listener = TcpListener::bind("127.0.0.1:0").unwrap();
+        let addr = listener.local_addr().unwrap();
+        std::thread::spawn(move || {
+            let (mut s, _) = listener.accept().unwrap();
+            let info = serde_json::to_vec(&VideoInfo { width: 320, height: 240, chroma: None }).unwrap();
+            write_frame(&mut s, Kind::Info, &info).unwrap();
+            for u in units.iter().cycle() {
+                if write_frame(&mut s, Kind::Video, u).is_err() {
+                    break;
+                }
+            }
+        });
+        let stream = TcpStream::connect(addr).unwrap();
+        let (tx, rx) = async_channel::bounded(4);
+        let (done_tx, done) = mpsc::channel();
+        std::thread::spawn(move || {
+            let _ = done_tx.send(decode_loop(BufReader::new(stream), &tx).is_ok());
+        });
+        while let Ok(ev) = rx.recv_blocking() {
+            if let Event::Frame(_) = ev {
+                break;
+            }
+        }
+        drop(rx);
+        assert_eq!(done.recv_timeout(Duration::from_secs(5)), Ok(true), "the reader did not end");
+    }
+
+    /// Encode a test pattern like a host does, send it over a real TCP
+    /// connection in session frames, and decode it like the viewer does:
+    /// RGBA frames of the right size must come out.
+    #[test]
+    fn host_frames_decode_on_the_viewer() {
+        let _turn = crate::remote::heavy_test();
+        if !h264_available() {
+            return;
+        }
+        let units = h264_units(75);
         assert!(units.len() >= 10, "encoder produced {} units", units.len());
 
         let listener = TcpListener::bind("127.0.0.1:0").unwrap();
@@ -921,11 +1104,14 @@ mod tests {
             let info = serde_json::to_vec(&VideoInfo { width: 320, height: 240, chroma: None }).unwrap();
             write_frame(&mut s, Kind::Info, &info).unwrap();
             // Protocol 2: each unit carries its capture time; paced like a
-            // live 30 fps source so the viewer reports stats.
+            // live 30 fps source so the viewer reports stats. The viewer
+            // hangs up once the test has seen enough.
             for u in units {
                 let mut payload = crate::remote::now_us().to_be_bytes().to_vec();
                 payload.extend_from_slice(&u);
-                write_frame(&mut s, Kind::VideoTs, &payload).unwrap();
+                if write_frame(&mut s, Kind::VideoTs, &payload).is_err() {
+                    break;
+                }
                 std::thread::sleep(Duration::from_millis(33));
             }
             // Give the decoder time to drain before the connection closes.

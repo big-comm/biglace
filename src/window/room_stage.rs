@@ -76,26 +76,28 @@ impl Tile {
         let _ = &self.name;
     }
 
-    /// New camera picture (and the speaking glow).
-    fn tick(&self) {
-        let speaking = room::level(&self.ip) > 0.06;
+    /// Show a new camera picture and the speaking glow; returns whether
+    /// they speak.
+    fn refresh(&self) -> bool {
+        let speaking = room::speaking(room::level(&self.ip));
         if speaking {
             self.root.add_css_class("speaking");
         } else {
             self.root.remove_css_class("speaking");
         }
         if !self.camera.get() {
-            return;
+            return speaking;
         }
-        let Some(f) = camera::frame(&self.ip) else { return };
+        let Some(f) = camera::frame(&self.ip) else { return speaking };
         if f.serial == self.serial.get() {
-            return;
+            return speaking;
         }
         self.serial.set(f.serial);
         let tex = gdk::MemoryTexture::new(f.width as i32, f.height as i32, gdk::MemoryFormat::R8g8b8a8, &f.data, f.stride);
         self.picture.set_paintable(Some(&tex));
         self.picture.set_visible(true);
         self.avatar.set_visible(false);
+        speaking
     }
 }
 
@@ -116,6 +118,8 @@ pub struct Stage {
     layout: Rc<Cell<Layout>>,
     /// Who's large in speaker view, and since when.
     speaker: Rc<RefCell<(String, std::time::Instant)>>,
+    /// A look is due once a voice may have gone silent without a word.
+    recheck: Rc<Cell<bool>>,
 }
 
 impl Stage {
@@ -152,20 +156,49 @@ impl Stage {
             tiles: Rc::default(),
             layout: Rc::new(Cell::new(Layout::Grid)),
             speaker: Rc::new(RefCell::new((String::new(), std::time::Instant::now()))),
+            recheck: Rc::default(),
         };
+        // Redrawn only when a picture or a voice changes.
         {
             let s = stage.clone();
-            stage.widget.add_tick_callback(move |_, _| {
-                for t in s.tiles.borrow().iter() {
-                    t.tick();
+            let changes = room::room_view_wakeups();
+            glib::spawn_future_local(async move {
+                while changes.recv().await.is_ok() {
+                    s.refresh();
                 }
-                if s.layout.get() == Layout::Speaker {
-                    s.follow_speaker();
-                }
+            });
+        }
+        stage.widget.connect_map(|_| room::room_view_changed());
+        #[cfg(debug_assertions)]
+        if room::preview() {
+            glib::timeout_add_local(std::time::Duration::from_millis(50), || {
+                room::room_view_changed();
                 glib::ControlFlow::Continue
             });
         }
         stage
+    }
+
+    fn refresh(&self) {
+        if !self.widget.is_mapped() {
+            return;
+        }
+        let mut speaking = false;
+        for t in self.tiles.borrow().iter() {
+            speaking |= t.refresh();
+        }
+        if self.layout.get() == Layout::Speaker {
+            self.follow_speaker();
+        }
+        // A voice that stops arriving sends no last level: look again once
+        // it would count as silence.
+        if speaking && !self.recheck.replace(true) {
+            let s = self.clone();
+            glib::timeout_add_local_once(std::time::Duration::from_micros(room::LEVEL_STALE_US), move || {
+                s.recheck.set(false);
+                s.refresh();
+            });
+        }
     }
 
     pub fn set_layout(&self, layout: Layout) {

@@ -1,6 +1,6 @@
 [package]
 name = "biglace"
-version = "1.54.0"
+version = "1.55.0"
 edition = "2021"
 authors = ["BigCommunity"]
 description = "Mesh VPN client with a graphical interface for Headscale/Tailscale"
@@ -68,6 +68,13 @@ x11rb = { version = "0.14", features = ["xtest", "damage", "xfixes"] }
 # Wayland hosts: screen and input through the desktop's remote-desktop portal.
 ashpd = { version = "0.14", default-features = false, features = ["async-io", "remote_desktop", "screencast", "global_shortcuts"] }
 zbus = { version = "5", default-features = false, features = ["async-io"] }
+# Portal input through libei (ConnectToEIS); the EIS server's keymap turns
+# the viewer's keysyms into the keycodes libei sends.
+reis = { version = "0.7", features = ["async-io"] }
+xkbcommon = { version = "0.9", default-features = false }
+futures-util = { version = "0.3", default-features = false, features = ["std"] }
+async-io = "2"
+rustix = { version = "1", default-features = false, features = ["time"] }
 
 [target.'cfg(target_os = "windows")'.dependencies]
 keyring = { version = "3", default-features = false, features = ["windows-native"] }

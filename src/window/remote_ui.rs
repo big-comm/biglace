@@ -527,6 +527,11 @@ fn open_viewer_as(ip: &str, name: &str, toast: &libadwaita::ToastOverlay, stage:
         );
         let (btn_control, control_state, live) = (btn_control.clone(), control_state.clone(), live.clone());
         let sized = Cell::new(false);
+        // Decoded → drawn by GTK, added to the latency shown: the last frame
+        // set and not drawn yet, and the (sum in ms, count) since the stats.
+        let undrawn: Rc<Cell<Option<std::time::Instant>>> = Rc::default();
+        let drawing: Rc<Cell<(f64, u32)>> = Rc::default();
+        let measuring = Cell::new(false);
         glib::spawn_future_local(async move {
             // Set while waiting for a restarted computer to come back.
             let mut back_since: Option<std::time::Instant> = None;
@@ -648,9 +653,11 @@ fn open_viewer_as(ip: &str, name: &str, toast: &libadwaita::ToastOverlay, stage:
                             }
                         }
                         client::Event::Stats(st) => {
+                            let (drawn_ms, drawn) = drawing.replace((0.0, 0));
+                            let draw_ms = if drawn > 0 { drawn_ms / f64::from(drawn) } else { 0.0 };
                             let mut line = trf!(
                                 "{latency} ms · {fps} fps · {mbps} Mbit/s",
-                                "latency" => format!("{:.0}", st.latency_ms.max(0.0)),
+                                "latency" => format!("{:.0}", (st.latency_ms + draw_ms).max(0.0)),
                                 "fps" => format!("{:.0}", st.fps),
                                 "mbps" => format!("{:.1}", st.mbps)
                             );
@@ -670,6 +677,19 @@ fn open_viewer_as(ip: &str, name: &str, toast: &libadwaita::ToastOverlay, stage:
                                 f.stride,
                             );
                             picture.set_paintable(Some(&tex));
+                            undrawn.set(Some(f.decoded_at));
+                            if !measuring.get() {
+                                if let Some(clock) = picture.frame_clock() {
+                                    measuring.set(true);
+                                    let (undrawn, drawing) = (undrawn.clone(), drawing.clone());
+                                    clock.connect_after_paint(move |_| {
+                                        if let Some(at) = undrawn.take() {
+                                            let (sum, n) = drawing.get();
+                                            drawing.set((sum + at.elapsed().as_secs_f64() * 1000.0, n + 1));
+                                        }
+                                    });
+                                }
+                            }
                         }
                         client::Event::ViewOnly => btn_control.set_visible(false),
                         client::Event::Control(granted) => {

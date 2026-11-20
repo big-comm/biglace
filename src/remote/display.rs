@@ -4,7 +4,7 @@
 //!
 //! One monitor only — with several, their arrangement is the person's, not
 //! ours to change. Through the desktop's own tool: `xrandr` (X11),
-//! `kscreen-doctor` (KDE), `gdctl` (GNOME).
+//! `kscreen-doctor` (KDE), `gdctl` (GNOME), `big-screens` (big-compositor).
 
 use std::process::Command;
 
@@ -21,6 +21,7 @@ enum Tool {
     Xrandr,
     Kscreen,
     Gdctl,
+    BigScreens,
 }
 
 /// The one screen, its modes and the current one.
@@ -30,6 +31,8 @@ pub struct Screen {
     output: String,
     /// GNOME: the logical monitor's scale, kept as it is.
     scale: Option<String>,
+    /// big-screens: the current mode is not one the screen lists (a custom mode).
+    current_unlisted: bool,
     pub modes: Vec<Mode>,
     pub current: Option<Mode>,
 }
@@ -41,6 +44,9 @@ fn has(cmd: &str) -> bool {
 fn tool() -> Option<Tool> {
     let wayland = super::wayland_session();
     let desktop = std::env::var("XDG_CURRENT_DESKTOP").unwrap_or_default().to_lowercase();
+    if desktop.contains("big-compositor") && has("big-screens") {
+        return Some(Tool::BigScreens);
+    }
     if !wayland {
         return has("xrandr").then_some(Tool::Xrandr);
     }
@@ -58,9 +64,20 @@ pub fn available() -> bool {
     tool().is_some()
 }
 
+/// Runs a display tool for at most five seconds: its stdout, or why it failed.
+fn run(cmd: &mut Command) -> Result<String, String> {
+    let program = cmd.get_program().to_string_lossy().into_owned();
+    let out = crate::tailscale::command_output_timeout(cmd, std::time::Duration::from_secs(5)).map_err(|e| format!("{program}: {e}"))?;
+    if out.status.success() {
+        Ok(String::from_utf8_lossy(&out.stdout).into_owned())
+    } else {
+        Err(format!("{program}: {} ({})", String::from_utf8_lossy(&out.stderr).trim(), out.status))
+    }
+}
+
+/// `run`, for a query whose failure means "unknown"; the reason goes to the log.
 fn output(cmd: &mut Command) -> Option<String> {
-    let out = cmd.output().ok()?;
-    out.status.success().then(|| String::from_utf8_lossy(&out.stdout).into_owned())
+    run(cmd).map_err(|e| crate::tailscale::dbg(&format!("display: {e}"))).ok()
 }
 
 fn parse_size(s: &str) -> Option<(u32, u32)> {
@@ -83,7 +100,7 @@ fn parse_xrandr(text: &str) -> Option<Screen> {
             let rest: Vec<&str> = words.collect();
             // "connected [primary] 1280x800+0+0 …": active when it has a geometry.
             if rest.first() == Some(&"connected") && rest.iter().any(|w| w.contains('+') && w.contains('x')) {
-                cur = Some(Screen { tool: Tool::Xrandr, output: name.to_string(), scale: None, modes: vec![], current: None });
+                cur = Some(Screen { tool: Tool::Xrandr, output: name.to_string(), scale: None, current_unlisted: false, modes: vec![], current: None });
             }
             continue;
         }
@@ -133,6 +150,7 @@ fn parse_kscreen(json: &str) -> Option<Screen> {
         tool: Tool::Kscreen,
         output: o.get("name")?.as_str()?.to_string(),
         scale: None,
+        current_unlisted: false,
         modes,
         current,
     })
@@ -152,7 +170,7 @@ fn parse_gdctl(text: &str) -> Option<Screen> {
         if let Some(rest) = line.strip_prefix("Monitor ") {
             if section != "logical" {
                 let name = rest.split_whitespace().next().unwrap_or_default().to_string();
-                monitors.push(Screen { tool: Tool::Gdctl, output: name, scale: None, modes: vec![], current: None });
+                monitors.push(Screen { tool: Tool::Gdctl, output: name, scale: None, current_unlisted: false, modes: vec![], current: None });
             }
             section = "monitor";
             continue;
@@ -196,6 +214,58 @@ fn parse_gdctl(text: &str) -> Option<Screen> {
     Some(s)
 }
 
+/// `big-screens list --json` → the single enabled output. Listed modes are
+/// named by size, which `set --mode` takes at its highest refresh; the
+/// current one keeps its refresh so that restoring it is exact.
+fn parse_big_screens(json: &str) -> Option<Screen> {
+    let v: serde_json::Value = serde_json::from_str(json).ok()?;
+    let enabled: Vec<&serde_json::Value> = v
+        .get("outputs")?
+        .as_array()?
+        .iter()
+        .filter(|o| o.get("enabled").and_then(serde_json::Value::as_bool) == Some(true))
+        .collect();
+    let [o] = enabled.as_slice() else { return None };
+    let size = |m: &serde_json::Value| -> Option<(u32, u32)> {
+        let width = u32::try_from(m.get("width")?.as_u64()?).ok()?;
+        let height = u32::try_from(m.get("height")?.as_u64()?).ok()?;
+        Some((width, height))
+    };
+    let refresh = |m: &serde_json::Value| m.get("refresh_mhz").and_then(serde_json::Value::as_u64);
+    let listed = o.get("modes")?.as_array()?;
+    let mut modes: Vec<Mode> = Vec::new();
+    for m in listed {
+        let (width, height) = size(m)?;
+        if !modes.iter().any(|m| m.width == width && m.height == height) {
+            modes.push(Mode { width, height, id: format!("{width}x{height}") });
+        }
+    }
+    let mut current_unlisted = false;
+    let current = match o.get("current_mode") {
+        Some(m) if !m.is_null() => {
+            let (width, height) = size(m)?;
+            let mhz = refresh(m)?;
+            current_unlisted = !listed.iter().any(|l| size(l) == Some((width, height)) && refresh(l) == Some(mhz));
+            Some(Mode { width, height, id: format!("{width}x{height}@{}.{:03}", mhz / 1000, mhz % 1000) })
+        }
+        _ => None,
+    };
+    // A leading dash would make big-screens read the name as an option.
+    let output = o.get("name")?.as_str().filter(|n| !n.starts_with('-'))?.to_string();
+    Some(Screen { tool: Tool::BigScreens, output, scale: None, current_unlisted, modes, current })
+}
+
+/// `--custom-mode` to set back a current mode the screen does not list.
+fn big_screens_mode_option(screen: &Screen, mode: &Mode) -> &'static str {
+    if screen.current_unlisted && screen.current.as_ref() == Some(mode) { "--custom-mode" } else { "--mode" }
+}
+
+/// `option` is `--mode` (a listed mode) or `--custom-mode`. Never
+/// `--persistent`: the change lasts for this session only.
+fn big_screens_set(output: &str, option: &str, mode: &str) -> Result<(), String> {
+    run(Command::new("big-screens").args(["set", output, option, mode])).map(drop)
+}
+
 /// The screen as it is now (None: no tool, several monitors…).
 pub fn query() -> Option<Screen> {
     match tool()? {
@@ -211,6 +281,7 @@ pub fn query() -> Option<Screen> {
             }
             Some(screen)
         }
+        Tool::BigScreens => parse_big_screens(&output(Command::new("big-screens").args(["list", "--json"]))?),
     }
 }
 
@@ -227,6 +298,7 @@ pub fn pick(modes: &[Mode], width: u32, height: u32) -> Option<&Mode> {
 
 pub fn apply(screen: &Screen, mode: &Mode) -> Result<(), String> {
     let mut cmd = match screen.tool {
+        Tool::BigScreens => return big_screens_set(&screen.output, big_screens_mode_option(screen, mode), &mode.id),
         Tool::Xrandr => {
             let mut c = Command::new("xrandr");
             c.args(["--output", &screen.output, "--mode", &mode.id]);
@@ -246,33 +318,32 @@ pub fn apply(screen: &Screen, mode: &Mode) -> Result<(), String> {
             c
         }
     };
-    let out = cmd.output().map_err(|e| e.to_string())?;
-    if out.status.success() {
-        Ok(())
-    } else {
-        Err(String::from_utf8_lossy(&out.stderr).trim().to_string())
-    }
+    run(&mut cmd).map(drop)
 }
 
 /// X11: a mode made to measure (`cvt`), for screens that list few modes
 /// (virtual ones list just one). The name, once added to the output.
-fn xrandr_custom(output: &str, width: u32, height: u32) -> Option<String> {
+fn xrandr_custom(output: &str, width: u32, height: u32) -> Result<String, String> {
     // Widths are kept to multiples of 8 (what drivers expect).
     let width = (width / 8) * 8;
-    let line = std::process::Command::new("cvt").args([width.to_string(), height.to_string(), "60".into()]).output().ok()?;
-    let text = String::from_utf8_lossy(&line.stdout).into_owned();
-    let modeline = text.lines().find_map(|l| l.trim().strip_prefix("Modeline "))?.to_string();
+    let text = run(Command::new("cvt").args([width.to_string(), height.to_string(), "60".into()]))?;
+    let modeline = text.lines().find_map(|l| l.trim().strip_prefix("Modeline ")).ok_or("cvt: no modeline")?;
     let mut parts = modeline.split_whitespace();
-    let name = parts.next()?.trim_matches('"').to_string();
-    let timings: Vec<String> = parts.map(str::to_string).collect();
-    let _ = std::process::Command::new("xrandr").arg("--newmode").arg(&name).args(&timings).output();
-    let added = std::process::Command::new("xrandr").args(["--addmode", output, &name]).output().ok()?;
-    added.status.success().then_some(name)
+    let name = parts.next().ok_or("cvt: empty modeline")?.trim_matches('"').to_string();
+    // A mode left from an earlier session is still there to add.
+    if let Err(e) = run(Command::new("xrandr").arg("--newmode").arg(&name).args(parts)) {
+        crate::tailscale::dbg(&format!("display: {e}"));
+    }
+    run(Command::new("xrandr").args(["--addmode", output, &name]))?;
+    Ok(name)
 }
 
 fn xrandr_forget(output: &str, name: &str) {
-    let _ = std::process::Command::new("xrandr").args(["--delmode", output, name]).output();
-    let _ = std::process::Command::new("xrandr").args(["--rmmode", name]).output();
+    for result in [run(Command::new("xrandr").args(["--delmode", output, name])), run(Command::new("xrandr").args(["--rmmode", name]))] {
+        if let Err(e) = result {
+            crate::tailscale::dbg(&format!("display: {e}"));
+        }
+    }
 }
 
 /// One session's resolution changes, undone at the end.
@@ -287,22 +358,42 @@ impl Fitter {
     /// Fit to a `width`×`height` window. True when the resolution changed.
     pub fn fit(&mut self, width: u32, height: u32) -> Result<bool, String> {
         let screen = query().ok_or("this screen's resolution can't be changed from here")?;
+        self.fit_screen(screen, width, height)
+    }
+
+    fn fit_screen(&mut self, screen: Screen, width: u32, height: u32) -> Result<bool, String> {
+        if screen.current.as_ref().is_some_and(|c| c.width == width && c.height == height) {
+            return Ok(false);
+        }
         let mode = pick(&screen.modes, width, height).ok_or("no screen modes")?.clone();
         if self.original.is_none() {
             if let Some(cur) = screen.current.clone() {
                 self.original = Some((screen.clone(), cur));
             }
         }
-        // X11 and nothing close to the window's size: try one made to measure.
+        // Nothing close to the window's size: try one made to measure.
         let area = |w: u32, h: u32| u64::from(w) * u64::from(h);
-        if screen.tool == Tool::Xrandr && area(mode.width, mode.height) * 100 < area(width, height) * 85 {
-            if let Some(name) = xrandr_custom(&screen.output, width, height) {
-                let custom = Mode { width: (width / 8) * 8, height, id: name.clone() };
-                if apply(&screen, &custom).is_ok() {
-                    self.made.push((screen.output.clone(), name));
-                    return Ok(true);
+        let far = area(mode.width, mode.height) * 100 < area(width, height) * 85;
+        if far && screen.tool == Tool::BigScreens {
+            match big_screens_set(&screen.output, "--custom-mode", &format!("{width}x{height}")) {
+                Ok(()) => return Ok(true),
+                Err(e) => crate::tailscale::dbg(&format!("display: the made-to-measure mode failed: {e}")),
+            }
+        }
+        if far && screen.tool == Tool::Xrandr {
+            match xrandr_custom(&screen.output, width, height) {
+                Ok(name) => {
+                    let custom = Mode { width: (width / 8) * 8, height, id: name.clone() };
+                    match apply(&screen, &custom) {
+                        Ok(()) => {
+                            self.made.push((screen.output.clone(), name));
+                            return Ok(true);
+                        }
+                        Err(e) => crate::tailscale::dbg(&format!("display: the made-to-measure mode failed: {e}")),
+                    }
+                    xrandr_forget(&screen.output, &name);
                 }
-                xrandr_forget(&screen.output, &name);
+                Err(e) => crate::tailscale::dbg(&format!("display: no made-to-measure mode: {e}")),
             }
         }
         if screen.current.as_ref().is_some_and(|c| c.width == mode.width && c.height == mode.height) {
@@ -315,7 +406,7 @@ impl Fitter {
     /// Back to how it was. True when it changed.
     pub fn restore(&mut self) -> bool {
         let Some((screen, mode)) = self.original.take() else { return false };
-        let ok = apply(&screen, &mode).is_ok();
+        let ok = apply(&screen, &mode).map_err(|e| crate::tailscale::dbg(&format!("display: can't restore the resolution: {e}"))).is_ok();
         for (output, name) in self.made.drain(..) {
             xrandr_forget(&output, &name);
         }
@@ -332,6 +423,14 @@ impl Drop for Fitter {
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    #[test]
+    fn a_failing_tool_says_why() {
+        assert_eq!(run(Command::new("sh").args(["-c", "echo 1920x1080"])).as_deref(), Ok("1920x1080\n"));
+        let failed = run(Command::new("sh").args(["-c", "echo no such mode >&2; exit 3"])).unwrap_err();
+        assert!(failed.starts_with("sh: no such mode"), "{failed}");
+        assert!(run(&mut Command::new("biglace-no-such-tool")).is_err());
+    }
 
     const XRANDR: &str = "Screen 0: minimum 320 x 200, current 1280 x 800, maximum 8192 x 8192
 Virtual-1 connected primary 1280x800+0+0 0mm x 0mm
@@ -393,5 +492,77 @@ Logical monitors:
         assert_eq!(s.current.as_ref().map(|m| m.id.as_str()), Some("1280x800@74.994"));
         assert_eq!(s.scale.as_deref(), Some("1.0"));
         assert_eq!(pick(&s.modes, 1900, 1100).map(|m| m.id.as_str()), Some("1280x800@74.994"));
+    }
+
+    fn big_screens_output(name: &str, enabled: bool, current: &str) -> String {
+        format!(
+            r#"{{"name":"{name}","make":"Dell Inc.","model":"DELL U2419H","serial_number":"","enabled":{enabled},
+            "current_mode":{current},
+            "modes":[{{"width":1920,"height":1080,"refresh_mhz":60000,"preferred":true}},
+                     {{"width":1920,"height":1080,"refresh_mhz":50000,"preferred":false}},
+                     {{"width":1280,"height":720,"refresh_mhz":59940,"preferred":false}}],
+            "position":{{"x":0,"y":0}},"scale":1.0,"transform":"normal","adaptive_sync":null}}"#
+        )
+    }
+
+    const BIG_CURRENT: &str = r#"{"width":1280,"height":720,"refresh_mhz":59940,"preferred":false}"#;
+
+    #[test]
+    fn reads_big_screens_single_output() {
+        let json = format!(r#"{{"outputs":[{}]}}"#, big_screens_output("HDMI-A-1", true, BIG_CURRENT));
+        let s = parse_big_screens(&json).unwrap();
+        assert_eq!(s.output, "HDMI-A-1");
+        let ids: Vec<&str> = s.modes.iter().map(|m| m.id.as_str()).collect();
+        assert_eq!(ids, ["1920x1080", "1280x720"]);
+        assert_eq!(s.current, Some(Mode { width: 1280, height: 720, id: "1280x720@59.940".into() }));
+    }
+
+    #[test]
+    fn big_screens_needs_one_enabled_output() {
+        let on = big_screens_output("HDMI-A-1", true, BIG_CURRENT);
+        let also_on = big_screens_output("DP-1", true, BIG_CURRENT);
+        let off = big_screens_output("eDP-1", false, "null");
+        assert!(parse_big_screens(&format!(r#"{{"outputs":[{on},{also_on}]}}"#)).is_none());
+        let s = parse_big_screens(&format!(r#"{{"outputs":[{off},{on}]}}"#)).unwrap();
+        assert_eq!(s.output, "HDMI-A-1");
+        assert!(parse_big_screens(&format!(r#"{{"outputs":[{off}]}}"#)).is_none());
+    }
+
+    #[test]
+    fn big_screens_refuses_a_dash_name() {
+        let json = format!(r#"{{"outputs":[{}]}}"#, big_screens_output("--persistent", true, BIG_CURRENT));
+        assert!(parse_big_screens(&json).is_none());
+    }
+
+    #[test]
+    fn big_screens_null_current_mode() {
+        let json = format!(r#"{{"outputs":[{}]}}"#, big_screens_output("HDMI-A-1", true, "null"));
+        let s = parse_big_screens(&json).unwrap();
+        assert_eq!(s.current, None);
+        assert_eq!(s.modes.len(), 2);
+    }
+
+    #[test]
+    fn big_screens_keeps_fitting_custom_mode() {
+        let json = format!(r#"{{"outputs":[{}]}}"#, big_screens_output("HDMI-A-1", true, r#"{"width":1366,"height":700,"refresh_mhz":59990,"preferred":false}"#));
+        let screen = parse_big_screens(&json).unwrap();
+        let mut fitter = Fitter::default();
+        assert_eq!(fitter.fit_screen(screen, 1366, 700), Ok(false));
+        assert!(fitter.original.is_none());
+    }
+
+    #[test]
+    fn big_screens_restore_argv() {
+        let restore_args = |current: &str| {
+            let json = format!(r#"{{"outputs":[{}]}}"#, big_screens_output("HDMI-A-1", true, current));
+            let s = parse_big_screens(&json).unwrap();
+            let original = s.current.clone().unwrap();
+            (big_screens_mode_option(&s, &original), original.id)
+        };
+        assert_eq!(restore_args(BIG_CURRENT), ("--mode", "1280x720@59.940".into()));
+        let custom = r#"{"width":1366,"height":700,"refresh_mhz":59990,"preferred":false}"#;
+        assert_eq!(restore_args(custom), ("--custom-mode", "1366x700@59.990".into()));
+        let listed_size_other_refresh = r#"{"width":1280,"height":720,"refresh_mhz":75000,"preferred":false}"#;
+        assert_eq!(restore_args(listed_size_other_refresh), ("--custom-mode", "1280x720@75.000".into()));
     }
 }

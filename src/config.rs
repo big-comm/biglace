@@ -5,7 +5,10 @@ use std::{collections::HashMap, fs, path::PathBuf};
 #[derive(Debug, Clone, Default, Serialize, Deserialize)]
 pub struct Config {
     pub server_url: String,
-    /// Loaded from the OS keyring; never serialized to TOML.
+    /// A key entered in this session, or a legacy plaintext key being migrated;
+    /// stored in the OS keyring and never serialized. [`load`] does not read the
+    /// keyring: [`crate::tailscale::connect`] does, only when the device has to
+    /// register.
     #[serde(default, skip_serializing)]
     pub authkey: String,
     pub auto_connect: bool,
@@ -14,6 +17,12 @@ pub struct Config {
     /// durable reconnect marker even when no enrollment key is available.
     #[serde(default)]
     pub enrolled: bool,
+
+    /// A key was saved and has not registered this device yet: the next
+    /// connect registers with it instead of resuming the registration
+    /// tailscaled may still hold for another account or server.
+    #[serde(default)]
+    pub pending_key: bool,
 
     /// Tailscale hostname for this device — the BigScale account identifier
     /// (e.g. `tales`), which becomes the device's DNS name (`tales.bigscale.net`).
@@ -178,12 +187,6 @@ pub fn load() -> Config {
                         Err(e) => eprintln!("[biglace] secrets: authkey migration failed: {e}"),
                     }
                 }
-            } else if !cfg.enrolled {
-                // Needed to register: read it now. Once registered it's only a
-                // fallback, read when a connection really needs it (see
-                // tailscale::connect): a locked keyring — automatic sign-in —
-                // would otherwise hold up the app or prompt for nothing.
-                cfg.authkey = crate::secrets::load_authkey(&cfg.server_url).unwrap_or_default();
             }
             cfg
         }
@@ -355,6 +358,72 @@ mod tests {
         assert!(warning.is_some(), "the unstored key must be reported");
         assert!(dir.join("biglace/config.toml").exists());
 
+        let _ = fs::remove_dir_all(&dir);
+    }
+
+    /// The load runs at login, while the keyring may still be locked, so it
+    /// must not touch it; a child process keeps other tests off the fake bus.
+    #[cfg(target_os = "linux")]
+    #[test]
+    fn loading_leaves_the_keyring_alone() {
+        use std::io::Read;
+        use std::os::unix::net::UnixListener;
+        use std::process::{Command, Stdio};
+
+        const CHILD: &str = "BIGLACE_TEST_LOAD_CHILD";
+        if let Some(expected) = std::env::var_os(CHILD) {
+            let loaded = load();
+            assert_eq!(loaded.enrolled, expected == "enrolled");
+            assert!(loaded.authkey.is_empty());
+            return;
+        }
+
+        let (_guard, dir) = isolated_env("lazykey");
+        for enrolled in [true, false] {
+            let cfg = Config {
+                server_url: "https://vpn.example.org".into(),
+                enrolled,
+                ..Config::default()
+            };
+            save(&cfg).expect("config saved");
+            // A bus that never answers: a keyring lookup would connect to it and
+            // wait, so the test watches the socket while the child loads.
+            let bus = dir.join("session-bus");
+            let _ = fs::remove_file(&bus);
+            let listener = UnixListener::bind(&bus).expect("fake session bus");
+            listener.set_nonblocking(true).unwrap();
+            let mut child = Command::new(std::env::current_exe().unwrap())
+                .args(["--exact", "config::tests::loading_leaves_the_keyring_alone", "--test-threads=1"])
+                .env(CHILD, if enrolled { "enrolled" } else { "not enrolled" })
+                .env("DBUS_SESSION_BUS_ADDRESS", format!("unix:path={}", bus.display()))
+                .stdout(Stdio::piped())
+                .stderr(Stdio::null())
+                .spawn()
+                .expect("test child started");
+
+            let deadline = std::time::Instant::now() + std::time::Duration::from_secs(5);
+            let mut connected = false;
+            let status = loop {
+                if listener.accept().is_ok() {
+                    connected = true;
+                }
+                if let Some(status) = child.try_wait().unwrap() {
+                    break status;
+                }
+                if std::time::Instant::now() > deadline {
+                    let _ = child.kill();
+                    break child.wait().unwrap();
+                }
+                std::thread::sleep(std::time::Duration::from_millis(10));
+            };
+            connected |= listener.accept().is_ok();
+            let mut report = String::new();
+            child.stdout.take().unwrap().read_to_string(&mut report).unwrap();
+            assert!(!connected, "loading the config (enrolled: {enrolled}) connected to the session bus");
+            assert!(status.success(), "the load failed in the child (enrolled: {enrolled}): {status}");
+            // An `--exact` name that matches nothing also exits 0.
+            assert!(report.contains("test result: ok. 1 passed"), "the child ran no test: {report}");
+        }
         let _ = fs::remove_dir_all(&dir);
     }
 

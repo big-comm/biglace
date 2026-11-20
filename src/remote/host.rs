@@ -12,6 +12,10 @@ use super::{emit, read_frame, write_frame, ConsentRequest, HostEvent, HostSessio
 use crate::device_key;
 use crate::tailscale::{self, Identity};
 
+mod encoder;
+
+pub(crate) use encoder::{Encoder, RateMode};
+
 /// Signed requests must be this fresh (either way, for clock skew).
 const SKEW: Duration = Duration::from_secs(120);
 /// How long the person at the screen has to answer.
@@ -306,6 +310,16 @@ impl InputSink {
         Self { out: SinkOut::Portal { tx, handled, sent: 0 }, keys: Default::default(), buttons: Default::default() }
     }
 
+    /// The portal ended its session by itself, its input lost.
+    pub(crate) fn portal_closed(&self) -> bool {
+        match &self.out {
+            #[cfg(target_os = "linux")]
+            SinkOut::X11(_) => false,
+            #[cfg(target_os = "linux")]
+            SinkOut::Portal { tx, .. } => tx.is_closed(),
+        }
+    }
+
     /// Wait (a little) until the compositor got everything sent so far.
     fn flush(&self) {
         #[cfg(target_os = "linux")]
@@ -379,7 +393,10 @@ impl InputSink {
         for button in buttons {
             self.send(Input::Button { button, pressed: false });
         }
-        self.flush();
+        // A closed portal answers nothing, so waiting would only hold the lock.
+        if !self.portal_closed() {
+            self.flush();
+        }
     }
 }
 
@@ -424,10 +441,13 @@ pub(crate) struct Source {
     /// Full pipeline descriptions to try, best first (see `stream_screen`).
     pub(crate) pipelines: Vec<String>,
     /// X11: raised by XDamage when the screen changed (None = always send).
-    pub(crate) dirty: Option<Arc<AtomicBool>>,
+    pub(crate) dirty: Option<Arc<Damage>>,
     pub(crate) sink: InputSink,
     #[cfg(target_os = "linux")]
     pub(crate) _fd: Option<std::os::fd::OwnedFd>,
+    /// X11: the XDamage thread raising `dirty`, stopped with this source.
+    #[cfg(target_os = "linux")]
+    pub(crate) _damage: Option<super::damage_x11::Watch>,
 }
 
 // What follows each source, up to raw video the encoder chain takes. Every
@@ -470,22 +490,33 @@ thread_local! {
 /// Zero-copy Wayland pipeline: the compositor's frames stay in GPU memory
 /// (DMA-BUF), the GPU converts them (vapostproc) and encodes them
 /// (vah264enc) — no readback, no CPU conversion. What gnome-remote-desktop
-/// does on GPUs; None when this machine has no VA-API encoder.
+/// does on GPUs; None when this machine has no working VA-API encoder.
 #[cfg(target_os = "linux")]
-fn wayland_zero_copy(fd: i32, node: u32) -> Option<String> {
+fn wayland_zero_copy(capture: &str, rate: RateMode) -> Option<String> {
     use gstreamer as gst;
-    let (enc, _) = encoder().filter(|(e, _)| e.starts_with("vah264enc"))?;
+    let enc = encoder::usable().iter().find(|e| **e == Encoder::VaH264)?.description(rate);
     gst::ElementFactory::find("vapostproc")?;
     Some(format!(
-        "pipewiresrc name=capture fd={fd} path={node} do-timestamp=true keepalive-time=1000 \
-         ! video/x-raw(memory:DMABuf) ! vapostproc \
+        "{capture} ! video/x-raw(memory:DMABuf) ! vapostproc \
          ! video/x-raw(memory:VAMemory),format=NV12 ! {}",
-        encode_tail(enc)
+        encode_tail(&enc)
     ))
 }
 
+/// `pipewiresrc` on the stream the portal shared, by its serial where the
+/// portal gives one: a node id can be handed to another producer.
 #[cfg(target_os = "linux")]
-pub(crate) fn open_source(stop: &StopHandle, want: Pointer) -> anyhow::Result<Source> {
+fn pipewire_capture(fd: i32, node: u32, serial: Option<u64>) -> String {
+    let target = match serial {
+        Some(serial) => format!("target-object={serial}"),
+        None => format!("path={node}"),
+    };
+    // A closed screencast ends the stream (EOS) instead of leaving it silent.
+    format!("pipewiresrc name=capture fd={fd} {target} do-timestamp=true keepalive-time=1000 on-disconnect=eos")
+}
+
+#[cfg(target_os = "linux")]
+pub(crate) fn open_source(want: Pointer, rate: RateMode) -> anyhow::Result<Source> {
     use std::os::fd::AsRawFd;
     if super::wayland_session() {
         // Only a room's shared screen keeps the pointer in the video (the
@@ -494,65 +525,44 @@ pub(crate) fn open_source(stop: &StopHandle, want: Pointer) -> anyhow::Result<So
         // drawn in the video comes back late.
         let portal = super::portal::start(want == Pointer::Embedded)?;
         let pointer = if portal.cursor_embedded { Pointer::Embedded } else { Pointer::Local };
-        let (fd, node) = (portal.fd.as_raw_fd(), portal.node);
-        let enc = encoder().ok_or_else(|| anyhow::anyhow!("no H.264 encoder"))?;
+        let capture = pipewire_capture(portal.fd.as_raw_fd(), portal.node, portal.serial);
         // Copy path, for compositors or GPUs without DMA-BUF/VA-API.
-        let copy = pipeline_desc(
-            &format!(
-                "pipewiresrc name=capture fd={fd} path={node} do-timestamp=true keepalive-time=1000 always-copy=true \
-                 ! {WAYLAND_TAIL}"
-            ),
-            enc,
-        );
+        let copy = each_encoder(&format!("{capture} use-bufferpool=false ! {WAYLAND_TAIL}"), rate)?;
         Ok(Source {
             pointer,
-            pipelines: wayland_zero_copy(fd, node).into_iter().chain([copy]).collect(),
+            pipelines: wayland_zero_copy(&capture, rate).into_iter().chain(copy).collect(),
             dirty: None,
             sink: InputSink::portal(portal.input, portal.handled),
             _fd: Some(portal.fd),
+            _damage: None,
         })
     } else {
         let embedded = want == Pointer::Embedded;
-        let dirty = Arc::new(AtomicBool::new(true));
-        let watching = super::damage_x11::watch(dirty.clone(), stop.flag.clone(), embedded);
-        let enc = encoder().ok_or_else(|| anyhow::anyhow!("no H.264 encoder"))?;
+        let dirty = Arc::new(Damage::default());
+        dirty.raise();
+        // Usually the viewer draws the pointer itself (no video delay on
+        // it); a room share shows the presenter's in the frames.
+        let pipelines = each_encoder(&format!("ximagesrc name=capture use-damage=false show-pointer={embedded} ! {X11_TAIL}"), rate)?;
+        let watch = super::damage_x11::watch(dirty.clone(), want);
         Ok(Source {
             pointer: want,
-            dirty: watching.then_some(dirty),
-            // Usually the viewer draws the pointer itself (no video delay
-            // on it); a room share shows the presenter's in the frames.
-            pipelines: vec![pipeline_desc(
-                &format!("ximagesrc name=capture use-damage=false show-pointer={embedded} ! {X11_TAIL}"),
-                enc,
-            )],
+            dirty: watch.is_some().then_some(dirty),
+            pipelines,
             sink: InputSink::x11(super::input_x11::Injector::connect().map(Box::new)),
             _fd: None,
+            _damage: watch,
         })
     }
 }
 
 #[cfg(not(target_os = "linux"))]
-pub(crate) fn open_source(_stop: &StopHandle, _want: Pointer) -> anyhow::Result<Source> {
+pub(crate) fn open_source(_want: Pointer, _rate: RateMode) -> anyhow::Result<Source> {
     anyhow::bail!("screen sharing is not available on this system")
 }
 
-/// Kernel send buffer for the session: big enough for a keyframe in flight,
-/// small enough that a slow link backs up into the (leaky) queue before the
-/// encoder — frames are dropped there instead of piling up seconds of video.
-const SEND_BUFFER: usize = 512 * 1024;
-#[cfg(target_os = "linux")]
-const NOTSENT_LOWAT: u32 = 64 * 1024;
-
 fn run_session(mut stream: TcpStream, stop: &StopHandle, protocol: u32, identity: &Identity) {
     let timestamps = protocol >= 2;
-    {
-        let sock = socket2::SockRef::from(&stream);
-        let _ = sock.set_send_buffer_size(SEND_BUFFER);
-        // Only a little unsent data may sit in the kernel: the next frame
-        // waits (and older ones get dropped before the encoder) instead.
-        #[cfg(target_os = "linux")]
-        let _ = sock.set_tcp_notsent_lowat(NOTSENT_LOWAT);
-    }
+    super::limit_send_queue(&stream);
     let _ = stream.set_write_timeout(Some(WRITE_TIMEOUT));
     let _ = stream.set_read_timeout(None);
     let _ = stream.set_nodelay(true);
@@ -560,7 +570,7 @@ fn run_session(mut stream: TcpStream, stop: &StopHandle, protocol: u32, identity
     // Protocol 4 viewers learn the pointer's shape (X11) or get it in the
     // frames (Wayland).
     let want = if protocol >= 4 { Pointer::Shapes } else { Pointer::Local };
-    let source = match open_source(stop, want) {
+    let source = match open_source(want, RateMode::FollowsLink) {
         Ok(s) => s,
         Err(e) => {
             tailscale::dbg(&format!("remote: no screen source: {e}"));
@@ -575,7 +585,7 @@ fn run_session(mut stream: TcpStream, stop: &StopHandle, protocol: u32, identity
     };
     let Source { mut pipelines, sink, mut dirty, pointer, .. } = source;
     #[cfg(target_os = "linux")]
-    let mut keep_fd = source._fd;
+    let (mut keep_fd, mut keep_damage) = (source._fd, source._damage);
     // Shared: a new source (after a resolution change) brings a new one.
     let sink = Arc::new(Mutex::new(sink));
     if let Ok(mut l) = live_sinks().lock() {
@@ -645,7 +655,7 @@ fn run_session(mut stream: TcpStream, stop: &StopHandle, protocol: u32, identity
                             };
                             if changed {
                                 // Let the screen settle, then capture it anew.
-                                std::thread::sleep(Duration::from_millis(700));
+                                std::thread::sleep(SETTLE_AFTER_FIT);
                                 restart.store(true, Ordering::Release);
                             }
                         }
@@ -699,35 +709,66 @@ fn run_session(mut stream: TcpStream, stop: &StopHandle, protocol: u32, identity
         write_frame(&mut *w, kind, payload)?;
         Ok(())
     };
+    // Only a Wayland capture ends by itself, the one case that needs the size.
+    let screen_size = || {
+        if !super::wayland_session() {
+            return None;
+        }
+        super::display::query().and_then(|s| s.current).map(|m| (m.width, m.height))
+    };
+    let mut opened_at = screen_size();
+    let mut reopens = Vec::new();
     loop {
         match stream_screen(&send, &pipelines, dirty.clone(), stop, timestamps, &want_key, &restart) {
             Ok(true) => {}
             Ok(false) => break,
+            Err(e) if e.is::<CaptureEnded>() && !stop.stopped() => {
+                // GNOME ends the whole portal session, libei included, as soon as
+                // the viewer's fit changes the mode, before the fit raises
+                // `restart`; a reopen starts a new portal session.
+                let input_lost = sink.lock().is_ok_and(|s| s.portal_closed());
+                let refit = restart_follows(&restart);
+                let size = screen_size();
+                if !reopen_after_end(refit, opened_at, size, &mut reopens, Instant::now()) {
+                    // Without both sizes nothing tells the person's stop from a mode change.
+                    let why = if input_lost || (opened_at.is_some() && size.is_some()) {
+                        crate::tr!("sharing was stopped on that computer")
+                    } else {
+                        crate::tr!("the screen capture ended")
+                    };
+                    tailscale::dbg(&format!("remote: the capture ended (screen size {opened_at:?}, then {size:?}), not reopened"));
+                    let _ = send(Kind::Error, why.as_bytes());
+                    break;
+                }
+            }
             Err(e) => {
-                tailscale::dbg(&format!("remote: capture ended: {e}"));
+                tailscale::dbg(&format!("remote: capture failed: {e}"));
                 break;
             }
         }
-        // The resolution changed: open the screen again (the portal
-        // remembers the choice, nobody is asked).
-        tailscale::dbg("remote: screen size changed — opening the capture again");
+        // The resolution changed, here or on the viewer's request: open the
+        // screen again (the portal remembers the choice, nobody is asked).
+        tailscale::dbg("remote: the capture ended or the screen size changed, opening it again");
         #[cfg(target_os = "linux")]
         {
             if let Ok(mut s) = sink.lock() {
                 *s = InputSink::x11(None);
             }
             keep_fd = None;
+            keep_damage = None;
         }
-        match open_source(stop, want) {
+        match open_source(want, RateMode::FollowsLink) {
             Ok(fresh) => {
                 pipelines = fresh.pipelines;
                 dirty = fresh.dirty;
+                opened_at = screen_size();
                 if let Ok(mut s) = sink.lock() {
                     *s = fresh.sink;
                 }
                 #[cfg(target_os = "linux")]
                 {
                     keep_fd = fresh._fd;
+                    keep_damage = fresh._damage;
                 }
             }
             Err(e) => {
@@ -739,7 +780,7 @@ fn run_session(mut stream: TcpStream, stop: &StopHandle, protocol: u32, identity
     }
     // Dropping the sink ends the portal session too.
     #[cfg(target_os = "linux")]
-    drop(keep_fd);
+    drop((keep_fd, keep_damage));
 }
 
 /// The viewer asks to restart (and come back) or shut down this computer.
@@ -789,42 +830,23 @@ fn power_action(action: &str, viewer: &Identity, writer: &Arc<Mutex<TcpStream>>)
     }
 }
 
-/// H.264 encoder to use — hardware (VA-API) first, then software — and the
-/// raw format it takes. VA-API elements are only registered when a usable
-/// device exists, so finding the factory is enough.
+/// The best H.264 encoder that works here, as a 1:1 share sets it up, and
+/// the raw format it takes.
+#[cfg(test)]
 pub fn encoder() -> Option<(&'static str, &'static str)> {
-    use gstreamer as gst;
-    // Software encoding takes at most half the cores: the person at this
-    // computer keeps using it while it's being shared.
-    static X264: OnceLock<String> = OnceLock::new();
-    let x264: &'static str = X264.get_or_init(|| {
-        let threads = std::thread::available_parallelism().map_or(2, |n| (n.get() / 2).clamp(1, 4));
-        // Constant quality (CRF 20: crisp text) capped at 30 Mbit/s with a
-        // short VBV, full chroma (4:4:4 — colored text edges stay sharp,
-        // what RDP's AVC444 is for).
-        format!(
-            "x264enc tune=zerolatency speed-preset=ultrafast sliced-threads=true threads={threads} \
-             pass=qual quantizer=20 bitrate=30000 vbv-buf-capacity=100 key-int-max=120 bframes=0 b-adapt=false"
-        )
-    });
-    for (name, desc, format) in [
-        // Low-latency settings (GStreamer docs): no B-frames, one reference,
-        // fastest preset, a CPB of ~2 frames, slices so the viewer's decoder
-        // can work on one frame in parallel.
-        // Hardware: constant quality too (4:2:0 only on VA-API).
-        (
-            "vah264enc",
-            "vah264enc rate-control=cqp qpi=20 qpp=22 key-int-max=120 b-frames=0 ref-frames=1 target-usage=4 num-slices=4",
-            "NV12",
-        ),
-        ("x264enc", x264, "Y444"),
-        ("openh264enc", "openh264enc bitrate=6000000 gop-size=60 complexity=low", "I420"),
-    ] {
-        if gst::ElementFactory::find(name).is_some() {
-            return Some((desc, format));
-        }
+    static BEST: OnceLock<Option<(String, &str)>> = OnceLock::new();
+    let best = BEST.get_or_init(|| encoder::usable().first().map(|e| (e.description(RateMode::FollowsLink), e.format())));
+    best.as_ref().map(|(desc, format)| (desc.as_str(), *format))
+}
+
+/// `head` into each encoder that works here, best first: one that refuses
+/// this capture gives way to the next.
+fn each_encoder(head: &str, rate: RateMode) -> anyhow::Result<Vec<String>> {
+    let pipelines: Vec<String> = encoder::usable().iter().map(|e| pipeline_desc(head, (&e.description(rate), e.format()))).collect();
+    if pipelines.is_empty() {
+        anyhow::bail!("no H.264 encoder");
     }
-    None
+    Ok(pipelines)
 }
 
 /// What plays on this computer (the default output's monitor), as Opus:
@@ -891,7 +913,7 @@ pub(crate) fn stream_audio_to(send: &dyn Fn(&[u8]) -> anyhow::Result<()>, stop: 
 /// (within a few seconds), with that frame. Errors leave nothing running.
 fn start_pipeline(
     desc: &str,
-    dirty: Option<Arc<AtomicBool>>,
+    dirty: Option<Arc<Damage>>,
 ) -> anyhow::Result<(gstreamer::Pipeline, gstreamer_app::AppSink, gstreamer::Sample)> {
     use gstreamer as gst;
     use gstreamer::prelude::*;
@@ -905,51 +927,114 @@ fn start_pipeline(
         .and_then(|e| e.downcast::<gst_app::AppSink>().ok())
         .ok_or_else(|| anyhow::anyhow!("no appsink"))?;
     stamp_and_gate(&pipeline, dirty);
+    match first_sample(&pipeline, &sink) {
+        Ok(sample) => Ok((pipeline, sink, sample)),
+        Err(e) => {
+            let _ = pipeline.set_state(gst::State::Null);
+            Err(e)
+        }
+    }
+}
+
+/// Plays `pipeline` until `sink`'s first sample, giving up at the
+/// pipeline's first error instead of at the deadline.
+fn first_sample(pipeline: &gstreamer::Pipeline, sink: &gstreamer_app::AppSink) -> anyhow::Result<gstreamer::Sample> {
+    use gstreamer as gst;
+    use gstreamer::prelude::*;
+    let bus = pipeline.bus().ok_or_else(|| anyhow::anyhow!("no bus"))?;
+    let error = || {
+        let msg = bus.pop_filtered(&[gst::MessageType::Error])?;
+        match msg.view() {
+            gst::MessageView::Error(e) => Some(anyhow::anyhow!("{}", e.error())),
+            _ => None,
+        }
+    };
     if pipeline.set_state(gst::State::Playing).is_err() {
-        let _ = pipeline.set_state(gst::State::Null);
-        anyhow::bail!("could not start");
+        return Err(error().unwrap_or_else(|| anyhow::anyhow!("could not start")));
     }
     let deadline = Instant::now() + FIRST_FRAME_WITHIN;
     while Instant::now() < deadline {
-        if let Some(sample) = sink.try_pull_sample(gst::ClockTime::from_mseconds(200)) {
-            return Ok((pipeline, sink, sample));
+        if let Some(sample) = sink.try_pull_sample(gst::ClockTime::from_mseconds(100)) {
+            return Ok(sample);
         }
-        if let Some(bus) = pipeline.bus() {
-            if let Some(msg) = bus.pop_filtered(&[gst::MessageType::Error]) {
-                let _ = pipeline.set_state(gst::State::Null);
-                if let gst::MessageView::Error(e) = msg.view() {
-                    anyhow::bail!("{}", e.error());
-                }
-                anyhow::bail!("pipeline error");
-            }
+        if let Some(e) = error() {
+            return Err(e);
         }
     }
-    let _ = pipeline.set_state(gst::State::Null);
-    anyhow::bail!("no frame within {:?}", FIRST_FRAME_WITHIN)
+    anyhow::bail!("no frame within {FIRST_FRAME_WITHIN:?}")
 }
 
 /// A pipeline that hasn't produced a frame by then is given up on.
 const FIRST_FRAME_WITHIN: Duration = Duration::from_secs(4);
 
+/// Raised by XDamage when the X11 screen changed; the capture waits on it.
+#[derive(Default)]
+pub(crate) struct Damage {
+    changed: Mutex<bool>,
+    wake: std::sync::Condvar,
+}
+
+impl Damage {
+    pub(crate) fn raise(&self) {
+        *self.changed.lock().unwrap_or_else(std::sync::PoisonError::into_inner) = true;
+        self.wake.notify_all();
+    }
+
+    fn take(&self) -> bool {
+        std::mem::take(&mut *self.changed.lock().unwrap_or_else(std::sync::PoisonError::into_inner))
+    }
+
+    /// Waits up to `timeout` for a change and leaves it raised.
+    fn wait(&self, timeout: Duration) -> bool {
+        let changed = self.changed.lock().unwrap_or_else(std::sync::PoisonError::into_inner);
+        let (changed, _) = self
+            .wake
+            .wait_timeout_while(changed, timeout, |changed| !*changed)
+            .unwrap_or_else(std::sync::PoisonError::into_inner);
+        *changed
+    }
+}
+
+/// Which X11 grabs go on to the encoder. It runs on the capture's streaming
+/// thread, so holding a frame back also holds back the next grab.
+struct Gate {
+    damage: Arc<Damage>,
+    last_sent: Instant,
+    /// The grab right after a change: a change raised during a grab may be
+    /// missing from it.
+    trailing: bool,
+}
+
+impl Gate {
+    fn admit(&mut self) -> bool {
+        if self.damage.take() {
+            self.trailing = true;
+        } else if self.trailing {
+            self.trailing = false;
+        } else if self.damage.wait(IDLE_FRAME_EVERY.saturating_sub(self.last_sent.elapsed())) {
+            // Taken before the change: the next grab has it.
+            return false;
+        }
+        self.last_sent = Instant::now();
+        true
+    }
+}
+
 /// Right after capture: stamp each frame with the moment it was really
 /// captured (a source that can't keep the requested rate — ximagesrc
 /// asked for 60 fps on a machine doing 25 — timestamps frames on a
-/// schedule that drifts further behind every second), and on X11 drop
-/// frames of an unchanged screen before they cost a conversion and an
-/// encode.
-fn stamp_and_gate(pipeline: &gstreamer::Pipeline, dirty: Option<Arc<AtomicBool>>) {
+/// schedule that drifts further behind every second), and on X11 wait for
+/// a change before the next grab.
+fn stamp_and_gate(pipeline: &gstreamer::Pipeline, dirty: Option<Arc<Damage>>) {
     use gstreamer as gst;
     use gstreamer::prelude::*;
     let Some(capture) = pipeline.by_name("capture") else { return };
     let Some(pad) = capture.static_pad("src") else { return };
-    let last = Mutex::new(Instant::now() - IDLE_FRAME_EVERY);
+    let gate = dirty.map(|damage| Mutex::new(Gate { damage, last_sent: Instant::now(), trailing: false }));
     let element = capture.downgrade();
     pad.add_probe(gst::PadProbeType::BUFFER, move |_, info| {
-        if let Some(dirty) = &dirty {
-            let mut last = last.lock().unwrap_or_else(|e| e.into_inner());
-            if dirty.swap(false, Ordering::AcqRel) || last.elapsed() >= IDLE_FRAME_EVERY {
-                *last = Instant::now();
-            } else {
+        if let Some(gate) = &gate {
+            if !gate.lock().unwrap_or_else(std::sync::PoisonError::into_inner).admit() {
                 return gst::PadProbeReturn::Drop;
             }
         }
@@ -965,13 +1050,70 @@ fn stamp_and_gate(pipeline: &gstreamer::Pipeline, dirty: Option<Arc<AtomicBool>>
 /// alive; everything else waits for a change.
 const IDLE_FRAME_EVERY: Duration = Duration::from_secs(1);
 
-/// Capture, encode and `send` the screen until `stop` — or until `restart`
-/// is raised (the screen's resolution changed): then true, for the caller
-/// to open the source again (GNOME ends its screencast on a mode change).
+/// Reopened captures per minute, a bound on a screen whose size keeps
+/// changing.
+const MAX_REOPENS_PER_MINUTE: usize = 10;
+
+/// Whether a capture that ended by itself opens again (`reopens`: when it
+/// did before). Only a viewer's fit (`refit`) or a new screen size tells
+/// GNOME's mode change from the person's stop, and both count: a viewer
+/// that keeps fitting must not outlast that stop.
+fn reopen_after_end(
+    refit: bool,
+    opened_at: Option<(u32, u32)>,
+    size: Option<(u32, u32)>,
+    reopens: &mut Vec<Instant>,
+    now: Instant,
+) -> bool {
+    reopens.retain(|at| now.duration_since(*at) < Duration::from_secs(60));
+    let resized = opened_at.is_some() && size.is_some() && opened_at != size;
+    let reopen = reopens.len() < MAX_REOPENS_PER_MINUTE && (refit || resized);
+    if reopen {
+        reopens.push(now);
+    }
+    reopen
+}
+
+/// How long a viewer's fit lets the new mode settle before it raises
+/// `restart`.
+const SETTLE_AFTER_FIT: Duration = Duration::from_millis(700);
+
+/// Whether `restart` is raised, or soon is, by a fit already under way;
+/// takes it when so.
+fn restart_follows(restart: &AtomicBool) -> bool {
+    let deadline = Instant::now() + SETTLE_AFTER_FIT * 2;
+    loop {
+        if restart.swap(false, Ordering::AcqRel) {
+            return true;
+        }
+        if Instant::now() >= deadline {
+            return false;
+        }
+        std::thread::sleep(Duration::from_millis(50));
+    }
+}
+
+/// The capture ended by itself: the person stopped sharing, or GNOME closed
+/// its screencast on a resolution change.
+#[derive(Debug)]
+pub(crate) struct CaptureEnded;
+
+impl std::fmt::Display for CaptureEnded {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        f.write_str("capture stopped")
+    }
+}
+
+impl std::error::Error for CaptureEnded {}
+
+/// Capture, encode and `send` the screen until `stop`, or until `restart`
+/// is raised: then true, and the caller decides what comes next (a session
+/// opens the source again after a resolution change, a room share waits
+/// for someone to watch).
 pub(crate) fn stream_screen(
     send: &dyn Fn(Kind, &[u8]) -> anyhow::Result<()>,
     pipelines: &[String],
-    dirty: Option<Arc<AtomicBool>>,
+    dirty: Option<Arc<Damage>>,
     stop: &StopHandle,
     timestamps: bool,
     want_key: &AtomicBool,
@@ -1002,10 +1144,16 @@ pub(crate) fn stream_screen(
         return Err(last_err);
     };
     let mut pending = Some(first);
+    let mut tuning = pipeline.by_name("enc").and_then(|element| {
+        let kind = Encoder::from_element(&element.factory()?.name())?;
+        Some((element, kind, encoder::RateControl::new(kind.ceiling_kbps())))
+    });
 
     let result = (|| -> anyhow::Result<bool> {
         let mut last_info: Option<VideoInfo> = None;
         let (mut frames, mut bytes, mut since) = (0u32, 0usize, std::time::Instant::now());
+        // This rate window: bytes the socket took, time spent waiting for it.
+        let (mut window_bytes, mut blocked, mut window_start) = (0u64, Duration::ZERO, Instant::now());
         while !stop.stopped() {
             if restart.swap(false, Ordering::AcqRel) {
                 return Ok(true);
@@ -1016,7 +1164,7 @@ pub(crate) fn stream_screen(
             }
             let Some(sample) = pending.take().or_else(|| sink.try_pull_sample(gst::ClockTime::from_mseconds(500))) else {
                 if sink.is_eos() {
-                    anyhow::bail!("capture stopped");
+                    return Err(CaptureEnded.into());
                 }
                 continue;
             };
@@ -1035,11 +1183,19 @@ pub(crate) fn stream_screen(
             }
             let Some(buffer) = sample.buffer() else { continue };
             let map = buffer.map_readable()?;
+            let sending = Instant::now();
             if timestamps {
                 // When the frame was captured, on this host's wall clock:
-                // now, minus how long it spent in the pipeline.
-                let in_pipeline = match (pipeline.current_running_time(), buffer.pts()) {
-                    (Some(now), Some(pts)) if now > pts => (now - pts).useconds(),
+                // now, minus how long it spent in the pipeline. The PTS is
+                // the capture's running time once the encoder's segment
+                // (which shifts timestamps by 1000 h) is taken out.
+                let captured_at = sample
+                    .segment()
+                    .and_then(|segment| segment.downcast_ref::<gst::ClockTime>())
+                    .zip(buffer.pts())
+                    .and_then(|(segment, pts)| segment.to_running_time(pts));
+                let in_pipeline = match (pipeline.current_running_time(), captured_at) {
+                    (Some(now), Some(captured_at)) if now > captured_at => (now - captured_at).useconds(),
                     _ => 0,
                 };
                 let captured = super::now_us().saturating_sub(in_pipeline);
@@ -1049,6 +1205,17 @@ pub(crate) fn stream_screen(
                 send(Kind::VideoTs, &payload)?;
             } else {
                 send(Kind::Video, map.as_slice())?;
+            }
+            blocked += sending.elapsed();
+            window_bytes += map.len() as u64;
+            if window_start.elapsed() >= encoder::RATE_WINDOW {
+                if let Some((element, kind, rate)) = &mut tuning {
+                    if let Some(kbps) = rate.observe(window_bytes, blocked, window_start.elapsed()) {
+                        kind.retune(element, kbps);
+                        tailscale::dbg(&format!("remote: video bitrate {kbps} kbit/s"));
+                    }
+                }
+                (window_bytes, blocked, window_start) = (0, Duration::ZERO, Instant::now());
             }
             frames += 1;
             bytes += map.len();
@@ -1064,6 +1231,10 @@ pub(crate) fn stream_screen(
         }
         Ok(false)
     })();
+    // Frees a capture thread waiting in the gate, so stopping takes no second.
+    if let Some(damage) = &dirty {
+        damage.raise();
+    }
     let _ = pipeline.set_state(gst::State::Null);
     result
 }
@@ -1071,6 +1242,27 @@ pub(crate) fn stream_screen(
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    #[test]
+    fn closed_portal_lets_go_at_once() {
+        let (tx, rx) = async_channel::unbounded();
+        let mut sink = InputSink::portal(tx, Arc::new(AtomicU64::new(0)));
+        sink.apply(Input::Key { keysym: 0x61, pressed: true });
+        drop(rx);
+        let started = Instant::now();
+        sink.release_all();
+        assert!(started.elapsed() < Duration::from_millis(500), "{:?}", started.elapsed());
+    }
+
+    #[test]
+    fn portal_closes_with_its_input() {
+        let (tx, rx) = async_channel::unbounded();
+        let sink = InputSink::portal(tx, Arc::new(AtomicU64::new(0)));
+        assert!(!sink.portal_closed());
+        drop(rx);
+        assert!(sink.portal_closed());
+        assert!(!InputSink::x11(None).portal_closed());
+    }
 
     /// What's held is let go when control ends; "A" counts as "a" (older
     /// viewers), and a release of something never pressed goes nowhere.
@@ -1125,6 +1317,223 @@ mod tests {
     use gstreamer as gst;
     use gstreamer::prelude::*;
 
+    /// A viewer whose link carries 2 Mbit/s: the bitrate comes down to it,
+    /// so frames keep flowing instead of a few huge ones a second.
+    #[test]
+    fn a_slow_link_lowers_the_bitrate() {
+        use std::io::Read;
+        use std::net::{TcpListener, TcpStream};
+        let _turn = crate::remote::heavy_test();
+        gst::init().unwrap();
+        let Some(enc) = encoder() else {
+            // allow-noisy-log: a test run must say this test was skipped, not passed.
+            eprintln!("no H.264 encoder here; skipping");
+            return;
+        };
+        let listener = TcpListener::bind("127.0.0.1:0").unwrap();
+        let addr = listener.local_addr().unwrap();
+        let head = "videotestsrc is-live=true pattern=snow ! video/x-raw,width=640,height=480,framerate=30/1 \
+                    ! identity name=capture ! videoconvert";
+        let pipelines = [pipeline_desc(head, enc)];
+        let host = std::thread::spawn(move || {
+            let (stream, _) = listener.accept().unwrap();
+            crate::remote::limit_send_queue(&stream);
+            let stop = StopHandle::new(&stream);
+            let writer = Mutex::new(stream);
+            let send = |kind: Kind, payload: &[u8]| -> anyhow::Result<()> {
+                write_frame(&mut *writer.lock().unwrap(), kind, payload)?;
+                Ok(())
+            };
+            let (want_key, restart) = (AtomicBool::new(false), AtomicBool::new(false));
+            let _ = stream_screen(&send, &pipelines, None, &stop, true, &want_key, &restart);
+        });
+        let socket = socket2::Socket::new(socket2::Domain::IPV4, socket2::Type::STREAM, None).unwrap();
+        socket.set_recv_buffer_size(64 * 1024).unwrap();
+        socket.connect(&addr.into()).unwrap();
+        let mut viewer = TcpStream::from(socket);
+        // 2 Mbit/s: 2500 bytes every 10 ms.
+        struct Throttled<'a>(&'a mut TcpStream);
+        impl Read for Throttled<'_> {
+            fn read(&mut self, buf: &mut [u8]) -> std::io::Result<usize> {
+                std::thread::sleep(Duration::from_millis(10));
+                let n = buf.len().min(2500);
+                self.0.read(&mut buf[..n])
+            }
+        }
+        let start = Instant::now();
+        let mut late_frames = 0u32;
+        while start.elapsed() < Duration::from_secs(12) {
+            let (kind, _) = read_frame(&mut Throttled(&mut viewer)).unwrap();
+            if kind == Kind::VideoTs && start.elapsed() >= Duration::from_secs(8) {
+                late_frames += 1;
+            }
+        }
+        let _ = viewer.shutdown(Shutdown::Both);
+        drop(viewer);
+        host.join().unwrap();
+        let fps = f64::from(late_frames) / 4.0;
+        assert!(fps >= 10.0, "{fps:.1} fps over a 2 Mbit/s link");
+    }
+
+    /// A capture that ends by itself (GNOME closes its screencast when the
+    /// host's resolution changes) is told apart from a failure.
+    #[test]
+    fn capture_end_is_reported_as_such() {
+        let _turn = crate::remote::heavy_test();
+        gst::init().unwrap();
+        let Some(enc) = encoder() else {
+            eprintln!("no H.264 encoder here; skipping");
+            return;
+        };
+        let head = "videotestsrc num-buffers=3 ! video/x-raw,width=320,height=240 ! identity name=capture ! videoconvert";
+        let pipelines = [pipeline_desc(head, enc)];
+        let send = |_: Kind, _: &[u8]| -> anyhow::Result<()> { Ok(()) };
+        let (want_key, restart) = (AtomicBool::new(false), AtomicBool::new(false));
+        let ended = stream_screen(&send, &pipelines, None, &StopHandle::detached(), true, &want_key, &restart);
+        assert!(ended.as_ref().is_err_and(|e| e.is::<CaptureEnded>()), "{ended:?}");
+    }
+
+    /// A pipeline whose element fails on the first frame reports why at
+    /// once, well before the deadline.
+    #[test]
+    fn failing_start_returns_the_reason_early() {
+        gst::init().unwrap();
+        let started = Instant::now();
+        let Err(reason) = start_pipeline("videotestsrc num-buffers=1 ! identity error-after=1 ! appsink name=sink", None) else {
+            panic!("the pipeline started");
+        };
+        assert!(started.elapsed() < FIRST_FRAME_WITHIN / 2, "took {:?}", started.elapsed());
+        assert!(!reason.to_string().starts_with("no frame within"), "{reason}");
+    }
+
+    /// The capture time a frame carries is when it was captured, so the
+    /// latency a viewer shows includes the host's own processing (50 ms
+    /// held here) and encoding.
+    #[test]
+    fn frames_carry_their_capture_time() {
+        let _turn = crate::remote::heavy_test();
+        gst::init().unwrap();
+        let Some(enc) = encoder() else {
+            eprintln!("no H.264 encoder here; skipping");
+            return;
+        };
+        let head = "videotestsrc is-live=true num-buffers=8 ! video/x-raw,width=320,height=240,framerate=10/1 \
+                    ! identity name=capture ! identity sleep-time=50000 ! videoconvert";
+        let pipelines = [pipeline_desc(head, enc)];
+        let ages = Mutex::new(Vec::new());
+        let send = |kind: Kind, payload: &[u8]| -> anyhow::Result<()> {
+            if kind == Kind::VideoTs {
+                let captured = u64::from_be_bytes(payload[..8].try_into()?);
+                ages.lock().unwrap().push(crate::remote::now_us().saturating_sub(captured));
+            }
+            Ok(())
+        };
+        let (want_key, restart) = (AtomicBool::new(false), AtomicBool::new(false));
+        let _ = stream_screen(&send, &pipelines, None, &StopHandle::detached(), true, &want_key, &restart);
+        let ages = ages.into_inner().unwrap();
+        assert!(ages.len() >= 2, "frames sent: {}", ages.len());
+        assert!(ages.iter().all(|us| *us >= 50_000), "ages in µs: {ages:?}");
+        // The first frame also waited for the encoder to start.
+        assert!(ages[1..].iter().all(|us| *us < 1_000_000), "ages in µs: {ages:?}");
+    }
+
+    /// A share the person stopped stays stopped; only a new screen size
+    /// brings the capture back, and not without end.
+    #[test]
+    fn size_change_alone_reopens_capture() {
+        let (hd, fhd) = (Some((1280, 720)), Some((1920, 1080)));
+        let now = Instant::now();
+        assert!(!reopen_after_end(false, fhd, fhd, &mut Vec::new(), now), "stopped by the person");
+        assert!(reopen_after_end(false, fhd, hd, &mut Vec::new(), now), "mode change");
+        assert!(!reopen_after_end(false, None, hd, &mut Vec::new(), now), "size unknown when opened");
+        assert!(!reopen_after_end(false, fhd, None, &mut Vec::new(), now), "size unknown now");
+        let mut reopens = Vec::new();
+        for _ in 0..MAX_REOPENS_PER_MINUTE {
+            assert!(reopen_after_end(false, fhd, hd, &mut reopens, now));
+        }
+        assert!(!reopen_after_end(false, fhd, hd, &mut reopens, now), "too many");
+        assert!(reopen_after_end(false, fhd, hd, &mut reopens, now + Duration::from_secs(60)), "a minute later");
+    }
+
+    /// A viewer's fit reopens a capture of the same size, but only as often
+    /// as a mode change could: one that keeps fitting can't outlast a stop.
+    #[test]
+    fn refits_count_toward_the_reopen_cap() {
+        let fhd = Some((1920, 1080));
+        let now = Instant::now();
+        let mut reopens = Vec::new();
+        for _ in 0..MAX_REOPENS_PER_MINUTE {
+            assert!(reopen_after_end(true, fhd, fhd, &mut reopens, now));
+        }
+        assert!(!reopen_after_end(true, fhd, fhd, &mut reopens, now), "too many refits");
+        assert!(!reopen_after_end(true, None, None, &mut reopens, now), "sizes unknown");
+    }
+
+    /// The capture ending on the viewer's own fit waits for that fit's
+    /// `restart` and takes it; a capture the person ended finds none.
+    #[test]
+    fn fit_restart_is_taken_uncounted() {
+        let restart = Arc::new(AtomicBool::new(false));
+        let raiser = {
+            let restart = restart.clone();
+            std::thread::spawn(move || {
+                std::thread::sleep(SETTLE_AFTER_FIT);
+                restart.store(true, Ordering::Release);
+            })
+        };
+        assert!(restart_follows(&restart));
+        assert!(!restart.load(Ordering::Acquire), "the restart was not taken");
+        raiser.join().unwrap();
+        assert!(!restart_follows(&restart));
+    }
+
+    /// A still X11 screen holds back the next grab until it changes, or
+    /// until the keepalive frame is due.
+    #[test]
+    fn x11_gate_waits_for_damage() {
+        let damage = Arc::new(Damage::default());
+        let mut gate = Gate { damage: damage.clone(), last_sent: Instant::now(), trailing: false };
+        damage.raise();
+        assert!(gate.admit(), "a change goes out");
+        assert!(gate.admit(), "and the grab after it");
+        let raiser = {
+            let damage = damage.clone();
+            std::thread::spawn(move || {
+                std::thread::sleep(Duration::from_millis(100));
+                damage.raise();
+            })
+        };
+        let start = Instant::now();
+        assert!(!gate.admit(), "the grab from before the change is dropped");
+        let waited = start.elapsed();
+        assert!(waited >= Duration::from_millis(90) && waited < IDLE_FRAME_EVERY / 2, "{waited:?}");
+        raiser.join().unwrap();
+        assert!(gate.admit(), "the next grab has the change");
+        assert!(gate.admit());
+        let start = Instant::now();
+        assert!(gate.admit(), "a still screen still sends its keepalive");
+        assert!(start.elapsed() >= IDLE_FRAME_EVERY - Duration::from_millis(50), "{:?}", start.elapsed());
+    }
+
+    /// Deprecated `pipewiresrc` properties (`path`, `always-copy`) go away
+    /// in a later GStreamer; the serial must survive above `u32::MAX`.
+    #[test]
+    fn pipewire_capture_names_no_deprecated_property() {
+        gst::init().unwrap();
+        if gst::ElementFactory::find("pipewiresrc").is_none() {
+            eprintln!("no pipewiresrc here; skipping");
+            return;
+        }
+        let serial = u64::from(u32::MAX) + 7;
+        let desc = format!("{} use-bufferpool=false", pipewire_capture(3, 42, Some(serial)));
+        assert!(desc.contains(&format!("target-object={serial}")), "{desc}");
+        let element = gst::parse::launch(&desc).unwrap();
+        for setting in desc.split_whitespace().filter_map(|w| w.split_once('=')) {
+            let spec = element.find_property(setting.0).unwrap_or_else(|| panic!("{}: no such property", setting.0));
+            assert!(!spec.flags().contains(gst::glib::ParamFlags::DEPRECATED), "{} is deprecated", setting.0);
+        }
+    }
+
     /// Both host pipelines, with a test source in place of the screen, must
     /// parse and actually produce H.264 access units at the appsink.
     #[test]
@@ -1136,17 +1545,11 @@ mod tests {
             return;
         }
         // Every encoder present on this machine, not just the preferred one.
-        let encoders = [
-            ("vah264enc", ("vah264enc rate-control=cqp qpi=20 qpp=22 key-int-max=120 b-frames=0 ref-frames=1 target-usage=4 num-slices=4", "NV12")),
-            ("x264enc", ("x264enc tune=zerolatency speed-preset=ultrafast sliced-threads=true threads=2 pass=qual quantizer=20 bitrate=30000 vbv-buf-capacity=100 key-int-max=120 bframes=0 b-adapt=false", "Y444")),
-            ("openh264enc", ("openh264enc bitrate=6000000 gop-size=60 complexity=low", "I420")),
-        ];
-        for (tail, (name, enc)) in [WAYLAND_TAIL, X11_TAIL]
-            .iter()
-            .flat_map(|t| encoders.iter().map(move |e| (*t, *e)))
-            .filter(|(_, (name, _))| gst::ElementFactory::find(name).is_some())
-        {
-            let _ = name;
+        let present = Encoder::ALL.into_iter().filter(|e| gst::ElementFactory::find(e.element()).is_some());
+        let setups = [WAYLAND_TAIL, X11_TAIL].into_iter().flat_map(|tail| [(tail, RateMode::FollowsLink), (tail, RateMode::ConstantQuality)]);
+        for (kind, (tail, rate)) in present.flat_map(|e| setups.clone().map(move |setup| (e, setup))) {
+            let description = kind.description(rate);
+            let enc = (description.as_str(), kind.format());
             let head = format!("videotestsrc num-buffers=20 ! video/x-raw,width=320,height=240 ! videoconvert ! {tail}");
             let desc = pipeline_desc(&head, enc);
             let pipeline = gst::parse::launch(&desc)

@@ -62,6 +62,7 @@ fn store(ip: &str, sample: &gst::Sample) {
     if let Ok(mut f) = frames().lock() {
         f.insert(ip.to_string(), frame);
     }
+    super::room_view_changed();
 }
 
 /// A camera this computer has: (name for people, how to open it).
@@ -320,6 +321,19 @@ mod tests {
         drop(cap);
         eprintln!("encoded pictures: {}", got.load(Ordering::Relaxed));
         assert!(got.load(Ordering::Relaxed) > 10);
+    }
+
+    /// A new picture wakes the stage.
+    #[test]
+    fn a_new_picture_wakes_the_stage() {
+        gst::init().unwrap();
+        let changes = crate::room::room_view_wakeups();
+        while changes.try_recv().is_ok() {}
+        let caps = gstreamer_video::VideoInfo::builder(gstreamer_video::VideoFormat::Rgba, 2, 2).build().unwrap().to_caps().unwrap();
+        let sample = gst::Sample::builder().caps(&caps).buffer(&gst::Buffer::from_slice(vec![0u8; 16])).build();
+        store("100.64.0.250", &sample);
+        forget("100.64.0.250");
+        assert!(changes.try_recv().is_ok(), "the stage was not woken");
     }
 
     /// A test picture goes through our capture chain and comes out of a

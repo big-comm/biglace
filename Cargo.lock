@@ -211,13 +211,15 @@ checksum = "2af50177e190e07a26ab74f8b1efbfe2ef87da2116221318cb1c2e82baf7de06"
 
 [[package]]
 name = "biglace"
-version = "1.54.0"
+version = "1.55.0"
 dependencies = [
  "anyhow",
  "ashpd",
  "async-channel",
+ "async-io",
  "base64",
  "ed25519-dalek",
+ "futures-util",
  "getrandom 0.2.17",
  "gettext-rs",
  "gstreamer",
@@ -230,6 +232,8 @@ dependencies = [
  "native-tls",
  "pulldown-cmark",
  "qrcodegen",
+ "reis",
+ "rustix",
  "serde",
  "serde_json",
  "sha2",
@@ -242,6 +246,7 @@ dependencies = [
  "ureq",
  "windows-sys 0.59.0",
  "x11rb",
+ "xkbcommon",
  "zbus 5.15.0",
 ]
 
@@ -2220,6 +2225,19 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "dc897dd8d9e8bd1ed8cdad82b5966c3e0ecae09fb1907d58efaa013543185d0a"
 
 [[package]]
+name = "reis"
+version = "0.7.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "4b967ec6489a42067a20724f11987bb96178ea796873cbe1afd25fb93ee6f85f"
+dependencies = [
+ "async-io",
+ "enumflags2",
+ "futures-util",
+ "log",
+ "rustix",
+]
+
+[[package]]
 name = "rustc_version"
 version = "0.4.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -3458,6 +3476,22 @@ dependencies = [
  "libc",
  "windows-sys 0.59.0",
 ]
+
+[[package]]
+name = "xkbcommon"
+version = "0.9.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "a7a974f48060a14e95705c01f24ad9c3345022f4d97441b8a36beb7ed5c4a02d"
+dependencies = [
+ "libc",
+ "xkeysym",
+]
+
+[[package]]
+name = "xkeysym"
+version = "0.2.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "b9cc00251562a284751c9973bace760d86c0276c471b4be569fe6b068ee97a56"
 
 [[package]]
 name = "yoke"

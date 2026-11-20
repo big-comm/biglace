@@ -55,7 +55,14 @@ pub const PEER_OUT_DESC: &str = "appsrc name=asrc is-live=true format=time do-ti
      ! opusdec plc=true ! level name=level interval=50000000 post-messages=true \
      ! audioconvert ! audioresample ! autoaudiosink sync=false";
 /// A sound level older than this is silence (DTX: nothing arrives then).
-const LEVEL_STALE_US: u64 = 250_000;
+pub const LEVEL_STALE_US: u64 = 250_000;
+/// A level from here up shows the person as speaking.
+const SPEAKING: f32 = 0.06;
+
+/// Whether `level` (0–1, as [`level`] gives it) shows the person as speaking.
+pub fn speaking(level: f32) -> bool {
+    level >= SPEAKING
+}
 
 /// One participant, as the window shows it.
 #[derive(Debug, Clone, PartialEq, Eq)]
@@ -112,6 +119,27 @@ fn emit(e: RoomEvent) {
     let _ = channel().0.try_send(e);
 }
 
+fn room_view_listeners() -> &'static Mutex<Vec<async_channel::Sender<()>>> {
+    static LISTENERS: OnceLock<Mutex<Vec<async_channel::Sender<()>>>> = OnceLock::new();
+    LISTENERS.get_or_init(Mutex::default)
+}
+
+/// Wakes its listener when a camera picture arrives or a voice level is
+/// worth showing, for the room's stage and member list; many changes before
+/// it looks are one wakeup. Every listener hears each change.
+pub fn room_view_wakeups() -> async_channel::Receiver<()> {
+    let (tx, rx) = async_channel::bounded(1);
+    room_view_listeners().lock().unwrap_or_else(std::sync::PoisonError::into_inner).push(tx);
+    rx
+}
+
+pub fn room_view_changed() {
+    room_view_listeners()
+        .lock()
+        .unwrap_or_else(std::sync::PoisonError::into_inner)
+        .retain(|tx| !matches!(tx.try_send(()), Err(async_channel::TrySendError::Closed(()))));
+}
+
 /// A live connection to one peer.
 struct Peer {
     writer: Arc<Mutex<TcpStream>>,
@@ -141,6 +169,9 @@ struct Room {
     levels: Mutex<HashMap<String, (f32, u64)>>,
     /// Our camera, while on.
     camera: Mutex<Option<camera::Capture>>,
+    /// Wakes the room thread (`keep_current`): someone started talking, or
+    /// the room was left.
+    wake: std::sync::mpsc::SyncSender<()>,
 }
 
 fn current() -> &'static Mutex<Option<Arc<Room>>> {
@@ -275,9 +306,8 @@ impl Room {
         let ip = ip.to_string();
         let _ = std::thread::Builder::new().name("biglace-room-peer".into()).spawn(move || {
             let out = start_playback();
-            let playing = Arc::new(AtomicBool::new(true));
             match &out {
-                Ok((p, _)) => watch_levels(p, Arc::downgrade(&room), ip.clone(), playing.clone()),
+                Ok((p, _)) => watch_levels(p, Arc::downgrade(&room), ip.clone()),
                 Err(e) => tailscale::dbg(&format!("room: can't play {ip}'s sound: {e}")),
             }
             // Their camera, decoded while it's on.
@@ -301,7 +331,7 @@ impl Room {
                     Ok((Kind::Audio, payload)) if payload.len() > 8 => {
                         let packet = &payload[8..];
                         if packet.len() > VOICE_PACKET {
-                            last_voice.store(now_us(), Ordering::Relaxed);
+                            room.heard_voice(&last_voice);
                         }
                         if let Ok((_, src)) = &out {
                             let _ = src.push_buffer(gstreamer::Buffer::from_slice(packet.to_vec()));
@@ -324,7 +354,6 @@ impl Room {
                     Err(_) => break,
                 }
             }
-            playing.store(false, Ordering::Release);
             if let Ok((p, _)) = out {
                 use gstreamer::prelude::*;
                 let _ = p.set_state(gstreamer::State::Null);
@@ -337,6 +366,29 @@ impl Room {
             }
             emit(room.view());
         });
+    }
+
+    /// Records a voice packet in `last` (ours or a peer's), waking the room
+    /// thread when it starts someone talking.
+    fn heard_voice(&self, last: &AtomicU64) {
+        let now = now_us();
+        if now.saturating_sub(last.swap(now, Ordering::Relaxed)) >= TALKING_HOLD_US {
+            let _ = self.wake.try_send(());
+        }
+    }
+
+    /// How long until the first person talking now stops showing as talking.
+    fn talking_ends_in(&self) -> Option<Duration> {
+        let now = now_us();
+        let mut lasts = vec![self.my_last_voice_us.load(Ordering::Relaxed)];
+        if let Ok(peers) = self.peers.lock() {
+            lasts.extend(peers.values().map(|p| p.last_voice_us.load(Ordering::Relaxed)));
+        }
+        lasts
+            .into_iter()
+            .filter_map(|last| (last + TALKING_HOLD_US).checked_sub(now).filter(|&left| left > 0))
+            .min()
+            .map(Duration::from_micros)
     }
 
     fn camera_on(&self) -> bool {
@@ -364,7 +416,7 @@ impl Room {
             return;
         }
         if packet.len() > VOICE_PACKET {
-            self.my_last_voice_us.store(now_us(), Ordering::Relaxed);
+            self.heard_voice(&self.my_last_voice_us);
         }
         let mut frame = now_us().to_be_bytes().to_vec();
         frame.extend_from_slice(packet);
@@ -416,31 +468,22 @@ pub(crate) fn loudness(s: &gstreamer::StructureRef) -> Option<f32> {
     Some((((db + 50.0) / 40.0).clamp(0.0, 1.0)) as f32)
 }
 
-/// Keep `room.levels[key]` current from `p`'s "level" element, while
-/// `alive` and the room last.
-fn watch_levels(p: &gstreamer::Pipeline, room: std::sync::Weak<Room>, key: String, alive: Arc<AtomicBool>) {
+/// Keep `room.levels[key]` current from `p`'s "level" element while the
+/// room lasts. Runs on the streaming thread that posts each level, and drops
+/// every message of `p`'s bus, which nothing else reads.
+fn watch_levels(p: &gstreamer::Pipeline, room: std::sync::Weak<Room>, key: String) {
     use gstreamer::prelude::*;
     let Some(bus) = p.bus() else { return };
-    let _ = std::thread::Builder::new().name("biglace-room-level".into()).spawn(move || {
-        while alive.load(Ordering::Acquire) {
-            let Some(msg) = bus.timed_pop_filtered(
-                gstreamer::ClockTime::from_mseconds(200),
-                &[gstreamer::MessageType::Element],
-            ) else {
-                if room.upgrade().is_none_or(|r| r.stop.load(Ordering::Acquire)) {
-                    break;
-                }
-                continue;
-            };
-            let Some(level) = msg.structure().filter(|s| s.name() == "level").and_then(loudness) else { continue };
-            let Some(room) = room.upgrade() else { break };
-            if room.stop.load(Ordering::Acquire) {
-                break;
+    bus.set_sync_handler(move |_, msg| {
+        let level = msg.structure().filter(|s| s.name() == "level").and_then(loudness);
+        if let (Some(level), Some(room)) = (level, room.upgrade().filter(|r| !r.stop.load(Ordering::Acquire))) {
+            let before = room.levels.lock().ok().and_then(|mut l| l.insert(key.clone(), (level, now_us())));
+            // Silence going on stays quiet; speaking, or its end, is shown.
+            if speaking(level) || before.is_some_and(|(v, _)| speaking(v)) {
+                room_view_changed();
             }
-            if let Ok(mut l) = room.levels.lock() {
-                l.insert(key.clone(), (level, now_us()));
-            };
         }
+        gstreamer::BusSyncReply::Drop
     });
 }
 
@@ -558,6 +601,7 @@ pub fn join_with(group: &str, mic_desc: &str) -> Result<(), String> {
     leave();
     let my_ip = tailscale::get_status().ip.ok_or("not connected")?;
     let roster = invite::room_join(group, false).map_err(|e| format!("{e:?}"))?;
+    let (wake, woken) = std::sync::mpsc::sync_channel(1);
     let room = Arc::new(Room {
         group: group.to_string(),
         my_ip,
@@ -569,10 +613,11 @@ pub fn join_with(group: &str, mic_desc: &str) -> Result<(), String> {
         my_last_voice_us: AtomicU64::new(0),
         levels: Mutex::new(HashMap::new()),
         camera: Mutex::new(None),
+        wake,
     });
     let mic = start_mic(&room, mic_desc);
     match &mic {
-        Ok(p) => watch_levels(p, Arc::downgrade(&room), room.my_ip.clone(), Arc::new(AtomicBool::new(true))),
+        Ok(p) => watch_levels(p, Arc::downgrade(&room), room.my_ip.clone()),
         Err(e) => emit(RoomEvent::Problem(format!("microphone: {e}"))),
     }
     if let Ok(mut cur) = current().lock() {
@@ -581,37 +626,46 @@ pub fn join_with(group: &str, mic_desc: &str) -> Result<(), String> {
     room.reconcile();
     emit(room.view());
 
-    // Presence + reconnects, and a light ticker for "who's talking".
     let _ = std::thread::Builder::new().name("biglace-room".into()).spawn(move || {
         let mic = mic.ok();
-        let mut last_beat = std::time::Instant::now();
-        let mut last_view = room.view();
-        while !room.stop.load(Ordering::Acquire) {
-            std::thread::sleep(Duration::from_millis(200));
-            if last_beat.elapsed() >= HEARTBEAT {
-                last_beat = std::time::Instant::now();
-                match invite::room_join(&room.group, room.muted.load(Ordering::Relaxed)) {
-                    Ok(r) => {
-                        if let Ok(mut roster) = room.roster.lock() {
-                            *roster = r;
-                        }
-                        room.reconcile();
-                    }
-                    Err(e) => tailscale::dbg(&format!("room: presence refresh failed: {e:?}")),
-                }
-            }
-            let view = room.view();
-            if view != last_view {
-                emit(view.clone());
-                last_view = view;
-            }
-        }
+        keep_current(&room, &woken);
         if let Some(p) = mic {
             use gstreamer::prelude::*;
             let _ = p.set_state(gstreamer::State::Null);
         }
     });
     Ok(())
+}
+
+/// Until the room is left: presence and reconnects every heartbeat, and the
+/// panel told when someone starts or stops talking. Sleeps in between.
+fn keep_current(room: &Arc<Room>, woken: &std::sync::mpsc::Receiver<()>) {
+    let mut next_beat = std::time::Instant::now() + HEARTBEAT;
+    let mut last_view = room.view();
+    while !room.stop.load(Ordering::Acquire) {
+        let to_beat = next_beat.saturating_duration_since(std::time::Instant::now());
+        let _ = woken.recv_timeout(room.talking_ends_in().map_or(to_beat, |ends| ends.min(to_beat)));
+        if room.stop.load(Ordering::Acquire) {
+            break;
+        }
+        if std::time::Instant::now() >= next_beat {
+            next_beat = std::time::Instant::now() + HEARTBEAT;
+            match invite::room_join(&room.group, room.muted.load(Ordering::Relaxed)) {
+                Ok(r) => {
+                    if let Ok(mut roster) = room.roster.lock() {
+                        *roster = r;
+                    }
+                    room.reconcile();
+                }
+                Err(e) => tailscale::dbg(&format!("room: presence refresh failed: {e:?}")),
+            }
+        }
+        let view = room.view();
+        if view != last_view {
+            emit(view.clone());
+            last_view = view;
+        }
+    }
 }
 
 /// Leave the room we're in, if any. Blocking (tells the panel).
@@ -625,6 +679,7 @@ pub fn leave() {
     }
     camera::forget(&room.my_ip);
     room.stop.store(true, Ordering::Release);
+    let _ = room.wake.try_send(());
     if let Ok(mut peers) = room.peers.lock() {
         peers.clear();
     }
@@ -727,6 +782,15 @@ mod tests {
         assert!(!dials("100.64.0.3", "100.64.0.3"));
     }
 
+    /// The stage and the member list both redraw on the same changes.
+    #[test]
+    fn every_listener_hears_a_change() {
+        let (stage, members) = (room_view_wakeups(), room_view_wakeups());
+        room_view_changed();
+        assert!(stage.try_recv().is_ok(), "the stage missed it");
+        assert!(members.try_recv().is_ok(), "the member list missed it");
+    }
+
     /// The microphone chain reports how loud it is: a tone reads loud,
     /// silence reads zero (what the talking animation follows).
     #[test]
@@ -735,6 +799,8 @@ mod tests {
         use gstreamer::prelude::*;
         let _turn = crate::remote::heavy_test();
         if gst::init().is_err() || gst::ElementFactory::find("level").is_none() {
+            // allow-noisy-log: a test run must say this test was skipped, not passed.
+            eprintln!("no level element here; skipping");
             return;
         }
         let measure = |wave: &str| -> f32 {
@@ -767,6 +833,117 @@ mod tests {
         let quiet = measure("silence");
         assert!(tone > 0.6, "tone reads {tone}");
         assert!(quiet < 0.05, "silence reads {quiet}");
+    }
+
+    /// A voice's level reaches the room and wakes the stage straight from
+    /// the pipeline: no thread waits on the bus for it.
+    #[test]
+    fn levels_arrive_without_a_polling_thread() {
+        use gstreamer as gst;
+        use gstreamer::prelude::*;
+        let _turn = crate::remote::heavy_test();
+        if gst::init().is_err() || gst::ElementFactory::find("level").is_none() {
+            // allow-noisy-log: a test run must say this test was skipped, not passed.
+            eprintln!("no level element here; skipping");
+            return;
+        }
+        let room = Arc::new(Room {
+            group: "familia".into(),
+            my_ip: "100.64.0.1".into(),
+            muted: AtomicBool::new(false),
+            stop: AtomicBool::new(false),
+            roster: Mutex::default(),
+            peers: Mutex::default(),
+            dialing: Mutex::default(),
+            my_last_voice_us: AtomicU64::new(0),
+            levels: Mutex::default(),
+            camera: Mutex::default(),
+            wake: std::sync::mpsc::sync_channel(1).0,
+        });
+        let changes = room_view_wakeups();
+        let p = gst::parse::launch(
+            "audiotestsrc is-live=true samplesperbuffer=960 volume=0.3 \
+             ! level name=level interval=50000000 post-messages=true ! fakesink sync=false",
+        )
+        .unwrap()
+        .downcast::<gst::Pipeline>()
+        .unwrap();
+        watch_levels(&p, Arc::downgrade(&room), "100.64.0.9".into());
+        p.set_state(gst::State::Playing).unwrap();
+        let deadline = std::time::Instant::now() + Duration::from_secs(3);
+        let level = loop {
+            let level = room.levels.lock().unwrap().get("100.64.0.9").map(|(v, _)| *v);
+            if level.is_some() || std::time::Instant::now() > deadline {
+                break level;
+            }
+            std::thread::sleep(Duration::from_millis(20));
+        };
+        let threads: Vec<String> = std::fs::read_dir("/proc/self/task")
+            .unwrap()
+            .filter_map(|t| std::fs::read_to_string(t.ok()?.path().join("comm")).ok())
+            .collect();
+        p.set_state(gst::State::Null).unwrap();
+        assert!(level.is_some_and(speaking), "level {level:?}");
+        assert!(changes.try_recv().is_ok(), "the stage was not told");
+        assert!(!threads.iter().any(|t| t.starts_with("biglace-room-le")), "a thread waits on the bus");
+    }
+
+    /// The room thread sleeps while nothing changes, and tells the panel
+    /// when we start talking and again when we stop.
+    #[cfg(target_os = "linux")]
+    #[test]
+    fn room_thread_sleeps_until_someone_talks() {
+        let switches = |tid: &str| -> u64 {
+            std::fs::read_to_string(format!("/proc/self/task/{tid}/status"))
+                .unwrap()
+                .lines()
+                .find_map(|l| l.strip_prefix("voluntary_ctxt_switches:"))
+                .and_then(|n| n.trim().parse().ok())
+                .unwrap()
+        };
+        let (wake, woken) = std::sync::mpsc::sync_channel(1);
+        let room = Arc::new(Room {
+            group: "talk-test".into(),
+            my_ip: "100.64.0.1".into(),
+            muted: AtomicBool::new(false),
+            stop: AtomicBool::new(false),
+            roster: Mutex::new(vec![Participant { user: "ana".into(), device: "pc".into(), ip: "100.64.0.1".into(), muted: false }]),
+            peers: Mutex::default(),
+            dialing: Mutex::default(),
+            my_last_voice_us: AtomicU64::new(0),
+            levels: Mutex::default(),
+            camera: Mutex::default(),
+            wake,
+        });
+        let events = events();
+        let (tid_tx, tid_rx) = std::sync::mpsc::channel();
+        let worker = {
+            let room = room.clone();
+            std::thread::spawn(move || {
+                let _ = tid_tx.send(std::fs::read_link("/proc/thread-self").unwrap().file_name().unwrap().to_owned());
+                keep_current(&room, &woken);
+            })
+        };
+        let tid = tid_rx.recv().unwrap().to_string_lossy().into_owned();
+        std::thread::sleep(Duration::from_millis(100));
+        let start = switches(&tid);
+        std::thread::sleep(Duration::from_millis(500));
+        let idle = switches(&tid) - start;
+
+        room.heard_voice(&room.my_last_voice_us);
+        std::thread::sleep(Duration::from_micros(TALKING_HOLD_US) + Duration::from_millis(200));
+        room.stop.store(true, Ordering::Release);
+        let _ = room.wake.try_send(());
+        worker.join().unwrap();
+
+        let talking: Vec<bool> = std::iter::from_fn(|| events.try_recv().ok())
+            .filter_map(|e| match e {
+                RoomEvent::State { group: Some(group), members, .. } if group == "talk-test" => Some(members[0].talking),
+                _ => None,
+            })
+            .collect();
+        assert!(idle <= 1, "wakeups in 500 ms idle: {idle}");
+        assert_eq!(talking, [true, false]);
     }
 
     /// The room's sound chain works: microphone pipeline (a test tone here)

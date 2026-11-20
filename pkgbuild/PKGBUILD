@@ -7,6 +7,8 @@ depends=(
     'openssh'
     'gtk4'
     'libadwaita'
+    # Wayland remote input: reads the compositor's keymap.
+    'libxkbcommon'
     'gettext'
     'openssl'
     'hicolor-icon-theme'
@@ -18,6 +20,11 @@ depends=(
     'gst-libav'
     # Screen capture on Wayland and the camera, both through PipeWire.
     'gst-plugin-pipewire'
+)
+# NVENC (nvh264enc) comes with gst-plugins-bad-libs, which gtk4 already needs.
+optdepends=(
+    'gst-plugin-va: hardware H.264 encoding and decoding on Intel and AMD (VA-API)'
+    'gst-plugins-bad: openh264 as a second software encoder'
 )
 makedepends=(
     'git'

@@ -15,9 +15,9 @@
 pub mod client;
 pub mod host;
 #[cfg(target_os = "linux")]
-#[cfg(target_os = "linux")]
 mod cursor_x11;
-mod damage_x11;
+#[cfg(target_os = "linux")]
+pub(crate) mod damage_x11;
 pub(crate) mod display;
 #[cfg(target_os = "linux")]
 mod input_x11;
@@ -133,6 +133,23 @@ impl Kind {
             _ => None,
         }
     }
+}
+
+/// Kernel send buffer for a screen stream: big enough for a keyframe in
+/// flight, small enough that a slow link backs up into the (leaky) queue
+/// before the encoder, where frames are dropped instead of piling up seconds
+/// of video in the kernel.
+const SEND_BUFFER: usize = 512 * 1024;
+#[cfg(target_os = "linux")]
+const NOTSENT_LOWAT: u32 = 64 * 1024;
+
+/// Caps how much of a screen stream the kernel may hold for `stream`: only a
+/// little unsent data may sit there, so the next frame waits instead.
+pub(crate) fn limit_send_queue(stream: &std::net::TcpStream) {
+    let sock = socket2::SockRef::from(stream);
+    let _ = sock.set_send_buffer_size(SEND_BUFFER);
+    #[cfg(target_os = "linux")]
+    let _ = sock.set_tcp_notsent_lowat(NOTSENT_LOWAT);
 }
 
 /// Write one frame: kind (1 byte), length (u32 big-endian), payload.
@@ -262,7 +279,9 @@ pub fn can_host() -> bool {
     {
         static OK: OnceLock<bool> = OnceLock::new();
         *OK.get_or_init(|| {
-            if gstreamer::init().is_err() || host::encoder().is_none() {
+            // Presence only: test-encoding loads hardware drivers (CUDA for
+            // NVENC), which waits for the first share.
+            if gstreamer::init().is_err() || !host::Encoder::ALL.iter().any(|e| gstreamer::ElementFactory::find(e.element()).is_some()) {
                 return false;
             }
             if wayland_session() {
@@ -566,5 +585,25 @@ mod decode_and_sound {
         let (_, stats) = view(addr);
         let _ = h.join();
         assert!(stats.iter().filter(|s| s.audio).count() >= 2, "no sound: {stats:?}");
+    }
+}
+
+#[cfg(all(test, target_os = "linux"))]
+mod send_queue {
+    use std::net::{TcpListener, TcpStream};
+
+    #[test]
+    fn screen_socket_holds_little_unsent() {
+        let listener = TcpListener::bind("127.0.0.1:0").unwrap();
+        let stream = TcpStream::connect(listener.local_addr().unwrap()).unwrap();
+        let sock = socket2::SockRef::from(&stream);
+        // Start above the cap, so only the call can bring the buffer down.
+        sock.set_send_buffer_size(8 * super::SEND_BUFFER).unwrap();
+        super::limit_send_queue(&stream);
+        let wmem_max: usize = std::fs::read_to_string("/proc/sys/net/core/wmem_max").unwrap().trim().parse().unwrap();
+        // Linux caps the request at wmem_max and doubles it for its own
+        // bookkeeping; below SEND_BUFFER the call has nothing to lower.
+        assert_eq!(sock.send_buffer_size().unwrap(), 2 * super::SEND_BUFFER.min(wmem_max));
+        assert_eq!(sock.tcp_notsent_lowat().unwrap(), super::NOTSENT_LOWAT);
     }
 }

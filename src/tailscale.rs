@@ -1094,7 +1094,7 @@ fn run_tailscale_with_fallback(args: &[&str]) -> Result<()> {
     }
 }
 
-pub fn connect(server: &str, authkey: &str, hostname: &str) -> Result<()> {
+pub fn connect(server: &str, authkey: &str, pending_key: bool, hostname: &str) -> Result<()> {
     // Trim once up front so a pasted key/URL with a trailing space or newline
     // (the usual copy-paste artifact) doesn't reach `tailscale up` verbatim and
     // get rejected with an opaque "invalid key". Everything below uses the
@@ -1129,9 +1129,10 @@ pub fn connect(server: &str, authkey: &str, hostname: &str) -> Result<()> {
     // Also when a key is saved: an enrollment key is one-time, so once the
     // node is registered on this same server, re-authenticating with it
     // (--force-reauth) can only fail and log the device out. Only a
-    // different server, or a dead registration, needs the key.
+    // different server, a dead registration, or a key the person has just
+    // entered (`pending_key`) needs the key.
     let same_server = current_control_url().is_some_and(|c| same_url(&c, server));
-    if pre_status.registered && (authkey.is_empty() || same_server) {
+    if pre_status.registered && !pending_key && (authkey.is_empty() || same_server) {
         dbg("connect: cached registration present — trying keyless reconnect");
         if try_reconnect().is_ok() && wait_until_online() {
             dbg("connect: reconnected via cached registration (no key needed)");
@@ -1141,17 +1142,22 @@ pub fn connect(server: &str, authkey: &str, hostname: &str) -> Result<()> {
         dbg("connect: keyless reconnect didn't take — (re)authenticating with the key");
     }
 
-    // From here we need the key to register / re-authenticate. Once
-    // registered it isn't read at startup (a locked keyring, as after an
-    // automatic sign-in, would pop up its password prompt for nothing):
-    // fetch it now that it's really needed.
-    let stored;
-    let authkey = if authkey.is_empty() {
-        stored = crate::secrets::load_authkey(server).unwrap_or_default();
-        stored.trim()
+    // Registering needs the key. Without one from the caller, the key stored
+    // at enrollment is read only here, on the worker thread: read with the
+    // config, a locked keyring would prompt at every start, even when the
+    // keyless reconnect above needs no key.
+    let stored = if authkey.is_empty() {
+        match crate::secrets::load_authkey(server) {
+            Ok(key) => key.unwrap_or_default(),
+            Err(error) => bail!(trf!(
+                "Couldn't read the saved pre-auth key: {error}",
+                "error" => error
+            )),
+        }
     } else {
-        authkey
+        authkey.to_owned()
     };
+    let authkey = stored.trim();
     if authkey.is_empty() {
         if pre_status.registered {
             bail!(tr!("The pre-auth key was rejected by the server. Generate a new key in the BigScale panel and try again."));
