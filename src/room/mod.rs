@@ -298,9 +298,8 @@ impl Room {
         let ip = ip.to_string();
         let _ = std::thread::Builder::new().name("biglace-room-peer".into()).spawn(move || {
             let out = start_playback();
-            let playing = Arc::new(AtomicBool::new(true));
             match &out {
-                Ok((p, _)) => watch_levels(p, Arc::downgrade(&room), ip.clone(), playing.clone()),
+                Ok((p, _)) => watch_levels(p, Arc::downgrade(&room), ip.clone()),
                 Err(e) => tailscale::dbg(&format!("room: can't play {ip}'s sound: {e}")),
             }
             // Their camera, decoded while it's on.
@@ -347,7 +346,6 @@ impl Room {
                     Err(_) => break,
                 }
             }
-            playing.store(false, Ordering::Release);
             if let Ok((p, _)) = out {
                 use gstreamer::prelude::*;
                 let _ = p.set_state(gstreamer::State::Null);
@@ -439,33 +437,22 @@ pub(crate) fn loudness(s: &gstreamer::StructureRef) -> Option<f32> {
     Some((((db + 50.0) / 40.0).clamp(0.0, 1.0)) as f32)
 }
 
-/// Keep `room.levels[key]` current from `p`'s "level" element, while
-/// `alive` and the room last.
-fn watch_levels(p: &gstreamer::Pipeline, room: std::sync::Weak<Room>, key: String, alive: Arc<AtomicBool>) {
+/// Keep `room.levels[key]` current from `p`'s "level" element while the
+/// room lasts. Runs on the streaming thread that posts each level, and drops
+/// every message of `p`'s bus, which nothing else reads.
+fn watch_levels(p: &gstreamer::Pipeline, room: std::sync::Weak<Room>, key: String) {
     use gstreamer::prelude::*;
     let Some(bus) = p.bus() else { return };
-    let _ = std::thread::Builder::new().name("biglace-room-level".into()).spawn(move || {
-        while alive.load(Ordering::Acquire) {
-            let Some(msg) = bus.timed_pop_filtered(
-                gstreamer::ClockTime::from_mseconds(200),
-                &[gstreamer::MessageType::Element],
-            ) else {
-                if room.upgrade().is_none_or(|r| r.stop.load(Ordering::Acquire)) {
-                    break;
-                }
-                continue;
-            };
-            let Some(level) = msg.structure().filter(|s| s.name() == "level").and_then(loudness) else { continue };
-            let Some(room) = room.upgrade() else { break };
-            if room.stop.load(Ordering::Acquire) {
-                break;
-            }
+    bus.set_sync_handler(move |_, msg| {
+        let level = msg.structure().filter(|s| s.name() == "level").and_then(loudness);
+        if let (Some(level), Some(room)) = (level, room.upgrade().filter(|r| !r.stop.load(Ordering::Acquire))) {
             let before = room.levels.lock().ok().and_then(|mut l| l.insert(key.clone(), (level, now_us())));
             // Silence going on stays quiet; speaking, or its end, is shown.
             if level >= SPEAKING || before.is_some_and(|(v, _)| v >= SPEAKING) {
                 stage_changed();
             }
         }
+        gstreamer::BusSyncReply::Drop
     });
 }
 
@@ -597,7 +584,7 @@ pub fn join_with(group: &str, mic_desc: &str) -> Result<(), String> {
     });
     let mic = start_mic(&room, mic_desc);
     match &mic {
-        Ok(p) => watch_levels(p, Arc::downgrade(&room), room.my_ip.clone(), Arc::new(AtomicBool::new(true))),
+        Ok(p) => watch_levels(p, Arc::downgrade(&room), room.my_ip.clone()),
         Err(e) => emit(RoomEvent::Problem(format!("microphone: {e}"))),
     }
     if let Ok(mut cur) = current().lock() {
@@ -801,6 +788,56 @@ mod tests {
         let quiet = measure("silence");
         assert!(tone > 0.6, "tone reads {tone}");
         assert!(quiet < 0.05, "silence reads {quiet}");
+    }
+
+    /// A voice's level reaches the room and wakes the stage straight from
+    /// the pipeline: no thread waits on the bus for it.
+    #[test]
+    fn levels_arrive_without_a_polling_thread() {
+        use gstreamer as gst;
+        use gstreamer::prelude::*;
+        let _turn = crate::remote::heavy_test();
+        if gst::init().is_err() || gst::ElementFactory::find("level").is_none() {
+            return;
+        }
+        let room = Arc::new(Room {
+            group: "familia".into(),
+            my_ip: "100.64.0.1".into(),
+            muted: AtomicBool::new(false),
+            stop: AtomicBool::new(false),
+            roster: Mutex::default(),
+            peers: Mutex::default(),
+            dialing: Mutex::default(),
+            my_last_voice_us: AtomicU64::new(0),
+            levels: Mutex::default(),
+            camera: Mutex::default(),
+        });
+        let changes = stage_changes();
+        let p = gst::parse::launch(
+            "audiotestsrc is-live=true samplesperbuffer=960 volume=0.3 \
+             ! level name=level interval=50000000 post-messages=true ! fakesink sync=false",
+        )
+        .unwrap()
+        .downcast::<gst::Pipeline>()
+        .unwrap();
+        watch_levels(&p, Arc::downgrade(&room), "100.64.0.9".into());
+        p.set_state(gst::State::Playing).unwrap();
+        let deadline = std::time::Instant::now() + Duration::from_secs(3);
+        let level = loop {
+            let level = room.levels.lock().unwrap().get("100.64.0.9").map(|(v, _)| *v);
+            if level.is_some() || std::time::Instant::now() > deadline {
+                break level;
+            }
+            std::thread::sleep(Duration::from_millis(20));
+        };
+        let threads: Vec<String> = std::fs::read_dir("/proc/self/task")
+            .unwrap()
+            .filter_map(|t| std::fs::read_to_string(t.ok()?.path().join("comm")).ok())
+            .collect();
+        p.set_state(gst::State::Null).unwrap();
+        assert!(level.is_some_and(|v| v >= SPEAKING), "level {level:?}");
+        assert!(changes.try_recv().is_ok(), "the stage was not told");
+        assert!(!threads.iter().any(|t| t.starts_with("biglace-room-le")), "a thread waits on the bus");
     }
 
     /// The room's sound chain works: microphone pipeline (a test tone here)
