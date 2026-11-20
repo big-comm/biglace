@@ -7,6 +7,8 @@ depends=(
     'openssh'
     'gtk4'
     'libadwaita'
+    # Wayland remote input: reads the compositor's keymap.
+    'libxkbcommon'
     'gettext'
     'openssl'
     'hicolor-icon-theme'
