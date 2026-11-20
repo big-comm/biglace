@@ -355,7 +355,12 @@ impl Libei {
                     self.resumed.push(resumed.device);
                 }
             }
-            EiEvent::DevicePaused(paused) => self.resumed.retain(|d| *d != paused.device),
+            EiEvent::DevicePaused(paused) => {
+                if paused.device.has_capability(DeviceCapability::Keyboard) {
+                    self.keys.let_go();
+                }
+                self.resumed.retain(|d| *d != paused.device);
+            }
             EiEvent::DeviceRemoved(removed) => self.resumed.retain(|d| *d != removed.device),
             EiEvent::KeyboardModifiers(modifiers) => self.keys.set_group(modifiers.group),
             EiEvent::Disconnected(gone) => {
@@ -523,6 +528,11 @@ impl Keys {
     fn release(&mut self, keysym: u32) -> Option<u32> {
         self.held.remove(&keysym)
     }
+
+    /// A paused keyboard starts over with every key up.
+    fn let_go(&mut self) {
+        self.held.clear();
+    }
 }
 
 /// Keysym to the evdev keycode of the key that types it: in layout `group`
@@ -615,6 +625,16 @@ mod tests {
         assert_eq!(keys.release(0x7a), None, "never pressed");
         assert_eq!(keys.press(0x6c6), None, "on no key here");
         assert_eq!(keys.release(0x6c6), None);
+    }
+
+    #[test]
+    fn paused_keyboard_holds_no_key() {
+        let mut keys = Keys::default();
+        keys.set_keymap(keymap("us"));
+        assert_eq!(keys.press(0x61), Some(30));
+        keys.let_go();
+        assert_eq!(keys.release(0x61), None, "the pause lifted it");
+        assert_eq!(keys.press(0x61), Some(30), "typing goes on after the resume");
     }
 
     /// Expected codes from linux/input-event-codes.h.
