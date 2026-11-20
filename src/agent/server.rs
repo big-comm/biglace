@@ -163,6 +163,16 @@ fn handle(stream: TcpStream, peer: SocketAddr, auth: &Authenticator) {
         }
         return;
     }
+    // A phone of ours: its battery, calls, links and notifications.
+    if path == crate::link::PATH {
+        match (&identity, method.as_str()) {
+            (Some(id), "GET") => crate::link::accept(stream, peer.ip(), &parse_headers(&head), id, &path),
+            _ => {
+                let _ = respond(&stream, 403, "forbidden");
+            }
+        }
+        return;
+    }
     // The photo of a group we created (its members only).
     if path.starts_with(crate::avatars::GROUP_PREFIX) {
         match (&identity, method.as_str()) {

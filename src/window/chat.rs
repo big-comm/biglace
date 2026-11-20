@@ -1113,6 +1113,11 @@ impl ChatPage {
         };
         let n = gtk4::gio::Notification::new(&title);
         n.set_body(Some(&message_line(m, 140)));
+        n.add_button_with_target_value(
+            &tr!("Reply"),
+            &format!("app.{}", super::phone_link::CHAT_REPLY),
+            Some(&conv.key().to_variant()),
+        );
         app.send_notification(Some(&notification_id(conv)), &n);
     }
 

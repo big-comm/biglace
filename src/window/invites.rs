@@ -50,8 +50,9 @@ pub fn qr_texture(text: &str) -> Option<gdk::MemoryTexture> {
 
 /// "Connect a phone": a QR code the phone's BigLace scans to join as one
 /// more device of this account (no invite, no key to type). The code works
-/// once, for a few minutes; "New code" when it runs out.
-pub fn pair_phone(parent: &libadwaita::ApplicationWindow) {
+/// once, for a few minutes; "New code" when it runs out. It closes by itself
+/// once a new device of this account shows up on the network, and on Esc.
+pub fn pair_phone(parent: &libadwaita::ApplicationWindow, toast: &libadwaita::ToastOverlay) {
     let dlg = libadwaita::Window::builder()
         .transient_for(parent)
         .modal(true)
@@ -83,55 +84,91 @@ pub fn pair_phone(parent: &libadwaita::ApplicationWindow) {
     outer.append(&libadwaita::HeaderBar::new());
     outer.append(&body);
     dlg.set_content(Some(&outer));
+    super::dialogs::close_on_escape(&dlg);
+    watch_for_new_device(&dlg, toast);
 
-    let generation = std::rc::Rc::new(std::cell::Cell::new(0u32));
-    let fetch: std::rc::Rc<dyn Fn()> = {
-        let (picture, status, again, generation, dlg) = (picture.clone(), status.clone(), again.clone(), generation.clone(), dlg.clone());
-        std::rc::Rc::new(move || {
-            let gen = generation.get() + 1;
-            generation.set(gen);
-            again.set_visible(false);
-            picture.set_paintable(gdk::Paintable::NONE);
-            status.set_text(&tr!("Asking the panel for a code…"));
-            let (picture, status, again, generation, dlg) = (picture.clone(), status.clone(), again.clone(), generation.clone(), dlg.clone());
-            super::run_in_background(invite::pair, move |r| match r {
-                Ok(p) => {
-                    picture.set_paintable(qr_texture(&p.link).as_ref());
-                    // Count down to the end, then offer a new one.
-                    let tick = move || {
-                        if generation.get() != gen || !dlg.is_visible() {
-                            return glib::ControlFlow::Break;
-                        }
-                        let now = std::time::SystemTime::now().duration_since(std::time::UNIX_EPOCH).map(|d| d.as_millis() as u64).unwrap_or(0);
-                        let left = p.expires.saturating_sub(now) / 1000;
-                        if left == 0 {
-                            picture.set_paintable(gdk::Paintable::NONE);
-                            status.set_text(&tr!("This code is no longer valid."));
-                            again.set_visible(true);
-                            return glib::ControlFlow::Break;
-                        }
-                        status.set_text(&trf!("Valid for {time} · works once", "time" => format!("{}:{:02}", left / 60, left % 60)));
-                        glib::ControlFlow::Continue
-                    };
-                    tick();
-                    glib::timeout_add_seconds_local(1, tick);
-                }
-                Err(MemberError::Unsupported) => status.set_text(&tr!(
-                    "This network's server doesn't pair phones yet. Ask your administrator to update the panel, or invite the phone instead."
-                )),
-                Err(e) => {
-                    status.set_text(&explain(&e));
-                    again.set_visible(true);
-                }
-            });
-        })
-    };
+    let generation = Rc::new(std::cell::Cell::new(0u32));
+    let (again2, dlg2) = (again.clone(), dlg.clone());
+    let fetch = Rc::new(move || show_pair_code(&picture, &status, &again2, &generation, &dlg2));
     {
         let fetch = fetch.clone();
         again.connect_clicked(move |_| fetch());
     }
     fetch();
     dlg.present();
+}
+
+/// Ask the panel for a pairing code and show it, counting down to its end.
+/// `generation` stops the countdown of an earlier code.
+fn show_pair_code(picture: &gtk4::Picture, status: &gtk4::Label, again: &gtk4::Button, generation: &Rc<std::cell::Cell<u32>>, dlg: &libadwaita::Window) {
+    let gen = generation.get() + 1;
+    generation.set(gen);
+    again.set_visible(false);
+    picture.set_paintable(gdk::Paintable::NONE);
+    status.set_text(&tr!("Asking the panel for a code…"));
+    let (picture, status, again, generation, dlg) = (picture.clone(), status.clone(), again.clone(), generation.clone(), dlg.clone());
+    super::run_in_background(invite::pair, move |r| match r {
+        Ok(p) => {
+            picture.set_paintable(qr_texture(&p.link).as_ref());
+            // Count down to the end, then offer a new one.
+            let tick = move || {
+                if generation.get() != gen || !dlg.is_visible() {
+                    return glib::ControlFlow::Break;
+                }
+                let now = std::time::SystemTime::now().duration_since(std::time::UNIX_EPOCH).map(|d| d.as_millis() as u64).unwrap_or(0);
+                let left = p.expires.saturating_sub(now) / 1000;
+                if left == 0 {
+                    picture.set_paintable(gdk::Paintable::NONE);
+                    status.set_text(&tr!("This code is no longer valid."));
+                    again.set_visible(true);
+                    return glib::ControlFlow::Break;
+                }
+                status.set_text(&trf!("Valid for {time} · works once", "time" => format!("{}:{:02}", left / 60, left % 60)));
+                glib::ControlFlow::Continue
+            };
+            tick();
+            glib::timeout_add_seconds_local(1, tick);
+        }
+        Err(MemberError::Unsupported) => status.set_text(&tr!(
+            "This network's server doesn't pair phones yet. Ask your administrator to update the panel, or invite the phone instead."
+        )),
+        Err(e) => {
+            status.set_text(&explain(&e));
+            again.set_visible(true);
+        }
+    });
+}
+
+/// Our account's devices on the network now (their node ids).
+fn my_devices() -> std::collections::HashSet<String> {
+    let me = crate::chat::my_user().unwrap_or_default();
+    crate::tailscale::get_peers().into_iter().filter(|p| !me.is_empty() && p.user == me).map(|p| p.id).collect()
+}
+
+/// While `dlg` is open, look every few seconds for a device of our account
+/// that wasn't there when it opened: the phone that just paired. Then close
+/// and say so.
+fn watch_for_new_device(dlg: &libadwaita::Window, toast: &libadwaita::ToastOverlay) {
+    let (dlg, toast) = (dlg.downgrade(), toast.clone());
+    super::run_in_background(my_devices, move |before| {
+        glib::timeout_add_seconds_local(3, move || {
+            let Some(d) = dlg.upgrade().filter(|d| d.is_visible()) else { return glib::ControlFlow::Break };
+            let (d, toast, before) = (d.downgrade(), toast.clone(), before.clone());
+            super::run_in_background(
+                move || {
+                    let me = crate::chat::my_user().unwrap_or_default();
+                    crate::tailscale::get_peers().into_iter().find(|p| !me.is_empty() && p.user == me && !before.contains(&p.id))
+                },
+                move |new| {
+                    if let (Some(p), Some(d)) = (new, d.upgrade()) {
+                        d.close();
+                        super::show_toast(&toast, &trf!("{device} is connected to your account.", "device" => p.display_name()), 5);
+                    }
+                },
+            );
+            glib::ControlFlow::Continue
+        });
+    });
 }
 
 /// Sentence for a member-API failure.

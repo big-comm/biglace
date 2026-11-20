@@ -63,6 +63,20 @@ pub fn compose_subtitle(
             tailscale::Link::Idle => {}
         }
     }
+    // One of our phones, linked: its battery and free storage.
+    if let Some(s) = crate::link::status(&peer.ip) {
+        let level = s.battery.to_string();
+        bits.push(if s.charging {
+            trf!("battery {level}%, charging", "level" => level)
+        } else {
+            trf!("battery {level}%", "level" => level)
+        });
+        bits.push(trf!(
+            "{free} free of {total}",
+            "free" => glib::format_size(s.storage_free).to_string(),
+            "total" => glib::format_size(s.storage_total).to_string()
+        ));
+    }
     bits.join("  ·  ")
 }
 

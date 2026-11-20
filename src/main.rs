@@ -1,3 +1,22 @@
+//! BigLace: a private network of your devices and people, on Tailscale.
+//!
+//! - `agent`: the HTTP service through which one BigLace talks to another.
+//! - `access`: who may use this computer remotely, and what happened.
+//! - `autostart`: starting BigLace at login.
+//! - `power`, `wake`: restart or shut down a helped computer; turn one on (Wake-on-LAN).
+//! - `avatars`: profile photos, served by each person's own computer.
+//! - `config`: this device's settings and identity on the network.
+//! - `device_key`: the key proving to the panel that a request comes from this device.
+//! - `i18n`: gettext translation.
+//! - `invite`, `panel`: joining a network and talking to the BigScale panel.
+//! - `launchers`: the terminal, file manager and log viewer this app spawns.
+//! - `link`: our phones' connection (battery, calls, links, notifications).
+//! - `remote`: remote desktop between devices.
+//! - `chat`, `room`: messages and voice rooms between people.
+//! - `secrets`: the OS credential store.
+//! - `tailscale`: the tailscaled daemon and its state.
+//! - `tray`, `window`: the tray indicator and the main window.
+
 mod agent;
 mod access;
 mod autostart;
@@ -9,6 +28,7 @@ mod device_key;
 mod i18n;
 mod invite;
 mod launchers;
+mod link;
 mod panel;
 mod remote;
 mod chat;
@@ -52,7 +72,7 @@ pub static MALLOC_CONF: &[u8] = b"background_thread:true,dirty_decay_ms:1000,muz
 /// creates (feat → minor, fix/perf/docs/… → patch, breaking → major) by
 /// rewriting this assignment. Reading it from `CARGO_PKG_VERSION` hid it from
 /// gitrepo, which is how the version sat at 1.0.0 through dozens of releases.
-pub const APP_VERSION: &str = "1.55.1";
+pub const APP_VERSION: &str = "1.56.0";
 pub const APP_ID: &str = "org.communitybig.biglace";
 
 /// Date-based build stamp (`YY.MM.DD-HHMM`) — the scheme the GitHub release

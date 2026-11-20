@@ -34,7 +34,7 @@ pub const APP_ID: &str = "biglace";
 /// entry (`screen`, `control`, `power`, `room`, …) so older and newer
 /// BigLace versions can talk to each other: a client only shows a button
 /// when the peer listed the matching capability.
-pub const CAPABILITIES: &[&str] = &["hello", crate::chat::OPS_CAPABILITY];
+pub const CAPABILITIES: &[&str] = &["hello", crate::chat::OPS_CAPABILITY, crate::link::CAPABILITY];
 
 /// Answer to `GET /v1/hello`.
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]

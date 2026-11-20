@@ -94,6 +94,9 @@ pub enum Kind {
     /// Voice room, both ways: one camera picture — capture time (µs, u64
     /// BE) and an H.264 access unit.
     CamVideo = 17,
+    /// Phone ↔ its owner's computers (JSON): battery, calls, links,
+    /// notifications and replies (see `crate::link`).
+    Link = 18,
 }
 
 /// Announced by hosts that can fit their resolution to the viewer's window.
@@ -130,6 +133,7 @@ impl Kind {
             15 => Some(Self::Cursor),
             16 => Some(Self::Resize),
             17 => Some(Self::CamVideo),
+            18 => Some(Self::Link),
             _ => None,
         }
     }
