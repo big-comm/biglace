@@ -250,7 +250,8 @@ fn parse_big_screens(json: &str) -> Option<Screen> {
         }
         _ => None,
     };
-    let output = o.get("name")?.as_str()?.to_string();
+    // A leading dash would make big-screens read the name as an option.
+    let output = o.get("name")?.as_str().filter(|n| !n.starts_with('-'))?.to_string();
     Some(Screen { tool: Tool::BigScreens, output, scale: None, current_unlisted, modes, current })
 }
 
@@ -547,6 +548,12 @@ Logical monitors:
         let s = parse_big_screens(&format!(r#"{{"outputs":[{off},{on}]}}"#)).unwrap();
         assert_eq!(s.output, "HDMI-A-1");
         assert!(parse_big_screens(&format!(r#"{{"outputs":[{off}]}}"#)).is_none());
+    }
+
+    #[test]
+    fn big_screens_refuses_a_dash_name() {
+        let json = format!(r#"{{"outputs":[{}]}}"#, big_screens_output("--persistent", true, BIG_CURRENT));
+        assert!(parse_big_screens(&json).is_none());
     }
 
     #[test]
