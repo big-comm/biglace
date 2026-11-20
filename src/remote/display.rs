@@ -58,9 +58,20 @@ pub fn available() -> bool {
     tool().is_some()
 }
 
+/// Runs a display tool for at most five seconds: its stdout, or why it failed.
+fn run(cmd: &mut Command) -> Result<String, String> {
+    let program = cmd.get_program().to_string_lossy().into_owned();
+    let out = crate::tailscale::command_output_timeout(cmd, std::time::Duration::from_secs(5)).map_err(|e| format!("{program}: {e}"))?;
+    if out.status.success() {
+        Ok(String::from_utf8_lossy(&out.stdout).into_owned())
+    } else {
+        Err(format!("{program}: {} ({})", String::from_utf8_lossy(&out.stderr).trim(), out.status))
+    }
+}
+
+/// `run`, for a query whose failure means "unknown"; the reason goes to the log.
 fn output(cmd: &mut Command) -> Option<String> {
-    let out = cmd.output().ok()?;
-    out.status.success().then(|| String::from_utf8_lossy(&out.stdout).into_owned())
+    run(cmd).map_err(|e| crate::tailscale::dbg(&format!("display: {e}"))).ok()
 }
 
 fn parse_size(s: &str) -> Option<(u32, u32)> {
@@ -246,33 +257,32 @@ pub fn apply(screen: &Screen, mode: &Mode) -> Result<(), String> {
             c
         }
     };
-    let out = cmd.output().map_err(|e| e.to_string())?;
-    if out.status.success() {
-        Ok(())
-    } else {
-        Err(String::from_utf8_lossy(&out.stderr).trim().to_string())
-    }
+    run(&mut cmd).map(drop)
 }
 
 /// X11: a mode made to measure (`cvt`), for screens that list few modes
 /// (virtual ones list just one). The name, once added to the output.
-fn xrandr_custom(output: &str, width: u32, height: u32) -> Option<String> {
+fn xrandr_custom(output: &str, width: u32, height: u32) -> Result<String, String> {
     // Widths are kept to multiples of 8 (what drivers expect).
     let width = (width / 8) * 8;
-    let line = std::process::Command::new("cvt").args([width.to_string(), height.to_string(), "60".into()]).output().ok()?;
-    let text = String::from_utf8_lossy(&line.stdout).into_owned();
-    let modeline = text.lines().find_map(|l| l.trim().strip_prefix("Modeline "))?.to_string();
+    let text = run(Command::new("cvt").args([width.to_string(), height.to_string(), "60".into()]))?;
+    let modeline = text.lines().find_map(|l| l.trim().strip_prefix("Modeline ")).ok_or("cvt: no modeline")?;
     let mut parts = modeline.split_whitespace();
-    let name = parts.next()?.trim_matches('"').to_string();
-    let timings: Vec<String> = parts.map(str::to_string).collect();
-    let _ = std::process::Command::new("xrandr").arg("--newmode").arg(&name).args(&timings).output();
-    let added = std::process::Command::new("xrandr").args(["--addmode", output, &name]).output().ok()?;
-    added.status.success().then_some(name)
+    let name = parts.next().ok_or("cvt: empty modeline")?.trim_matches('"').to_string();
+    // A mode left from an earlier session is still there to add.
+    if let Err(e) = run(Command::new("xrandr").arg("--newmode").arg(&name).args(parts)) {
+        crate::tailscale::dbg(&format!("display: {e}"));
+    }
+    run(Command::new("xrandr").args(["--addmode", output, &name]))?;
+    Ok(name)
 }
 
 fn xrandr_forget(output: &str, name: &str) {
-    let _ = std::process::Command::new("xrandr").args(["--delmode", output, name]).output();
-    let _ = std::process::Command::new("xrandr").args(["--rmmode", name]).output();
+    for result in [run(Command::new("xrandr").args(["--delmode", output, name])), run(Command::new("xrandr").args(["--rmmode", name]))] {
+        if let Err(e) = result {
+            crate::tailscale::dbg(&format!("display: {e}"));
+        }
+    }
 }
 
 /// One session's resolution changes, undone at the end.
@@ -296,13 +306,19 @@ impl Fitter {
         // X11 and nothing close to the window's size: try one made to measure.
         let area = |w: u32, h: u32| u64::from(w) * u64::from(h);
         if screen.tool == Tool::Xrandr && area(mode.width, mode.height) * 100 < area(width, height) * 85 {
-            if let Some(name) = xrandr_custom(&screen.output, width, height) {
-                let custom = Mode { width: (width / 8) * 8, height, id: name.clone() };
-                if apply(&screen, &custom).is_ok() {
-                    self.made.push((screen.output.clone(), name));
-                    return Ok(true);
+            match xrandr_custom(&screen.output, width, height) {
+                Ok(name) => {
+                    let custom = Mode { width: (width / 8) * 8, height, id: name.clone() };
+                    match apply(&screen, &custom) {
+                        Ok(()) => {
+                            self.made.push((screen.output.clone(), name));
+                            return Ok(true);
+                        }
+                        Err(e) => crate::tailscale::dbg(&format!("display: the made-to-measure mode failed: {e}")),
+                    }
+                    xrandr_forget(&screen.output, &name);
                 }
-                xrandr_forget(&screen.output, &name);
+                Err(e) => crate::tailscale::dbg(&format!("display: no made-to-measure mode: {e}")),
             }
         }
         if screen.current.as_ref().is_some_and(|c| c.width == mode.width && c.height == mode.height) {
@@ -315,7 +331,7 @@ impl Fitter {
     /// Back to how it was. True when it changed.
     pub fn restore(&mut self) -> bool {
         let Some((screen, mode)) = self.original.take() else { return false };
-        let ok = apply(&screen, &mode).is_ok();
+        let ok = apply(&screen, &mode).map_err(|e| crate::tailscale::dbg(&format!("display: can't restore the resolution: {e}"))).is_ok();
         for (output, name) in self.made.drain(..) {
             xrandr_forget(&output, &name);
         }
@@ -332,6 +348,14 @@ impl Drop for Fitter {
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    #[test]
+    fn a_failing_tool_says_why() {
+        assert_eq!(run(Command::new("sh").args(["-c", "echo 1920x1080"])).as_deref(), Ok("1920x1080\n"));
+        let failed = run(Command::new("sh").args(["-c", "echo no such mode >&2; exit 3"])).unwrap_err();
+        assert!(failed.starts_with("sh: no such mode"), "{failed}");
+        assert!(run(&mut Command::new("biglace-no-such-tool")).is_err());
+    }
 
     const XRANDR: &str = "Screen 0: minimum 320 x 200, current 1280 x 800, maximum 8192 x 8192
 Virtual-1 connected primary 1280x800+0+0 0mm x 0mm

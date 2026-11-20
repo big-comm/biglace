@@ -161,18 +161,18 @@ impl Stage {
         // Redrawn only when a picture or a voice changes.
         {
             let s = stage.clone();
-            let changes = room::stage_wakeups();
+            let changes = room::room_view_wakeups();
             glib::spawn_future_local(async move {
                 while changes.recv().await.is_ok() {
                     s.refresh();
                 }
             });
         }
-        stage.widget.connect_map(|_| room::stage_changed());
+        stage.widget.connect_map(|_| room::room_view_changed());
         #[cfg(debug_assertions)]
         if room::preview() {
             glib::timeout_add_local(std::time::Duration::from_millis(50), || {
-                room::stage_changed();
+                room::room_view_changed();
                 glib::ControlFlow::Continue
             });
         }

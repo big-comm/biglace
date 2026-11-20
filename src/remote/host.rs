@@ -14,7 +14,7 @@ use crate::tailscale::{self, Identity};
 
 mod encoder;
 
-pub(crate) use encoder::RateMode;
+pub(crate) use encoder::{Encoder, RateMode};
 
 /// Signed requests must be this fresh (either way, for clock skew).
 const SKEW: Duration = Duration::from_secs(120);
@@ -481,7 +481,7 @@ thread_local! {
 #[cfg(target_os = "linux")]
 fn wayland_zero_copy(capture: &str, rate: RateMode) -> Option<String> {
     use gstreamer as gst;
-    let enc = encoder::usable().iter().find(|e| **e == encoder::Encoder::VaH264)?.description(rate);
+    let enc = encoder::usable().iter().find(|e| **e == Encoder::VaH264)?.description(rate);
     gst::ElementFactory::find("vapostproc")?;
     Some(format!(
         "{capture} ! video/x-raw(memory:DMABuf) ! vapostproc \
@@ -530,7 +530,7 @@ pub(crate) fn open_source(want: Pointer, rate: RateMode) -> anyhow::Result<Sourc
         // Usually the viewer draws the pointer itself (no video delay on
         // it); a room share shows the presenter's in the frames.
         let pipelines = each_encoder(&format!("ximagesrc name=capture use-damage=false show-pointer={embedded} ! {X11_TAIL}"), rate)?;
-        let watch = super::damage_x11::watch(dirty.clone(), embedded);
+        let watch = super::damage_x11::watch(dirty.clone(), want);
         Ok(Source {
             pointer: want,
             dirty: watch.is_some().then_some(dirty),
@@ -540,13 +540,6 @@ pub(crate) fn open_source(want: Pointer, rate: RateMode) -> anyhow::Result<Sourc
             _damage: watch,
         })
     }
-}
-
-/// X11: the thread raising `dirty`, for a source whose first one was
-/// dropped while nobody watched.
-#[cfg(target_os = "linux")]
-pub(crate) fn watch_damage(dirty: &Arc<Damage>, track_pointer: bool) -> Option<super::damage_x11::Watch> {
-    super::damage_x11::watch(dirty.clone(), track_pointer)
 }
 
 #[cfg(not(target_os = "linux"))]
@@ -649,7 +642,7 @@ fn run_session(mut stream: TcpStream, stop: &StopHandle, protocol: u32, identity
                             };
                             if changed {
                                 // Let the screen settle, then capture it anew.
-                                std::thread::sleep(Duration::from_millis(700));
+                                std::thread::sleep(SETTLE_AFTER_FIT);
                                 restart.store(true, Ordering::Release);
                             }
                         }
@@ -703,20 +696,35 @@ fn run_session(mut stream: TcpStream, stop: &StopHandle, protocol: u32, identity
         write_frame(&mut *w, kind, payload)?;
         Ok(())
     };
-    let screen_size = || super::display::query().and_then(|s| s.current).map(|m| (m.width, m.height));
+    // Only a Wayland capture ends by itself, the one case that needs the size.
+    let screen_size = || {
+        if !super::wayland_session() {
+            return None;
+        }
+        super::display::query().and_then(|s| s.current).map(|m| (m.width, m.height))
+    };
     let mut opened_at = screen_size();
-    let mut reopened_after_end = 0;
+    let mut reopens = Vec::new();
     loop {
         match stream_screen(&send, &pipelines, dirty.clone(), stop, timestamps, &want_key, &restart) {
             Ok(true) => {}
             Ok(false) => break,
+            // GNOME ends the screencast as soon as the viewer's fit changes
+            // the mode, before the fit raises `restart`.
+            Err(e) if e.is::<CaptureEnded>() && !stop.stopped() && restart_follows(&restart) => {}
             Err(e) if e.is::<CaptureEnded>() && !stop.stopped() => {
-                if !reopen_after_end(opened_at, screen_size(), reopened_after_end) {
-                    tailscale::dbg("remote: the capture ended with the screen size unchanged, so the share was stopped here");
-                    let _ = send(Kind::Error, crate::tr!("sharing was stopped on that computer").as_bytes());
+                let size = screen_size();
+                if !reopen_after_end(opened_at, size, &mut reopens, Instant::now()) {
+                    // Without both sizes nothing tells the person's stop from a mode change.
+                    let why = if opened_at.is_some() && size.is_some() {
+                        crate::tr!("sharing was stopped on that computer")
+                    } else {
+                        crate::tr!("the screen capture ended")
+                    };
+                    tailscale::dbg(&format!("remote: the capture ended (screen size {opened_at:?}, then {size:?}), not reopened"));
+                    let _ = send(Kind::Error, why.as_bytes());
                     break;
                 }
-                reopened_after_end += 1;
             }
             Err(e) => {
                 tailscale::dbg(&format!("remote: capture failed: {e}"));
@@ -904,27 +912,41 @@ fn start_pipeline(
         .and_then(|e| e.downcast::<gst_app::AppSink>().ok())
         .ok_or_else(|| anyhow::anyhow!("no appsink"))?;
     stamp_and_gate(&pipeline, dirty);
+    match first_sample(&pipeline, &sink) {
+        Ok(sample) => Ok((pipeline, sink, sample)),
+        Err(e) => {
+            let _ = pipeline.set_state(gst::State::Null);
+            Err(e)
+        }
+    }
+}
+
+/// Plays `pipeline` until `sink`'s first sample, giving up at the
+/// pipeline's first error instead of at the deadline.
+fn first_sample(pipeline: &gstreamer::Pipeline, sink: &gstreamer_app::AppSink) -> anyhow::Result<gstreamer::Sample> {
+    use gstreamer as gst;
+    use gstreamer::prelude::*;
+    let bus = pipeline.bus().ok_or_else(|| anyhow::anyhow!("no bus"))?;
+    let error = || {
+        let msg = bus.pop_filtered(&[gst::MessageType::Error])?;
+        match msg.view() {
+            gst::MessageView::Error(e) => Some(anyhow::anyhow!("{}", e.error())),
+            _ => None,
+        }
+    };
     if pipeline.set_state(gst::State::Playing).is_err() {
-        let _ = pipeline.set_state(gst::State::Null);
-        anyhow::bail!("could not start");
+        return Err(error().unwrap_or_else(|| anyhow::anyhow!("could not start")));
     }
     let deadline = Instant::now() + FIRST_FRAME_WITHIN;
     while Instant::now() < deadline {
-        if let Some(sample) = sink.try_pull_sample(gst::ClockTime::from_mseconds(200)) {
-            return Ok((pipeline, sink, sample));
+        if let Some(sample) = sink.try_pull_sample(gst::ClockTime::from_mseconds(100)) {
+            return Ok(sample);
         }
-        if let Some(bus) = pipeline.bus() {
-            if let Some(msg) = bus.pop_filtered(&[gst::MessageType::Error]) {
-                let _ = pipeline.set_state(gst::State::Null);
-                if let gst::MessageView::Error(e) = msg.view() {
-                    anyhow::bail!("{}", e.error());
-                }
-                anyhow::bail!("pipeline error");
-            }
+        if let Some(e) = error() {
+            return Err(e);
         }
     }
-    let _ = pipeline.set_state(gst::State::Null);
-    anyhow::bail!("no frame within {:?}", FIRST_FRAME_WITHIN)
+    anyhow::bail!("no frame within {FIRST_FRAME_WITHIN:?}")
 }
 
 /// A pipeline that hasn't produced a frame by then is given up on.
@@ -1013,16 +1035,38 @@ fn stamp_and_gate(pipeline: &gstreamer::Pipeline, dirty: Option<Arc<Damage>>) {
 /// alive; everything else waits for a change.
 const IDLE_FRAME_EVERY: Duration = Duration::from_secs(1);
 
-/// Reopened captures per session, a bound on a screen whose size keeps
+/// Reopened captures per minute, a bound on a screen whose size keeps
 /// changing.
-const MAX_REOPENS_AFTER_END: u32 = 10;
+const MAX_REOPENS_PER_MINUTE: usize = 10;
 
-/// Whether a capture that ended by itself opens again. The person stopping
-/// the share and GNOME closing its screencast on a mode change look the
-/// same to the portal and to PipeWire; only a screen size different from
-/// when the capture opened tells the mode change apart.
-fn reopen_after_end(opened_at: Option<(u32, u32)>, now: Option<(u32, u32)>, reopened: u32) -> bool {
-    reopened < MAX_REOPENS_AFTER_END && opened_at.is_some() && now.is_some() && opened_at != now
+/// Whether a capture that ended by itself opens again (`reopens`: when it
+/// did before). Only a new screen size tells GNOME's mode change from the person's stop.
+fn reopen_after_end(opened_at: Option<(u32, u32)>, size: Option<(u32, u32)>, reopens: &mut Vec<Instant>, now: Instant) -> bool {
+    reopens.retain(|at| now.duration_since(*at) < Duration::from_secs(60));
+    let reopen = reopens.len() < MAX_REOPENS_PER_MINUTE && opened_at.is_some() && size.is_some() && opened_at != size;
+    if reopen {
+        reopens.push(now);
+    }
+    reopen
+}
+
+/// How long a viewer's fit lets the new mode settle before it raises
+/// `restart`.
+const SETTLE_AFTER_FIT: Duration = Duration::from_millis(700);
+
+/// Whether `restart` is raised, or soon is, by a fit already under way;
+/// takes it when so.
+fn restart_follows(restart: &AtomicBool) -> bool {
+    let deadline = Instant::now() + SETTLE_AFTER_FIT * 2;
+    loop {
+        if restart.swap(false, Ordering::AcqRel) {
+            return true;
+        }
+        if Instant::now() >= deadline {
+            return false;
+        }
+        std::thread::sleep(Duration::from_millis(50));
+    }
 }
 
 /// The capture ended by itself: the person stopped sharing, or GNOME closed
@@ -1077,7 +1121,7 @@ pub(crate) fn stream_screen(
     };
     let mut pending = Some(first);
     let mut tuning = pipeline.by_name("enc").and_then(|element| {
-        let kind = encoder::Encoder::from_element(&element.factory()?.name())?;
+        let kind = Encoder::from_element(&element.factory()?.name())?;
         Some((element, kind, encoder::RateControl::new(kind.ceiling_kbps())))
     });
 
@@ -1304,6 +1348,19 @@ mod tests {
         assert!(ended.as_ref().is_err_and(|e| e.is::<CaptureEnded>()), "{ended:?}");
     }
 
+    /// A pipeline whose element fails on the first frame reports why at
+    /// once, well before the deadline.
+    #[test]
+    fn failing_start_returns_the_reason_early() {
+        gst::init().unwrap();
+        let started = Instant::now();
+        let Err(reason) = start_pipeline("videotestsrc num-buffers=1 ! identity error-after=1 ! appsink name=sink", None) else {
+            panic!("the pipeline started");
+        };
+        assert!(started.elapsed() < FIRST_FRAME_WITHIN / 2, "took {:?}", started.elapsed());
+        assert!(!reason.to_string().starts_with("no frame within"), "{reason}");
+    }
+
     /// The capture time a frame carries is when it was captured, so the
     /// latency a viewer shows includes the host's own processing (50 ms
     /// held here) and encoding.
@@ -1329,8 +1386,10 @@ mod tests {
         let (want_key, restart) = (AtomicBool::new(false), AtomicBool::new(false));
         let _ = stream_screen(&send, &pipelines, None, &StopHandle::detached(), true, &want_key, &restart);
         let ages = ages.into_inner().unwrap();
-        assert!(!ages.is_empty(), "no frame sent");
-        assert!(ages.iter().all(|us| (50_000..1_000_000).contains(us)), "ages in µs: {ages:?}");
+        assert!(ages.len() >= 2, "frames sent: {}", ages.len());
+        assert!(ages.iter().all(|us| *us >= 50_000), "ages in µs: {ages:?}");
+        // The first frame also waited for the encoder to start.
+        assert!(ages[1..].iter().all(|us| *us < 1_000_000), "ages in µs: {ages:?}");
     }
 
     /// A share the person stopped stays stopped; only a new screen size
@@ -1338,11 +1397,35 @@ mod tests {
     #[test]
     fn size_change_alone_reopens_capture() {
         let (hd, fhd) = (Some((1280, 720)), Some((1920, 1080)));
-        assert!(!reopen_after_end(fhd, fhd, 0), "stopped by the person");
-        assert!(reopen_after_end(fhd, hd, 0), "mode change");
-        assert!(!reopen_after_end(None, hd, 0), "size unknown when opened");
-        assert!(!reopen_after_end(fhd, None, 0), "size unknown now");
-        assert!(!reopen_after_end(fhd, hd, MAX_REOPENS_AFTER_END), "too many");
+        let now = Instant::now();
+        assert!(!reopen_after_end(fhd, fhd, &mut Vec::new(), now), "stopped by the person");
+        assert!(reopen_after_end(fhd, hd, &mut Vec::new(), now), "mode change");
+        assert!(!reopen_after_end(None, hd, &mut Vec::new(), now), "size unknown when opened");
+        assert!(!reopen_after_end(fhd, None, &mut Vec::new(), now), "size unknown now");
+        let mut reopens = Vec::new();
+        for _ in 0..MAX_REOPENS_PER_MINUTE {
+            assert!(reopen_after_end(fhd, hd, &mut reopens, now));
+        }
+        assert!(!reopen_after_end(fhd, hd, &mut reopens, now), "too many");
+        assert!(reopen_after_end(fhd, hd, &mut reopens, now + Duration::from_secs(60)), "a minute later");
+    }
+
+    /// The capture ending on the viewer's own fit waits for that fit's
+    /// `restart` and takes it; a capture the person ended finds none.
+    #[test]
+    fn fit_restart_is_taken_uncounted() {
+        let restart = Arc::new(AtomicBool::new(false));
+        let raiser = {
+            let restart = restart.clone();
+            std::thread::spawn(move || {
+                std::thread::sleep(SETTLE_AFTER_FIT);
+                restart.store(true, Ordering::Release);
+            })
+        };
+        assert!(restart_follows(&restart));
+        assert!(!restart.load(Ordering::Acquire), "the restart was not taken");
+        raiser.join().unwrap();
+        assert!(!restart_follows(&restart));
     }
 
     /// A still X11 screen holds back the next grab until it changes, or
@@ -1403,7 +1486,7 @@ mod tests {
             return;
         }
         // Every encoder present on this machine, not just the preferred one.
-        let present = encoder::Encoder::ALL.into_iter().filter(|e| gst::ElementFactory::find(e.element()).is_some());
+        let present = Encoder::ALL.into_iter().filter(|e| gst::ElementFactory::find(e.element()).is_some());
         let setups = [WAYLAND_TAIL, X11_TAIL].into_iter().flat_map(|tail| [(tail, RateMode::FollowsLink), (tail, RateMode::ConstantQuality)]);
         for (kind, (tail, rate)) in present.flat_map(|e| setups.clone().map(move |setup| (e, setup))) {
             let description = kind.description(rate);

@@ -24,10 +24,11 @@ impl Drop for Watch {
     }
 }
 
-/// Watch the root window; `dirty` is raised on every change. None when
-/// XDamage isn't available (the caller then treats the screen as always
-/// changing).
-pub fn watch(dirty: Arc<super::host::Damage>, track_pointer: bool) -> Option<Watch> {
+/// Watch the root window; `dirty` is raised on every change, and on pointer
+/// moves when the `pointer` is drawn in the frames. None when XDamage isn't
+/// available (the caller then treats the screen as always changing).
+pub fn watch(dirty: Arc<super::host::Damage>, pointer: super::host::Pointer) -> Option<Watch> {
+    let track_pointer = pointer == super::host::Pointer::Embedded;
     let (conn, screen_num) = x11rb::connect(None).ok()?;
     conn.damage_query_version(1, 1).ok()?.reply().ok()?;
     let root = conn.setup().roots.get(screen_num)?.root;
@@ -86,7 +87,7 @@ mod tests {
             eprintln!("no X server of its own; skipping");
             return;
         }
-        let watch = watch(Arc::default(), true).expect("XDamage on this display");
+        let watch = watch(Arc::default(), super::super::host::Pointer::Embedded).expect("XDamage on this display");
         let (done, ended) = std::sync::mpsc::channel();
         std::thread::spawn(move || {
             drop(watch);

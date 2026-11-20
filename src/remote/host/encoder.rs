@@ -17,7 +17,7 @@ pub(crate) enum Encoder {
 
 impl Encoder {
     /// Every encoder, in order of preference.
-    pub(super) const ALL: [Encoder; 4] = [Encoder::VaH264, Encoder::NvH264, Encoder::X264, Encoder::OpenH264];
+    pub(crate) const ALL: [Encoder; 4] = [Encoder::VaH264, Encoder::NvH264, Encoder::X264, Encoder::OpenH264];
 
     pub(crate) fn element(self) -> &'static str {
         match self {
@@ -243,53 +243,15 @@ fn nvidia_driver(drm: &Path) -> bool {
 
 /// Encode one frame with `encoder`'s own settings for `rate`.
 fn encodes_a_frame(encoder: Encoder, rate: RateMode) -> anyhow::Result<()> {
-    use gstreamer as gst;
-    use gstreamer::prelude::*;
     let desc = format!(
         "videotestsrc num-buffers=1 ! video/x-raw,format={},width=640,height=480 ! {} ! appsink name=sink sync=false",
         encoder.format(),
         encoder.description(rate)
     );
-    let pipeline = gst::parse::launch(&desc)?.downcast::<gst::Pipeline>().map_err(|_| anyhow::anyhow!("not a pipeline"))?;
-    let sink = pipeline
-        .by_name("sink")
-        .and_then(|e| e.downcast::<gstreamer_app::AppSink>().ok())
-        .ok_or_else(|| anyhow::anyhow!("no appsink"))?;
-    let encoded = first_sample(&pipeline, &sink);
-    let _ = pipeline.set_state(gstreamer::State::Null);
-    encoded
+    let (pipeline, _, _) = super::start_pipeline(&desc, None)?;
+    let _ = gstreamer::prelude::ElementExt::set_state(&pipeline, gstreamer::State::Null);
+    Ok(())
 }
-
-/// Waits for `sink`'s first sample, giving up at the pipeline's first error
-/// instead of at the deadline.
-fn first_sample(pipeline: &gstreamer::Pipeline, sink: &gstreamer_app::AppSink) -> anyhow::Result<()> {
-    use gstreamer as gst;
-    use gstreamer::prelude::*;
-    let bus = pipeline.bus().ok_or_else(|| anyhow::anyhow!("no bus"))?;
-    let error = || {
-        let msg = bus.pop_filtered(&[gst::MessageType::Error])?;
-        match msg.view() {
-            gst::MessageView::Error(e) => Some(anyhow::anyhow!("{}", e.error())),
-            _ => None,
-        }
-    };
-    if pipeline.set_state(gst::State::Playing).is_err() {
-        return Err(error().unwrap_or_else(|| anyhow::anyhow!("could not start")));
-    }
-    let deadline = std::time::Instant::now() + PROBE_WITHIN;
-    while std::time::Instant::now() < deadline {
-        if sink.try_pull_sample(gst::ClockTime::from_mseconds(100)).is_some() {
-            return Ok(());
-        }
-        if let Some(e) = error() {
-            return Err(e);
-        }
-    }
-    anyhow::bail!("no frame within {PROBE_WITHIN:?}")
-}
-
-/// A test frame not encoded by then means the encoder does not work here.
-const PROBE_WITHIN: std::time::Duration = std::time::Duration::from_secs(5);
 
 /// The encoders that work here, best first (probed once).
 pub(crate) fn usable() -> &'static [Encoder] {
@@ -398,12 +360,6 @@ mod tests {
         }
     }
 
-    /// `can_host` answers from this list without probing.
-    #[test]
-    fn can_host_knows_every_encoder() {
-        assert_eq!(crate::remote::H264_ENCODERS, Encoder::ALL.map(Encoder::element));
-    }
-
     /// A room keeps constant quality (nothing retunes it); a 1:1 share
     /// starts at the ceiling bitrate that the retune moves.
     #[test]
@@ -442,23 +398,6 @@ mod tests {
         assert_eq!(working(all.clone(), |_| only(true)), [Encoder::VaH264, Encoder::X264]);
         assert_eq!(working(all.clone(), |e| only(e == Encoder::OpenH264)), [Encoder::OpenH264]);
         assert!(working(all, |_| only(false)).is_empty());
-    }
-
-    /// A pipeline whose element fails on the first frame reports why at
-    /// once, well before the probe's deadline.
-    #[test]
-    fn failing_probe_returns_the_reason_early() {
-        use gstreamer as gst;
-        use gstreamer::prelude::*;
-        gst::init().unwrap();
-        let desc = "videotestsrc num-buffers=1 ! identity error-after=1 ! appsink name=sink";
-        let pipeline = gst::parse::launch(desc).unwrap().downcast::<gst::Pipeline>().unwrap();
-        let sink = pipeline.by_name("sink").unwrap().downcast::<gstreamer_app::AppSink>().unwrap();
-        let started = std::time::Instant::now();
-        let reason = first_sample(&pipeline, &sink).unwrap_err().to_string();
-        let _ = pipeline.set_state(gst::State::Null);
-        assert!(started.elapsed() < PROBE_WITHIN / 2, "took {:?}", started.elapsed());
-        assert!(!reason.starts_with("no frame within"), "{reason}");
     }
 
     #[test]

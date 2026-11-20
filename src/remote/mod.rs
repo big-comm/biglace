@@ -17,7 +17,7 @@ pub mod host;
 #[cfg(target_os = "linux")]
 mod cursor_x11;
 #[cfg(target_os = "linux")]
-mod damage_x11;
+pub(crate) mod damage_x11;
 pub(crate) mod display;
 #[cfg(target_os = "linux")]
 mod input_x11;
@@ -271,10 +271,6 @@ pub fn wayland_session() -> bool {
         || std::env::var("XDG_SESSION_TYPE").is_ok_and(|t| t == "wayland")
 }
 
-/// Every H.264 encoder element the host can run (`host::encoder`'s list).
-#[cfg(target_os = "linux")]
-const H264_ENCODERS: [&str; 4] = ["vah264enc", "nvh264enc", "x264enc", "openh264enc"];
-
 /// Whether this device can be a remote-screen host: Linux with the GStreamer
 /// pieces the host pipeline needs — X11 (XTest) or Wayland (portal +
 /// PipeWire).
@@ -285,7 +281,7 @@ pub fn can_host() -> bool {
         *OK.get_or_init(|| {
             // Presence only: test-encoding loads hardware drivers (CUDA for
             // NVENC), which waits for the first share.
-            if gstreamer::init().is_err() || !H264_ENCODERS.iter().any(|e| gstreamer::ElementFactory::find(e).is_some()) {
+            if gstreamer::init().is_err() || !host::Encoder::ALL.iter().any(|e| gstreamer::ElementFactory::find(e.element()).is_some()) {
                 return false;
             }
             if wayland_session() {
