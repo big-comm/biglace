@@ -1366,8 +1366,10 @@ mod tests {
         let (want_key, restart) = (AtomicBool::new(false), AtomicBool::new(false));
         let _ = stream_screen(&send, &pipelines, None, &StopHandle::detached(), true, &want_key, &restart);
         let ages = ages.into_inner().unwrap();
-        assert!(!ages.is_empty(), "no frame sent");
-        assert!(ages.iter().all(|us| (50_000..1_000_000).contains(us)), "ages in µs: {ages:?}");
+        assert!(ages.len() >= 2, "frames sent: {}", ages.len());
+        assert!(ages.iter().all(|us| *us >= 50_000), "ages in µs: {ages:?}");
+        // The first frame also waited for the encoder to start.
+        assert!(ages[1..].iter().all(|us| *us < 1_000_000), "ages in µs: {ages:?}");
     }
 
     /// A share the person stopped stays stopped; only a new screen size
