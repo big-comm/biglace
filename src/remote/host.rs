@@ -709,12 +709,12 @@ fn run_session(mut stream: TcpStream, stop: &StopHandle, protocol: u32, identity
         match stream_screen(&send, &pipelines, dirty.clone(), stop, timestamps, &want_key, &restart) {
             Ok(true) => {}
             Ok(false) => break,
-            // GNOME ends the screencast as soon as the viewer's fit changes
-            // the mode, before the fit raises `restart`.
-            Err(e) if e.is::<CaptureEnded>() && !stop.stopped() && restart_follows(&restart) => {}
             Err(e) if e.is::<CaptureEnded>() && !stop.stopped() => {
+                // GNOME ends the screencast as soon as the viewer's fit changes
+                // the mode, before the fit raises `restart`.
+                let refit = restart_follows(&restart);
                 let size = screen_size();
-                if !reopen_after_end(opened_at, size, &mut reopens, Instant::now()) {
+                if !reopen_after_end(refit, opened_at, size, &mut reopens, Instant::now()) {
                     // Without both sizes nothing tells the person's stop from a mode change.
                     let why = if opened_at.is_some() && size.is_some() {
                         crate::tr!("sharing was stopped on that computer")
@@ -1040,10 +1040,19 @@ const IDLE_FRAME_EVERY: Duration = Duration::from_secs(1);
 const MAX_REOPENS_PER_MINUTE: usize = 10;
 
 /// Whether a capture that ended by itself opens again (`reopens`: when it
-/// did before). Only a new screen size tells GNOME's mode change from the person's stop.
-fn reopen_after_end(opened_at: Option<(u32, u32)>, size: Option<(u32, u32)>, reopens: &mut Vec<Instant>, now: Instant) -> bool {
+/// did before). Only a viewer's fit (`refit`) or a new screen size tells
+/// GNOME's mode change from the person's stop, and both count: a viewer
+/// that keeps fitting must not outlast that stop.
+fn reopen_after_end(
+    refit: bool,
+    opened_at: Option<(u32, u32)>,
+    size: Option<(u32, u32)>,
+    reopens: &mut Vec<Instant>,
+    now: Instant,
+) -> bool {
     reopens.retain(|at| now.duration_since(*at) < Duration::from_secs(60));
-    let reopen = reopens.len() < MAX_REOPENS_PER_MINUTE && opened_at.is_some() && size.is_some() && opened_at != size;
+    let resized = opened_at.is_some() && size.is_some() && opened_at != size;
+    let reopen = reopens.len() < MAX_REOPENS_PER_MINUTE && (refit || resized);
     if reopen {
         reopens.push(now);
     }
@@ -1398,16 +1407,30 @@ mod tests {
     fn size_change_alone_reopens_capture() {
         let (hd, fhd) = (Some((1280, 720)), Some((1920, 1080)));
         let now = Instant::now();
-        assert!(!reopen_after_end(fhd, fhd, &mut Vec::new(), now), "stopped by the person");
-        assert!(reopen_after_end(fhd, hd, &mut Vec::new(), now), "mode change");
-        assert!(!reopen_after_end(None, hd, &mut Vec::new(), now), "size unknown when opened");
-        assert!(!reopen_after_end(fhd, None, &mut Vec::new(), now), "size unknown now");
+        assert!(!reopen_after_end(false, fhd, fhd, &mut Vec::new(), now), "stopped by the person");
+        assert!(reopen_after_end(false, fhd, hd, &mut Vec::new(), now), "mode change");
+        assert!(!reopen_after_end(false, None, hd, &mut Vec::new(), now), "size unknown when opened");
+        assert!(!reopen_after_end(false, fhd, None, &mut Vec::new(), now), "size unknown now");
         let mut reopens = Vec::new();
         for _ in 0..MAX_REOPENS_PER_MINUTE {
-            assert!(reopen_after_end(fhd, hd, &mut reopens, now));
+            assert!(reopen_after_end(false, fhd, hd, &mut reopens, now));
         }
-        assert!(!reopen_after_end(fhd, hd, &mut reopens, now), "too many");
-        assert!(reopen_after_end(fhd, hd, &mut reopens, now + Duration::from_secs(60)), "a minute later");
+        assert!(!reopen_after_end(false, fhd, hd, &mut reopens, now), "too many");
+        assert!(reopen_after_end(false, fhd, hd, &mut reopens, now + Duration::from_secs(60)), "a minute later");
+    }
+
+    /// A viewer's fit reopens a capture of the same size, but only as often
+    /// as a mode change could: one that keeps fitting can't outlast a stop.
+    #[test]
+    fn refits_count_toward_the_reopen_cap() {
+        let fhd = Some((1920, 1080));
+        let now = Instant::now();
+        let mut reopens = Vec::new();
+        for _ in 0..MAX_REOPENS_PER_MINUTE {
+            assert!(reopen_after_end(true, fhd, fhd, &mut reopens, now));
+        }
+        assert!(!reopen_after_end(true, fhd, fhd, &mut reopens, now), "too many refits");
+        assert!(!reopen_after_end(true, None, None, &mut reopens, now), "sizes unknown");
     }
 
     /// The capture ending on the viewer's own fit waits for that fit's
