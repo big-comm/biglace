@@ -290,9 +290,7 @@ async fn connect_libei(rd: &RemoteDesktop, session: &Session<RemoteDesktop>, str
         events,
         stream,
         resumed: Vec::new(),
-        keymap: None,
-        group: 0,
-        held: HashMap::new(),
+        keys: Keys::default(),
         sequence: 0,
         open: true,
         warned_no_device: false,
@@ -315,12 +313,7 @@ struct Libei {
     stream: StreamPlace,
     /// Only devices the server resumed, and we started emulating on, take input.
     resumed: Vec<Device>,
-    keymap: Option<xkb::Keymap>,
-    /// The keyboard's active layout.
-    group: u32,
-    /// The evdev keycode pressed for each held keysym, so its release lifts
-    /// the same key.
-    held: HashMap<u32, u32>,
+    keys: Keys,
     sequence: u32,
     open: bool,
     warned_no_device: bool,
@@ -350,7 +343,7 @@ impl Libei {
             EiEvent::DeviceAdded(added) => {
                 if let Some(keymap) = added.device.keymap() {
                     match load_keymap(keymap) {
-                        Ok(keymap) => self.keymap = Some(keymap),
+                        Ok(keymap) => self.keys.set_keymap(keymap),
                         Err(e) => crate::tailscale::dbg(&format!("remote: can't read the libei keymap: {e:#}")),
                     }
                 }
@@ -364,7 +357,7 @@ impl Libei {
             }
             EiEvent::DevicePaused(paused) => self.resumed.retain(|d| *d != paused.device),
             EiEvent::DeviceRemoved(removed) => self.resumed.retain(|d| *d != removed.device),
-            EiEvent::KeyboardModifiers(modifiers) => self.group = modifiers.group,
+            EiEvent::KeyboardModifiers(modifiers) => self.keys.set_group(modifiers.group),
             EiEvent::Disconnected(gone) => {
                 crate::tailscale::dbg(&format!("remote: libei disconnected us: {:?} {:?}", gone.reason, gone.explanation));
                 self.open = false;
@@ -408,15 +401,14 @@ impl Libei {
             Input::Key { keysym, pressed } => {
                 let Some(keyboard) = device.interface::<ei::Keyboard>() else { return };
                 let code = if pressed {
-                    let Some(code) = self.keymap.as_ref().and_then(|k| evdev_keycode(k, keysym, self.group)) else {
+                    let Some(code) = self.keys.press(keysym) else {
                         // Which keys, never: the log would record what the viewer types.
                         log_once(&mut self.warned_no_key, "remote: the viewer typed keys this keyboard layout has not");
                         return;
                     };
-                    self.held.insert(keysym, code);
                     code
                 } else {
-                    let Some(code) = self.held.remove(&keysym) else { return };
+                    let Some(code) = self.keys.release(keysym) else { return };
                     code
                 };
                 let state = if pressed { ei::keyboard::KeyState::Press } else { ei::keyboard::KeyState::Released };
@@ -494,24 +486,66 @@ fn load_keymap(keymap: &reis::event::Keymap) -> anyhow::Result<xkb::Keymap> {
         .ok_or_else(|| anyhow::anyhow!("libxkbcommon refused it"))
 }
 
-/// The evdev keycode of the key that types `keysym`: in the active layout
+/// The server's keymap as the keys that type each keysym, and the key each
+/// held keysym went down on.
+#[derive(Default)]
+struct Keys {
+    keymap: Option<xkb::Keymap>,
+    /// The keyboard's active layout.
+    group: u32,
+    /// Keysym to evdev keycode, for `keymap` and `group`.
+    codes: HashMap<u32, u32>,
+    /// So a release lifts the key its press went down on.
+    held: HashMap<u32, u32>,
+}
+
+impl Keys {
+    fn set_keymap(&mut self, keymap: xkb::Keymap) {
+        self.codes = keycode_map(&keymap, self.group);
+        self.keymap = Some(keymap);
+    }
+
+    fn set_group(&mut self, group: u32) {
+        if group != self.group {
+            self.group = group;
+            if let Some(keymap) = &self.keymap {
+                self.codes = keycode_map(keymap, group);
+            }
+        }
+    }
+
+    fn press(&mut self, keysym: u32) -> Option<u32> {
+        let code = *self.codes.get(&keysym)?;
+        self.held.insert(keysym, code);
+        Some(code)
+    }
+
+    fn release(&mut self, keysym: u32) -> Option<u32> {
+        self.held.remove(&keysym)
+    }
+}
+
+/// Keysym to the evdev keycode of the key that types it: in layout `group`
 /// first, then at the lowest shift level (the viewer sends its own Shift).
-fn evdev_keycode(keymap: &xkb::Keymap, keysym: u32, group: u32) -> Option<u32> {
-    let wanted = xkb::Keysym::new(keysym);
-    let mut best: Option<(bool, u32, u32)> = None;
+fn keycode_map(keymap: &xkb::Keymap, group: u32) -> HashMap<u32, u32> {
+    let mut best: HashMap<u32, (bool, u32, u32)> = HashMap::new();
     for raw in keymap.min_keycode().raw()..=keymap.max_keycode().raw() {
+        // XKB keycodes are evdev ones plus 8.
+        let Some(code) = raw.checked_sub(8) else { continue };
         let key = xkb::Keycode::new(raw);
         for layout in 0..keymap.num_layouts_for_key(key) {
             for level in 0..keymap.num_levels_for_key(key, layout) {
-                let rank = (layout != group, level, raw);
-                if keymap.key_get_syms_by_level(key, layout, level).contains(&wanted) && best.is_none_or(|b| rank < b) {
-                    best = Some(rank);
+                let rank = (layout != group, level, code);
+                for sym in keymap.key_get_syms_by_level(key, layout, level) {
+                    let kept = best.entry(sym.raw()).or_insert(rank);
+                    if rank < *kept {
+                        *kept = rank;
+                    }
                 }
             }
         }
     }
-    // XKB keycodes are evdev ones plus 8.
-    best.and_then(|(_, _, raw)| raw.checked_sub(8))
+    best.into_iter().map(|(sym, (_, _, code))| (sym, code)).collect()
 }
 
 /// libei timestamps are CLOCK_MONOTONIC microseconds.
@@ -570,19 +604,33 @@ mod tests {
             .expect("xkeyboard-config has the us and de layouts")
     }
 
+    #[test]
+    fn release_lifts_the_key_its_press_went_down_on() {
+        let mut keys = Keys::default();
+        keys.set_keymap(keymap("us,de"));
+        assert_eq!(keys.press(0x79), Some(21)); // y on KEY_Y in us
+        keys.set_group(1);
+        assert_eq!(keys.release(0x79), Some(21), "not KEY_Z, where de has y");
+        assert_eq!(keys.release(0x79), None, "already up");
+        assert_eq!(keys.release(0x7a), None, "never pressed");
+        assert_eq!(keys.press(0x6c6), None, "on no key here");
+        assert_eq!(keys.release(0x6c6), None);
+    }
+
     /// Expected codes from linux/input-event-codes.h.
     #[test]
     fn keysym_finds_its_evdev_key() {
         let us = keymap("us");
-        assert_eq!(evdev_keycode(&us, 0x61, 0), Some(30)); // a: KEY_A
-        assert_eq!(evdev_keycode(&us, 0x21, 0), Some(2)); // exclam: KEY_1, shifted
-        assert_eq!(evdev_keycode(&us, 0xff0d, 0), Some(28)); // Return: KEY_ENTER
-        assert_eq!(evdev_keycode(&us, 0xffe1, 0), Some(42)); // Shift_L: KEY_LEFTSHIFT
-        assert_eq!(evdev_keycode(&us, 0x6c6, 0), None); // Cyrillic_ef: not on a us keyboard
+        let us = keycode_map(&us, 0);
+        assert_eq!(us.get(&0x61), Some(&30)); // a: KEY_A
+        assert_eq!(us.get(&0x21), Some(&2)); // exclam: KEY_1, shifted
+        assert_eq!(us.get(&0xff0d), Some(&28)); // Return: KEY_ENTER
+        assert_eq!(us.get(&0xffe1), Some(&42)); // Shift_L: KEY_LEFTSHIFT
+        assert_eq!(us.get(&0x6c6), None); // Cyrillic_ef: not on a us keyboard
 
         let us_de = keymap("us,de");
-        assert_eq!(evdev_keycode(&us_de, 0x79, 0), Some(21)); // y: KEY_Y in us
-        assert_eq!(evdev_keycode(&us_de, 0x79, 1), Some(44)); // y: KEY_Z in de
-        assert_eq!(evdev_keycode(&us_de, 0xfc, 0), Some(26)); // udiaeresis: KEY_LEFTBRACE, de only
+        assert_eq!(keycode_map(&us_de, 0).get(&0x79), Some(&21)); // y: KEY_Y in us
+        assert_eq!(keycode_map(&us_de, 1).get(&0x79), Some(&44)); // y: KEY_Z in de
+        assert_eq!(keycode_map(&us_de, 0).get(&0xfc), Some(&26)); // udiaeresis: KEY_LEFTBRACE, de only
     }
 }
