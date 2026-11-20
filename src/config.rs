@@ -363,11 +363,22 @@ mod tests {
 
     /// Loading the config runs when the window is built, including the hidden
     /// start at login, while the keyring may still be locked; it must not touch
-    /// the keyring.
+    /// the keyring. The load runs in a child process of its own: other tests in
+    /// this process use the session bus, and their connections would reach the
+    /// fake bus too.
     #[cfg(target_os = "linux")]
     #[test]
     fn loading_leaves_the_keyring_alone() {
         use std::os::unix::net::UnixListener;
+        use std::process::{Command, Stdio};
+
+        const CHILD: &str = "BIGLACE_TEST_LOAD_CHILD";
+        if std::env::var_os(CHILD).is_some() {
+            let loaded = load();
+            assert!(loaded.enrolled);
+            assert!(loaded.authkey.is_empty());
+            return;
+        }
 
         let (_guard, dir) = isolated_env("lazykey");
         let cfg = Config {
@@ -377,37 +388,37 @@ mod tests {
         };
         save(&cfg).expect("config saved");
         // A bus that never answers: a keyring lookup would connect to it and
-        // wait, so the load runs on its own thread and the test watches the
-        // socket.
+        // wait, so the test watches the socket while the child loads.
         let bus = dir.join("session-bus");
         let listener = UnixListener::bind(&bus).expect("fake session bus");
         listener.set_nonblocking(true).unwrap();
-        std::env::set_var(
-            "DBUS_SESSION_BUS_ADDRESS",
-            format!("unix:path={}", bus.display()),
-        );
+        let mut child = Command::new(std::env::current_exe().unwrap())
+            .args(["--exact", "config::tests::loading_leaves_the_keyring_alone", "--test-threads=1"])
+            .env(CHILD, "1")
+            .env("DBUS_SESSION_BUS_ADDRESS", format!("unix:path={}", bus.display()))
+            .stdout(Stdio::null())
+            .stderr(Stdio::null())
+            .spawn()
+            .expect("test child started");
 
-        let loading = std::thread::spawn(load);
-        let deadline = std::time::Instant::now() + std::time::Duration::from_secs(2);
+        let deadline = std::time::Instant::now() + std::time::Duration::from_secs(5);
         let mut connected = false;
-        while !loading.is_finished() && std::time::Instant::now() < deadline {
+        let status = loop {
             if listener.accept().is_ok() {
-                // Dropping the connection ends the lookup with an error.
                 connected = true;
-                break;
+            }
+            if let Some(status) = child.try_wait().unwrap() {
+                break status;
+            }
+            if std::time::Instant::now() > deadline {
+                let _ = child.kill();
+                break child.wait().unwrap();
             }
             std::thread::sleep(std::time::Duration::from_millis(10));
-        }
+        };
         connected |= listener.accept().is_ok();
-        // A late lookup gets a refused connection instead of waiting forever.
-        drop(listener);
-        let loaded = loading.join().expect("load finished");
-        assert!(
-            !connected,
-            "loading the config connected to the session bus"
-        );
-        assert!(loaded.enrolled);
-        assert!(loaded.authkey.is_empty());
+        assert!(!connected, "loading the config connected to the session bus");
+        assert!(status.success(), "the load failed in the child: {status}");
         let _ = fs::remove_dir_all(&dir);
     }
 
