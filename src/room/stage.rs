@@ -7,19 +7,25 @@
 use std::collections::HashMap;
 use std::io::{BufReader, Write};
 use std::net::{IpAddr, TcpStream};
-use std::sync::atomic::{AtomicBool, AtomicU64, Ordering};
+use std::sync::atomic::{AtomicBool, AtomicU64, AtomicUsize, Ordering};
 use std::sync::mpsc::{self, SyncSender, TrySendError};
 use std::sync::{Arc, Mutex, OnceLock};
-use std::time::Duration;
+use std::time::{Duration, Instant};
 
 use super::{emit, room, share_audio, RoomEvent, STAGE_PREFIX};
 use crate::remote::host::{self, InputSink, StopHandle};
 use crate::remote::{read_frame, write_frame, Input, Kind};
 use crate::tailscale::{self, Identity};
 
-/// Frames waiting for one viewer before it counts as slow (it then skips
-/// to the next keyframe instead of falling further behind).
+/// Video frames waiting for one viewer before it counts as slow (it then
+/// skips to the next keyframe instead of falling further behind).
 const QUEUE: usize = 6;
+/// Everything waiting for one viewer: [`QUEUE`] video frames plus about
+/// 300 ms of sound (100 packets a second) and control messages.
+const CHANNEL: usize = QUEUE + 32;
+/// Forced keyframes are big: viewers falling behind or joining ask for at
+/// most one this often.
+const KEY_INTERVAL: Duration = Duration::from_secs(1);
 /// A viewer that stops reading for this long is gone.
 const WRITE_TIMEOUT: Duration = Duration::from_secs(8);
 
@@ -31,6 +37,8 @@ struct Viewer {
     /// Account watching.
     who: String,
     tx: SyncSender<Out>,
+    /// Video frames in `tx` not yet written (sound doesn't count).
+    video_queued: Arc<AtomicUsize>,
     stream: TcpStream,
     /// Missed frames (or just joined): wait for a keyframe.
     skip_until_key: AtomicBool,
@@ -40,6 +48,9 @@ pub(super) struct Stage {
     stop: StopHandle,
     viewers: Mutex<Vec<Viewer>>,
     want_key: Arc<AtomicBool>,
+    /// A keyframe was asked for and waits for [`KEY_INTERVAL`] to pass.
+    key_pending: AtomicBool,
+    last_forced_key: Mutex<Option<Instant>>,
     last_info: Mutex<Option<Vec<u8>>>,
     /// The viewer allowed to control the screen.
     controller: Mutex<Option<u64>>,
@@ -87,6 +98,8 @@ pub fn start(with_sound: bool) -> Result<(), String> {
         stop: StopHandle::detached(),
         viewers: Mutex::new(Vec::new()),
         want_key: Arc::new(AtomicBool::new(false)),
+        key_pending: AtomicBool::new(false),
+        last_forced_key: Mutex::new(None),
         last_info: Mutex::new(None),
         controller: Mutex::new(None),
         sink: Mutex::new(None),
@@ -255,6 +268,9 @@ impl Stage {
         }
         let video = matches!(kind, Kind::VideoTs | Kind::Video);
         let key = video && is_keyframe(payload.get(8..).unwrap_or_default());
+        if key {
+            self.key_pending.store(false, Ordering::Relaxed);
+        }
         let data = Arc::new(payload.to_vec());
         let mut gone = Vec::new();
         for v in viewers.iter() {
@@ -264,20 +280,47 @@ impl Stage {
                 }
                 v.skip_until_key.store(false, Ordering::Relaxed);
             }
+            if video && v.video_queued.load(Ordering::Acquire) >= QUEUE {
+                // Behind: skip ahead to a fresh picture.
+                v.skip_until_key.store(true, Ordering::Relaxed);
+                self.request_key();
+                continue;
+            }
             match v.tx.try_send((kind, data.clone())) {
+                Ok(()) if video => {
+                    v.video_queued.fetch_add(1, Ordering::AcqRel);
+                }
                 Ok(()) => {}
                 Err(TrySendError::Full(_)) if video => {
-                    // Behind: skip ahead to a fresh picture.
                     v.skip_until_key.store(true, Ordering::Relaxed);
-                    self.want_key.store(true, Ordering::Release);
+                    self.request_key();
                 }
                 Err(TrySendError::Full(_)) => {}
                 Err(TrySendError::Disconnected(_)) => gone.push(v.id),
             }
         }
+        if video && self.key_pending.load(Ordering::Relaxed) {
+            self.force_key_when_due();
+        }
         if !gone.is_empty() {
             viewers.retain(|v| !gone.contains(&v.id));
         }
+    }
+
+    /// Ask for a keyframe, at most once per [`KEY_INTERVAL`].
+    fn request_key(&self) {
+        self.key_pending.store(true, Ordering::Relaxed);
+        self.force_key_when_due();
+    }
+
+    fn force_key_when_due(&self) {
+        let Ok(mut last) = self.last_forced_key.lock() else { return };
+        if last.is_some_and(|at| at.elapsed() < KEY_INTERVAL) {
+            return;
+        }
+        *last = Some(Instant::now());
+        self.key_pending.store(false, Ordering::Relaxed);
+        self.want_key.store(true, Ordering::Release);
     }
 
     /// Tell viewer `id` whether it controls the screen now.
@@ -359,7 +402,8 @@ pub fn accept(stream: TcpStream, peer: IpAddr, headers: &HashMap<String, String>
 
     static NEXT: AtomicU64 = AtomicU64::new(1);
     let id = NEXT.fetch_add(1, Ordering::Relaxed);
-    let (tx, rx) = mpsc::sync_channel::<Out>(QUEUE);
+    let (tx, rx) = mpsc::sync_channel::<Out>(CHANNEL);
+    let video_queued = Arc::new(AtomicUsize::new(0));
     let (Ok(mut writer), Ok(reader), Ok(handle)) = (stream.try_clone(), stream.try_clone(), stream.try_clone()) else {
         return;
     };
@@ -376,11 +420,12 @@ pub fn accept(stream: TcpStream, peer: IpAddr, headers: &HashMap<String, String>
             ip: ip.clone(),
             who: identity.login.clone(),
             tx: tx.clone(),
+            video_queued: video_queued.clone(),
             stream: handle,
             skip_until_key: AtomicBool::new(true),
         });
     }
-    stage.want_key.store(true, Ordering::Release);
+    stage.request_key();
     tailscale::dbg(&format!("stage: {}@{} watching", identity.login, identity.device));
     crate::access::log(&identity.login, &identity.device, "watch", "allowed");
     if let Some(r) = room() {
@@ -392,6 +437,9 @@ pub fn accept(stream: TcpStream, peer: IpAddr, headers: &HashMap<String, String>
         for (kind, data) in rx {
             if write_frame(&mut writer, kind, &data).is_err() {
                 break;
+            }
+            if matches!(kind, Kind::VideoTs | Kind::Video) {
+                video_queued.fetch_sub(1, Ordering::AcqRel);
             }
         }
         let _ = writer.shutdown(std::net::Shutdown::Both);
@@ -413,7 +461,7 @@ pub fn accept(stream: TcpStream, peer: IpAddr, headers: &HashMap<String, String>
                 pong.extend_from_slice(&crate::remote::now_us().to_be_bytes());
                 let _ = tx.try_send((Kind::Pong, Arc::new(pong)));
             }
-            Ok((Kind::KeyFrame, _)) => stage.want_key.store(true, Ordering::Release),
+            Ok((Kind::KeyFrame, _)) => stage.request_key(),
             Ok((Kind::Control, payload)) => {
                 let v: serde_json::Value = serde_json::from_slice(&payload).unwrap_or_default();
                 if v.get("ask").and_then(serde_json::Value::as_bool) == Some(true) {
@@ -443,6 +491,8 @@ mod tests {
             stop: StopHandle::detached(),
             viewers: Mutex::new(Vec::new()),
             want_key: Arc::new(AtomicBool::new(false)),
+            key_pending: AtomicBool::new(false),
+            last_forced_key: Mutex::new(None),
             last_info: Mutex::new(None),
             controller: Mutex::new(None),
             sink: Mutex::new(None),
@@ -460,6 +510,7 @@ mod tests {
             ip: format!("100.64.0.{id}"),
             who: String::new(),
             tx,
+            video_queued: Arc::new(AtomicUsize::new(0)),
             stream,
             skip_until_key: AtomicBool::new(true),
         });
@@ -500,6 +551,48 @@ mod tests {
         drop(fast);
         stage.fanout(Kind::VideoTs, &frame(true));
         assert_eq!(stage.viewers.lock().unwrap().len(), 1);
+    }
+
+    /// Sound arriving while a viewer's writer stalls must not take the
+    /// video's room: the viewer keeps its picture and gets all the sound.
+    #[test]
+    fn sound_leaves_the_video_budget_alone() {
+        let stage = test_stage();
+        let rx = viewer(&stage, 1, CHANNEL);
+        stage.fanout(Kind::VideoTs, &frame(true));
+        stage.want_key.store(false, Ordering::Release);
+        for _ in 0..20 {
+            stage.fanout(Kind::Audio, &[0; 16]);
+        }
+        stage.fanout(Kind::VideoTs, &frame(false));
+        let got: Vec<Kind> = rx.try_iter().map(|(kind, _)| kind).collect();
+        assert_eq!(got.iter().filter(|k| **k == Kind::Audio).count(), 20, "no sound dropped");
+        assert_eq!(got.iter().filter(|k| **k == Kind::VideoTs).count(), 2, "no video skipped");
+        assert!(!stage.want_key.load(Ordering::Acquire), "no keyframe forced");
+    }
+
+    /// A viewer that keeps falling behind forces at most one keyframe per
+    /// interval; the request waits instead of being lost.
+    #[test]
+    fn forced_keyframes_are_rate_limited() {
+        let stage = test_stage();
+        let rx = viewer(&stage, 1, CHANNEL);
+        let fall_behind = || {
+            stage.fanout(Kind::VideoTs, &frame(true));
+            for _ in 0..QUEUE {
+                stage.fanout(Kind::VideoTs, &frame(false));
+            }
+            let _ = rx.try_iter().count();
+            stage.viewers.lock().unwrap()[0].video_queued.store(0, Ordering::Release);
+        };
+        fall_behind();
+        assert!(stage.want_key.swap(false, Ordering::AcqRel), "the first one is forced at once");
+        fall_behind();
+        stage.fanout(Kind::VideoTs, &frame(false));
+        assert!(!stage.want_key.load(Ordering::Acquire), "a second one within the interval waits");
+        *stage.last_forced_key.lock().unwrap() = Instant::now().checked_sub(KEY_INTERVAL);
+        stage.fanout(Kind::VideoTs, &frame(false));
+        assert!(stage.want_key.load(Ordering::Acquire), "the waiting one is forced once the interval passed");
     }
 
     /// Input counts only from the viewer holding control.
