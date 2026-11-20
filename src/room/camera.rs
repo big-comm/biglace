@@ -363,11 +363,11 @@ mod tests {
         assert!(got.load(Ordering::Relaxed) > 10);
     }
 
-    /// A new picture wakes the stage: it redraws on pictures, not on a timer.
+    /// A new picture wakes the stage.
     #[test]
     fn a_new_picture_wakes_the_stage() {
         gst::init().unwrap();
-        let changes = crate::room::stage_changes();
+        let changes = crate::room::stage_wakeups();
         while changes.try_recv().is_ok() {}
         let caps = gstreamer_video::VideoInfo::builder(gstreamer_video::VideoFormat::Rgba, 2, 2).build().unwrap().to_caps().unwrap();
         let sample = gst::Sample::builder().caps(&caps).buffer(&gst::Buffer::from_slice(vec![0u8; 16])).build();
