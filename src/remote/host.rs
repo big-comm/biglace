@@ -809,6 +809,7 @@ fn power_action(action: &str, viewer: &Identity, writer: &Arc<Mutex<TcpStream>>)
 
 /// The best H.264 encoder that works here, as a 1:1 share sets it up, and
 /// the raw format it takes.
+#[cfg(test)]
 pub fn encoder() -> Option<(&'static str, &'static str)> {
     static BEST: OnceLock<Option<(String, &'static str)>> = OnceLock::new();
     let best = BEST.get_or_init(|| encoder::usable().first().map(|e| (e.description(RateMode::FollowsLink), e.format())));
