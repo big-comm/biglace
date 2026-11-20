@@ -1094,6 +1094,51 @@ fn run_tailscale_with_fallback(args: &[&str]) -> Result<()> {
     }
 }
 
+/// The key to register with: the caller's, else the one stored at
+/// enrollment. That one is read only here, on the connect worker thread:
+/// read with the config, a locked keyring would prompt at every start, even
+/// when a keyless reconnect needs no key.
+fn registration_key(server: &str, authkey: &str, registered: bool) -> Result<String> {
+    let key = if authkey.is_empty() {
+        match crate::secrets::load_authkey(server) {
+            Ok(key) => key.unwrap_or_default(),
+            Err(error) => bail!(trf!(
+                "Couldn't read the saved pre-auth key: {error}",
+                "error" => error
+            )),
+        }
+    } else {
+        authkey.to_owned()
+    };
+    let key = key.trim().to_owned();
+    if key.is_empty() {
+        if registered {
+            bail!(tr!("The pre-auth key was rejected by the server. Generate a new key in the BigScale panel and try again."));
+        }
+        bail!(tr!("Sign in or paste a pre-auth key first."));
+    }
+    Ok(key)
+}
+
+/// `tailscale up` with the key; a key the server refused says so plainly.
+fn register_with_key(server: &str, authkey: &str, hostname: &str) -> Result<()> {
+    let Err(e) = try_connect_with_key(server, authkey, hostname) else {
+        return Ok(());
+    };
+    dbg(&format!("connect: key attempt failed: {e}"));
+    let msg = e.to_string().to_lowercase();
+    let auth_failed = msg.contains("auth-key")
+        || msg.contains("authkey")
+        || msg.contains("not found")
+        || msg.contains("expired")
+        || msg.contains("already used")
+        || msg.contains("invalid key");
+    if auth_failed {
+        bail!(tr!("The pre-auth key was rejected by the server. Generate a new key in the BigScale panel and try again."));
+    }
+    Err(e)
+}
+
 pub fn connect(server: &str, authkey: &str, pending_key: bool, hostname: &str) -> Result<()> {
     // Trim once up front so a pasted key/URL with a trailing space or newline
     // (the usual copy-paste artifact) doesn't reach `tailscale up` verbatim and
@@ -1142,46 +1187,14 @@ pub fn connect(server: &str, authkey: &str, pending_key: bool, hostname: &str) -
         dbg("connect: keyless reconnect didn't take — (re)authenticating with the key");
     }
 
-    // Registering needs the key. Without one from the caller, the key stored
-    // at enrollment is read only here, on the worker thread: read with the
-    // config, a locked keyring would prompt at every start, even when the
-    // keyless reconnect above needs no key.
-    let stored = if authkey.is_empty() {
-        match crate::secrets::load_authkey(server) {
-            Ok(key) => key.unwrap_or_default(),
-            Err(error) => bail!(trf!(
-                "Couldn't read the saved pre-auth key: {error}",
-                "error" => error
-            )),
-        }
-    } else {
-        authkey.to_owned()
-    };
-    let authkey = stored.trim();
-    if authkey.is_empty() {
-        if pre_status.registered {
-            bail!(tr!("The pre-auth key was rejected by the server. Generate a new key in the BigScale panel and try again."));
-        }
-        bail!(tr!("Sign in or paste a pre-auth key first."));
-    }
+    let key = registration_key(server, authkey, pre_status.registered)?;
+    register_with_key(server, &key, hostname)?;
+    confirm_online()
+}
 
-    if let Err(e) = try_connect_with_key(server, authkey, hostname) {
-        dbg(&format!("connect: key attempt failed: {e}"));
-        let msg = e.to_string().to_lowercase();
-        let auth_failed = msg.contains("auth-key")
-            || msg.contains("authkey")
-            || msg.contains("not found")
-            || msg.contains("expired")
-            || msg.contains("already used")
-            || msg.contains("invalid key");
-        if auth_failed {
-            bail!(tr!("The pre-auth key was rejected by the server. Generate a new key in the BigScale panel and try again."));
-        }
-        return Err(e);
-    }
-
-    // `tailscale up` exits 0 even when the coordinator rejects the key. The real
-    // failure only shows up in Self.Online and the Health array — verify.
+/// `tailscale up` exits 0 even when the coordinator rejects the key. The real
+/// failure only shows up in Self.Online and the Health array: verify.
+fn confirm_online() -> Result<()> {
     if wait_until_online() {
         let post = get_status();
         dbg(&format!(
@@ -1190,7 +1203,6 @@ pub fn connect(server: &str, authkey: &str, pending_key: bool, hostname: &str) -
         ));
         return Ok(());
     }
-
     let post = get_status();
     dbg(&format!(
         "connect: post-status online={} hostname={:?} ip={:?}",
