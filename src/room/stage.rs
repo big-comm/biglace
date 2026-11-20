@@ -166,7 +166,16 @@ pub fn start(with_sound: bool) -> Result<(), String> {
             stage.fanout(kind, payload);
             Ok(())
         };
+        #[cfg(target_os = "linux")]
+        drop(source._damage);
         while stage.wait_for_viewers() {
+            // X11: the damage thread polls, so it runs only while capturing;
+            // without it every grab goes out.
+            #[cfg(target_os = "linux")]
+            let (dirty, _damage) = {
+                let damage = dirty.as_ref().and_then(|d| host::watch_damage(d, pointer == host::Pointer::Embedded));
+                (dirty.clone().filter(|_| damage.is_some()), damage)
+            };
             match host::stream_screen(&send, &pipelines, dirty.clone(), &stage.stop, true, &stage.want_key, &stage.no_viewers) {
                 Ok(true) => tailscale::dbg("stage: nobody watching, capture paused"),
                 Ok(false) => break,

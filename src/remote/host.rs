@@ -540,6 +540,13 @@ pub(crate) fn open_source(_stop: &StopHandle, want: Pointer) -> anyhow::Result<S
     }
 }
 
+/// X11: the thread raising `dirty`, for a source whose first one was
+/// dropped while nobody watched.
+#[cfg(target_os = "linux")]
+pub(crate) fn watch_damage(dirty: &Arc<Damage>, track_pointer: bool) -> Option<super::damage_x11::Watch> {
+    super::damage_x11::watch(dirty.clone(), track_pointer)
+}
+
 #[cfg(not(target_os = "linux"))]
 pub(crate) fn open_source(_stop: &StopHandle, _want: Pointer) -> anyhow::Result<Source> {
     anyhow::bail!("screen sharing is not available on this system")
