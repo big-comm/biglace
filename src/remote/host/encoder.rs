@@ -68,7 +68,7 @@ impl Encoder {
                  target-usage=4 num-slices=4"
             ),
             Encoder::NvH264 => format!(
-                "nvh264enc name=enc preset=low-latency-hq rc-mode=cbr bitrate={kbps} vbv-buffer-size={vbv} gop-size=120 \
+                "nvh264enc name=enc preset=p4 tune=low-latency rc-mode=cbr bitrate={kbps} vbv-buffer-size={vbv} gop-size=120 \
                  bframes=0 zerolatency=true"
             ),
             // At most half the cores: the person at this computer keeps using
