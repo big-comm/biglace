@@ -175,6 +175,13 @@ pub fn start(embed_cursor: bool) -> anyhow::Result<Portal> {
                         None
                     }
                 };
+                // Input that came while there was nowhere to send it would
+                // land at once, long after the viewer's hand moved on.
+                let mut stale = 0;
+                while input_rx.try_recv().is_ok() {
+                    stale += 1;
+                }
+                handled.fetch_add(stale, std::sync::atomic::Ordering::AcqRel);
                 let (w, h) = size.map(|(w, h)| (f64::from(w), f64::from(h))).unwrap_or((1920.0, 1080.0));
                 loop {
                     let next = match libei.as_mut().filter(|libei| libei.open) {
