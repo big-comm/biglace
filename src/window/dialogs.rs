@@ -235,6 +235,7 @@ fn signed_out(cfg: &config::Config) -> config::Config {
     let mut updated = cfg.clone();
     updated.authkey.clear();
     updated.enrolled = false;
+    updated.pending_key = false;
     updated
 }
 
@@ -596,6 +597,7 @@ pub fn show_panel_login(
                             c.authkey = resp.authkey.clone();
                             c.hostname = creds.hostname.clone();
                             c.enrolled = true;
+                            c.pending_key = true;
                             config::save_with_authkey(&c)
                         };
                         // Stash the password in the OS-native keyring so the
@@ -929,12 +931,14 @@ mod tests {
             server_url: "https://vpn.example.org".into(),
             authkey: "hskey-auth-secret".into(),
             enrolled: true,
+            pending_key: true,
             favorites: vec!["box".into()],
             ..config::Config::default()
         };
         let out = signed_out(&cfg);
         assert!(out.authkey.is_empty());
         assert!(!out.enrolled);
+        assert!(!out.pending_key);
         assert_eq!(out.server_url, cfg.server_url);
         assert_eq!(out.favorites, cfg.favorites);
     }
