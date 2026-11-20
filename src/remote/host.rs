@@ -501,7 +501,7 @@ fn pipewire_capture(fd: i32, node: u32, serial: Option<u64>) -> String {
 }
 
 #[cfg(target_os = "linux")]
-pub(crate) fn open_source(_stop: &StopHandle, want: Pointer) -> anyhow::Result<Source> {
+pub(crate) fn open_source(want: Pointer) -> anyhow::Result<Source> {
     use std::os::fd::AsRawFd;
     if super::wayland_session() {
         // Only a room's shared screen keeps the pointer in the video (the
@@ -548,7 +548,7 @@ pub(crate) fn watch_damage(dirty: &Arc<Damage>, track_pointer: bool) -> Option<s
 }
 
 #[cfg(not(target_os = "linux"))]
-pub(crate) fn open_source(_stop: &StopHandle, _want: Pointer) -> anyhow::Result<Source> {
+pub(crate) fn open_source(_want: Pointer) -> anyhow::Result<Source> {
     anyhow::bail!("screen sharing is not available on this system")
 }
 
@@ -562,7 +562,7 @@ fn run_session(mut stream: TcpStream, stop: &StopHandle, protocol: u32, identity
     // Protocol 4 viewers learn the pointer's shape (X11) or get it in the
     // frames (Wayland).
     let want = if protocol >= 4 { Pointer::Shapes } else { Pointer::Local };
-    let source = match open_source(stop, want) {
+    let source = match open_source(want) {
         Ok(s) => s,
         Err(e) => {
             tailscale::dbg(&format!("remote: no screen source: {e}"));
@@ -732,7 +732,7 @@ fn run_session(mut stream: TcpStream, stop: &StopHandle, protocol: u32, identity
             keep_fd = None;
             keep_damage = None;
         }
-        match open_source(stop, want) {
+        match open_source(want) {
             Ok(fresh) => {
                 pipelines = fresh.pipelines;
                 dirty = fresh.dirty;
@@ -1032,9 +1032,10 @@ impl std::fmt::Display for CaptureEnded {
 
 impl std::error::Error for CaptureEnded {}
 
-/// Capture, encode and `send` the screen until `stop` — or until `restart`
-/// is raised (the screen's resolution changed): then true, for the caller
-/// to open the source again (GNOME ends its screencast on a mode change).
+/// Capture, encode and `send` the screen until `stop`, or until `restart`
+/// is raised: then true, and the caller decides what comes next (a session
+/// opens the source again after a resolution change, a room share waits
+/// for someone to watch).
 pub(crate) fn stream_screen(
     send: &dyn Fn(Kind, &[u8]) -> anyhow::Result<()>,
     pipelines: &[String],
