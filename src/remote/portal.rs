@@ -296,6 +296,7 @@ async fn connect_libei(rd: &RemoteDesktop, session: &Session<RemoteDesktop>, str
         sequence: 0,
         open: true,
         warned_no_device: false,
+        warned_no_key: false,
     })
 }
 
@@ -322,6 +323,7 @@ struct Libei {
     sequence: u32,
     open: bool,
     warned_no_device: bool,
+    warned_no_key: bool,
 }
 
 impl Libei {
@@ -378,10 +380,7 @@ impl Libei {
             Input::Key { .. } => DeviceCapability::Keyboard,
         };
         let Some(device) = self.resumed.iter().find(|d| d.has_capability(capability)).cloned() else {
-            if !self.warned_no_device {
-                crate::tailscale::dbg("remote: libei has no resumed device for the viewer's input yet");
-                self.warned_no_device = true;
-            }
+            log_once(&mut self.warned_no_device, "remote: libei has no resumed device for the viewer's input yet");
             return;
         };
         match event {
@@ -405,7 +404,8 @@ impl Libei {
                 let Some(keyboard) = device.interface::<ei::Keyboard>() else { return };
                 let code = if pressed {
                     let Some(code) = self.keymap.as_ref().and_then(|k| evdev_keycode(k, keysym, self.group)) else {
-                        crate::tailscale::dbg(&format!("remote: no key here types keysym {keysym:#x}"));
+                        // Which keys, never: the log would record what the viewer types.
+                        log_once(&mut self.warned_no_key, "remote: the viewer typed keys this keyboard layout has not");
                         return;
                     };
                     self.held.insert(keysym, code);
@@ -436,6 +436,13 @@ impl Libei {
         }
         self.connection.connection().disconnect();
         self.flush();
+    }
+}
+
+fn log_once(logged: &mut bool, message: &str) {
+    if !*logged {
+        crate::tailscale::dbg(message);
+        *logged = true;
     }
 }
 
