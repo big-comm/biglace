@@ -72,18 +72,7 @@ pub fn show(parent: &impl IsA<gtk4::Widget>, path: &std::path::Path, video: bool
         let w = win.clone();
         close.connect_clicked(move |_| w.close());
     }
-    let keys = gtk4::EventControllerKey::new();
-    {
-        let w = win.clone();
-        keys.connect_key_pressed(move |_, key, _, _| {
-            if key == gdk::Key::Escape {
-                w.close();
-                return glib::Propagation::Stop;
-            }
-            glib::Propagation::Proceed
-        });
-    }
-    win.add_controller(keys);
+    super::dialogs::close_on_escape(&win);
     // Stop the video with the window.
     {
         let stage = stage.clone();

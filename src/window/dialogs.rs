@@ -12,6 +12,23 @@ use crate::trf;
 
 use super::sidebar::Sidebar;
 
+/// Esc closes `win` (a plain window, which has no such key by itself).
+pub(super) fn close_on_escape(win: &impl IsA<gtk4::Window>) {
+    let win: &gtk4::Window = win.upcast_ref();
+    let keys = gtk4::EventControllerKey::new();
+    let weak = win.downgrade();
+    keys.connect_key_pressed(move |_, key, _, _| {
+        if key != gtk4::gdk::Key::Escape {
+            return glib::Propagation::Proceed;
+        }
+        if let Some(w) = weak.upgrade() {
+            w.close();
+        }
+        glib::Propagation::Stop
+    });
+    win.add_controller(keys);
+}
+
 /// Outcome of the background rename worker (see `show_rename_device`), so the
 /// online probe + `tailscale set --hostname` both run off the GTK thread.
 enum RenameResult {
