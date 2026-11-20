@@ -600,10 +600,14 @@ mod send_queue {
     fn screen_socket_holds_little_unsent() {
         let listener = TcpListener::bind("127.0.0.1:0").unwrap();
         let stream = TcpStream::connect(listener.local_addr().unwrap()).unwrap();
-        super::limit_send_queue(&stream);
         let sock = socket2::SockRef::from(&stream);
-        // Linux doubles the requested size for its own bookkeeping.
-        assert!(sock.send_buffer_size().unwrap() <= 2 * super::SEND_BUFFER);
+        // Start above the cap, so only the call can bring the buffer down.
+        sock.set_send_buffer_size(8 * super::SEND_BUFFER).unwrap();
+        super::limit_send_queue(&stream);
+        let wmem_max: usize = std::fs::read_to_string("/proc/sys/net/core/wmem_max").unwrap().trim().parse().unwrap();
+        // Linux caps the request at wmem_max and doubles it for its own
+        // bookkeeping; below SEND_BUFFER the call has nothing to lower.
+        assert_eq!(sock.send_buffer_size().unwrap(), 2 * super::SEND_BUFFER.min(wmem_max));
         assert_eq!(sock.tcp_notsent_lowat().unwrap(), super::NOTSENT_LOWAT);
     }
 }
