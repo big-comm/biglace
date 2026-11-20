@@ -361,11 +361,8 @@ mod tests {
         let _ = fs::remove_dir_all(&dir);
     }
 
-    /// Loading the config runs when the window is built, including the hidden
-    /// start at login, while the keyring may still be locked; it must not touch
-    /// the keyring. The load runs in a child process of its own: other tests in
-    /// this process use the session bus, and their connections would reach the
-    /// fake bus too.
+    /// The load runs at login, while the keyring may still be locked, so it
+    /// must not touch it; a child process keeps other tests off the fake bus.
     #[cfg(target_os = "linux")]
     #[test]
     fn loading_leaves_the_keyring_alone() {

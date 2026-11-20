@@ -545,23 +545,9 @@ pub(crate) fn open_source(_stop: &StopHandle, _want: Pointer) -> anyhow::Result<
     anyhow::bail!("screen sharing is not available on this system")
 }
 
-/// Kernel send buffer for the session: big enough for a keyframe in flight,
-/// small enough that a slow link backs up into the (leaky) queue before the
-/// encoder — frames are dropped there instead of piling up seconds of video.
-const SEND_BUFFER: usize = 512 * 1024;
-#[cfg(target_os = "linux")]
-const NOTSENT_LOWAT: u32 = 64 * 1024;
-
 fn run_session(mut stream: TcpStream, stop: &StopHandle, protocol: u32, identity: &Identity) {
     let timestamps = protocol >= 2;
-    {
-        let sock = socket2::SockRef::from(&stream);
-        let _ = sock.set_send_buffer_size(SEND_BUFFER);
-        // Only a little unsent data may sit in the kernel: the next frame
-        // waits (and older ones get dropped before the encoder) instead.
-        #[cfg(target_os = "linux")]
-        let _ = sock.set_tcp_notsent_lowat(NOTSENT_LOWAT);
-    }
+    super::limit_send_queue(&stream);
     let _ = stream.set_write_timeout(Some(WRITE_TIMEOUT));
     let _ = stream.set_read_timeout(None);
     let _ = stream.set_nodelay(true);
@@ -1218,9 +1204,7 @@ mod tests {
         let pipelines = [pipeline_desc(head, enc)];
         let host = std::thread::spawn(move || {
             let (stream, _) = listener.accept().unwrap();
-            let sock = socket2::SockRef::from(&stream);
-            sock.set_send_buffer_size(SEND_BUFFER).unwrap();
-            sock.set_tcp_notsent_lowat(NOTSENT_LOWAT).unwrap();
+            crate::remote::limit_send_queue(&stream);
             let stop = StopHandle::new(&stream);
             let writer = Mutex::new(stream);
             let send = |kind: Kind, payload: &[u8]| -> anyhow::Result<()> {

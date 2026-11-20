@@ -135,6 +135,23 @@ impl Kind {
     }
 }
 
+/// Kernel send buffer for a screen stream: big enough for a keyframe in
+/// flight, small enough that a slow link backs up into the (leaky) queue
+/// before the encoder, where frames are dropped instead of piling up seconds
+/// of video in the kernel.
+const SEND_BUFFER: usize = 512 * 1024;
+#[cfg(target_os = "linux")]
+const NOTSENT_LOWAT: u32 = 64 * 1024;
+
+/// Caps how much of a screen stream the kernel may hold for `stream`: only a
+/// little unsent data may sit there, so the next frame waits instead.
+pub(crate) fn limit_send_queue(stream: &std::net::TcpStream) {
+    let sock = socket2::SockRef::from(stream);
+    let _ = sock.set_send_buffer_size(SEND_BUFFER);
+    #[cfg(target_os = "linux")]
+    let _ = sock.set_tcp_notsent_lowat(NOTSENT_LOWAT);
+}
+
 /// Write one frame: kind (1 byte), length (u32 big-endian), payload.
 pub fn write_frame(w: &mut impl Write, kind: Kind, payload: &[u8]) -> io::Result<()> {
     let len = u32::try_from(payload.len()).map_err(|_| io::Error::other("frame too large"))?;
@@ -566,5 +583,21 @@ mod decode_and_sound {
         let (_, stats) = view(addr);
         let _ = h.join();
         assert!(stats.iter().filter(|s| s.audio).count() >= 2, "no sound: {stats:?}");
+    }
+}
+
+#[cfg(all(test, target_os = "linux"))]
+mod send_queue {
+    use std::net::{TcpListener, TcpStream};
+
+    #[test]
+    fn screen_socket_holds_little_unsent() {
+        let listener = TcpListener::bind("127.0.0.1:0").unwrap();
+        let stream = TcpStream::connect(listener.local_addr().unwrap()).unwrap();
+        super::limit_send_queue(&stream);
+        let sock = socket2::SockRef::from(&stream);
+        // Linux doubles the requested size for its own bookkeeping.
+        assert!(sock.send_buffer_size().unwrap() <= 2 * super::SEND_BUFFER);
+        assert_eq!(sock.tcp_notsent_lowat().unwrap(), super::NOTSENT_LOWAT);
     }
 }

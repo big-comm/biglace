@@ -428,6 +428,7 @@ pub fn accept(stream: TcpStream, peer: IpAddr, headers: &HashMap<String, String>
         return respond(&stream, 403, "Forbidden");
     }
     let _ = write!(&stream, "HTTP/1.1 200 OK\r\nContent-Type: application/x-biglace-screen\r\n\r\n");
+    crate::remote::limit_send_queue(&stream);
     let _ = stream.set_write_timeout(Some(WRITE_TIMEOUT));
     let _ = stream.set_read_timeout(None);
     let _ = stream.set_nodelay(true);
