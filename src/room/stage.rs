@@ -47,6 +47,9 @@ pub(super) struct Stage {
     group: String,
     /// The presenter's pointer is in the frames (viewers hide their own).
     pointer_in_video: AtomicBool,
+    /// Capture again: control changed hands, and with it whether the
+    /// pointer belongs in the frames.
+    restart: AtomicBool,
 }
 
 fn slot() -> &'static Mutex<Option<Arc<Stage>>> {
@@ -92,60 +95,79 @@ pub fn start(with_sound: bool) -> Result<(), String> {
         sink: Mutex::new(None),
         group: current.group.clone(),
         pointer_in_video: AtomicBool::new(false),
+        restart: AtomicBool::new(false),
     });
     if let Ok(mut s) = slot().lock() {
         *s = Some(stage.clone());
     }
     let _ = std::thread::Builder::new().name("biglace-stage".into()).spawn(move || {
         host::only_420_here();
-        let source = match host::open_source(&stage.stop, host::Pointer::Embedded) {
-            Ok(s) => s,
-            Err(e) => {
-                tailscale::dbg(&format!("stage: no screen source: {e}"));
-                emit(RoomEvent::Problem(crate::trf!("Could not share the screen: {error}", "error" => e)));
-                finish(&stage);
-                return;
-            }
-        };
-        let host::Source { pipelines, dirty, sink, pointer, .. } = source;
-        stage.pointer_in_video.store(pointer == host::Pointer::Embedded, Ordering::Release);
-        #[cfg(target_os = "linux")]
-        let _keep_fd = source._fd;
-        if let Ok(mut s) = stage.sink.lock() {
-            *s = Some(sink);
-        }
-        // The computer's sound too (not the room's voices), if asked.
-        if with_sound {
-            match share_audio::start() {
-                Ok(source) => {
-                    let st = stage.clone();
-                    let _ = std::thread::Builder::new().name("biglace-stage-sound".into()).spawn(move || {
-                        let send = |payload: &[u8]| -> anyhow::Result<()> {
-                            st.fanout(Kind::Audio, payload);
-                            Ok(())
-                        };
-                        if let Err(e) = host::stream_audio_to(&send, &st.stop, &share_audio::capture_desc(&source)) {
-                            tailscale::dbg(&format!("stage: no sound: {e}"));
-                        }
-                    });
+        // The people watching follow the presenter's pointer in the frames.
+        // Whoever holds control uses their own instead: one drawn in the
+        // video comes back late and shows as a second pointer.
+        let mut first = true;
+        loop {
+            let want = if stage.controlled() { host::Pointer::Local } else { host::Pointer::Embedded };
+            let source = match host::open_source(&stage.stop, want) {
+                Ok(s) => s,
+                Err(e) => {
+                    tailscale::dbg(&format!("stage: no screen source: {e}"));
+                    emit(RoomEvent::Problem(crate::trf!("Could not share the screen: {error}", "error" => e)));
+                    break;
                 }
-                Err(e) => emit(RoomEvent::Problem(crate::trf!("The computer's sound can't be shared: {error}", "error" => e))),
+            };
+            let host::Source { pipelines, dirty, sink, pointer, .. } = source;
+            let embedded = pointer == host::Pointer::Embedded;
+            stage.pointer_in_video.store(embedded, Ordering::Release);
+            if embedded && !first {
+                stage.fanout(Kind::Cursor, &[]);
             }
-        }
-        // Tell the room once the screen is really being captured.
-        if let Some(r) = room() {
-            r.send_state();
-            emit(r.view());
-        }
-        let send = |kind: Kind, payload: &[u8]| -> anyhow::Result<()> {
-            stage.fanout(kind, payload);
-            Ok(())
-        };
-        if let Err(e) = host::stream_screen(&send, &pipelines, dirty, &stage.stop, true, &stage.want_key, &std::sync::atomic::AtomicBool::new(false)) {
-            tailscale::dbg(&format!("stage: capture ended: {e}"));
-            if !stage.stop.stopped() {
-                emit(RoomEvent::Problem(crate::trf!("The screen share stopped: {error}", "error" => e)));
+            #[cfg(target_os = "linux")]
+            let _keep_fd = source._fd;
+            if let Ok(mut s) = stage.sink.lock() {
+                *s = Some(sink);
             }
+            if first {
+                first = false;
+                // The computer's sound too (not the room's voices), if asked.
+                if with_sound {
+                    match share_audio::start() {
+                        Ok(source) => {
+                            let st = stage.clone();
+                            let _ = std::thread::Builder::new().name("biglace-stage-sound".into()).spawn(move || {
+                                let send = |payload: &[u8]| -> anyhow::Result<()> {
+                                    st.fanout(Kind::Audio, payload);
+                                    Ok(())
+                                };
+                                if let Err(e) = host::stream_audio_to(&send, &st.stop, &share_audio::capture_desc(&source)) {
+                                    tailscale::dbg(&format!("stage: no sound: {e}"));
+                                }
+                            });
+                        }
+                        Err(e) => emit(RoomEvent::Problem(crate::trf!("The computer's sound can't be shared: {error}", "error" => e))),
+                    }
+                }
+                // Tell the room once the screen is really being captured.
+                if let Some(r) = room() {
+                    r.send_state();
+                    emit(r.view());
+                }
+            }
+            let send = |kind: Kind, payload: &[u8]| -> anyhow::Result<()> {
+                stage.fanout(kind, payload);
+                Ok(())
+            };
+            match host::stream_screen(&send, &pipelines, dirty, &stage.stop, true, &stage.want_key, &stage.restart) {
+                Ok(true) => continue,
+                Ok(false) => {}
+                Err(e) => {
+                    tailscale::dbg(&format!("stage: capture ended: {e}"));
+                    if !stage.stop.stopped() {
+                        emit(RoomEvent::Problem(crate::trf!("The screen share stopped: {error}", "error" => e)));
+                    }
+                }
+            }
+            break;
         }
         finish(&stage);
     });
@@ -199,6 +221,7 @@ pub fn grant(id: u64) {
         s.tell(p, false);
     }
     s.tell(id, true);
+    s.pointer_follows_control();
     if let Some(r) = room() {
         emit(r.view());
     }
@@ -220,6 +243,7 @@ pub fn revoke() {
     if let Some(p) = s.controller.lock().ok().and_then(|mut c| c.take()) {
         s.tell(p, false);
     }
+    s.pointer_follows_control();
     if let Some(r) = room() {
         emit(r.view());
     }
@@ -280,6 +304,18 @@ impl Stage {
         }
     }
 
+    fn controlled(&self) -> bool {
+        self.controller.lock().is_ok_and(|c| c.is_some())
+    }
+
+    /// The pointer belongs in the frames only while nobody holds control;
+    /// capture again when that disagrees with the current capture.
+    fn pointer_follows_control(&self) {
+        if self.pointer_in_video.load(Ordering::Acquire) == self.controlled() {
+            self.restart.store(true, Ordering::Release);
+        }
+    }
+
     /// Tell viewer `id` whether it controls the screen now.
     fn tell(&self, id: u64, granted: bool) {
         let msg = Arc::new(serde_json::json!({ "granted": granted }).to_string().into_bytes());
@@ -303,6 +339,7 @@ impl Stage {
         });
         if was_controller {
             self.release_keys();
+            self.pointer_follows_control();
         }
         if let Some(r) = room() {
             emit(r.view());
@@ -448,6 +485,7 @@ mod tests {
             sink: Mutex::new(None),
             group: "familia".into(),
             pointer_in_video: AtomicBool::new(false),
+            restart: AtomicBool::new(false),
         }
     }
 
