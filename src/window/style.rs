@@ -105,6 +105,14 @@ const CSS: &str = r#"
 }
 .chat-list row { border-radius: 12px; margin: 2px 4px; }
 .room-chat { background-color: @window_bg_color; }
+/* New message in the room's conversation while it is closed. */
+.room-chat-badge { margin: -6px -10px 0 0; font-size: 0.7em; min-width: 16px; padding: 0 5px; }
+button.room-chat-news { animation: room-chat-news 0.7s ease-in-out 3; }
+@keyframes room-chat-news {
+    0%   { background-color: transparent; }
+    50%  { background-color: alpha(@accent_bg_color, 0.45); }
+    100% { background-color: transparent; }
+}
 window.media-viewer, window.media-viewer > * { background-color: black; }
 .media-viewer-bar {
     padding: 10px 14px;

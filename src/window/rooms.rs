@@ -16,6 +16,9 @@ pub struct RoomsPage {
     /// The group's conversation beside the room.
     chat: super::chat::ChatPage,
     btn_chat: gtk4::ToggleButton,
+    /// Messages in the group's conversation while it was closed.
+    chat_news: Rc<std::cell::Cell<u32>>,
+    chat_badge: gtk4::Label,
     chat_split: libadwaita::OverlaySplitView,
     pub toolbar: libadwaita::ToolbarView,
     pub menu_btn: gtk4::MenuButton,
@@ -92,8 +95,15 @@ impl RoomsPage {
         header.pack_end(&menu_btn);
         // Talk in writing too, without leaving the room: the group's
         // conversation slides in beside it (shown while in a room).
+        let chat_badge = gtk4::Label::builder().halign(gtk4::Align::End).valign(gtk4::Align::Start).visible(false).build();
+        chat_badge.add_css_class("unread-badge");
+        chat_badge.add_css_class("room-chat-badge");
+        let chat_content = gtk4::Overlay::new();
+        chat_content
+            .set_child(Some(&libadwaita::ButtonContent::builder().icon_name("chat-message-new-symbolic").label(tr!("Chat")).build()));
+        chat_content.add_overlay(&chat_badge);
         let btn_chat = gtk4::ToggleButton::builder()
-            .child(&libadwaita::ButtonContent::builder().icon_name("chat-message-new-symbolic").label(tr!("Chat")).build())
+            .child(&chat_content)
             .tooltip_text(tr!("The group's conversation, beside the room"))
             .visible(false)
             .build();
@@ -257,6 +267,8 @@ impl RoomsPage {
         let page = Self {
             chat,
             btn_chat: btn_chat.clone(),
+            chat_news: Rc::default(),
+            chat_badge,
             chat_split,
             toolbar,
             menu_btn,
@@ -301,7 +313,16 @@ impl RoomsPage {
         }
         {
             let page = page.clone();
-            btn_chat.connect_toggled(move |b| page.show_chat(b.is_active()));
+            btn_chat.connect_toggled(move |b| {
+                page.show_chat(b.is_active());
+                if b.is_active() {
+                    page.chat_news.set(0);
+                    page.chat_badge.set_visible(false);
+                    // Once the conversation has slid in.
+                    let chat = page.chat.clone();
+                    glib::idle_add_local_once(move || chat.focus_composer());
+                }
+            });
         }
         {
             // Over the room (narrow window), a click outside closes it.
@@ -383,6 +404,19 @@ impl RoomsPage {
             btn_leave.connect_clicked(move |_| {
                 let page = page.clone();
                 super::run_in_background(room::leave, move |()| page.refresh());
+            });
+        }
+        // Someone wrote in the group while its conversation is closed: count
+        // it on the Chat button and make the button pulse.
+        {
+            let page = page.clone();
+            let rx = crate::chat::events();
+            glib::spawn_future_local(async move {
+                while let Ok(ev) = rx.recv().await {
+                    if let crate::chat::ChatEvent::Incoming { conv, .. } = ev {
+                        page.chat_message_arrived(&conv);
+                    }
+                }
             });
         }
         // Room state from the sound engine.
@@ -516,6 +550,24 @@ impl RoomsPage {
         *self.room_hook.borrow_mut() = Some(Box::new(hook));
     }
 
+    fn chat_message_arrived(&self, conv: &crate::chat::ConvId) {
+        let Some(group) = self.group.borrow().clone() else { return };
+        if *conv != crate::chat::ConvId::group(&group) || self.chat_split.shows_sidebar() {
+            return;
+        }
+        self.chat_news.set(self.chat_news.get().saturating_add(1));
+        self.chat_badge.set_label(&self.chat_news.get().to_string());
+        self.chat_badge.set_visible(true);
+        // Restart the pulse for every message.
+        self.btn_chat.remove_css_class("room-chat-news");
+        let btn = self.btn_chat.downgrade();
+        glib::idle_add_local_once(move || {
+            if let Some(btn) = btn.upgrade() {
+                btn.add_css_class("room-chat-news");
+            }
+        });
+    }
+
     /// Show (or hide) the group's conversation beside the room.
     fn show_chat(&self, on: bool) {
         let group = self.group.borrow().clone();
@@ -585,6 +637,8 @@ impl RoomsPage {
             RoomEvent::ControlRequest { viewer, user } => self.ask_control(viewer, &user),
             RoomEvent::State { group: None, .. } => {
                 *self.group.borrow_mut() = None;
+                self.chat_news.set(0);
+                self.chat_badge.set_visible(false);
                 self.btn_chat.set_active(false);
                 self.btn_chat.set_visible(false);
                 self.show_chat(false);

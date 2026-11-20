@@ -786,6 +786,11 @@ impl ChatPage {
         }
     }
 
+    /// Put the cursor where the next message is typed.
+    pub fn focus_composer(&self) {
+        self.composer.view.grab_focus();
+    }
+
     pub fn set_visible(&self, visible: bool) {
         self.state.visible.set(visible);
         if visible {
