@@ -4,13 +4,12 @@
 
 # BigLace
 
-**A native mesh VPN client for BigScale and Headscale — on Linux, Windows and Android.**
+**A native mesh VPN client for BigScale and Headscale — on Linux and Windows.**
 
 [![Latest release](https://img.shields.io/github/v/release/big-comm/biglace?label=release&color=brightgreen)](https://github.com/big-comm/biglace/releases)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
-[![Platforms](https://img.shields.io/badge/platforms-Linux%20%7C%20Windows%20%7C%20Android-blue)](#download)
+[![Platforms](https://img.shields.io/badge/platforms-Linux%20%7C%20Windows-blue)](#download)
 [![Rust](https://img.shields.io/badge/Rust-GTK4%20%C2%B7%20libadwaita-orange?logo=rust&logoColor=white)](https://gtk.org)
-[![Kotlin](https://img.shields.io/badge/Kotlin-Jetpack%20Compose-7F52FF?logo=kotlin&logoColor=white)](mobile/android)
 
 [Download](#download) ·
 [Features](#features) ·
@@ -37,17 +36,14 @@ Headscale tailnet, see every device you own at a glance, and open an SSH
 terminal or browse files on any of them without remembering a single IP
 address.
 
-- **Desktop (Linux and Windows)** — a GTK4 / libadwaita app that drives the
-  system `tailscale` client and lives in the tray.
-- **Android** — a standalone app that joins the network in-process (embedded
-  `tsnet`, no separate VPN app) and ships its own SSH terminal and SFTP file
-  manager.
+A GTK4 / libadwaita app for Linux and Windows that drives the system
+`tailscale` client and lives in the tray.
 
 ## Features
 
 <table>
 <tr>
-<td width="50%" valign="top">
+<td valign="top">
 
 ### Desktop
 
@@ -67,24 +63,6 @@ address.
   through any peer that offers itself as an **exit node**.
 - **Update notice** when a newer release is published.
 - **29 languages**, credentials in the OS keyring.
-
-</td>
-<td width="50%" valign="top">
-
-### Android
-
-- **Joins the tailnet inside the app** (`tsnet`) — no Tailscale app, no
-  device-wide VPN, keeps running as a foreground service.
-- **SSH terminal** with a real VT emulator: colours, full-screen TUIs
-  (vim, htop, Claude Code), extra keys, PgUp/PgDn, copy / paste, hardware
-  keyboards, pinch to zoom.
-- **SFTP file manager** — browse, search, sort, upload, open, share, rename,
-  move and delete, with progress and cancellable transfers.
-- **Multiple sessions** in tabs, one per device.
-- **Key or password authentication**, generated SSH keys, trust-on-first-use
-  host keys with a clear warning when a key changes.
-- **In-app updates** from GitHub Releases, verified before installing.
-- Secrets encrypted with the Android Keystore.
 
 </td>
 </tr>
@@ -110,7 +88,6 @@ packages for all platforms.
 |---|---|---|
 | **Arch Linux, BigLinux, Manjaro** | `biglace-<version>-x86_64.pkg.tar.zst` | `sudo pacman -U biglace-*.pkg.tar.zst` — requires `tailscale`. |
 | **Windows 10 / 11 (x64)** | `biglace-<version>-x86_64.msi` | Requires the official [Tailscale for Windows](https://tailscale.com/download/windows) service. |
-| **Android 8+** | `biglace-mobile-<version>-vc<code>-<abi>.apk` | Most phones need `arm64-v8a`. Later updates install from inside the app. |
 | **Other Linux distributions, macOS** | — | [Build from source](#build-from-source). The code builds on macOS, but no installer ships yet. |
 
 On Linux, the `tailscaled` service must be installed and running. BigLace
@@ -163,9 +140,8 @@ On Windows the Tailscale service already accepts commands from local users.
 ## Privacy and security
 
 - **Keys stay out of plain text.** Pre-auth keys and panel passwords live in
-  the OS keyring (Secret Service, Windows Credential Manager, macOS Keychain);
-  on Android they are encrypted with an Android Keystore key. Settings are
-  still saved when no keyring is available.
+  the OS keyring (Secret Service, Windows Credential Manager, macOS Keychain).
+  Settings are still saved when no keyring is available.
 - **Keys stay out of process lists and logs.** `tailscale up` reads the key
   from a private temporary file, never from the command line, and logs mask
   it.
@@ -173,12 +149,7 @@ On Windows the Tailscale service already accepts commands from local users.
   requests and response sizes capped. Plain HTTP is accepted only for
   `localhost` during development.
 - **No guessing on SSH.** Launchers validate host names and logins, and pick
-  the tailnet address when MagicDNS answers with something else. Android pins
-  SSH host keys on first use (SHA-256) and warns before accepting a changed
-  one.
-- **Verified updates.** The Android app installs only APKs downloaded from this
-  repository's releases, checks their SHA-256 first, and Android itself
-  requires the same signing key as the installed app.
+  the tailnet address when MagicDNS answers with something else.
 - **Crash-safe settings.** Configuration is written atomically; a file that
   can't be read is backed up instead of overwritten.
 
@@ -247,27 +218,6 @@ heat.exe dir target\wix-stage -cg RuntimeFiles -dr APPLICATIONFOLDER -ag -srd -s
 cargo wix --no-build --nocapture --target x86_64-pc-windows-msvc -C "-dStageDir=target\wix-stage"
 ```
 
-### Android
-
-Requires JDK 17 and the Android SDK (platform 36). The embedded network engine
-(`mobile/android/app/libs/tsbridge.aar`) is committed, so Go and the NDK are
-only needed to rebuild it.
-
-```bash
-cd mobile/android
-./gradlew testDebugUnitTest lintDebug assembleDebug   # debug APKs, one per ABI
-../dist/build-apk.sh                                  # signed release APKs in mobile/dist/
-```
-
-Rebuild the engine after changing [`mobile/tsbridge`](mobile/tsbridge):
-
-```bash
-cd mobile/tsbridge && ./build-aar.sh
-```
-
-More detail in [`mobile/dist/README.md`](mobile/dist/README.md) (signing and
-release APKs) and [`mobile/ARCHITECTURE.md`](mobile/ARCHITECTURE.md).
-
 ## Development
 
 ### Releases and versioning
@@ -283,14 +233,8 @@ each build.
   the release tag format), which the update notice compares with the latest
   release.
 - **One release, every platform.** Publishing a release triggers the
-  [Windows](.github/workflows/windows.yml) and
-  [Android](.github/workflows/android.yml) workflows, which attach the MSI
-  and the APKs to that same release. Android shows the same `APP_VERSION` as
-  the desktop app; its internal versionCode comes from the release tag, so
-  every release can update the previous one. APKs are signed with the key in
-  the repository secrets
-  (`ANDROID_KEYSTORE_BASE64`, `ANDROID_KEYSTORE_PASSWORD`, `ANDROID_KEY_ALIAS`,
-  `ANDROID_KEY_PASSWORD`).
+  [Windows](.github/workflows/windows.yml) workflow, which attaches the MSI
+  to that same release.
 
 ### Checks
 
@@ -300,12 +244,6 @@ cargo fmt --all -- --check
 cargo test --all-targets --locked
 cargo clippy --all-targets --locked -- -D warnings
 cargo audit --deny warnings
-
-# Android
-cd mobile/android && ./gradlew testDebugUnitTest lintDebug assembleDebug
-
-# Network engine
-cd mobile/tsbridge && go test -race ./... && go mod verify
 ```
 
 Packaging files can also be checked with `shellcheck`, `namcap`,
@@ -334,16 +272,12 @@ biglace/
 │   ├── secrets.rs           OS keyring
 │   ├── tray.rs, tray/       tray icon (Linux · Windows · stub)
 │   └── window/              main window, sidebar, peer rows, dialogs
-├── mobile/
-│   ├── android/             Android app (Kotlin, Jetpack Compose)
-│   ├── tsbridge/            Go bridge embedding tsnet, built as an AAR
-│   └── dist/                release APK build script
 ├── usr/                     installed files: desktop entry, icons, translations
 ├── locale/                  translation sources
 ├── pkgbuild/                Arch / BigLinux package
 ├── wix/                     Windows installer
 ├── docs/screenshots/        images used in this README
-└── .github/workflows/       Windows and Android release pipelines
+└── .github/workflows/       Windows release pipeline
 ```
 
 ## License
