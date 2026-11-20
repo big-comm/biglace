@@ -14,6 +14,8 @@ use crate::tailscale::{self, Identity};
 
 mod encoder;
 
+pub(crate) use encoder::RateMode;
+
 /// Signed requests must be this fresh (either way, for clock skew).
 const SKEW: Duration = Duration::from_secs(120);
 /// How long the person at the screen has to answer.
@@ -477,14 +479,14 @@ thread_local! {
 /// (vah264enc) — no readback, no CPU conversion. What gnome-remote-desktop
 /// does on GPUs; None when this machine has no working VA-API encoder.
 #[cfg(target_os = "linux")]
-fn wayland_zero_copy(capture: &str) -> Option<String> {
+fn wayland_zero_copy(capture: &str, rate: RateMode) -> Option<String> {
     use gstreamer as gst;
-    let (_, enc) = encoder::usable().iter().find(|(e, _)| *e == encoder::Encoder::VaH264)?;
+    let enc = encoder::usable().iter().find(|e| **e == encoder::Encoder::VaH264)?.description(rate);
     gst::ElementFactory::find("vapostproc")?;
     Some(format!(
         "{capture} ! video/x-raw(memory:DMABuf) ! vapostproc \
          ! video/x-raw(memory:VAMemory),format=NV12 ! {}",
-        encode_tail(enc)
+        encode_tail(&enc)
     ))
 }
 
@@ -501,7 +503,7 @@ fn pipewire_capture(fd: i32, node: u32, serial: Option<u64>) -> String {
 }
 
 #[cfg(target_os = "linux")]
-pub(crate) fn open_source(want: Pointer) -> anyhow::Result<Source> {
+pub(crate) fn open_source(want: Pointer, rate: RateMode) -> anyhow::Result<Source> {
     use std::os::fd::AsRawFd;
     if super::wayland_session() {
         // Only a room's shared screen keeps the pointer in the video (the
@@ -512,10 +514,10 @@ pub(crate) fn open_source(want: Pointer) -> anyhow::Result<Source> {
         let pointer = if portal.cursor_embedded { Pointer::Embedded } else { Pointer::Local };
         let capture = pipewire_capture(portal.fd.as_raw_fd(), portal.node, portal.serial);
         // Copy path, for compositors or GPUs without DMA-BUF/VA-API.
-        let copy = each_encoder(&format!("{capture} use-bufferpool=false ! {WAYLAND_TAIL}"))?;
+        let copy = each_encoder(&format!("{capture} use-bufferpool=false ! {WAYLAND_TAIL}"), rate)?;
         Ok(Source {
             pointer,
-            pipelines: wayland_zero_copy(&capture).into_iter().chain(copy).collect(),
+            pipelines: wayland_zero_copy(&capture, rate).into_iter().chain(copy).collect(),
             dirty: None,
             sink: InputSink::portal(portal.input, portal.handled),
             _fd: Some(portal.fd),
@@ -527,7 +529,7 @@ pub(crate) fn open_source(want: Pointer) -> anyhow::Result<Source> {
         dirty.raise();
         // Usually the viewer draws the pointer itself (no video delay on
         // it); a room share shows the presenter's in the frames.
-        let pipelines = each_encoder(&format!("ximagesrc name=capture use-damage=false show-pointer={embedded} ! {X11_TAIL}"))?;
+        let pipelines = each_encoder(&format!("ximagesrc name=capture use-damage=false show-pointer={embedded} ! {X11_TAIL}"), rate)?;
         let watch = super::damage_x11::watch(dirty.clone(), embedded);
         Ok(Source {
             pointer: want,
@@ -548,7 +550,7 @@ pub(crate) fn watch_damage(dirty: &Arc<Damage>, track_pointer: bool) -> Option<s
 }
 
 #[cfg(not(target_os = "linux"))]
-pub(crate) fn open_source(_want: Pointer) -> anyhow::Result<Source> {
+pub(crate) fn open_source(_want: Pointer, _rate: RateMode) -> anyhow::Result<Source> {
     anyhow::bail!("screen sharing is not available on this system")
 }
 
@@ -562,7 +564,7 @@ fn run_session(mut stream: TcpStream, stop: &StopHandle, protocol: u32, identity
     // Protocol 4 viewers learn the pointer's shape (X11) or get it in the
     // frames (Wayland).
     let want = if protocol >= 4 { Pointer::Shapes } else { Pointer::Local };
-    let source = match open_source(want) {
+    let source = match open_source(want, RateMode::FollowsLink) {
         Ok(s) => s,
         Err(e) => {
             tailscale::dbg(&format!("remote: no screen source: {e}"));
@@ -732,7 +734,7 @@ fn run_session(mut stream: TcpStream, stop: &StopHandle, protocol: u32, identity
             keep_fd = None;
             keep_damage = None;
         }
-        match open_source(want) {
+        match open_source(want, RateMode::FollowsLink) {
             Ok(fresh) => {
                 pipelines = fresh.pipelines;
                 dirty = fresh.dirty;
@@ -805,15 +807,18 @@ fn power_action(action: &str, viewer: &Identity, writer: &Arc<Mutex<TcpStream>>)
     }
 }
 
-/// The best H.264 encoder that works here, and the raw format it takes.
+/// The best H.264 encoder that works here, as a 1:1 share sets it up, and
+/// the raw format it takes.
 pub fn encoder() -> Option<(&'static str, &'static str)> {
-    encoder::usable().first().map(|(e, desc)| (desc.as_str(), e.format()))
+    static BEST: OnceLock<Option<(String, &'static str)>> = OnceLock::new();
+    let best = BEST.get_or_init(|| encoder::usable().first().map(|e| (e.description(RateMode::FollowsLink), e.format())));
+    best.as_ref().map(|(desc, format)| (desc.as_str(), *format))
 }
 
 /// `head` into each encoder that works here, best first: one that refuses
 /// this capture gives way to the next.
-fn each_encoder(head: &str) -> anyhow::Result<Vec<String>> {
-    let pipelines: Vec<String> = encoder::usable().iter().map(|(e, desc)| pipeline_desc(head, (desc, e.format()))).collect();
+fn each_encoder(head: &str, rate: RateMode) -> anyhow::Result<Vec<String>> {
+    let pipelines: Vec<String> = encoder::usable().iter().map(|e| pipeline_desc(head, (&e.description(rate), e.format()))).collect();
     if pipelines.is_empty() {
         anyhow::bail!("no H.264 encoder");
     }
@@ -1398,8 +1403,9 @@ mod tests {
         }
         // Every encoder present on this machine, not just the preferred one.
         let present = encoder::Encoder::ALL.into_iter().filter(|e| gst::ElementFactory::find(e.element()).is_some());
-        for (tail, kind) in present.flat_map(|e| [(WAYLAND_TAIL, e), (X11_TAIL, e)]) {
-            let description = kind.description();
+        let setups = [WAYLAND_TAIL, X11_TAIL].into_iter().flat_map(|tail| [(tail, RateMode::FollowsLink), (tail, RateMode::ConstantQuality)]);
+        for (kind, (tail, rate)) in present.flat_map(|e| setups.clone().map(move |setup| (e, setup))) {
+            let description = kind.description(rate);
             let enc = (description.as_str(), kind.format());
             let head = format!("videotestsrc num-buffers=20 ! video/x-raw,width=320,height=240 ! videoconvert ! {tail}");
             let desc = pipeline_desc(&head, enc);
