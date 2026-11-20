@@ -66,6 +66,8 @@ pub enum Event {
     Stats(Stats),
     /// Room share: whether we may control the screen now.
     Control(bool),
+    /// Room share: this screen can't be controlled at all (a phone's).
+    ViewOnly,
     /// The host's pointer: its shape (`Some`), or drawn in the video
     /// (`None`: hide the viewer's own).
     Cursor(Option<CursorImage>),
@@ -708,10 +710,12 @@ pub(crate) fn decode_loop_with(
             }
             Kind::Pong => shared.clock.pong(&payload),
             Kind::Control => {
-                let granted = serde_json::from_slice::<serde_json::Value>(&payload)
-                    .ok()
-                    .and_then(|v| v.get("granted").and_then(serde_json::Value::as_bool))
-                    .unwrap_or(false);
+                let v = serde_json::from_slice::<serde_json::Value>(&payload).unwrap_or_default();
+                if v.get("controllable").and_then(serde_json::Value::as_bool) == Some(false) {
+                    let _ = events.send_blocking(Event::ViewOnly);
+                    continue;
+                }
+                let granted = v.get("granted").and_then(serde_json::Value::as_bool).unwrap_or(false);
                 let _ = events.send_blocking(Event::Control(granted));
             }
             Kind::Cursor => {
@@ -765,6 +769,26 @@ mod tests {
     use gstreamer as gst;
     use gstreamer::prelude::*;
     use std::net::TcpListener;
+
+    /// A phone's shared screen says it can't be controlled; a refusal
+    /// alone is just "not now".
+    #[test]
+    fn view_only_screen_told_apart() {
+        let listener = TcpListener::bind("127.0.0.1:0").unwrap();
+        let addr = listener.local_addr().unwrap();
+        let host = std::thread::spawn(move || {
+            let (mut s, _) = listener.accept().unwrap();
+            write_frame(&mut s, Kind::Control, br#"{"granted":false}"#).unwrap();
+            write_frame(&mut s, Kind::Control, br#"{"granted":false,"controllable":false}"#).unwrap();
+        });
+        let (tx, rx) = async_channel::bounded(8);
+        let stream = TcpStream::connect(addr).unwrap();
+        let viewer = std::thread::spawn(move || decode_loop(BufReader::new(stream), &tx));
+        host.join().unwrap();
+        assert!(matches!(rx.recv_blocking(), Ok(Event::Control(false))));
+        assert!(matches!(rx.recv_blocking(), Ok(Event::ViewOnly)));
+        let _ = viewer.join();
+    }
 
     /// Values read back from [`COLOR_CHECK`]: Intel VA-API (its own matrix)
     /// and the CPU decoder pass; red and blue swapped, or a pink cast, fail.
@@ -922,7 +946,7 @@ mod tests {
                     frames += 1;
                 }
                 Event::Stats(st) => stats = Some(st),
-                Event::Control(_) | Event::Power { .. } | Event::Cursor(_) => {}
+                Event::Control(_) | Event::ViewOnly | Event::Power { .. } | Event::Cursor(_) => {}
                 Event::Ended(_) => break,
             }
             if frames >= 5 && stats.is_some() {

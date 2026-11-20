@@ -671,6 +671,7 @@ fn open_viewer_as(ip: &str, name: &str, toast: &libadwaita::ToastOverlay, stage:
                             );
                             picture.set_paintable(Some(&tex));
                         }
+                        client::Event::ViewOnly => btn_control.set_visible(false),
                         client::Event::Control(granted) => {
                             if !watching {
                                 continue;
