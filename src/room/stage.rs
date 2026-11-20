@@ -31,6 +31,18 @@ const WRITE_TIMEOUT: Duration = Duration::from_secs(8);
 
 type Out = (Kind, Arc<Vec<u8>>);
 
+/// The last viewer left: the sound capture ends until the next one.
+#[derive(Debug)]
+struct NobodyWatching;
+
+impl std::fmt::Display for NobodyWatching {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        f.write_str("nobody watching")
+    }
+}
+
+impl std::error::Error for NobodyWatching {}
+
 struct Viewer {
     id: u64,
     ip: String,
@@ -138,15 +150,9 @@ pub fn start(with_sound: bool) -> Result<(), String> {
             match share_audio::start() {
                 Ok(source) => {
                     let st = stage.clone();
-                    let _ = std::thread::Builder::new().name("biglace-stage-sound".into()).spawn(move || {
-                        let send = |payload: &[u8]| -> anyhow::Result<()> {
-                            st.fanout(Kind::Audio, payload);
-                            Ok(())
-                        };
-                        if let Err(e) = host::stream_audio_to(&send, &st.stop, &share_audio::capture_desc(&source)) {
-                            tailscale::dbg(&format!("stage: no sound: {e}"));
-                        }
-                    });
+                    let _ = std::thread::Builder::new()
+                        .name("biglace-stage-sound".into())
+                        .spawn(move || st.stream_sound(&share_audio::capture_desc(&source)));
                 }
                 Err(e) => emit(RoomEvent::Problem(crate::trf!("The computer's sound can't be shared: {error}", "error" => e))),
             }
@@ -269,16 +275,17 @@ fn is_keyframe(au: &[u8]) -> bool {
 }
 
 impl Stage {
-    /// One encoded frame (or video info) → every viewer.
-    fn fanout(&self, kind: Kind, payload: &[u8]) {
+    /// One encoded frame (or video info) → every viewer. False when nobody
+    /// watches.
+    fn fanout(&self, kind: Kind, payload: &[u8]) -> bool {
         if kind == Kind::Info {
             if let Ok(mut i) = self.last_info.lock() {
                 *i = Some(payload.to_vec());
             }
         }
-        let Ok(mut viewers) = self.viewers.lock() else { return };
+        let Ok(mut viewers) = self.viewers.lock() else { return false };
         if viewers.is_empty() {
-            return;
+            return false;
         }
         let video = matches!(kind, Kind::VideoTs | Kind::Video);
         let key = video && is_keyframe(payload.get(8..).unwrap_or_default());
@@ -320,6 +327,29 @@ impl Stage {
             viewers.retain(|v| !gone.contains(&v.id));
             if viewers.is_empty() {
                 self.no_viewers.store(true, Ordering::Release);
+            }
+        }
+        true
+    }
+
+    /// Send the computer's sound (captured with `desc`) while anyone
+    /// watches, until the share stops.
+    fn stream_sound(&self, desc: &str) {
+        let send = |payload: &[u8]| -> anyhow::Result<()> {
+            if self.fanout(Kind::Audio, payload) {
+                Ok(())
+            } else {
+                Err(NobodyWatching.into())
+            }
+        };
+        while self.wait_for_viewers() {
+            match host::stream_audio_to(&send, &self.stop, desc) {
+                Err(e) if e.is::<NobodyWatching>() => tailscale::dbg("stage: nobody watching, sound paused"),
+                Ok(()) => break,
+                Err(e) => {
+                    tailscale::dbg(&format!("stage: no sound: {e}"));
+                    break;
+                }
             }
         }
     }
@@ -659,6 +689,36 @@ mod tests {
         drop(stage.viewers.lock().unwrap());
         stage.audience_changed.notify_all();
         assert!(!waiter.join().unwrap(), "stopping the share ends the wait");
+    }
+
+    /// The computer's sound is captured only while someone watches: a
+    /// source with 300 ms of sound still has all of it for the first viewer
+    /// after half a second with nobody, and starts again for the next.
+    #[test]
+    fn sound_runs_only_while_someone_watches() {
+        let _turn = crate::remote::heavy_test();
+        gstreamer::init().unwrap();
+        let stage = Arc::new(test_stage());
+        let sound = {
+            let stage = stage.clone();
+            std::thread::spawn(move || {
+                stage.stream_sound("audiotestsrc is-live=true num-buffers=30 samplesperbuffer=480 ! appsink name=asink sync=false");
+            })
+        };
+        std::thread::sleep(Duration::from_millis(500));
+        let heard = |id| {
+            let rx = viewer(&stage, id, CHANNEL);
+            stage.audience_changed.notify_all();
+            let first = rx.recv_timeout(Duration::from_secs(3)).map(|(kind, _)| kind);
+            stage.remove(id);
+            first
+        };
+        assert_eq!(heard(1).ok(), Some(Kind::Audio), "the first viewer hears nothing");
+        assert_eq!(heard(2).ok(), Some(Kind::Audio), "the sound did not start again for the next viewer");
+        stage.stop.stop();
+        drop(stage.viewers.lock().unwrap());
+        stage.audience_changed.notify_all();
+        sound.join().unwrap();
     }
 
     /// Input counts only from the viewer holding control.
