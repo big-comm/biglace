@@ -114,21 +114,25 @@ fn emit(e: RoomEvent) {
     let _ = channel().0.try_send(e);
 }
 
-type Wakeup = (async_channel::Sender<()>, async_channel::Receiver<()>);
-
-fn stage_channel() -> &'static Wakeup {
-    static CH: OnceLock<Wakeup> = OnceLock::new();
-    CH.get_or_init(|| async_channel::bounded(1))
+fn stage_listeners() -> &'static Mutex<Vec<async_channel::Sender<()>>> {
+    static LISTENERS: OnceLock<Mutex<Vec<async_channel::Sender<()>>>> = OnceLock::new();
+    LISTENERS.get_or_init(Mutex::default)
 }
 
-/// Wakes the stage when a camera picture arrives or a voice level is worth
-/// showing; many changes before it looks are one wakeup.
+/// Wakes its listener when a camera picture arrives or a voice level is
+/// worth showing; many changes before it looks are one wakeup. Every
+/// listener hears each change.
 pub fn stage_changes() -> async_channel::Receiver<()> {
-    stage_channel().1.clone()
+    let (tx, rx) = async_channel::bounded(1);
+    stage_listeners().lock().unwrap_or_else(std::sync::PoisonError::into_inner).push(tx);
+    rx
 }
 
 pub fn stage_changed() {
-    let _ = stage_channel().0.try_send(());
+    stage_listeners()
+        .lock()
+        .unwrap_or_else(std::sync::PoisonError::into_inner)
+        .retain(|tx| !matches!(tx.try_send(()), Err(async_channel::TrySendError::Closed(()))));
 }
 
 /// A live connection to one peer.
@@ -746,6 +750,15 @@ mod tests {
     fn exactly_one_side_dials() {
         assert!(dials("100.64.0.3", "100.64.0.17") ^ dials("100.64.0.17", "100.64.0.3"));
         assert!(!dials("100.64.0.3", "100.64.0.3"));
+    }
+
+    /// The stage and the member list both redraw on the same changes.
+    #[test]
+    fn every_listener_hears_a_change() {
+        let (stage, members) = (stage_changes(), stage_changes());
+        stage_changed();
+        assert!(stage.try_recv().is_ok(), "the stage missed it");
+        assert!(members.try_recv().is_ok(), "the member list missed it");
     }
 
     /// The microphone chain reports how loud it is: a tone reads loud,
