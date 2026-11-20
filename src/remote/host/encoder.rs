@@ -195,8 +195,9 @@ fn working(candidates: Vec<Encoder>, works: impl Fn(Encoder) -> anyhow::Result<(
     found
 }
 
-/// Whether the primary GPU (the first `cardN` with a driver) runs NVIDIA's
-/// own driver. `drm` is `/sys/class/drm`.
+/// Whether the primary GPU runs NVIDIA's own driver: the card the firmware
+/// booted on (`boot_vga`), else the first `cardN` with a driver. `drm` is
+/// `/sys/class/drm`.
 fn nvidia_driver(drm: &Path) -> bool {
     let Ok(entries) = std::fs::read_dir(drm) else { return false };
     let mut cards: Vec<String> = entries
@@ -205,9 +206,13 @@ fn nvidia_driver(drm: &Path) -> bool {
         .filter(|name| name.strip_prefix("card").is_some_and(|n| !n.is_empty() && n.bytes().all(|b| b.is_ascii_digit())))
         .collect();
     cards.sort();
-    cards
+    let driver = |card: &String| std::fs::read_link(drm.join(card).join("device/driver")).ok();
+    let booted = cards
         .iter()
-        .find_map(|card| std::fs::read_link(drm.join(card).join("device/driver")).ok())
+        .find(|card| std::fs::read_to_string(drm.join(card).join("device/boot_vga")).is_ok_and(|v| v.trim() == "1"));
+    booted
+        .and_then(driver)
+        .or_else(|| cards.iter().find_map(driver))
         .is_some_and(|driver| driver.file_name().is_some_and(|m| m == "nvidia"))
 }
 
@@ -430,6 +435,28 @@ mod tests {
         assert!(nvidia_driver(&root));
         card("card0", Some("i915"));
         assert!(!nvidia_driver(&root));
+        let _ = std::fs::remove_dir_all(&root);
+    }
+
+    /// Intel and NVIDIA together: the card the firmware booted on decides,
+    /// whatever its number.
+    #[test]
+    fn boot_vga_card_decides() {
+        let root = std::env::temp_dir().join(format!("biglace-bootvga-{}", std::process::id()));
+        let _ = std::fs::remove_dir_all(&root);
+        let card = |name: &str, driver: &str, boot_vga: &str| {
+            let device = root.join(name).join("device");
+            std::fs::create_dir_all(&device).unwrap();
+            let _ = std::fs::remove_file(device.join("driver"));
+            std::os::unix::fs::symlink(format!("../../../bus/pci/drivers/{driver}"), device.join("driver")).unwrap();
+            std::fs::write(device.join("boot_vga"), boot_vga).unwrap();
+        };
+        card("card0", "nvidia", "0\n");
+        card("card1", "i915", "1\n");
+        assert!(!nvidia_driver(&root));
+        card("card0", "nvidia", "1\n");
+        card("card1", "i915", "0\n");
+        assert!(nvidia_driver(&root));
         let _ = std::fs::remove_dir_all(&root);
     }
 }
