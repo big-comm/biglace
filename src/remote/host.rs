@@ -424,7 +424,7 @@ pub(crate) struct Source {
     /// Full pipeline descriptions to try, best first (see `stream_screen`).
     pub(crate) pipelines: Vec<String>,
     /// X11: raised by XDamage when the screen changed (None = always send).
-    pub(crate) dirty: Option<Arc<AtomicBool>>,
+    pub(crate) dirty: Option<Arc<Damage>>,
     pub(crate) sink: InputSink,
     #[cfg(target_os = "linux")]
     pub(crate) _fd: Option<std::os::fd::OwnedFd>,
@@ -521,7 +521,8 @@ pub(crate) fn open_source(_stop: &StopHandle, want: Pointer) -> anyhow::Result<S
         })
     } else {
         let embedded = want == Pointer::Embedded;
-        let dirty = Arc::new(AtomicBool::new(true));
+        let dirty = Arc::new(Damage::default());
+        dirty.raise();
         let watch = super::damage_x11::watch(dirty.clone(), embedded);
         let enc = encoder().ok_or_else(|| anyhow::anyhow!("no H.264 encoder"))?;
         Ok(Source {
@@ -902,7 +903,7 @@ pub(crate) fn stream_audio_to(send: &dyn Fn(&[u8]) -> anyhow::Result<()>, stop: 
 /// (within a few seconds), with that frame. Errors leave nothing running.
 fn start_pipeline(
     desc: &str,
-    dirty: Option<Arc<AtomicBool>>,
+    dirty: Option<Arc<Damage>>,
 ) -> anyhow::Result<(gstreamer::Pipeline, gstreamer_app::AppSink, gstreamer::Sample)> {
     use gstreamer as gst;
     use gstreamer::prelude::*;
@@ -942,25 +943,74 @@ fn start_pipeline(
 /// A pipeline that hasn't produced a frame by then is given up on.
 const FIRST_FRAME_WITHIN: Duration = Duration::from_secs(4);
 
+/// Raised by XDamage when the X11 screen changed; the capture waits on it.
+#[derive(Default)]
+pub(crate) struct Damage {
+    changed: Mutex<bool>,
+    wake: std::sync::Condvar,
+}
+
+impl Damage {
+    pub(crate) fn raise(&self) {
+        *self.changed.lock().unwrap_or_else(std::sync::PoisonError::into_inner) = true;
+        self.wake.notify_all();
+    }
+
+    fn take(&self) -> bool {
+        std::mem::take(&mut *self.changed.lock().unwrap_or_else(std::sync::PoisonError::into_inner))
+    }
+
+    /// Waits up to `timeout` for a change and leaves it raised.
+    fn wait(&self, timeout: Duration) -> bool {
+        let changed = self.changed.lock().unwrap_or_else(std::sync::PoisonError::into_inner);
+        let (changed, _) = self
+            .wake
+            .wait_timeout_while(changed, timeout, |changed| !*changed)
+            .unwrap_or_else(std::sync::PoisonError::into_inner);
+        *changed
+    }
+}
+
+/// Which X11 grabs go on to the encoder. It runs on the capture's streaming
+/// thread, so holding a frame back also holds back the next grab.
+struct Gate {
+    damage: Arc<Damage>,
+    last_sent: Instant,
+    /// The grab right after a change: a change raised during a grab may be
+    /// missing from it.
+    trailing: bool,
+}
+
+impl Gate {
+    fn admit(&mut self) -> bool {
+        if self.damage.take() {
+            self.trailing = true;
+        } else if self.trailing {
+            self.trailing = false;
+        } else if self.damage.wait(IDLE_FRAME_EVERY.saturating_sub(self.last_sent.elapsed())) {
+            // Taken before the change: the next grab has it.
+            return false;
+        }
+        self.last_sent = Instant::now();
+        true
+    }
+}
+
 /// Right after capture: stamp each frame with the moment it was really
 /// captured (a source that can't keep the requested rate — ximagesrc
 /// asked for 60 fps on a machine doing 25 — timestamps frames on a
-/// schedule that drifts further behind every second), and on X11 drop
-/// frames of an unchanged screen before they cost a conversion and an
-/// encode.
-fn stamp_and_gate(pipeline: &gstreamer::Pipeline, dirty: Option<Arc<AtomicBool>>) {
+/// schedule that drifts further behind every second), and on X11 wait for
+/// a change before the next grab.
+fn stamp_and_gate(pipeline: &gstreamer::Pipeline, dirty: Option<Arc<Damage>>) {
     use gstreamer as gst;
     use gstreamer::prelude::*;
     let Some(capture) = pipeline.by_name("capture") else { return };
     let Some(pad) = capture.static_pad("src") else { return };
-    let last = Mutex::new(Instant::now() - IDLE_FRAME_EVERY);
+    let gate = dirty.map(|damage| Mutex::new(Gate { damage, last_sent: Instant::now(), trailing: false }));
     let element = capture.downgrade();
     pad.add_probe(gst::PadProbeType::BUFFER, move |_, info| {
-        if let Some(dirty) = &dirty {
-            let mut last = last.lock().unwrap_or_else(|e| e.into_inner());
-            if dirty.swap(false, Ordering::AcqRel) || last.elapsed() >= IDLE_FRAME_EVERY {
-                *last = Instant::now();
-            } else {
+        if let Some(gate) = &gate {
+            if !gate.lock().unwrap_or_else(std::sync::PoisonError::into_inner).admit() {
                 return gst::PadProbeReturn::Drop;
             }
         }
@@ -982,7 +1032,7 @@ const IDLE_FRAME_EVERY: Duration = Duration::from_secs(1);
 pub(crate) fn stream_screen(
     send: &dyn Fn(Kind, &[u8]) -> anyhow::Result<()>,
     pipelines: &[String],
-    dirty: Option<Arc<AtomicBool>>,
+    dirty: Option<Arc<Damage>>,
     stop: &StopHandle,
     timestamps: bool,
     want_key: &AtomicBool,
@@ -1075,6 +1125,10 @@ pub(crate) fn stream_screen(
         }
         Ok(false)
     })();
+    // Frees a capture thread waiting in the gate, so stopping takes no second.
+    if let Some(damage) = &dirty {
+        damage.raise();
+    }
     let _ = pipeline.set_state(gst::State::Null);
     result
 }
@@ -1135,6 +1189,34 @@ mod tests {
     }
     use gstreamer as gst;
     use gstreamer::prelude::*;
+
+    /// A still X11 screen holds back the next grab until it changes, or
+    /// until the keepalive frame is due.
+    #[test]
+    fn x11_gate_waits_for_damage() {
+        let damage = Arc::new(Damage::default());
+        let mut gate = Gate { damage: damage.clone(), last_sent: Instant::now(), trailing: false };
+        damage.raise();
+        assert!(gate.admit(), "a change goes out");
+        assert!(gate.admit(), "and the grab after it");
+        let raiser = {
+            let damage = damage.clone();
+            std::thread::spawn(move || {
+                std::thread::sleep(Duration::from_millis(100));
+                damage.raise();
+            })
+        };
+        let start = Instant::now();
+        assert!(!gate.admit(), "the grab from before the change is dropped");
+        let waited = start.elapsed();
+        assert!(waited >= Duration::from_millis(90) && waited < IDLE_FRAME_EVERY / 2, "{waited:?}");
+        raiser.join().unwrap();
+        assert!(gate.admit(), "the next grab has the change");
+        assert!(gate.admit());
+        let start = Instant::now();
+        assert!(gate.admit(), "a still screen still sends its keepalive");
+        assert!(start.elapsed() >= IDLE_FRAME_EVERY - Duration::from_millis(50), "{:?}", start.elapsed());
+    }
 
     /// Deprecated `pipewiresrc` properties (`path`, `always-copy`) go away
     /// in a later GStreamer; the serial must survive above `u32::MAX`.

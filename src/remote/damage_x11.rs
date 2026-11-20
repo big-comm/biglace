@@ -27,7 +27,7 @@ impl Drop for Watch {
 /// Watch the root window; `dirty` is raised on every change. None when
 /// XDamage isn't available (the caller then treats the screen as always
 /// changing).
-pub fn watch(dirty: Arc<AtomicBool>, track_pointer: bool) -> Option<Watch> {
+pub fn watch(dirty: Arc<super::host::Damage>, track_pointer: bool) -> Option<Watch> {
     let (conn, screen_num) = x11rb::connect(None).ok()?;
     conn.damage_query_version(1, 1).ok()?.reply().ok()?;
     let root = conn.setup().roots.get(screen_num)?.root;
@@ -59,7 +59,7 @@ pub fn watch(dirty: Arc<AtomicBool>, track_pointer: bool) -> Option<Watch> {
                     }
                 }
                 if changed {
-                    dirty.store(true, Ordering::Release);
+                    dirty.raise();
                     // Re-arm: NON_EMPTY reports again only after this.
                     let _ = conn.damage_subtract(id, x11rb::NONE, x11rb::NONE);
                     let _ = conn.flush();
@@ -85,7 +85,7 @@ mod tests {
             eprintln!("no X server of its own; skipping");
             return;
         }
-        let watch = watch(Arc::new(AtomicBool::new(false)), true).expect("XDamage on this display");
+        let watch = watch(Arc::default(), true).expect("XDamage on this display");
         let (done, ended) = std::sync::mpsc::channel();
         std::thread::spawn(move || {
             drop(watch);
