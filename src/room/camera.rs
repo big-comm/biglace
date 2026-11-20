@@ -116,76 +116,26 @@ pub fn devices() -> Vec<Device> {
     out
 }
 
-/// How the camera is reached.
-enum Access {
-    /// Through the desktop's camera portal: its PipeWire connection.
-    Portal(std::os::fd::OwnedFd),
-    /// The session's PipeWire (no camera portal here).
-    PipeWire,
-    /// No PipeWire plugin for GStreamer: the device itself.
-    Direct,
-}
-
-/// Ask the desktop for the camera (the Camera portal: it may ask the person,
-/// and shows that the camera is in use). `Err` = the person said no.
-#[cfg(target_os = "linux")]
-fn access() -> Result<Access, String> {
-    if gst::ElementFactory::find("pipewiresrc").is_none() {
-        return Ok(Access::Direct);
-    }
-    use ashpd::desktop::camera::Camera;
-    let result: Result<Option<std::os::fd::OwnedFd>, Option<String>> = ashpd::zbus::block_on(async {
-        // As a host app (no app id): the portal lets it in (GNOME refused
-        // at once when we registered one — it then wants a stored permission).
-        let cam = Camera::new().await.map_err(|_| None)?;
-        let request = cam.request_access(Default::default()).await.map_err(|_| None)?;
-        match request.response() {
-            Ok(()) => {}
-            Err(ashpd::Error::Response(ashpd::desktop::ResponseError::Cancelled)) => {
-                return Err(Some(crate::tr!("access to the camera was refused")));
-            }
-            Err(_) => return Err(None),
-        }
-        if !cam.is_present().await.unwrap_or(true) {
-            return Ok(None);
-        }
-        cam.open_pipe_wire_remote(Default::default()).await.map(Some).map_err(|_| None)
-    });
-    match result {
-        Ok(Some(fd)) => Ok(Access::Portal(fd)),
-        Ok(None) | Err(None) => Ok(Access::PipeWire),
-        Err(Some(refused)) => Err(refused),
-    }
-}
-
-/// The source part of the capture pipeline.
-fn source_desc(device: Option<&Device>, access: &Access) -> String {
+/// The source part of the capture pipeline: the session's PipeWire, which
+/// shares the camera with other programs (BigCam's framed camera too).
+fn source_desc(device: Option<&Device>) -> String {
     // Development and tests on machines without a camera.
     if std::env::var_os("BIGLACE_FAKE_CAMERA").is_some() {
         return "videotestsrc is-live=true pattern=ball".into();
     }
-    match access {
-        Access::Portal(_) | Access::PipeWire => {
-            let fd = match access {
-                Access::Portal(fd) => format!(" fd={}", std::os::fd::AsRawFd::as_raw_fd(fd)),
-                _ => String::new(),
-            };
-            let target = device.and_then(|d| d.node.as_deref()).map(|n| format!(" target-object={n}")).unwrap_or_default();
-            format!("pipewiresrc{fd}{target} always-copy=true ! decodebin")
-        }
-        Access::Direct => match device.filter(|d| d.path.starts_with("/dev/")) {
-            Some(d) => format!("v4l2src device={} ! decodebin", d.path),
-            None => "v4l2src ! decodebin".into(),
-        },
-    }
+    let target = device.and_then(|d| d.node.as_deref()).map(|n| format!(" target-object={n}")).unwrap_or_default();
+    // Without the camera role WirePlumber takes the stream for an unknown
+    // kind and links it to nothing ("target not found").
+    format!(
+        "pipewiresrc{target} always-copy=true \
+         stream-properties=props,media.role=Camera,media.category=Capture,media.type=Video ! decodebin"
+    )
 }
 
 /// Our camera, running.
 pub struct Capture {
     pipeline: gst::Pipeline,
     alive: Arc<AtomicBool>,
-    /// The portal's PipeWire connection, open while we capture.
-    _access: Access,
 }
 
 impl Drop for Capture {
@@ -204,33 +154,14 @@ type Sender = Arc<dyn Fn(&[u8]) + Send + Sync>;
 pub fn start(path: Option<&str>, my_ip: &str, send: impl Fn(&[u8]) + Send + Sync + 'static) -> Result<Capture, String> {
     gst::init().map_err(|e| e.to_string())?;
     let fake = std::env::var_os("BIGLACE_FAKE_CAMERA").is_some();
-    let access = if fake { Access::Direct } else { access()? };
     // The chosen camera (by its device), with its PipeWire node.
     let device = if fake { None } else { path.and_then(|p| devices().into_iter().find(|d| d.path == p)) };
     let device = device.or_else(|| {
         path.map(|p| Device { name: String::new(), path: p.to_string(), node: p.strip_prefix("pipewire:").map(str::to_string) })
     });
     let send: Sender = Arc::new(send);
-    let (pipeline, access) = match run(&source_desc(device.as_ref(), &access), my_ip, &send) {
-        Ok(p) => (p, access),
-        // A PipeWire that won't link the camera ("target not found") while
-        // the device itself is free: open the device.
-        Err(e) if !matches!(access, Access::Direct) => {
-            let Some(d) = device.as_ref().filter(|d| d.path.starts_with("/dev/")) else { return Err(e) };
-            crate::tailscale::dbg(&format!("room: camera through PipeWire failed ({e}), opening {}", d.path));
-            (run(&format!("v4l2src device={} ! decodebin", d.path), my_ip, &send)?, Access::Direct)
-        }
-        Err(e) => return Err(e),
-    };
-    crate::tailscale::dbg(&format!(
-        "room: camera through {}",
-        match access {
-            Access::Portal(_) => "the camera portal (PipeWire)",
-            Access::PipeWire => "PipeWire",
-            Access::Direct => "the device",
-        }
-    ));
-    Ok(Capture { pipeline, alive: Arc::new(AtomicBool::new(true)), _access: access })
+    let pipeline = run(&source_desc(device.as_ref()), my_ip, &send)?;
+    Ok(Capture { pipeline, alive: Arc::new(AtomicBool::new(true)) })
 }
 
 /// Build and start the capture pipeline from `src`; an error when the
@@ -364,7 +295,7 @@ impl Decoder {
 mod tests {
     use super::*;
 
-    /// The real camera, through the Camera portal and PipeWire (run by hand
+    /// The real camera, through PipeWire (run by hand
     /// on a machine with a camera: `cargo test real_camera -- --ignored`).
     #[test]
     #[ignore]
@@ -374,7 +305,14 @@ mod tests {
         eprintln!("cameras: {list:?}");
         let got = Arc::new(std::sync::atomic::AtomicUsize::new(0));
         let g = got.clone();
-        let cap = start(list.first().map(|d| d.path.as_str()), "me", move |_| {
+        // BIGLACE_TEST_CAMERA picks one (a path from the list, or "default").
+        let pick = std::env::var("BIGLACE_TEST_CAMERA").ok();
+        let path = match pick.as_deref() {
+            Some("default") => None,
+            Some(p) => Some(p),
+            None => list.first().map(|d| d.path.as_str()),
+        };
+        let cap = start(path, "me", move |_| {
             g.fetch_add(1, Ordering::Relaxed);
         })
         .expect("camera starts");
