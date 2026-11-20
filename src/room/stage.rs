@@ -363,6 +363,9 @@ impl Stage {
                 Err(_) => return false,
             };
         }
+        // Someone watches: a pause raised while capture was already paused
+        // must not stop the capture that starts now.
+        self.no_viewers.store(false, Ordering::Release);
         !self.stop.stopped()
     }
 
@@ -689,6 +692,17 @@ mod tests {
         drop(stage.viewers.lock().unwrap());
         stage.audience_changed.notify_all();
         assert!(!waiter.join().unwrap(), "stopping the share ends the wait");
+    }
+
+    /// The last viewer leaving again while capture is paused (its own
+    /// thread ending after a write failed) does not stop the next start.
+    #[test]
+    fn repeated_pause_is_forgotten() {
+        let stage = test_stage();
+        stage.no_viewers.store(true, Ordering::Release);
+        let _rx = viewer(&stage, 1, CHANNEL);
+        assert!(stage.wait_for_viewers());
+        assert!(!stage.no_viewers.load(Ordering::Acquire), "the new capture would stop at once");
     }
 
     /// The computer's sound is captured only while someone watches: a
