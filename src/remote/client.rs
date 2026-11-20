@@ -517,7 +517,10 @@ impl Drop for AudioOut {
 
 /// Opus in, the default output out. Played as it arrives (a small buffer
 /// absorbs network jitter): sound follows the picture instead of a clock.
+/// After a stall, all but the newest 60 ms (six 10 ms packets) waiting are
+/// dropped, so the backlog never plays late for the rest of the session.
 pub(crate) const AUDIO_OUT_DESC: &str = "appsrc name=asrc is-live=true format=time do-timestamp=true \
+       max-buffers=6 max-bytes=0 leaky-type=downstream \
        caps=audio/x-opus,channel-mapping-family=0,channels=2,rate=48000 \
      ! opusdec plc=true ! audioconvert ! audioresample ! volume name=vol \
      ! autoaudiosink name=out sync=false";
@@ -864,6 +867,54 @@ mod tests {
         let total = pusher.join().unwrap();
         pipeline.set_state(gst::State::Null).unwrap();
         assert!(queued < 10, "{queued} of {total} frames pushed into a stalled decoder");
+    }
+
+    /// A burst of sound after a stall keeps only the newest 60 ms waiting.
+    #[test]
+    fn late_sound_keeps_only_60_ms() {
+        gst::init().unwrap();
+        if gst::ElementFactory::find("opusenc").is_none() {
+            return;
+        }
+        let enc = gst::parse::launch(
+            "audiotestsrc num-buffers=50 samplesperbuffer=480 ! audio/x-raw,rate=48000,channels=2 \
+             ! opusenc frame-size=10 ! appsink name=sink sync=false",
+        )
+        .unwrap()
+        .downcast::<gst::Pipeline>()
+        .unwrap();
+        let sink = enc.by_name("sink").unwrap().downcast::<gstreamer_app::AppSink>().unwrap();
+        enc.set_state(gst::State::Playing).unwrap();
+        let mut packets = Vec::new();
+        while let Some(s) = sink.try_pull_sample(gst::ClockTime::from_seconds(5)) {
+            packets.push(s.buffer().unwrap().map_readable().unwrap().as_slice().to_vec());
+        }
+        enc.set_state(gst::State::Null).unwrap();
+        assert!(packets.len() >= 40, "encoder produced {} packets", packets.len());
+
+        let desc = AUDIO_OUT_DESC.replace("autoaudiosink name=out", "appsink name=out");
+        assert_ne!(desc, AUDIO_OUT_DESC);
+        let out = start_audio(&desc).unwrap();
+        let stalled = out.pipeline.by_name("out").unwrap().downcast::<gstreamer_app::AppSink>().unwrap();
+        let (open_gate, gate) = mpsc::channel::<()>();
+        let gate = std::sync::Mutex::new(gate);
+        stalled.set_callbacks(
+            gstreamer_app::AppSinkCallbacks::builder()
+                .new_sample(move |sink| {
+                    let _ = sink.pull_sample();
+                    let _ = gate.lock().unwrap().recv();
+                    Ok(gst::FlowSuccess::Ok)
+                })
+                .build(),
+        );
+        for p in &packets {
+            out.src.push_buffer(gst::Buffer::from_slice(p.clone())).unwrap();
+        }
+        std::thread::sleep(Duration::from_millis(200));
+        let waiting = out.src.property::<u64>("current-level-buffers");
+        drop(open_gate);
+        drop(out);
+        assert!(waiting <= 6, "{waiting} of {} packets waiting to play", packets.len());
     }
 
     /// Closing the window ends the reader even while the host keeps sending
