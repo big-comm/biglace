@@ -737,6 +737,9 @@ mod tests {
             first
         };
         assert_eq!(heard(1).ok(), Some(Kind::Audio), "the first viewer hears nothing");
+        // Longer than the source's sound: only a capture started anew has
+        // any left for the next viewer.
+        std::thread::sleep(Duration::from_millis(500));
         assert_eq!(heard(2).ok(), Some(Kind::Audio), "the sound did not start again for the next viewer");
         stage.stop.stop();
         drop(stage.viewers.lock().unwrap());
