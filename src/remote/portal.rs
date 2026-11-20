@@ -686,7 +686,7 @@ mod tests {
     }
 
     #[test]
-    fn release_lifts_the_key_its_press_went_down_on() {
+    fn release_lifts_its_pressed_key() {
         let mut keys = Keys::default();
         keys.set_keymap(keymap("us,de"));
         assert_eq!(keys.press(0x79), Some(21)); // y on KEY_Y in us
