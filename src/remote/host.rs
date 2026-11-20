@@ -428,6 +428,9 @@ pub(crate) struct Source {
     pub(crate) sink: InputSink,
     #[cfg(target_os = "linux")]
     pub(crate) _fd: Option<std::os::fd::OwnedFd>,
+    /// X11: the XDamage thread raising `dirty`, stopped with this source.
+    #[cfg(target_os = "linux")]
+    pub(crate) _damage: Option<super::damage_x11::Watch>,
 }
 
 // What follows each source, up to raw video the encoder chain takes. Every
@@ -495,7 +498,7 @@ fn pipewire_capture(fd: i32, node: u32, serial: Option<u64>) -> String {
 }
 
 #[cfg(target_os = "linux")]
-pub(crate) fn open_source(stop: &StopHandle, want: Pointer) -> anyhow::Result<Source> {
+pub(crate) fn open_source(_stop: &StopHandle, want: Pointer) -> anyhow::Result<Source> {
     use std::os::fd::AsRawFd;
     if super::wayland_session() {
         // Only a room's shared screen keeps the pointer in the video (the
@@ -514,15 +517,16 @@ pub(crate) fn open_source(stop: &StopHandle, want: Pointer) -> anyhow::Result<So
             dirty: None,
             sink: InputSink::portal(portal.input, portal.handled),
             _fd: Some(portal.fd),
+            _damage: None,
         })
     } else {
         let embedded = want == Pointer::Embedded;
         let dirty = Arc::new(AtomicBool::new(true));
-        let watching = super::damage_x11::watch(dirty.clone(), stop.flag.clone(), embedded);
+        let watch = super::damage_x11::watch(dirty.clone(), embedded);
         let enc = encoder().ok_or_else(|| anyhow::anyhow!("no H.264 encoder"))?;
         Ok(Source {
             pointer: want,
-            dirty: watching.then_some(dirty),
+            dirty: watch.is_some().then_some(dirty),
             // Usually the viewer draws the pointer itself (no video delay
             // on it); a room share shows the presenter's in the frames.
             pipelines: vec![pipeline_desc(
@@ -531,6 +535,7 @@ pub(crate) fn open_source(stop: &StopHandle, want: Pointer) -> anyhow::Result<So
             )],
             sink: InputSink::x11(super::input_x11::Injector::connect().map(Box::new)),
             _fd: None,
+            _damage: watch,
         })
     }
 }
@@ -579,7 +584,7 @@ fn run_session(mut stream: TcpStream, stop: &StopHandle, protocol: u32, identity
     };
     let Source { mut pipelines, sink, mut dirty, pointer, .. } = source;
     #[cfg(target_os = "linux")]
-    let mut keep_fd = source._fd;
+    let (mut keep_fd, mut keep_damage) = (source._fd, source._damage);
     // Shared: a new source (after a resolution change) brings a new one.
     let sink = Arc::new(Mutex::new(sink));
     if let Ok(mut l) = live_sinks().lock() {
@@ -721,6 +726,7 @@ fn run_session(mut stream: TcpStream, stop: &StopHandle, protocol: u32, identity
                 *s = InputSink::x11(None);
             }
             keep_fd = None;
+            keep_damage = None;
         }
         match open_source(stop, want) {
             Ok(fresh) => {
@@ -732,6 +738,7 @@ fn run_session(mut stream: TcpStream, stop: &StopHandle, protocol: u32, identity
                 #[cfg(target_os = "linux")]
                 {
                     keep_fd = fresh._fd;
+                    keep_damage = fresh._damage;
                 }
             }
             Err(e) => {
@@ -743,7 +750,7 @@ fn run_session(mut stream: TcpStream, stop: &StopHandle, protocol: u32, identity
     }
     // Dropping the sink ends the portal session too.
     #[cfg(target_os = "linux")]
-    drop(keep_fd);
+    drop((keep_fd, keep_damage));
 }
 
 /// The viewer asks to restart (and come back) or shut down this computer.
