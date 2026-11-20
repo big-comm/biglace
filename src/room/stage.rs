@@ -129,7 +129,7 @@ pub fn start(with_sound: bool) -> Result<(), String> {
     }
     let _ = std::thread::Builder::new().name("biglace-stage".into()).spawn(move || {
         host::only_420_here();
-        let source = match host::open_source(host::Pointer::Embedded) {
+        let source = match host::open_source(host::Pointer::Embedded, host::RateMode::ConstantQuality) {
             Ok(s) => s,
             Err(e) => {
                 tailscale::dbg(&format!("stage: no screen source: {e}"));

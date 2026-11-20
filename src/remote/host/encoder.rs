@@ -57,36 +57,51 @@ impl Encoder {
     }
 
     /// The element with its low-latency settings (no B-frames, one
-    /// reference, a keyframe at least every 120 frames) at its ceiling.
-    pub(crate) fn description(self) -> String {
+    /// reference, a keyframe at least every 120 frames), held to `rate`.
+    pub(crate) fn description(self, rate: RateMode) -> String {
         let kbps = self.ceiling_kbps();
         let vbv = vbv_kbits(kbps);
         match self {
             // Slices let the viewer's decoder work on one frame in parallel.
-            Encoder::VaH264 => format!(
-                "vah264enc name=enc rate-control=cbr bitrate={kbps} cpb-size={vbv} key-int-max=120 b-frames=0 ref-frames=1 \
-                 target-usage=4 num-slices=4"
-            ),
-            Encoder::NvH264 => format!(
-                "nvh264enc name=enc preset=p4 tune=low-latency rc-mode=cbr bitrate={kbps} vbv-buffer-size={vbv} gop-size=120 \
-                 bframes=0 zerolatency=true"
-            ),
+            Encoder::VaH264 => {
+                let control = match rate {
+                    RateMode::ConstantQuality => "rate-control=cqp qpi=20 qpp=22".to_string(),
+                    RateMode::FollowsLink => format!("rate-control=cbr bitrate={kbps} cpb-size={vbv}"),
+                };
+                format!("vah264enc name=enc {control} key-int-max=120 b-frames=0 ref-frames=1 target-usage=4 num-slices=4")
+            }
+            Encoder::NvH264 => {
+                let control = match rate {
+                    RateMode::ConstantQuality => "rc-mode=constqp qp-const-i=20 qp-const-p=22".to_string(),
+                    RateMode::FollowsLink => format!("rc-mode=cbr bitrate={kbps} vbv-buffer-size={vbv}"),
+                };
+                format!("nvh264enc name=enc preset=p4 tune=low-latency {control} gop-size=120 bframes=0 zerolatency=true")
+            }
             // At most half the cores: the person at this computer keeps using
             // it while it's shared. Constant quality (CRF 20: crisp text),
             // with the bitrate as its cap.
             Encoder::X264 => {
                 let threads = std::thread::available_parallelism().map_or(2, |n| (n.get() / 2).clamp(1, 4));
+                let vbv_ms = match rate {
+                    RateMode::ConstantQuality => 100,
+                    RateMode::FollowsLink => VBV_MS,
+                };
                 format!(
                     "x264enc name=enc tune=zerolatency speed-preset=ultrafast sliced-threads=true threads={threads} \
-                     pass=qual quantizer=20 bitrate={kbps} vbv-buf-capacity={VBV_MS} key-int-max=120 bframes=0 b-adapt=false"
+                     pass=qual quantizer=20 bitrate={kbps} vbv-buf-capacity={vbv_ms} key-int-max=120 bframes=0 b-adapt=false"
                 )
             }
-            // Frame skipping is what holds openh264 to its bitrate.
-            Encoder::OpenH264 => format!(
-                "openh264enc name=enc rate-control=bitrate bitrate={bps} max-bitrate={bps} enable-frame-skip=true \
-                 gop-size=60 complexity=low",
-                bps = kbps * 1000
-            ),
+            Encoder::OpenH264 => {
+                let bps = kbps * 1000;
+                let control = match rate {
+                    RateMode::ConstantQuality => format!("bitrate={bps}"),
+                    // Frame skipping is what holds openh264 to its bitrate.
+                    RateMode::FollowsLink => {
+                        format!("rate-control=bitrate bitrate={bps} max-bitrate={bps} enable-frame-skip=true")
+                    }
+                };
+                format!("openh264enc name=enc {control} gop-size=60 complexity=low")
+            }
         }
     }
 
@@ -110,6 +125,16 @@ impl Encoder {
             }
         }
     }
+}
+
+/// How a share holds its bitrate.
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+pub(crate) enum RateMode {
+    /// A room: its viewers never push back on the sender, so nothing would
+    /// retune the encoder; the picture keeps one quality instead.
+    ConstantQuality,
+    /// One viewer: a bitrate that [`RateControl`] follows to that viewer's link.
+    FollowsLink,
 }
 
 /// The encoder's buffer: 3 frames at 60 fps, so a frame bigger than the link
@@ -216,14 +241,14 @@ fn nvidia_driver(drm: &Path) -> bool {
         .is_some_and(|driver| driver.file_name().is_some_and(|m| m == "nvidia"))
 }
 
-/// Encode one frame with `encoder`'s own settings.
-fn encodes_a_frame(encoder: Encoder) -> anyhow::Result<()> {
+/// Encode one frame with `encoder`'s own settings for `rate`.
+fn encodes_a_frame(encoder: Encoder, rate: RateMode) -> anyhow::Result<()> {
     use gstreamer as gst;
     use gstreamer::prelude::*;
     let desc = format!(
         "videotestsrc num-buffers=1 ! video/x-raw,format={},width=640,height=480 ! {} ! appsink name=sink sync=false",
         encoder.format(),
-        encoder.description()
+        encoder.description(rate)
     );
     let pipeline = gst::parse::launch(&desc)?.downcast::<gst::Pipeline>().map_err(|_| anyhow::anyhow!("not a pipeline"))?;
     let sink = pipeline
@@ -266,18 +291,19 @@ fn first_sample(pipeline: &gstreamer::Pipeline, sink: &gstreamer_app::AppSink) -
 /// A test frame not encoded by then means the encoder does not work here.
 const PROBE_WITHIN: std::time::Duration = std::time::Duration::from_secs(5);
 
-/// The encoders that work here, best first, with their descriptions
-/// (probed once).
-pub(crate) fn usable() -> &'static [(Encoder, String)] {
-    static USABLE: OnceLock<Vec<(Encoder, String)>> = OnceLock::new();
+/// The encoders that work here, best first (probed once).
+pub(crate) fn usable() -> &'static [Encoder] {
+    static USABLE: OnceLock<Vec<Encoder>> = OnceLock::new();
     USABLE.get_or_init(|| {
         if gstreamer::init().is_err() {
             return Vec::new();
         }
         let installed = |name: &str| gstreamer::ElementFactory::find(name).is_some();
-        let found = working(candidates(installed, nvidia_driver(Path::new("/sys/class/drm"))), encodes_a_frame);
+        let found = working(candidates(installed, nvidia_driver(Path::new("/sys/class/drm"))), |e| {
+            encodes_a_frame(e, RateMode::FollowsLink)
+        });
         crate::tailscale::dbg(&format!("remote: H.264 encoders {found:?}"));
-        found.into_iter().map(|e| (e, e.description())).collect()
+        found
     })
 }
 
@@ -346,7 +372,7 @@ mod tests {
                 "videotestsrc pattern=snow num-buffers=150 ! video/x-raw,format={},width=640,height=480,framerate=30/1 \
                  ! {} ! appsink name=sink sync=false max-buffers=1",
                 kind.format(),
-                kind.description()
+                kind.description(RateMode::FollowsLink)
             );
             let pipeline = gst::parse::launch(&desc).unwrap().downcast::<gst::Pipeline>().unwrap();
             let sink = pipeline.by_name("sink").unwrap().downcast::<gstreamer_app::AppSink>().unwrap();
@@ -376,6 +402,25 @@ mod tests {
     #[test]
     fn can_host_knows_every_encoder() {
         assert_eq!(crate::remote::H264_ENCODERS, Encoder::ALL.map(Encoder::element));
+    }
+
+    /// A room keeps constant quality (nothing retunes it); a 1:1 share
+    /// starts at the ceiling bitrate that the retune moves.
+    #[test]
+    fn rooms_keep_constant_quality() {
+        let expected = [
+            (Encoder::VaH264, "rate-control=cqp qpi=20 qpp=22", "rate-control=cbr bitrate=30000 cpb-size=1500"),
+            (Encoder::NvH264, "rc-mode=constqp qp-const-i=20 qp-const-p=22", "rc-mode=cbr bitrate=30000 vbv-buffer-size=1500"),
+            (Encoder::X264, "pass=qual quantizer=20 bitrate=30000 vbv-buf-capacity=100", "bitrate=30000 vbv-buf-capacity=50"),
+            (Encoder::OpenH264, "openh264enc name=enc bitrate=6000000 gop-size=60", "rate-control=bitrate bitrate=6000000 max-bitrate=6000000"),
+        ];
+        for (encoder, room, one_viewer) in expected {
+            let room_desc = encoder.description(RateMode::ConstantQuality);
+            let one_viewer_desc = encoder.description(RateMode::FollowsLink);
+            assert!(room_desc.contains(room), "{room_desc}");
+            assert!(one_viewer_desc.contains(one_viewer), "{one_viewer_desc}");
+            assert!(!room_desc.contains(one_viewer), "{room_desc}");
+        }
     }
 
     #[test]
