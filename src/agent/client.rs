@@ -144,6 +144,31 @@ where
     });
 }
 
+/// The BigLace at `ip` announces `capability`. A "no" from the cache (up
+/// to minutes old: the peer may have just upgraded) is checked again, and
+/// fresh "no"s are kept for a minute so older peers aren't asked each time.
+/// Blocking.
+pub fn supports(ip: &str, capability: &str) -> bool {
+    if cached(ip).is_some_and(|h| h.supports(capability)) {
+        return true;
+    }
+    static NO: OnceLock<Mutex<HashMap<(String, String), Instant>>> = OnceLock::new();
+    let no = NO.get_or_init(Default::default);
+    let key = (ip.to_string(), capability.to_string());
+    if no.lock().is_ok_and(|n| n.get(&key).is_some_and(|t| t.elapsed() < Duration::from_secs(60))) {
+        return false;
+    }
+    let yes = probe(ip).is_some_and(|h| h.supports(capability));
+    if let Ok(mut n) = no.lock() {
+        if yes {
+            n.remove(&key);
+        } else {
+            n.insert(key, Instant::now());
+        }
+    }
+    yes
+}
+
 /// Ask the agent on `ip` (a tailnet IPv4) who it is. Blocking.
 pub fn probe(ip: &str) -> Option<Hello> {
     fetch_hello(&format!("http://{ip}:{PORT}/v1/hello"))

@@ -92,6 +92,8 @@ pub enum RoomEvent {
     /// In `group` with these people (or `None`: not in a room).
     State {
         group: Option<String>,
+        /// A call with this person rather than a group's room.
+        call_with: Option<String>,
         muted: bool,
         /// We're showing our screen.
         presenting: bool,
@@ -157,7 +159,11 @@ impl Drop for Peer {
 }
 
 struct Room {
+    /// The group, or the call's key (`call-<id>`).
     group: String,
+    /// A call: its other person. The roster is the two of us, fixed; the
+    /// panel isn't involved.
+    call_with: Option<String>,
     my_ip: String,
     muted: AtomicBool,
     stop: AtomicBool,
@@ -240,7 +246,13 @@ impl Room {
                 }
             })
             .collect();
-        RoomEvent::State { group: Some(self.group.clone()), muted: me_muted, presenting, members }
+        RoomEvent::State {
+            group: Some(self.group.clone()),
+            call_with: self.call_with.clone(),
+            muted: me_muted,
+            presenting,
+            members,
+        }
     }
 
     /// Connect to the peers we're meant to dial; drop the ones who left.
@@ -389,6 +401,24 @@ impl Room {
             .filter_map(|last| (last + TALKING_HOLD_US).checked_sub(now).filter(|&left| left > 0))
             .min()
             .map(Duration::from_micros)
+    }
+
+    /// Whether `ip` may connect: on the roster, or (a group room only) on
+    /// the panel's fresh one. A call's roster is fixed.
+    fn admits(&self, ip: &str) -> bool {
+        let listed = || self.roster.lock().map(|l| l.iter().any(|p| p.ip == ip)).unwrap_or(false);
+        if listed() {
+            return true;
+        }
+        if self.call_with.is_some() {
+            return false;
+        }
+        if let Ok(r) = invite::room_join(&self.group, self.muted.load(Ordering::Relaxed)) {
+            if let Ok(mut roster) = self.roster.lock() {
+                *roster = r;
+            }
+        }
+        listed()
     }
 
     fn camera_on(&self) -> bool {
@@ -601,9 +631,32 @@ pub fn join_with(group: &str, mic_desc: &str) -> Result<(), String> {
     leave();
     let my_ip = tailscale::get_status().ip.ok_or("not connected")?;
     let roster = invite::room_join(group, false).map_err(|e| format!("{e:?}"))?;
+    enter(group, None, my_ip, roster, mic_desc);
+    Ok(())
+}
+
+/// Start the sound of call `key` with `peer` (who answered, or whom we
+/// answered). Blocking: call off the UI thread.
+pub fn join_call(key: &str, peer: Participant) -> Result<(), String> {
+    leave();
+    let status = tailscale::get_status();
+    let my_ip = status.ip.ok_or("not connected")?;
+    let me = Participant {
+        user: crate::chat::my_user().unwrap_or_default(),
+        device: status.hostname.unwrap_or_default(),
+        ip: my_ip.clone(),
+        muted: false,
+    };
+    let user = peer.user.clone();
+    enter(key, Some(user), my_ip, vec![me, peer], MIC_DESC);
+    Ok(())
+}
+
+fn enter(group: &str, call_with: Option<String>, my_ip: String, roster: Vec<Participant>, mic_desc: &str) {
     let (wake, woken) = std::sync::mpsc::sync_channel(1);
     let room = Arc::new(Room {
         group: group.to_string(),
+        call_with,
         my_ip,
         muted: AtomicBool::new(false),
         stop: AtomicBool::new(false),
@@ -634,7 +687,6 @@ pub fn join_with(group: &str, mic_desc: &str) -> Result<(), String> {
             let _ = p.set_state(gstreamer::State::Null);
         }
     });
-    Ok(())
 }
 
 /// Until the room is left: presence and reconnects every heartbeat, and the
@@ -650,14 +702,18 @@ fn keep_current(room: &Arc<Room>, woken: &std::sync::mpsc::Receiver<()>) {
         }
         if std::time::Instant::now() >= next_beat {
             next_beat = std::time::Instant::now() + HEARTBEAT;
-            match invite::room_join(&room.group, room.muted.load(Ordering::Relaxed)) {
-                Ok(r) => {
-                    if let Ok(mut roster) = room.roster.lock() {
-                        *roster = r;
+            if room.call_with.is_some() {
+                room.reconcile();
+            } else {
+                match invite::room_join(&room.group, room.muted.load(Ordering::Relaxed)) {
+                    Ok(r) => {
+                        if let Ok(mut roster) = room.roster.lock() {
+                            *roster = r;
+                        }
+                        room.reconcile();
                     }
-                    room.reconcile();
+                    Err(e) => tailscale::dbg(&format!("room: presence refresh failed: {e:?}")),
                 }
-                Err(e) => tailscale::dbg(&format!("room: presence refresh failed: {e:?}")),
             }
         }
         let view = room.view();
@@ -683,8 +739,10 @@ pub fn leave() {
     if let Ok(mut peers) = room.peers.lock() {
         peers.clear();
     }
-    let _ = invite::room_leave(&room.group);
-    emit(RoomEvent::State { group: None, muted: false, presenting: false, members: vec![] });
+    if room.call_with.is_none() {
+        let _ = invite::room_leave(&room.group);
+    }
+    emit(RoomEvent::State { group: None, call_with: None, muted: false, presenting: false, members: vec![] });
 }
 
 /// Turn our camera on (`path`: which one; None: the first) or off.
@@ -755,16 +813,8 @@ pub fn accept(stream: TcpStream, peer: IpAddr, headers: &HashMap<String, String>
     }
     let ip = peer.to_string();
     // Must be in the same room per the panel (refresh once if it's new).
-    let listed = |r: &Room| r.roster.lock().map(|l| l.iter().any(|p| p.ip == ip)).unwrap_or(false);
-    if !listed(&room) {
-        if let Ok(r) = invite::room_join(&room.group, room.muted.load(Ordering::Relaxed)) {
-            if let Ok(mut roster) = room.roster.lock() {
-                *roster = r;
-            }
-        }
-        if !listed(&room) {
-            return respond(&stream, 403, "Forbidden");
-        }
+    if !room.admits(&ip) {
+        return respond(&stream, 403, "Forbidden");
     }
     let _ = write!(&stream, "HTTP/1.1 200 OK\r\nContent-Type: application/x-biglace-room\r\n\r\n");
     let _ = stream.set_read_timeout(None);
@@ -775,6 +825,30 @@ pub fn accept(stream: TcpStream, peer: IpAddr, headers: &HashMap<String, String>
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    /// A call takes only the two devices that set it up, without asking the panel.
+    #[test]
+    fn call_admits_only_its_two_devices() {
+        let (wake, _woken) = std::sync::mpsc::sync_channel(1);
+        let person = |user: &str, ip: &str| Participant { user: user.into(), device: user.into(), ip: ip.into(), muted: false };
+        let room = Room {
+            call_with: Some("bruna".into()),
+            group: "call-ab12".into(),
+            my_ip: "100.64.0.1".into(),
+            muted: AtomicBool::new(false),
+            stop: AtomicBool::new(false),
+            roster: Mutex::new(vec![person("tales", "100.64.0.1"), person("bruna", "100.64.0.2")]),
+            peers: Mutex::new(HashMap::new()),
+            dialing: Mutex::new(HashSet::new()),
+            my_last_voice_us: AtomicU64::new(0),
+            levels: Mutex::new(HashMap::new()),
+            camera: Mutex::new(None),
+            wake,
+        };
+        assert!(room.admits("100.64.0.2"));
+        assert!(!room.admits("100.64.0.3"), "another device of the network");
+        assert!(!room.admits(""));
+    }
 
     #[test]
     fn exactly_one_side_dials() {
@@ -848,6 +922,7 @@ mod tests {
             return;
         }
         let room = Arc::new(Room {
+            call_with: None,
             group: "familia".into(),
             my_ip: "100.64.0.1".into(),
             muted: AtomicBool::new(false),
@@ -903,6 +978,7 @@ mod tests {
         };
         let (wake, woken) = std::sync::mpsc::sync_channel(1);
         let room = Arc::new(Room {
+            call_with: None,
             group: "talk-test".into(),
             my_ip: "100.64.0.1".into(),
             muted: AtomicBool::new(false),

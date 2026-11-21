@@ -37,6 +37,8 @@ pub struct ChatPage {
     conv_avatar: libadwaita::Avatar,
     conv_title: gtk4::Label,
     conv_subtitle: gtk4::Label,
+    /// Voice or video call (direct conversations).
+    btn_call: gtk4::MenuButton,
     scroll: gtk4::ScrolledWindow,
     messages: gtk4::Box,
     composer: super::composer::Composer,
@@ -188,6 +190,13 @@ impl ChatPage {
             .valign(gtk4::Align::Center)
             .tooltip_text(tr!("Search in this conversation (Ctrl+F)"))
             .build();
+        let btn_call = gtk4::MenuButton::builder()
+            .icon_name("call-start-symbolic")
+            .css_classes(["flat", "circular"])
+            .valign(gtk4::Align::Center)
+            .tooltip_text(tr!("Call"))
+            .build();
+        conv_header.append(&btn_call);
         conv_header.append(&btn_search);
 
         // The pinned message (click: go to it; ✕: unpin).
@@ -473,6 +482,7 @@ impl ChatPage {
             conv_avatar,
             conv_title,
             conv_subtitle,
+            btn_call,
             scroll,
             messages,
             composer,
@@ -883,7 +893,10 @@ impl ChatPage {
             self.conv_avatar.set_show_initials(false);
             crate::avatars::bind_group(&self.conv_avatar, &id.name);
             self.conv_subtitle.set_text(&tr!("Group"));
+            self.btn_call.set_visible(false);
         } else {
+            self.btn_call.set_menu_model(Some(&super::call_ui::call_menu(&id.name)));
+            self.btn_call.set_visible(true);
             self.conv_avatar.set_text(Some(&id.name));
             self.conv_avatar.set_icon_name(None);
             self.conv_avatar.set_show_initials(true);
@@ -1559,6 +1572,9 @@ fn message_line(m: &Message, max_chars: usize) -> String {
     if m.deleted {
         return tr!("🗑 Message deleted");
     }
+    if let Some(call) = &m.call {
+        return chat::call_line(call, m.mine);
+    }
     match chat_media::summary(m) {
         Some(file) if m.text.trim().is_empty() => file,
         Some(file) => format!("{file} · {}", preview_text(&m.text, max_chars)),
@@ -1686,6 +1702,9 @@ impl ChatPage {
             b.append(&view.slot);
             view
         });
+        if let Some(call) = &m.call {
+            b.append(&super::call_ui::call_entry(call, m.mine, &conv.name));
+        }
         let text = gtk4::Label::new(None);
         text.add_css_class("bubble-text");
         if m.deleted {
@@ -1756,7 +1775,7 @@ impl ChatPage {
         }
         let time = gtk4::Label::new(Some(&clock(m.at)));
         meta.append(&time);
-        let tick = (m.mine && !m.deleted).then(|| {
+        let tick = (m.mine && !m.deleted && m.call.is_none()).then(|| {
             let t = gtk4::Label::new(None);
             t.add_css_class("tick");
             meta.append(&t);

@@ -1,4 +1,5 @@
 mod access_page;
+mod call_ui;
 mod chat;
 mod chat_media;
 mod media_viewer;
@@ -258,9 +259,17 @@ pub fn build(app: &libadwaita::Application, start_hidden: bool) {
         .title("BigLace")
         .child(&sidebar_widgets.toolbar)
         .build();
+    let call_bar = {
+        let nav = sidebar_widgets.nav.clone();
+        call_ui::wire(&win, &toast, move || show_section(&nav, "rooms"))
+    };
+    let content_box = gtk4::Box::new(gtk4::Orientation::Vertical, 0);
+    content_box.append(&call_bar);
+    content_box.append(&sections);
+    sections.set_vexpand(true);
     let content_page = libadwaita::NavigationPage::builder()
         .title(tr!("Devices"))
-        .child(&sections)
+        .child(&content_box)
         .build();
     split.set_sidebar(Some(&side_page));
     split.set_content(Some(&content_page));
@@ -374,15 +383,7 @@ pub fn build(app: &libadwaita::Application, start_hidden: bool) {
     if let Some(conv) = crate::chat::seed_preview() {
         let (nav, chat_page) = (sidebar_widgets.nav.clone(), chat_page.clone());
         glib::timeout_add_seconds_local_once(2, move || {
-            let mut child = nav.first_child();
-            while let Some(w) = child {
-                if w.widget_name() == "chat" {
-                    if let Some(row) = w.downcast_ref::<gtk4::ListBoxRow>() {
-                        nav.emit_by_name::<()>("row-activated", &[row]);
-                    }
-                }
-                child = w.next_sibling();
-            }
+            show_section(&nav, "chat");
             glib::timeout_add_seconds_local_once(2, move || chat_page.preview_open(&conv));
         });
     }
@@ -390,15 +391,7 @@ pub fn build(app: &libadwaita::Application, start_hidden: bool) {
     if crate::room::preview() {
         let (nav, rooms_page) = (sidebar_widgets.nav.clone(), rooms_page.clone());
         glib::timeout_add_seconds_local_once(2, move || {
-            let mut child = nav.first_child();
-            while let Some(w) = child {
-                if w.widget_name() == "rooms" {
-                    if let Some(row) = w.downcast_ref::<gtk4::ListBoxRow>() {
-                        nav.emit_by_name::<()>("row-activated", &[row]);
-                    }
-                }
-                child = w.next_sibling();
-            }
+            show_section(&nav, "rooms");
             glib::timeout_add_seconds_local_once(2, move || rooms_page.show_preview());
         });
     }
@@ -735,7 +728,7 @@ fn setup_tray(ctx: &Ctx) -> bool {
                 }
                 tray::Command::LeaveRoom => {
                     let rooms = ctx2.ui.rooms.clone();
-                    run_in_background(crate::room::leave, move |()| rooms.refresh());
+                    run_in_background(crate::call::leave_room, move |()| rooms.refresh());
                 }
                 tray::Command::Quit => {
                     if let Some(app) = ctx2.ui.win.application() {
@@ -2006,6 +1999,20 @@ fn sc_start_succeeded(code: Option<i32>) -> bool {
     matches!(code, Some(0) | Some(1056))
 }
 
+/// Switch to the sidebar's section `name` ("chat", "rooms"…), as a click would.
+fn show_section(nav: &gtk4::ListBox, name: &str) {
+    let mut child = nav.first_child();
+    while let Some(w) = child {
+        if w.widget_name() == name {
+            if let Some(row) = w.downcast_ref::<gtk4::ListBoxRow>() {
+                nav.select_row(Some(row));
+                nav.emit_by_name::<()>("row-activated", &[row]);
+            }
+        }
+        child = w.next_sibling();
+    }
+}
+
 /// Run `work` on a worker thread and hand its result to `done` on the GTK
 /// main loop. The main loop is woken by the channel only when the result
 /// arrives — no timer polls a shared slot in the meantime.
@@ -2266,7 +2273,7 @@ fn apply_state(ctx: &Ctx, state: AppState, status: &Status, peers: &[Peer]) {
             ui.groups.clear();
             // Off the network: out of any voice room too.
             if crate::room::active_group().is_some() {
-                std::thread::spawn(crate::room::leave);
+                std::thread::spawn(crate::call::leave_room);
             }
         }
         _ => {}

@@ -20,6 +20,8 @@ depends=(
     'gst-libav'
     # Screen capture on Wayland and the camera, both through PipeWire.
     'gst-plugin-pipewire'
+    # Ringtone and ringback of calls.
+    'sound-theme-freedesktop'
 )
 # NVENC (nvh264enc) comes with gst-plugins-bad-libs, which gtk4 already needs.
 optdepends=(

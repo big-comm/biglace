@@ -107,6 +107,33 @@ pub struct Message {
     /// Deleted by its author: only "deleted" remains.
     #[serde(default, skip_serializing_if = "std::ops::Not::not")]
     pub deleted: bool,
+    /// A call with the person (kept on this device only).
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub call: Option<CallRecord>,
+}
+
+/// How a call went, as the history shows it.
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+pub struct CallRecord {
+    pub video: bool,
+    pub outcome: CallOutcome,
+    /// Talking time, for an answered call.
+    #[serde(default, skip_serializing_if = "is_zero")]
+    pub seconds: u64,
+}
+
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "lowercase")]
+pub enum CallOutcome {
+    Answered,
+    /// Rang here and nobody answered.
+    Missed,
+    Declined,
+    Busy,
+    /// Called and hung up (or gave up) before an answer.
+    Cancelled,
+    #[serde(other)]
+    Unknown,
 }
 
 fn is_zero(n: &u64) -> bool {
@@ -142,6 +169,13 @@ pub enum Op {
     Pin { target: Option<String> },
     /// Typing right now (not kept).
     Typing,
+    /// A step of a call (not kept): see `crate::call`.
+    Call {
+        call: String,
+        action: crate::call::Action,
+        #[serde(default)]
+        video: bool,
+    },
 }
 
 /// One emoji (or a short sequence of them) as a reaction.
@@ -378,7 +412,7 @@ impl Store {
                 c.pinned = target.clone();
                 true
             }
-            Op::Typing => false,
+            Op::Typing | Op::Call { .. } => false,
         };
         if changed {
             self.save(conv);
@@ -559,6 +593,7 @@ pub fn seed_preview() -> Option<ConvId> {
         reactions: BTreeMap::new(),
         edited_at: 0,
         deleted: false,
+        call: None,
     };
     let dm = ConvId::direct("bruna");
     let grp = ConvId::group("familia");
@@ -745,13 +780,13 @@ pub fn open(id: &ConvId) {
     }
 }
 
-fn new_id() -> String {
+pub(crate) fn new_id() -> String {
     let mut b = [0u8; 12];
     let _ = getrandom::getrandom(&mut b);
     b.iter().map(|x| format!("{x:02x}")).collect()
 }
 
-fn now_ms() -> u64 {
+pub(crate) fn now_ms() -> u64 {
     crate::remote::now_us() / 1000
 }
 
@@ -772,8 +807,12 @@ fn reply_ref(conv: &ConvId, id: &str) -> Option<ReplyRef> {
     Some(ReplyRef { id: m.id.clone(), from: m.from.clone(), preview: preview_line(&m) })
 }
 
-/// One line about a message (plain): its text, or what its file is.
+/// One line about a message (plain): its text, what its file is, or how
+/// its call went.
 pub fn preview_line(m: &Message) -> String {
+    if let Some(c) = &m.call {
+        return call_line(c, m.mine);
+    }
     let text = markdown::plain_text(&m.text);
     let line: String = text.split_whitespace().collect::<Vec<_>>().join(" ");
     let line = if line.is_empty() {
@@ -785,6 +824,81 @@ pub fn preview_line(m: &Message) -> String {
         format!("{}…", line.chars().take(120).collect::<String>())
     } else {
         line
+    }
+}
+
+/// "Outgoing video call · 3:12", "Missed voice call"…
+pub fn call_line(c: &CallRecord, outgoing: bool) -> String {
+    use crate::tr;
+    let kind = match (c.outcome, c.video, outgoing) {
+        (CallOutcome::Missed, false, _) => tr!("Missed voice call"),
+        (CallOutcome::Missed, true, _) => tr!("Missed video call"),
+        (CallOutcome::Declined, false, false) => tr!("Declined voice call"),
+        (CallOutcome::Declined, true, false) => tr!("Declined video call"),
+        (_, false, true) => tr!("Outgoing voice call"),
+        (_, true, true) => tr!("Outgoing video call"),
+        (_, false, false) => tr!("Incoming voice call"),
+        (_, true, false) => tr!("Incoming video call"),
+    };
+    let detail = match c.outcome {
+        CallOutcome::Answered => format!("{}:{:02}", c.seconds / 60, c.seconds % 60),
+        CallOutcome::Declined if outgoing => tr!("declined"),
+        CallOutcome::Busy => tr!("busy"),
+        CallOutcome::Cancelled => tr!("no answer"),
+        _ => return kind,
+    };
+    format!("{kind} · {detail}")
+}
+
+/// Keep a call with `user` in their conversation (this device only). A
+/// missed one counts as unread and is announced like a message.
+pub fn record_call(user: &str, outgoing: bool, record: CallRecord) {
+    let Some(me) = my_user() else { return };
+    let conv = ConvId::direct(user);
+    let missed = record.outcome == CallOutcome::Missed;
+    let message = Message {
+        id: new_id(),
+        from: if outgoing { me } else { user.to_string() },
+        device: String::new(),
+        text: String::new(),
+        at: now_ms(),
+        mine: outgoing,
+        delivered: vec![],
+        file: None,
+        reply_to: None,
+        forwarded_from: None,
+        reactions: BTreeMap::new(),
+        edited_at: 0,
+        deleted: false,
+        call: Some(record),
+    };
+    let added = store().lock().map(|mut s| s.add(&conv, message.clone(), missed)).unwrap_or(false);
+    if added {
+        emit(ChatEvent::Changed(conv.clone()));
+        if missed {
+            emit(ChatEvent::Incoming { conv, message: Box::new(message) });
+        }
+    }
+}
+
+/// Send a call step to the device at `ip` now (not queued). Ok once it took it.
+pub(crate) fn send_call_op(ip: &str, user: &str, call: &str, action: crate::call::Action, video: bool) -> Result<(), String> {
+    let wire = Wire {
+        id: new_id(),
+        conv: ConvId::direct(user),
+        text: String::new(),
+        at: now_ms(),
+        file: None,
+        reply_to: None,
+        forwarded_from: None,
+        op: Some(Op::Call { call: call.to_string(), action, video }),
+    };
+    let id = wire.id.clone();
+    let acked = deliver_to(ip, &[Pending { wire, to_user: user.to_string(), node: String::new() }])?;
+    if acked.contains(&id) {
+        Ok(())
+    } else {
+        Err("not acknowledged".into())
     }
 }
 
@@ -850,6 +964,7 @@ fn post_with(conv: &ConvId, text: &str, file: Option<(Offer, PathBuf)>, extra: E
         reactions: BTreeMap::new(),
         edited_at: 0,
         deleted: false,
+        call: None,
     };
     if let Some((o, path)) = &file {
         // Served to the recipient (and our own devices) when they ask.
@@ -1010,27 +1125,8 @@ pub fn typing(conv: &ConvId) {
 /// Announced by versions that understand ops (reactions, edits…).
 pub const OPS_CAPABILITY: &str = "chat2";
 
-/// The BigLace at `ip` understands ops. A "no" from the shared cache (up
-/// to minutes old: the peer may have just upgraded) is checked again, and
-/// fresh "no"s are kept for a minute so older peers aren't asked each time.
 fn understands_ops(ip: &str) -> bool {
-    if crate::agent::client::cached(ip).is_some_and(|h| h.supports(OPS_CAPABILITY)) {
-        return true;
-    }
-    static NO: OnceLock<Mutex<HashMap<String, Instant>>> = OnceLock::new();
-    let no = NO.get_or_init(Default::default);
-    if no.lock().is_ok_and(|n| n.get(ip).is_some_and(|t| t.elapsed() < Duration::from_secs(60))) {
-        return false;
-    }
-    let yes = crate::agent::client::probe(ip).is_some_and(|h| h.supports(OPS_CAPABILITY));
-    if let Ok(mut n) = no.lock() {
-        if yes {
-            n.remove(ip);
-        } else {
-            n.insert(ip.to_string(), Instant::now());
-        }
-    }
-    yes
+    crate::agent::client::supports(ip, OPS_CAPABILITY)
 }
 
 // ─── Delivery ───────────────────────────────────────────────────────────────
@@ -1085,7 +1181,7 @@ fn deliver_pending() {
         // nothing to say (a reaction taken back, typing) are skipped.
         let items: Vec<Pending> = if items.iter().any(|p| p.wire.op.is_some()) && !understands_ops(&peer.ipv4) {
             let (silent, rest): (Vec<Pending>, Vec<Pending>) = items.into_iter().partition(|p| {
-                matches!(p.wire.op, Some(Op::React { on: false, .. }) | Some(Op::Typing))
+                matches!(p.wire.op, Some(Op::React { on: false, .. } | Op::Typing | Op::Call { .. }))
             });
             drop_pending(&silent);
             rest.into_iter()
@@ -1245,6 +1341,10 @@ pub fn accept(stream: TcpStream, peer: IpAddr, headers: &HashMap<String, String>
         if let (Some((conv, _)), Some(op)) = (&placed, &wire.op) {
             if *op == Op::Typing {
                 emit(ChatEvent::Typing { conv: conv.clone(), user: sender.clone() });
+            } else if let Op::Call { call, action, video } = op {
+                if !conv.is_group() && conv.name == sender {
+                    crate::call::received(&sender, &identity.device, &peer.to_string(), call, *action, *video);
+                }
             } else if store().lock().map(|mut s| s.apply_op(conv, &sender, op)).unwrap_or(false) {
                 emit(ChatEvent::Changed(conv.clone()));
             }
@@ -1265,6 +1365,7 @@ pub fn accept(stream: TcpStream, peer: IpAddr, headers: &HashMap<String, String>
                 reactions: BTreeMap::new(),
                 edited_at: 0,
                 deleted: false,
+                call: None,
             };
             let added = store().lock().map(|mut s| s.add(&conv, message.clone(), !mine)).unwrap_or(false);
             if added {
@@ -1345,6 +1446,7 @@ mod tests {
             reactions: BTreeMap::new(),
             edited_at: 0,
             deleted: false,
+            call: None,
         };
         s.add(&old, msg("m1", 1), true);
         s.add(&old, msg("m3", 3), true);
@@ -1388,6 +1490,7 @@ mod tests {
             reactions: BTreeMap::new(),
             edited_at: 0,
             deleted: false,
+            call: None,
         };
         s.add(&conv, msg("m1", "bruna"), false);
         let react = |emoji: &str, on: bool| Op::React { target: "m1".into(), emoji: emoji.into(), on };
@@ -1431,6 +1534,16 @@ mod tests {
         assert_eq!(back.op, w.op);
     }
 
+    /// The call step as the phone app reads and writes it.
+    #[test]
+    fn call_step_matches_phone_wire() {
+        let op = Op::Call { call: "ab12".into(), action: crate::call::Action::Ring, video: true };
+        let json = serde_json::to_value(&op).unwrap();
+        assert_eq!(json, serde_json::json!({"type": "call", "call": "ab12", "action": "ring", "video": true}));
+        let back: Op = serde_json::from_str(r#"{"type":"call","call":"ab12","action":"end"}"#).unwrap();
+        assert_eq!(back, Op::Call { call: "ab12".into(), action: crate::call::Action::End, video: false });
+    }
+
     #[test]
     fn history_is_kept_in_order_without_duplicates() {
         let dir = std::env::temp_dir().join(format!("biglace-chat-test-{}", new_id()));
@@ -1449,6 +1562,7 @@ mod tests {
             reactions: BTreeMap::new(),
             edited_at: 0,
             deleted: false,
+            call: None,
         };
         {
             let mut s = Store::open(&dir);

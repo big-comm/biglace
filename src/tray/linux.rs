@@ -140,11 +140,11 @@ impl Tray for BigLaceTray {
             ..Default::default()
         }
         .into()];
-        if let Some((group, muted)) = &self.room {
+        if let Some((title, muted)) = &self.room {
             items.push(MenuItem::Separator);
             items.push(
                 StandardItem {
-                    label: trf!("Room {group}", "group" => group),
+                    label: title.clone(),
                     enabled: false,
                     ..Default::default()
                 }

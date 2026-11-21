@@ -29,6 +29,8 @@ pub struct RoomsPage {
     in_title: libadwaita::WindowTitle,
     members: gtk4::ListBox,
     btn_mute: gtk4::ToggleButton,
+    /// "Leave", or "Hang up" in a call.
+    leave_look: libadwaita::ButtonContent,
     /// Show my screen to the room (or stop).
     btn_share: gtk4::Button,
     /// "You're showing your screen · 2 watching".
@@ -53,6 +55,8 @@ pub struct RoomsPage {
     /// The group whose room we're in, and who was sharing (to announce a
     /// new share once).
     group: Rc<RefCell<Option<String>>>,
+    /// In a call with this person (the group then is the call's key).
+    call_with: Rc<RefCell<Option<String>>>,
     sharing: Rc<RefCell<std::collections::HashSet<String>>>,
     presenting: Rc<std::cell::Cell<bool>>,
     /// Told whenever the room (or our mute) changes.
@@ -183,13 +187,12 @@ impl RoomsPage {
             .css_classes(["pill"])
             .tooltip_text(tr!("Mute your microphone for everyone"))
             .build();
+        let leave_look = libadwaita::ButtonContent::builder()
+            .icon_name("call-stop-symbolic")
+            .label(tr!("Leave"))
+            .build();
         let btn_leave = gtk4::Button::builder()
-            .child(
-                &libadwaita::ButtonContent::builder()
-                    .icon_name("call-stop-symbolic")
-                    .label(tr!("Leave"))
-                    .build(),
-            )
+            .child(&leave_look)
             .css_classes(["pill", "destructive-action"])
             .build();
         let btn_share = gtk4::Button::builder().css_classes(["pill"]).build();
@@ -277,6 +280,7 @@ impl RoomsPage {
             in_title,
             members,
             btn_mute,
+            leave_look,
             btn_share,
             share_banner,
             share_sound,
@@ -291,6 +295,7 @@ impl RoomsPage {
             rooms: Rc::default(),
             member_rows: Rc::default(),
             group: Rc::default(),
+            call_with: Rc::default(),
             sharing: Rc::default(),
             presenting: Rc::default(),
             room_hook: Rc::default(),
@@ -415,7 +420,7 @@ impl RoomsPage {
             let page = page.clone();
             btn_leave.connect_clicked(move |_| {
                 let page = page.clone();
-                super::run_in_background(room::leave, move |()| page.refresh());
+                super::run_in_background(crate::call::leave_room, move |()| page.refresh());
             });
         }
         // Someone wrote in the group while its conversation is closed: count
@@ -528,6 +533,7 @@ impl RoomsPage {
         };
         self.on_event(RoomEvent::State {
             group: Some("familia".into()),
+            call_with: None,
             muted: false,
             presenting: false,
             members: vec![
@@ -553,7 +559,13 @@ impl RoomsPage {
             members[2].watching = Some(1);
             members[3].watching = Some(2);
             members[3].controlling = true;
-            page.on_event(RoomEvent::State { group: Some("familia".into()), muted: false, presenting: true, members });
+            page.on_event(RoomEvent::State {
+                group: Some("familia".into()),
+                call_with: None,
+                muted: false,
+                presenting: true,
+                members,
+            });
         });
     }
 
@@ -562,9 +574,16 @@ impl RoomsPage {
         *self.room_hook.borrow_mut() = Some(Box::new(hook));
     }
 
+    /// The conversation beside the room: the group's, or the person's in a call.
+    fn conversation(&self) -> Option<crate::chat::ConvId> {
+        if let Some(user) = self.call_with.borrow().as_deref() {
+            return Some(crate::chat::ConvId::direct(user));
+        }
+        self.group.borrow().as_deref().map(crate::chat::ConvId::group)
+    }
+
     fn chat_message_arrived(&self, conv: &crate::chat::ConvId) {
-        let Some(group) = self.group.borrow().clone() else { return };
-        if *conv != crate::chat::ConvId::group(&group) || self.chat_split.shows_sidebar() {
+        if self.conversation().as_ref() != Some(conv) || self.chat_split.shows_sidebar() {
             return;
         }
         self.chat_news.set(self.chat_news.get().saturating_add(1));
@@ -582,24 +601,21 @@ impl RoomsPage {
 
     /// Show (or hide) the group's conversation beside the room.
     fn show_chat(&self, on: bool) {
-        let group = self.group.borrow().clone();
-        let on = on && group.is_some();
-        self.chat_split.set_show_sidebar(on);
-        match group.filter(|_| on) {
-            Some(g) => self.chat.show_only(Some(&crate::chat::ConvId::group(&g))),
-            None => self.chat.show_only(None),
-        }
+        let conv = self.conversation().filter(|_| on);
+        self.chat_split.set_show_sidebar(conv.is_some());
+        self.chat.show_only(conv.as_ref());
     }
 
     fn on_event(&self, ev: RoomEvent) {
-        if let RoomEvent::State { group, muted, .. } = &ev {
+        if let RoomEvent::State { group, call_with, muted, .. } = &ev {
             if let Some(hook) = self.room_hook.borrow().as_ref() {
-                hook(group.clone().map(|g| (g, *muted)));
+                hook(group.as_ref().map(|g| (room_title(g, call_with.as_deref()), *muted)));
             }
         }
         match ev {
-            RoomEvent::State { group: Some(group), muted, presenting, members } => {
+            RoomEvent::State { group: Some(group), call_with, muted, presenting, members } => {
                 *self.group.borrow_mut() = Some(group.clone());
+                self.call_with.borrow_mut().clone_from(&call_with);
                 self.presenting.set(presenting);
                 set_share_look(&self.btn_share, presenting);
                 self.share_sound.set_sensitive(!presenting);
@@ -613,7 +629,8 @@ impl RoomsPage {
                     trf!("📺 You're showing your screen · {count} people watching", "count" => watchers.to_string())
                 });
                 self.announce_shares(&group, &members);
-                self.in_title.set_title(&trf!("Room {group}", "group" => group));
+                self.in_title.set_title(&room_title(&group, call_with.as_deref()));
+                self.leave_look.set_label(&if call_with.is_some() { tr!("Hang up") } else { tr!("Leave") });
                 let talking = members.iter().filter(|m| m.talking).count();
                 let people = if members.len() == 1 {
                     tr!("1 person")
@@ -649,6 +666,7 @@ impl RoomsPage {
             RoomEvent::ControlRequest { viewer, user } => self.ask_control(viewer, &user),
             RoomEvent::State { group: None, .. } => {
                 *self.group.borrow_mut() = None;
+                *self.call_with.borrow_mut() = None;
                 self.chat_news.set(0);
                 self.chat_badge.set_visible(false);
                 self.btn_chat.set_active(false);
@@ -769,6 +787,14 @@ impl RoomsPage {
         let d = dlg.clone();
         glib::timeout_add_seconds_local_once(60, move || d.close());
         dlg.present();
+    }
+}
+
+/// "Room familia", or "Call with bruna".
+fn room_title(group: &str, call_with: Option<&str>) -> String {
+    match call_with {
+        Some(user) => trf!("Call with {user}", "user" => user),
+        None => trf!("Room {group}", "group" => group),
     }
 }
 

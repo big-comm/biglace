@@ -127,6 +127,14 @@ window.media-viewer, window.media-viewer > * { background-color: black; }
 }
 .chat-list-section { font-weight: 700; font-size: 0.85em; opacity: 0.6; margin: 12px 10px 2px 10px; }
 .chat-header { padding: 8px 14px; }
+/* A call ringing or running, over every page. */
+.call-bar {
+    padding: 8px 14px;
+    background-color: alpha(@accent_bg_color, 0.12);
+    border-bottom: 1px solid alpha(@borders, 0.6);
+}
+button.call-answer { background-color: #2ec27e; color: white; }
+button.call-answer:hover { background-color: #33d17a; }
 .chat-backdrop {
     background-image: linear-gradient(180deg,
         alpha(@accent_bg_color, 0.06),
