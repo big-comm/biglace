@@ -1,7 +1,8 @@
 //! A phone and its owner's computers (`/v1/link` on the agent): the phone
 //! keeps one connection to each of them and sends what happens on it
-//! (battery and storage, a ringing call, a link to open, its notifications);
-//! the computer answers a notification through the same connection. Only
+//! (battery and storage, a ringing call, a link to open, its notifications,
+//! its clipboard); the computer answers a notification and sends its own
+//! clipboard through the same connection. Only
 //! devices of our own account get in, each request signed by its device key.
 
 use std::collections::HashMap;
@@ -34,6 +35,8 @@ enum FromPhone {
     Open { url: String },
     Notify { key: String, app: String, title: String, text: String, can_reply: bool },
     Removed { key: String },
+    /// The phone's clipboard: text, or a picture in base64.
+    Clip { text: Option<String>, image: Option<String> },
 }
 
 /// What we send a phone.
@@ -41,6 +44,13 @@ enum FromPhone {
 #[serde(tag = "t", rename_all = "snake_case")]
 enum ToPhone<'a> {
     Reply { key: &'a str, text: &'a str },
+    /// This computer's clipboard: text, or a PNG in base64.
+    Clip {
+        #[serde(skip_serializing_if = "Option::is_none")]
+        text: Option<&'a str>,
+        #[serde(skip_serializing_if = "Option::is_none")]
+        image: Option<String>,
+    },
 }
 
 /// A phone's battery and storage, as it last said.
@@ -63,6 +73,8 @@ pub enum LinkEvent {
     Notify { ip: String, device: String, key: String, app: String, title: String, text: String, can_reply: bool },
     /// That notification is gone from the phone.
     Removed { ip: String, key: String },
+    /// The phone copied something: it goes on this computer's clipboard.
+    Clip(crate::clipboard::Content),
 }
 
 type Events = (async_channel::Sender<LinkEvent>, async_channel::Receiver<LinkEvent>);
@@ -100,6 +112,26 @@ pub fn reply(ip: &str, key: &str, text: &str) -> Result<(), String> {
     let payload = serde_json::to_vec(&ToPhone::Reply { key, text }).map_err(|e| e.to_string())?;
     let mut w = writer.lock().map_err(|_| "the phone is no longer connected")?;
     write_frame(&mut *w, Kind::Link, &payload).map_err(|e| e.to_string())
+}
+
+/// Give every connected phone this computer's clipboard (any thread).
+pub fn send_clip(c: &crate::clipboard::Content) {
+    use base64::Engine;
+    let msg = match c {
+        crate::clipboard::Content::Text(t) => ToPhone::Clip { text: Some(t), image: None },
+        crate::clipboard::Content::Png(p) => ToPhone::Clip { text: None, image: Some(base64::engine::general_purpose::STANDARD.encode(p)) },
+    };
+    let Ok(payload) = serde_json::to_vec(&msg) else { return };
+    let writers: Vec<_> = phones().lock().map(|p| p.values().map(|(_, w)| w.clone()).collect()).unwrap_or_default();
+    for writer in writers {
+        // A large picture takes a while: on its own thread, so a slow phone holds up no one.
+        let payload = payload.clone();
+        let _ = std::thread::Builder::new().name("biglace-link-clip".into()).spawn(move || {
+            if let Ok(mut w) = writer.lock() {
+                let _ = write_frame(&mut *w, Kind::Link, &payload);
+            }
+        });
+    }
 }
 
 fn respond(mut stream: &TcpStream, status: u16, reason: &str) {
@@ -180,6 +212,11 @@ fn handle(msg: FromPhone, ip: &str, device: &str, ringing_paused: &mut Vec<Strin
             }
         }
         FromPhone::Removed { key } => emit(LinkEvent::Removed { ip: ip.to_string(), key }),
+        FromPhone::Clip { text, image } => {
+            if let Some(c) = crate::clipboard::from_phone(text, image) {
+                emit(LinkEvent::Clip(c));
+            }
+        }
     }
 }
 
@@ -256,6 +293,13 @@ mod tests {
         assert!(serde_json::from_str::<FromPhone>(r#"{"t":"run","cmd":"rm"}"#).is_err());
         let reply = serde_json::to_string(&ToPhone::Reply { key: "k", text: "oi" }).unwrap();
         assert_eq!(reply, r#"{"t":"reply","key":"k","text":"oi"}"#);
+        // The phone's ClipboardShare reads and writes these.
+        let m: FromPhone = serde_json::from_str(r#"{"t":"clip","text":"oi"}"#).unwrap();
+        assert_eq!(m, FromPhone::Clip { text: Some("oi".into()), image: None });
+        let m: FromPhone = serde_json::from_str(r#"{"t":"clip","image":"iVBO"}"#).unwrap();
+        assert_eq!(m, FromPhone::Clip { text: None, image: Some("iVBO".into()) });
+        let clip = serde_json::to_string(&ToPhone::Clip { text: Some("oi"), image: None }).unwrap();
+        assert_eq!(clip, r#"{"t":"clip","text":"oi"}"#);
     }
 
     #[test]

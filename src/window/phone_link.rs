@@ -1,6 +1,6 @@
 //! What our phones send (see `crate::link`), on the desktop: links open in
 //! the browser, notifications show here with a Reply button, battery and
-//! storage on the phone's device row. Replying from a notification works the
+//! storage on the phone's device row, what it copies on the clipboard. Replying from a notification works the
 //! same for BigLace's own chat messages.
 
 use gtk4::{gio, glib, prelude::*};
@@ -111,6 +111,7 @@ fn on_event(win: &libadwaita::ApplicationWindow, toast: &libadwaita::ToastOverla
                 app.withdraw_notification(&phone_notification_id(&ip, &key));
             }
         }
+        LinkEvent::Clip(c) => crate::clipboard::apply(&gtk4::prelude::WidgetExt::display(win), c),
     }
 }
 

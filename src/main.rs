@@ -11,6 +11,7 @@
 //! - `invite`, `panel`: joining a network and talking to the BigScale panel.
 //! - `launchers`: the terminal, file manager and log viewer this app spawns.
 //! - `link`: our phones' connection (battery, calls, links, notifications).
+//! - `clipboard`: the clipboard shared with our phones.
 //! - `remote`: remote desktop between devices.
 //! - `chat`, `room`: messages and voice rooms between people.
 //! - `call`: one-to-one voice and video calls (ringing, answering, the history).
@@ -27,6 +28,7 @@ mod power;
 mod wake;
 mod avatars;
 mod call;
+mod clipboard;
 mod listeners;
 mod config;
 mod device_key;
@@ -78,7 +80,7 @@ pub static MALLOC_CONF: &[u8] = b"background_thread:true,dirty_decay_ms:1000,muz
 /// creates (feat → minor, fix/perf/docs/… → patch, breaking → major) by
 /// rewriting this assignment. Reading it from `CARGO_PKG_VERSION` hid it from
 /// gitrepo, which is how the version sat at 1.0.0 through dozens of releases.
-pub const APP_VERSION: &str = "1.60.0";
+pub const APP_VERSION: &str = "1.61.0";
 pub const APP_ID: &str = "org.communitybig.biglace";
 
 /// Date-based build stamp (`YY.MM.DD-HHMM`) — the scheme the GitHub release

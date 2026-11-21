@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-11-21 17:15-0300\n"
+"POT-Creation-Date: 2026-11-21 16:35-0300\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -135,7 +135,7 @@ msgstr ""
 
 #: src/tray/linux.rs:130 src/tray/windows.rs:87 src/tray/windows.rs:145
 #: src/window/mod.rs:1240 src/window/mod.rs:2464 src/window/mod.rs:2469
-#: src/window/sidebar.rs:408
+#: src/window/sidebar.rs:440
 msgid "Connect"
 msgstr ""
 
@@ -167,24 +167,24 @@ msgstr ""
 msgid "Open admin panel"
 msgstr ""
 
-#: src/window/mod.rs:273 src/window/mod.rs:377 src/window/sidebar.rs:145
+#: src/window/mod.rs:273 src/window/mod.rs:377 src/window/sidebar.rs:148
 msgid "Devices"
 msgstr ""
 
-#: src/window/mod.rs:364 src/window/sidebar.rs:146 src/window/rooms.rs:107
+#: src/window/mod.rs:364 src/window/sidebar.rs:149 src/window/rooms.rs:107
 #: src/window/chat.rs:128
 msgid "Chat"
 msgstr ""
 
-#: src/window/mod.rs:367 src/window/sidebar.rs:149 src/window/invites.rs:231
+#: src/window/mod.rs:367 src/window/sidebar.rs:152 src/window/invites.rs:231
 msgid "Invites"
 msgstr ""
 
-#: src/window/mod.rs:371 src/window/sidebar.rs:148 src/window/groups.rs:117
+#: src/window/mod.rs:371 src/window/sidebar.rs:151 src/window/groups.rs:117
 msgid "Groups"
 msgstr ""
 
-#: src/window/mod.rs:375 src/window/sidebar.rs:147 src/window/rooms.rs:90
+#: src/window/mod.rs:375 src/window/sidebar.rs:150 src/window/rooms.rs:90
 #: src/window/rooms.rs:134
 msgid "Rooms"
 msgstr ""
@@ -216,7 +216,7 @@ msgid ""
 "device."
 msgstr ""
 
-#: src/window/mod.rs:1213 src/window/sidebar.rs:260
+#: src/window/mod.rs:1213 src/window/sidebar.rs:263
 msgid "Server URL"
 msgstr ""
 
@@ -224,7 +224,7 @@ msgstr ""
 msgid "Access key"
 msgstr ""
 
-#: src/window/mod.rs:1218 src/window/sidebar.rs:289 src/window/dialogs.rs:391
+#: src/window/mod.rs:1218 src/window/sidebar.rs:292 src/window/dialogs.rs:391
 #: src/window/dialogs.rs:675 src/window/join_dialog.rs:137
 #: src/window/phone_signin.rs:111
 msgid "Device name on the network"
@@ -485,172 +485,197 @@ msgstr ""
 msgid "{on_count} online · {off_count} offline"
 msgstr ""
 
-#: src/window/sidebar.rs:68
+#: src/window/sidebar.rs:71
 msgid "Show the full sidebar"
 msgstr ""
 
-#: src/window/sidebar.rs:68 src/window/sidebar.rs:107
+#: src/window/sidebar.rs:71 src/window/sidebar.rs:110
 msgid "Show only icons in the sidebar"
 msgstr ""
 
-#: src/window/sidebar.rs:142
+#: src/window/sidebar.rs:145
 msgid "Sections"
 msgstr ""
 
-#: src/window/sidebar.rs:208
+#: src/window/sidebar.rs:211
 msgid ""
 "Your identity on this mesh — the device name shown to other peers and the "
 "network you're connected to."
 msgstr ""
 
-#: src/window/sidebar.rs:214
+#: src/window/sidebar.rs:217
 msgid "Change photo…"
 msgstr ""
 
-#: src/window/sidebar.rs:215
+#: src/window/sidebar.rs:218
 msgid "Remove photo"
 msgstr ""
 
-#: src/window/sidebar.rs:221
+#: src/window/sidebar.rs:224
 msgid "Change your photo"
 msgstr ""
 
-#: src/window/sidebar.rs:234
+#: src/window/sidebar.rs:237
 msgid "Rename this device on the network"
 msgstr ""
 
-#: src/window/sidebar.rs:244
+#: src/window/sidebar.rs:247
 msgid "Advanced: use a pre-auth key"
 msgstr ""
 
-#: src/window/sidebar.rs:246
+#: src/window/sidebar.rs:249
 msgid "Already have a key from your administrator? Paste it here."
 msgstr ""
 
-#: src/window/sidebar.rs:251
+#: src/window/sidebar.rs:254
 msgid ""
 "Manual setup — expand to paste a server URL and pre-auth key when you "
 "already received them from your administrator. Most users should sign in "
 "through the panel button above instead."
 msgstr ""
 
-#: src/window/sidebar.rs:264
+#: src/window/sidebar.rs:267
 msgid ""
 "Address of the coordination server (e.g. vpn.example.org). The https:// "
 "scheme is added automatically if you omit it."
 msgstr ""
 
-#: src/window/sidebar.rs:273
+#: src/window/sidebar.rs:276
 msgid "Pre-auth key"
 msgstr ""
 
-#: src/window/sidebar.rs:276
+#: src/window/sidebar.rs:279
 msgid ""
 "One-time or reusable key created on the server (starts with 'hskey-auth-'). "
 "Used to register this device automatically without opening a browser."
 msgstr ""
 
-#: src/window/sidebar.rs:292
+#: src/window/sidebar.rs:295
 msgid ""
 "The name this device shows to other peers on the VPN — this is the Tailscale "
 "hostname, NOT your computer's name and NOT your user. Lowercase letters, "
 "digits and hyphens. Example: 'tales-laptop', 'francois', 'office-pc'."
 msgstr ""
 
-#: src/window/sidebar.rs:303
+#: src/window/sidebar.rs:306
 msgid "Apply manual setup"
 msgstr ""
 
-#: src/window/sidebar.rs:305
+#: src/window/sidebar.rs:308
 msgid "Save"
 msgstr ""
 
-#: src/window/sidebar.rs:309
+#: src/window/sidebar.rs:312
 msgid ""
 "Persist the server, key and device name above. Won't connect — press Connect "
 "afterwards."
 msgstr ""
 
-#: src/window/sidebar.rs:327
+#: src/window/sidebar.rs:330
 msgid "Connect automatically"
 msgstr ""
 
-#: src/window/sidebar.rs:328
+#: src/window/sidebar.rs:331
 msgid "Join the network when BigLace starts"
 msgstr ""
 
-#: src/window/sidebar.rs:331
+#: src/window/sidebar.rs:334
 msgid ""
 "When on, BigLace runs 'tailscale up' as soon as it launches, so you join the "
 "mesh without clicking Connect every time."
 msgstr ""
 
-#: src/window/sidebar.rs:339
+#: src/window/sidebar.rs:342
 msgid "Toggle auto-connect on startup"
 msgstr ""
 
-#: src/window/sidebar.rs:346
+#: src/window/sidebar.rs:349
 msgid "Start BigLace with the session"
 msgstr ""
 
-#: src/window/sidebar.rs:347
+#: src/window/sidebar.rs:350
 msgid "Open BigLace after you sign in to the desktop"
 msgstr ""
 
-#: src/window/sidebar.rs:350
+#: src/window/sidebar.rs:353
 msgid ""
 "Turn this on to add BigLace to your desktop session startup. Turn it off to "
 "remove it."
 msgstr ""
 
-#: src/window/sidebar.rs:358
+#: src/window/sidebar.rs:361
 msgid "Toggle start with session"
 msgstr ""
 
-#: src/window/sidebar.rs:365
+#: src/window/sidebar.rs:368
 msgid "Reconnect on drop"
 msgstr ""
 
-#: src/window/sidebar.rs:366
+#: src/window/sidebar.rs:369
 msgid "Retry with backoff when the connection is lost"
 msgstr ""
 
-#: src/window/sidebar.rs:369
+#: src/window/sidebar.rs:372
 msgid ""
 "If the tunnel drops (network change, sleep, server hiccup), BigLace silently "
 "retries with growing delays instead of leaving you offline until you notice."
 msgstr ""
 
-#: src/window/sidebar.rs:378
+#: src/window/sidebar.rs:381
 msgid "Toggle auto-reconnect"
 msgstr ""
 
-#: src/window/sidebar.rs:385
+#: src/window/sidebar.rs:388
 msgid "Notify on peer changes"
 msgstr ""
 
-#: src/window/sidebar.rs:387
+#: src/window/sidebar.rs:390
 msgid "Show a desktop notification when peers go online/offline"
 msgstr ""
 
-#: src/window/sidebar.rs:391
+#: src/window/sidebar.rs:394
 msgid ""
 "Send a desktop toast when another device on your network goes online or "
 "offline. Rapid bursts are coalesced into a single notification so you don't "
 "get spammed during reconnects."
 msgstr ""
 
-#: src/window/sidebar.rs:400
+#: src/window/sidebar.rs:403
 msgid "Toggle peer-change notifications"
 msgstr ""
 
-#: src/window/sidebar.rs:414
+#: src/window/sidebar.rs:410
+msgid "Share the clipboard with my phone"
+msgstr ""
+
+#: src/window/sidebar.rs:411
+msgid "Copy on one, paste on the other: text and pictures"
+msgstr ""
+
+#: src/window/sidebar.rs:418
+msgid "Toggle clipboard sharing"
+msgstr ""
+
+#: src/window/sidebar.rs:426
+msgid "BigLace extension for GNOME"
+msgstr ""
+
+#: src/window/sidebar.rs:427
+msgid ""
+"Needed for the phone to get what you copy while BigLace is in the background"
+msgstr ""
+
+#: src/window/sidebar.rs:431
+msgid "Turn on"
+msgstr ""
+
+#: src/window/sidebar.rs:446
 msgid ""
 "Join or leave the mesh network. When connected, this device becomes "
 "reachable by the other peers in your account."
 msgstr ""
 
-#: src/window/sidebar.rs:428
+#: src/window/sidebar.rs:460
 msgid "Your photo"
 msgstr ""
 

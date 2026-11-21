@@ -62,6 +62,11 @@ pub struct Config {
     #[serde(default)]
     pub notify_peer_changes: bool,
 
+    /// The clipboard stays on this computer instead of going to and from our
+    /// phones (shared unless the person turned it off).
+    #[serde(default)]
+    pub no_clipboard_sharing: bool,
+
     /// Per-peer SSH login overrides, keyed by hostname. Takes precedence over
     /// the `os_user` propagated by the panel (Option D), which itself falls
     /// back to the peer's hostname. Lets the user override the login on a

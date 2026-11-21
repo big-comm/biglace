@@ -29,6 +29,9 @@ pub struct Sidebar {
     pub switch_start_at_login: gtk4::Switch,
     pub switch_auto_reconnect: gtk4::Switch,
     pub switch_notify: gtk4::Switch,
+    pub switch_clipboard: gtk4::Switch,
+    pub gnome_clipboard_row: libadwaita::ActionRow,
+    pub btn_gnome_extension: gtk4::Button,
     pub btn_connect: gtk4::Button,
     /// Unread messages, on the Chat row (hidden at zero).
     pub chat_badge: gtk4::Label,
@@ -403,6 +406,35 @@ pub fn build() -> Sidebar {
     notify_row.set_activatable_widget(Some(&switch_notify));
     grp_prefs.add(&notify_row);
 
+    let clipboard_row = libadwaita::ActionRow::builder()
+        .title(tr!("Share the clipboard with my phone"))
+        .subtitle(tr!("Copy on one, paste on the other: text and pictures"))
+        .build();
+    let clipboard_icon = gtk4::Image::from_icon_name("edit-paste-symbolic");
+    clipboard_icon.set_pixel_size(20);
+    clipboard_row.add_prefix(&clipboard_icon);
+    let switch_clipboard = gtk4::Switch::builder()
+        .valign(gtk4::Align::Center)
+        .tooltip_text(tr!("Toggle clipboard sharing"))
+        .build();
+    clipboard_row.add_suffix(&switch_clipboard);
+    clipboard_row.set_activatable_widget(Some(&switch_clipboard));
+    grp_prefs.add(&clipboard_row);
+
+    // GNOME lets only its shell see the clipboard in the background: offered when the extension is off.
+    let gnome_clipboard_row = libadwaita::ActionRow::builder()
+        .title(tr!("BigLace extension for GNOME"))
+        .subtitle(tr!("Needed for the phone to get what you copy while BigLace is in the background"))
+        .visible(false)
+        .build();
+    let btn_gnome_extension = gtk4::Button::builder()
+        .label(tr!("Turn on"))
+        .valign(gtk4::Align::Center)
+        .css_classes(["suggested-action"])
+        .build();
+    gnome_clipboard_row.add_suffix(&btn_gnome_extension);
+    grp_prefs.add(&gnome_clipboard_row);
+
     // ── Connect / Disconnect button ──
     let btn_connect = gtk4::Button::builder()
         .label(tr!("Connect"))
@@ -460,6 +492,9 @@ pub fn build() -> Sidebar {
         switch_start_at_login,
         switch_auto_reconnect,
         switch_notify,
+        switch_clipboard,
+        gnome_clipboard_row,
+        btn_gnome_extension,
         btn_connect,
         chat_badge,
         avatar,
