@@ -256,6 +256,26 @@ pub fn build(peer: &Peer, ctx: &PeerCtx) -> libadwaita::ExpanderRow {
         row.add_suffix(&btn_copy);
     }
 
+    // The row shows its suffixes in the reverse order they're added: added
+    // screen, terminal, files, send, they read send, files, terminal, screen.
+    // Remote desktop, when the peer's BigLace can share its screen.
+    if peer.online && peer.agent.as_ref().is_some_and(|a| a.supports(crate::remote::CAPABILITY)) {
+        let btn_screen = gtk4::Button::builder()
+            .icon_name("video-display-symbolic")
+            .css_classes(["flat"])
+            .valign(gtk4::Align::Center)
+            .tooltip_text(tr!("See and control the screen"))
+            .build();
+        btn_screen.update_property(&[gtk4::accessible::Property::Label(&tr!("See and control the screen"))]);
+        let (ip, name, toast) = (peer.ipv4.clone(), peer.display_name(), ctx.toast.clone());
+        let caps = super::remote_ui::HostCaps {
+            power: peer.agent.as_ref().is_some_and(|a| a.supports(crate::power::CAPABILITY)),
+            resize: peer.agent.as_ref().is_some_and(|a| a.supports(crate::remote::RESIZE_CAPABILITY)),
+        };
+        btn_screen.connect_clicked(move |_| super::remote_ui::open_viewer(&ip, &name, &toast, caps));
+        row.add_suffix(&btn_screen);
+    }
+
     if peer.online && !host.is_empty() {
         // Login precedence:
         //   1. Per-peer override set by the user — wins for multi-user
@@ -286,6 +306,28 @@ pub fn build(peer: &Peer, ctx: &PeerCtx) -> libadwaita::ExpanderRow {
             })
             .unwrap_or_else(|| peer.hostname.clone());
 
+        let host_term = host.clone();
+        let ip_term = ip_fallback.clone();
+        let ssh_user_term = ssh_user.clone();
+        let btn_term = gtk4::Button::builder()
+            .icon_name("utilities-terminal-symbolic")
+            .css_classes(["flat"])
+            .valign(gtk4::Align::Center)
+            .tooltip_text(tr!("Open terminal (SSH)"))
+            .build();
+        let toast_term = ctx.toast.clone();
+        btn_term.connect_clicked(move |_| {
+            let host = host_term.clone();
+            let ip = ip_term.clone();
+            let user = ssh_user_term.clone();
+            let toast = toast_term.clone();
+            spawn_launcher(toast, move || {
+                let target = tailscale::pick_target(&host, &ip);
+                crate::launchers::open_terminal(&target, &user)
+            });
+        });
+        row.add_suffix(&btn_term);
+
         let host_files = host.clone();
         let ip_files = ip_fallback.clone();
         let ssh_user_files = ssh_user.clone();
@@ -308,45 +350,23 @@ pub fn build(peer: &Peer, ctx: &PeerCtx) -> libadwaita::ExpanderRow {
         });
         row.add_suffix(&btn_files);
 
-        let host_term = host.clone();
-        let ip_term = ip_fallback.clone();
-        let ssh_user_term = ssh_user.clone();
-        let btn_term = gtk4::Button::builder()
-            .icon_name("utilities-terminal-symbolic")
-            .css_classes(["flat"])
-            .valign(gtk4::Align::Center)
-            .tooltip_text(tr!("Open terminal (SSH)"))
-            .build();
-        let toast_term = ctx.toast.clone();
-        btn_term.connect_clicked(move |_| {
-            let host = host_term.clone();
-            let ip = ip_term.clone();
-            let user = ssh_user_term.clone();
-            let toast = toast_term.clone();
-            spawn_launcher(toast, move || {
-                let target = tailscale::pick_target(&host, &ip);
-                crate::launchers::open_terminal(&target, &user)
-            });
-        });
-        row.add_suffix(&btn_term);
-    }
 
-    // Remote desktop, when the peer's BigLace can share its screen.
-    if peer.online && peer.agent.as_ref().is_some_and(|a| a.supports(crate::remote::CAPABILITY)) {
-        let btn_screen = gtk4::Button::builder()
-            .icon_name("video-display-symbolic")
-            .css_classes(["flat"])
-            .valign(gtk4::Align::Center)
-            .tooltip_text(tr!("See and control the screen"))
-            .build();
-        btn_screen.update_property(&[gtk4::accessible::Property::Label(&tr!("See and control the screen"))]);
-        let (ip, name, toast) = (peer.ipv4.clone(), peer.display_name(), ctx.toast.clone());
-        let caps = super::remote_ui::HostCaps {
-            power: peer.agent.as_ref().is_some_and(|a| a.supports(crate::power::CAPABILITY)),
-            resize: peer.agent.as_ref().is_some_and(|a| a.supports(crate::remote::RESIZE_CAPABILITY)),
-        };
-        btn_screen.connect_clicked(move |_| super::remote_ui::open_viewer(&ip, &name, &toast, caps));
-        row.add_suffix(&btn_screen);
+        // Send files: the device accepts or declines them (BigLace on both ends).
+        if peer.agent.as_ref().is_some_and(|a| a.supports(crate::transfer::CAPABILITY)) {
+            let btn_send = gtk4::Button::builder()
+                .icon_name("document-send-symbolic")
+                .css_classes(["flat"])
+                .valign(gtk4::Align::Center)
+                .tooltip_text(tr!("Send files"))
+                .build();
+            let (ip, user, name, toast) = (peer.ipv4.clone(), peer.user.clone(), peer.display_name(), ctx.toast.clone());
+            btn_send.connect_clicked(move |b| {
+                if let Some(win) = b.root().and_downcast::<libadwaita::ApplicationWindow>() {
+                    super::transfer_ui::send_files(&win, &toast, &ip, &user, &name);
+                }
+            });
+            row.add_suffix(&btn_send);
+        }
     }
 
     // ── Detail rows (visible when expanded) ──

@@ -140,7 +140,7 @@ impl Attachment {
 }
 
 /// A name that's safe to show and to save under.
-fn safe_name(name: &str) -> bool {
+pub(crate) fn safe_name(name: &str) -> bool {
     !name.is_empty()
         && name.len() <= 255
         && name != "."
@@ -343,7 +343,7 @@ fn shares() -> &'static Mutex<Vec<Share>> {
     })
 }
 
-pub(super) fn share(id: &str, path: &Path, size: u64, to: &[String]) {
+pub(crate) fn share(id: &str, path: &Path, size: u64, to: &[String]) {
     let Ok(mut list) = shares().lock() else { return };
     let now = now_ms();
     list.retain(|s| now.saturating_sub(s.at) < SHARE_DAYS * 24 * 3600 * 1000);
@@ -440,13 +440,18 @@ fn target_dir(kind: FileKind) -> PathBuf {
     if kind == FileKind::Voice {
         return chat_dir().join("media");
     }
+    downloads_dir()
+}
+
+/// `~/Downloads/BigLace`: where received files go unless the person picks a folder.
+pub(crate) fn downloads_dir() -> PathBuf {
     gtk4::glib::user_special_dir(gtk4::glib::UserDirectory::Downloads)
         .unwrap_or_else(|| gtk4::glib::home_dir().join("Downloads"))
         .join("BigLace")
 }
 
 /// `name` in `dir`, numbered if taken: `foto.jpg`, `foto (1).jpg`…
-fn unique_path(dir: &Path, name: &str) -> PathBuf {
+pub(crate) fn unique_path(dir: &Path, name: &str) -> PathBuf {
     let name = name.trim_start_matches('.');
     let name = if name.is_empty() { "file" } else { name };
     let first = dir.join(name);
@@ -519,8 +524,15 @@ fn fetch(conv: &ConvId, id: &str) -> Result<(), String> {
     Ok(())
 }
 
-/// Fetch (the rest of) the file into `part` from the device at `ip`.
 fn fetch_from(ip: &str, conv: &ConvId, id: &str, part: &Path, size: u64) -> Result<(), String> {
+    fetch_part(ip, id, part, size, &mut |done| {
+        emit(ChatEvent::Progress { conv: conv.clone(), id: id.to_string(), done, total: size });
+    })
+}
+
+/// Fetch (the rest of) shared file `id` into `part` from the device at
+/// `ip`, telling `progress` the bytes there so far.
+pub(crate) fn fetch_part(ip: &str, id: &str, part: &Path, size: u64, progress: &mut dyn FnMut(u64)) -> Result<(), String> {
     let mut have = std::fs::metadata(part).map(|m| m.len()).unwrap_or(0);
     if have > size {
         let _ = std::fs::remove_file(part);
@@ -549,7 +561,7 @@ fn fetch_from(ip: &str, conv: &ConvId, id: &str, part: &Path, size: u64) -> Resu
             have += n as u64;
             if last.elapsed() >= Duration::from_millis(150) {
                 last = Instant::now();
-                emit(ChatEvent::Progress { conv: conv.clone(), id: id.to_string(), done: have, total: size });
+                progress(have);
             }
         }
         let _ = stream.shutdown(std::net::Shutdown::Both);
@@ -558,7 +570,7 @@ fn fetch_from(ip: &str, conv: &ConvId, id: &str, part: &Path, size: u64) -> Resu
     if have != size {
         return Err(crate::tr!("the transfer was interrupted — try again to resume it"));
     }
-    emit(ChatEvent::Progress { conv: conv.clone(), id: id.to_string(), done: size, total: size });
+    progress(size);
     Ok(())
 }
 

@@ -14,6 +14,8 @@
 //! - `remote`: remote desktop between devices.
 //! - `chat`, `room`: messages and voice rooms between people.
 //! - `call`: one-to-one voice and video calls (ringing, answering, the history).
+//! - `transfer`: sending files to a device, accepted or declined there.
+//! - `listeners`: events every part of the window hears.
 //! - `secrets`: the OS credential store.
 //! - `tailscale`: the tailscaled daemon and its state.
 //! - `tray`, `window`: the tray indicator and the main window.
@@ -25,6 +27,7 @@ mod power;
 mod wake;
 mod avatars;
 mod call;
+mod listeners;
 mod config;
 mod device_key;
 mod i18n;
@@ -37,6 +40,7 @@ mod chat;
 mod room;
 mod secrets;
 mod tailscale;
+mod transfer;
 // Cross-platform façade: ksni (StatusNotifierItem / D-Bus) on Linux,
 // Shell_NotifyIcon on Windows, no-op stub elsewhere. The submodule that
 // actually compiles is selected inside `tray.rs` via `#[cfg(target_os = …)]`,
@@ -74,7 +78,7 @@ pub static MALLOC_CONF: &[u8] = b"background_thread:true,dirty_decay_ms:1000,muz
 /// creates (feat → minor, fix/perf/docs/… → patch, breaking → major) by
 /// rewriting this assignment. Reading it from `CARGO_PKG_VERSION` hid it from
 /// gitrepo, which is how the version sat at 1.0.0 through dozens of releases.
-pub const APP_VERSION: &str = "1.59.0";
+pub const APP_VERSION: &str = "1.60.0";
 pub const APP_ID: &str = "org.communitybig.biglace";
 
 /// Date-based build stamp (`YY.MM.DD-HHMM`) — the scheme the GitHub release

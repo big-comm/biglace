@@ -78,16 +78,11 @@ fn lock() -> std::sync::MutexGuard<'static, Option<Call>> {
     current().lock().unwrap_or_else(std::sync::PoisonError::into_inner)
 }
 
-fn listeners() -> &'static Mutex<Vec<async_channel::Sender<CallView>>> {
-    static L: OnceLock<Mutex<Vec<async_channel::Sender<CallView>>>> = OnceLock::new();
-    L.get_or_init(Mutex::default)
-}
+static LISTENERS: crate::listeners::Listeners<CallView> = crate::listeners::Listeners::new();
 
 /// Where the window (and the tray) hear about the call.
 pub fn events() -> async_channel::Receiver<CallView> {
-    let (tx, rx) = async_channel::unbounded();
-    listeners().lock().unwrap_or_else(std::sync::PoisonError::into_inner).push(tx);
-    rx
+    LISTENERS.subscribe()
 }
 
 fn view(call: Option<&Call>) -> CallView {
@@ -101,11 +96,7 @@ fn view(call: Option<&Call>) -> CallView {
 }
 
 fn publish(call: Option<&Call>) {
-    let v = view(call);
-    listeners()
-        .lock()
-        .unwrap_or_else(std::sync::PoisonError::into_inner)
-        .retain(|tx| tx.try_send(v.clone()).is_ok());
+    LISTENERS.send(view(call));
 }
 
 /// The call right now.
@@ -122,7 +113,7 @@ fn room_key(id: &str) -> String {
 fn tell(ip: &str, user: &str, id: &str, action: Action, video: bool) {
     let (ip, user, id) = (ip.to_string(), user.to_string(), id.to_string());
     let _ = std::thread::Builder::new().name("biglace-call-tell".into()).spawn(move || {
-        if let Err(e) = chat::send_call_op(&ip, &user, &id, action, video) {
+        if let Err(e) = chat::send_op_now(&ip, &user, chat::Op::Call { call: id.clone(), action, video }) {
             tailscale::dbg(&format!("call: {action:?} to {ip}: {e}"));
         }
     });
@@ -149,7 +140,7 @@ pub fn start(user: &str, video: bool) -> Result<(), String> {
     let id = chat::new_id();
     let mut ringing = Vec::new();
     for ip in devices_of(user) {
-        match chat::send_call_op(&ip, user, &id, Action::Ring, video) {
+        match chat::send_op_now(&ip, user, chat::Op::Call { call: id.clone(), action: Action::Ring, video }) {
             Ok(()) => ringing.push(ip),
             Err(e) => tailscale::dbg(&format!("call: can't ring {ip}: {e}")),
         }
@@ -206,7 +197,7 @@ pub fn accept() -> Result<(), String> {
             _ => return Err(crate::tr!("The call has ended.")),
         }
     };
-    if let Err(e) = chat::send_call_op(&caller_ip, &user, &id, Action::Accept, video) {
+    if let Err(e) = chat::send_op_now(&caller_ip, &user, chat::Op::Call { call: id.clone(), action: Action::Accept, video }) {
         tailscale::dbg(&format!("call: accept to {caller_ip}: {e}"));
         finish(&id, CallOutcome::Missed);
         return Err(crate::tr!("The call has ended."));

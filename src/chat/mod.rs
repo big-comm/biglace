@@ -176,6 +176,13 @@ pub enum Op {
         #[serde(default)]
         video: bool,
     },
+    /// A step of sending files to a device (not kept): see `crate::transfer`.
+    Send {
+        send: String,
+        action: crate::transfer::Action,
+        #[serde(default, skip_serializing_if = "Vec::is_empty")]
+        items: Vec<crate::transfer::Item>,
+    },
 }
 
 /// One emoji (or a short sequence of them) as a reaction.
@@ -412,7 +419,7 @@ impl Store {
                 c.pinned = target.clone();
                 true
             }
-            Op::Typing | Op::Call { .. } => false,
+            Op::Typing | Op::Call { .. } | Op::Send { .. } => false,
         };
         if changed {
             self.save(conv);
@@ -729,24 +736,15 @@ fn store() -> &'static Mutex<Store> {
 }
 
 /// Everyone listening (each chat view: the Chat page, a room's chat).
-fn listeners() -> &'static Mutex<Vec<async_channel::Sender<ChatEvent>>> {
-    static L: OnceLock<Mutex<Vec<async_channel::Sender<ChatEvent>>>> = OnceLock::new();
-    L.get_or_init(Default::default)
-}
+static LISTENERS: crate::listeners::Listeners<ChatEvent> = crate::listeners::Listeners::new();
 
 /// A stream of what happens, of its own: every listener gets every event.
 pub fn events() -> async_channel::Receiver<ChatEvent> {
-    let (tx, rx) = async_channel::unbounded();
-    if let Ok(mut l) = listeners().lock() {
-        l.push(tx);
-    }
-    rx
+    LISTENERS.subscribe()
 }
 
 fn emit(e: ChatEvent) {
-    if let Ok(mut l) = listeners().lock() {
-        l.retain(|tx| tx.try_send(e.clone()).is_ok() || !tx.is_closed());
-    }
+    LISTENERS.send(e);
 }
 
 pub fn conversations() -> Vec<Summary> {
@@ -881,8 +879,9 @@ pub fn record_call(user: &str, outgoing: bool, record: CallRecord) {
     }
 }
 
-/// Send a call step to the device at `ip` now (not queued). Ok once it took it.
-pub(crate) fn send_call_op(ip: &str, user: &str, call: &str, action: crate::call::Action, video: bool) -> Result<(), String> {
+/// Send `op` to `user`'s device at `ip` now (not queued, not kept): a call
+/// or transfer step. Ok once it took it.
+pub(crate) fn send_op_now(ip: &str, user: &str, op: Op) -> Result<(), String> {
     let wire = Wire {
         id: new_id(),
         conv: ConvId::direct(user),
@@ -891,7 +890,7 @@ pub(crate) fn send_call_op(ip: &str, user: &str, call: &str, action: crate::call
         file: None,
         reply_to: None,
         forwarded_from: None,
-        op: Some(Op::Call { call: call.to_string(), action, video }),
+        op: Some(op),
     };
     let id = wire.id.clone();
     let acked = deliver_to(ip, &[Pending { wire, to_user: user.to_string(), node: String::new() }])?;
@@ -1181,7 +1180,7 @@ fn deliver_pending() {
         // nothing to say (a reaction taken back, typing) are skipped.
         let items: Vec<Pending> = if items.iter().any(|p| p.wire.op.is_some()) && !understands_ops(&peer.ipv4) {
             let (silent, rest): (Vec<Pending>, Vec<Pending>) = items.into_iter().partition(|p| {
-                matches!(p.wire.op, Some(Op::React { on: false, .. } | Op::Typing | Op::Call { .. }))
+                matches!(p.wire.op, Some(Op::React { on: false, .. } | Op::Typing | Op::Call { .. } | Op::Send { .. }))
             });
             drop_pending(&silent);
             rest.into_iter()
@@ -1344,6 +1343,10 @@ pub fn accept(stream: TcpStream, peer: IpAddr, headers: &HashMap<String, String>
             } else if let Op::Call { call, action, video } = op {
                 if !conv.is_group() && conv.name == sender {
                     crate::call::received(&sender, &identity.device, &peer.to_string(), call, *action, *video);
+                }
+            } else if let Op::Send { send, action, items } = op {
+                if !conv.is_group() && conv.name == sender {
+                    crate::transfer::received(&sender, &identity.device, &peer.to_string(), send, *action, items);
                 }
             } else if store().lock().map(|mut s| s.apply_op(conv, &sender, op)).unwrap_or(false) {
                 emit(ChatEvent::Changed(conv.clone()));
