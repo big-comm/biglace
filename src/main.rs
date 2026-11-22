@@ -83,7 +83,7 @@ pub static MALLOC_CONF: &[u8] = b"background_thread:true,dirty_decay_ms:1000,muz
 /// creates (feat → minor, fix/perf/docs/… → patch, breaking → major) by
 /// rewriting this assignment. Reading it from `CARGO_PKG_VERSION` hid it from
 /// gitrepo, which is how the version sat at 1.0.0 through dozens of releases.
-pub const APP_VERSION: &str = "1.69.0";
+pub const APP_VERSION: &str = "1.70.0";
 pub const APP_ID: &str = "org.communitybig.biglace";
 
 /// Date-based build stamp (`YY.MM.DD-HHMM`) — the scheme the GitHub release

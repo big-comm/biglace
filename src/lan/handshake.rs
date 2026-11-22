@@ -346,6 +346,12 @@ mod tests {
         assert_eq!(server_result.unwrap_err().kind(), io::ErrorKind::PermissionDenied);
     }
 
+    /// The phone app derives the same digits (its LanProtocolTest); expected value from Python's hashlib.
+    #[test]
+    fn code_matches_known_answer() {
+        assert_eq!(code("clientkey", "serverkey", &[1u8; 32], "clientrandom", "serverrandom"), "294116");
+    }
+
     #[test]
     fn steps_are_bounded() {
         let mut big = Vec::new();

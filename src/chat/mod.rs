@@ -1958,7 +1958,7 @@ mod tests {
     }
 
     #[test]
-    fn lan_takes_only_what_is_written_to_us() {
+    fn lan_accepts_only_our_messages() {
         let own = "K".repeat(43);
         let base = || Wire { conv: ConvId::lan(&own), ..wire(ConvId::lan(&own)) };
         let with = |f: &dyn Fn(&mut Wire)| {
