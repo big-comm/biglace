@@ -426,7 +426,7 @@ pub fn download(conv: &ConvId, id: &str) {
             t.remove(&id);
         }
         match result {
-            Ok(()) => emit(ChatEvent::Changed(conv)),
+            Ok(_) => emit(ChatEvent::Changed(conv)),
             Err(reason) => {
                 tailscale::dbg(&format!("file: {id}: {reason}"));
                 emit(ChatEvent::TransferFailed { conv, id, reason });
@@ -468,11 +468,12 @@ pub(crate) fn unique_path(dir: &Path, name: &str) -> PathBuf {
         .unwrap_or(first)
 }
 
-fn fetch(conv: &ConvId, id: &str) -> Result<(), String> {
+/// Where the file of message `id` is on disk, fetched first when it isn't there.
+pub(super) fn fetch(conv: &ConvId, id: &str) -> Result<PathBuf, String> {
     let message = super::messages(conv).into_iter().find(|m| m.id == id).ok_or("message not found")?;
     let file = message.file.clone().ok_or("no file in that message")?;
-    if file.local().is_some() {
-        return Ok(());
+    if let Some(path) = file.local() {
+        return Ok(path);
     }
     let size = file.offer.size;
     let dir = target_dir(file.offer.kind);
@@ -521,7 +522,7 @@ fn fetch(conv: &ConvId, id: &str) -> Result<(), String> {
         }
         s.save(conv);
     }
-    Ok(())
+    Ok(fin)
 }
 
 fn fetch_from(ip: &str, conv: &ConvId, id: &str, part: &Path, size: u64) -> Result<(), String> {

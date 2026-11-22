@@ -1077,13 +1077,16 @@ pub fn forward(to: &ConvId, from: &ConvId, ids: &[String]) -> Result<(), String>
     let all = messages(from);
     for id in ids {
         let Some(m) = all.iter().find(|m| &m.id == id && !m.deleted) else { continue };
-        let author = m.forwarded_from.clone().unwrap_or_else(|| m.from.clone());
-        if let Some(path) = m.file.as_ref().and_then(Attachment::local) {
-            files::send_file(to, &path)?;
-        }
-        if !m.text.trim().is_empty() {
-            post_with(to, &m.text, None, Extra { forwarded_from: Some(author), ..Extra::default() })?;
-        }
+        let extra = Extra { forwarded_from: Some(m.forwarded_from.clone().unwrap_or_else(|| m.from.clone())), ..Extra::default() };
+        let Some(file) = &m.file else {
+            if !m.text.trim().is_empty() {
+                post_with(to, &m.text, None, extra)?;
+            }
+            continue;
+        };
+        // A file that hasn't come down yet is fetched first: it goes on from here.
+        let path = files::fetch(from, id)?;
+        post_with(to, &m.text, Some((file.offer.clone(), path)), extra)?;
     }
     Ok(())
 }
