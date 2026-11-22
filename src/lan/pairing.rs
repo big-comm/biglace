@@ -121,12 +121,12 @@ pub fn stop() {
 
 /// Show `code`, wait for our person's answer, then trade answers with the
 /// peer; paired only when both said yes.
-fn settle(s: &mut (impl Read + Write), peer: &Peer, code: String) {
+fn settle(s: &mut (impl Read + Write), peer: &Peer, code: String, address: String) {
     let (answer, answered) = std::sync::mpsc::sync_channel(1);
     LISTENERS.send(LanEvent::Code { name: peer.name.clone(), code, answer });
     let ours = answered.recv_timeout(ANSWER_WAIT).unwrap_or(false);
     let paired = handshake::agree(s, ours).unwrap_or(false);
-    if paired && peers::add(peers::Paired { key: peer.key.clone(), name: peer.name.clone(), since: crate::chat::now_ms() / 1000, forgotten: false }).is_ok() {
+    if paired && peers::add(peers::Paired { key: peer.key.clone(), name: peer.name.clone(), since: crate::chat::now_ms() / 1000, forgotten: false, address: Some(address) }).is_ok() {
         LISTENERS.send(LanEvent::Paired { key: peer.key.clone(), name: peer.name.clone() });
     } else {
         LISTENERS.send(LanEvent::PairFailed { name: peer.name.clone() });
@@ -135,6 +135,7 @@ fn settle(s: &mut (impl Read + Write), peer: &Peer, code: String) {
 
 fn incoming(tcp: TcpStream, server: &tls::Server) {
     let Some(me) = current() else { return };
+    let address = tcp.peer_addr().map(|a| a.ip().to_string()).unwrap_or_default();
     // The person has two minutes to answer; the peer's reads wait as long.
     let _ = tcp.set_read_timeout(Some(ANSWER_WAIT + READ_WAIT));
     let Ok(mut s) = server.acceptor.accept(tcp) else { return };
@@ -142,10 +143,13 @@ fn incoming(tcp: TcpStream, server: &tls::Server) {
     let Ok((peer, purpose)) = handshake::server(&mut s, &server.fingerprint, &me.key, &me.name, admit) else { return };
     match purpose {
         Purpose::Pair => match handshake::pair_server(&mut s, &server.fingerprint, &me.key, &peer) {
-            Ok(code) => settle(&mut s, &peer, code),
+            Ok(code) => settle(&mut s, &peer, code, address),
             Err(_) => LISTENERS.send(LanEvent::PairFailed { name: peer.name }),
         },
-        Purpose::Talk => talk(&mut s, &peer),
+        Purpose::Talk => {
+            peers::seen_at(&peer.key, &address);
+            talk(&mut s, &peer);
+        }
     }
 }
 
@@ -164,8 +168,10 @@ fn talk(s: &mut (impl Read + Write), peer: &Peer) {
 /// the ids it acknowledged.
 pub fn deliver(key: &str, payloads: &[Vec<u8>]) -> Result<HashSet<String>, String> {
     let me = current().ok_or("the local network is off")?;
-    let device = nearby().lock().ok().and_then(|n| n.iter().find(|d| d.key == key).cloned()).ok_or("not nearby")?;
-    let addr: SocketAddr = format!("{}:{}", device.address, device.port).parse().map_err(|_| "bad address")?;
+    let found = nearby().lock().ok().and_then(|n| n.iter().find(|d| d.key == key).map(|d| (d.address.clone(), d.port)));
+    let remembered = || peers::list().into_iter().find(|p| p.key == key).and_then(|p| p.address).map(|a| (a, super::PORT));
+    let (address, port) = found.or_else(remembered).ok_or("not nearby")?;
+    let addr: SocketAddr = format!("{address}:{port}").parse().map_err(|_| "bad address")?;
     let mut s = connect(addr).ok_or("unreachable")?;
     let fingerprint = tls::peer_fingerprint(&s).map_err(|e| e.to_string())?;
     handshake::client(&mut s, &fingerprint, &me.key, &me.name, Purpose::Talk, Some(key)).map_err(|e| e.to_string())?;
@@ -183,6 +189,20 @@ pub fn deliver(key: &str, payloads: &[Vec<u8>]) -> Result<HashSet<String>, Strin
     Ok(acked)
 }
 
+/// What the phone scans to pair with us: our address on the local network,
+/// port and device key; `None` without a local network address.
+pub fn link() -> Option<String> {
+    let key = crate::device_key::public_key()?;
+    // Connecting a UDP socket sends nothing: it only picks the interface toward the local network.
+    let probe = std::net::UdpSocket::bind("0.0.0.0:0").ok()?;
+    probe.connect("224.0.0.251:5353").ok()?;
+    let ip = probe.local_addr().ok()?.ip().to_string();
+    discovery::on_this_network(&ip).then(|| format!("{LINK_PREFIX}{ip}:{}:{key}", super::PORT))
+}
+
+/// Starts what [`link`] gives.
+pub const LINK_PREFIX: &str = "biglace-lan:";
+
 /// TLS to the BigLace at `addr` (who it is gets proven by the handshake).
 fn connect(addr: SocketAddr) -> Option<openssl::ssl::SslStream<TcpStream>> {
     let tcp = TcpStream::connect_timeout(&addr, Duration::from_secs(5)).ok()?;
@@ -192,7 +212,8 @@ fn connect(addr: SocketAddr) -> Option<openssl::ssl::SslStream<TcpStream>> {
     config.connect("biglace", tcp).ok()
 }
 
-/// Ask `nearby` to pair (on a thread of its own).
+/// Ask `nearby` to pair (on a thread of its own); `nearby.key` empty when
+/// it's not known yet.
 pub fn pair_with(nearby: Nearby) {
     let _ = std::thread::Builder::new().name("biglace-lan-pair".into()).spawn(move || {
         let failed = || LISTENERS.send(LanEvent::PairFailed { name: nearby.name.clone() });
@@ -201,12 +222,12 @@ pub fn pair_with(nearby: Nearby) {
         let Some(mut s) = connect(addr) else { return failed() };
         let Ok(fingerprint) = tls::peer_fingerprint(&s) else { return failed() };
         let Ok(peer) = handshake::client(&mut s, &fingerprint, &me.key, &me.name, Purpose::Pair, None) else { return failed() };
-        if peer.key != nearby.key {
+        if !nearby.key.is_empty() && peer.key != nearby.key {
             // It announced one key and proved another.
             return failed();
         }
         match handshake::pair_client(&mut s, &fingerprint, &me.key, &peer) {
-            Ok(code) => settle(&mut s, &peer, code),
+            Ok(code) => settle(&mut s, &peer, code, nearby.address.clone()),
             Err(_) => failed(),
         }
     });

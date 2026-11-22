@@ -145,6 +145,21 @@ fn show_nearby(win: &libadwaita::ApplicationWindow, state: &Rc<RefCell<State>>) 
     state.borrow_mut().shown = Some(list.downgrade());
     let page = gtk4::Box::builder().orientation(gtk4::Orientation::Vertical).spacing(12).margin_top(12).margin_bottom(18).margin_start(18).margin_end(18).build();
     page.append(&list);
+    // For a phone, or a network where devices don't see each other: it scans this.
+    if let Some(texture) = pairing::link().and_then(|l| super::invites::qr_texture(&l)) {
+        let caption = gtk4::Label::builder()
+            .label(tr!("Or scan this code with BigLace on the phone (Settings, Local network)"))
+            .wrap(true)
+            .justify(gtk4::Justification::Center)
+            .margin_top(6)
+            .css_classes(["dim-label"])
+            .build();
+        page.append(&caption);
+        let picture = gtk4::Picture::for_paintable(&texture);
+        picture.set_size_request(200, 200);
+        picture.set_halign(gtk4::Align::Center);
+        page.append(&picture);
+    }
     let view = libadwaita::ToolbarView::new();
     view.add_top_bar(&libadwaita::HeaderBar::new());
     view.set_content(Some(&gtk4::ScrolledWindow::builder().child(&page).propagate_natural_height(true).build()));
@@ -153,7 +168,7 @@ fn show_nearby(win: &libadwaita::ApplicationWindow, state: &Rc<RefCell<State>>) 
         .transient_for(win)
         .modal(true)
         .default_width(420)
-        .default_height(360)
+        .default_height(560)
         .content(&view)
         .build();
     super::dialogs::close_on_escape(&dialog);

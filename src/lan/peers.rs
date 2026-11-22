@@ -15,6 +15,9 @@ pub struct Paired {
     /// Forgotten: kept only for its name in our history; it can only pair again.
     #[serde(default)]
     pub forgotten: bool,
+    /// Where it last reached us or we reached it: for when mDNS can't find it.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub address: Option<String>,
 }
 
 pub fn list() -> Vec<Paired> {
@@ -48,6 +51,16 @@ pub fn remove(key: &str) {
     for p in all.iter_mut().filter(|p| p.key == key) {
         p.forgotten = true;
     }
+    if let Err(e) = save(&all) {
+        crate::tailscale::dbg(&format!("lan: {FILE} not saved: {e}"));
+    }
+}
+
+/// Remember where `key` is now (only written when it moved).
+pub fn seen_at(key: &str, address: &str) {
+    let mut all = list();
+    let Some(p) = all.iter_mut().find(|p| p.key == key && p.address.as_deref() != Some(address)) else { return };
+    p.address = Some(address.to_string());
     if let Err(e) = save(&all) {
         crate::tailscale::dbg(&format!("lan: {FILE} not saved: {e}"));
     }

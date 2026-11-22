@@ -59,7 +59,7 @@ fn parse_txt(txt: &[Vec<u8>]) -> Option<(String, String)> {
 
 /// An address on the local network itself: not loopback, nor the tailnet
 /// (100.64.0.0/10), which Avahi also announces on.
-fn on_this_network(address: &str) -> bool {
+pub fn on_this_network(address: &str) -> bool {
     match address.parse::<std::net::Ipv4Addr>() {
         Ok(ip) => !ip.is_loopback() && !(ip.octets()[0] == 100 && ip.octets()[1] & 0xc0 == 64),
         Err(_) => false,
