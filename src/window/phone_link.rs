@@ -67,7 +67,7 @@ fn chat_reply_action(win: &libadwaita::ApplicationWindow, toast: &libadwaita::To
     let action = gio::SimpleAction::new(CHAT_REPLY, Some(glib::VariantTy::STRING));
     let (win, toast) = (win.downgrade(), toast.clone());
     action.connect_activate(move |_, param| {
-        let Some(conv) = param.and_then(|p| p.get::<String>()).and_then(|k| conv_of(&k)) else { return };
+        let Some(conv) = param.and_then(|p| p.get::<String>()).and_then(|k| crate::chat::ConvId::from_key(&k)) else { return };
         let Some(win) = win.upgrade() else { return };
         let toast = toast.clone();
         let title = conv.name.clone();
@@ -115,17 +115,6 @@ fn on_event(win: &libadwaita::ApplicationWindow, toast: &libadwaita::ToastOverla
     }
 }
 
-/// `dm-bruna` / `group-familia` back to its conversation.
-fn conv_of(key: &str) -> Option<crate::chat::ConvId> {
-    let (kind, name) = key.split_once('-')?;
-    let conv = match kind {
-        "dm" => crate::chat::ConvId::direct(name),
-        "group" => crate::chat::ConvId::group(name),
-        _ => return None,
-    };
-    crate::chat::name_ok(name).then_some(conv)
-}
-
 /// A small window to type a reply to `title`; `send` gets the text.
 fn ask_reply(win: &libadwaita::ApplicationWindow, title: &str, send: impl Fn(String) + 'static) {
     let dlg = libadwaita::MessageDialog::new(Some(win), Some(&trf!("Reply to {who}", "who" => title)), None);
@@ -146,17 +135,4 @@ fn ask_reply(win: &libadwaita::ApplicationWindow, title: &str, send: impl Fn(Str
     win.present();
     dlg.present();
     entry.grab_focus();
-}
-
-#[cfg(test)]
-mod tests {
-    use super::*;
-
-    #[test]
-    fn chat_keys_read_back() {
-        assert_eq!(conv_of("dm-bruna"), Some(crate::chat::ConvId::direct("bruna")));
-        assert_eq!(conv_of("group-big-linux"), Some(crate::chat::ConvId::group("big-linux")));
-        assert_eq!(conv_of("x-bruna"), None);
-        assert_eq!(conv_of("dm-../x"), None);
-    }
 }

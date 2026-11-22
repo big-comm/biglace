@@ -62,6 +62,12 @@ impl ConvId {
     pub fn key(&self) -> String {
         format!("{}-{}", self.kind, self.name)
     }
+    /// [`ConvId::key`] read back; `None` for anything else.
+    pub fn from_key(key: &str) -> Option<Self> {
+        let (kind, name) = key.split_once('-')?;
+        let conv = Self { kind: kind.into(), name: name.into() };
+        conv.valid().then_some(conv)
+    }
     fn valid(&self) -> bool {
         (self.kind == "dm" || self.kind == "group") && name_ok(&self.name)
     }
@@ -1394,6 +1400,14 @@ pub fn accept(stream: TcpStream, peer: IpAddr, headers: &HashMap<String, String>
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    #[test]
+    fn chat_keys_read_back() {
+        assert_eq!(ConvId::from_key("dm-bruna"), Some(ConvId::direct("bruna")));
+        assert_eq!(ConvId::from_key("group-big-linux"), Some(ConvId::group("big-linux")));
+        assert_eq!(ConvId::from_key("x-bruna"), None);
+        assert_eq!(ConvId::from_key("dm-../x"), None);
+    }
 
     fn me() -> Me {
         Me {

@@ -767,9 +767,8 @@ impl ChatPage {
         page
     }
 
-    /// Development builds only: open a conversation (preview).
-    #[cfg(debug_assertions)]
-    pub fn preview_open(&self, id: &ConvId) {
+    /// Open `id` in the visible section (a notification's click, the preview).
+    pub fn open(&self, id: &ConvId) {
         self.state.visible.set(true);
         self.open_conv(id);
     }
@@ -1139,6 +1138,7 @@ impl ChatPage {
         };
         let n = gtk4::gio::Notification::new(&title);
         n.set_body(Some(&message_line(m, 140)));
+        n.set_default_action_and_target_value(&format!("app.{}", super::CHAT_OPEN), Some(&conv.key().to_variant()));
         n.add_button_with_target_value(
             &tr!("Reply"),
             &format!("app.{}", super::phone_link::CHAT_REPLY),

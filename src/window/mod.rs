@@ -386,7 +386,7 @@ pub fn build(app: &libadwaita::Application, start_hidden: bool) {
         let (nav, chat_page) = (sidebar_widgets.nav.clone(), chat_page.clone());
         glib::timeout_add_seconds_local_once(2, move || {
             show_section(&nav, "chat");
-            glib::timeout_add_seconds_local_once(2, move || chat_page.preview_open(&conv));
+            glib::timeout_add_seconds_local_once(2, move || chat_page.open(&conv));
         });
     }
     #[cfg(debug_assertions)]
@@ -503,6 +503,7 @@ pub fn build(app: &libadwaita::Application, start_hidden: bool) {
             }
         });
     }
+    wire_notification_clicks(&ctx.ui);
     phone_link::wire(&ctx.ui.win, &ctx.ui.toast, ctx.refresh_tx.clone());
     transfer_ui::wire(&ctx.ui.win);
     clipboard_ui::wire(&ctx.ui.win, &ctx.ui.toast, &ctx.ui.sidebar, &ctx.cfg);
@@ -2001,6 +2002,35 @@ fn wire_signals(ctx: &Ctx) {
 #[cfg_attr(not(target_os = "windows"), allow(dead_code))]
 fn sc_start_succeeded(code: Option<i32>) -> bool {
     matches!(code, Some(0) | Some(1056))
+}
+
+/// App action a notification click runs: the window, at this conversation (its [`crate::chat::ConvId::key`]).
+pub(super) const CHAT_OPEN: &str = "chat-open";
+/// App action a notification click runs: the window, at this sidebar section.
+pub(super) const SHOW_SECTION: &str = "show-section";
+
+fn wire_notification_clicks(ui: &Ui) {
+    let Some(app) = ui.win.application() else { return };
+    let chat_open = gtk4::gio::SimpleAction::new(CHAT_OPEN, Some(glib::VariantTy::STRING));
+    let (win, nav, chat) = (ui.win.downgrade(), ui.sidebar.nav.clone(), ui.chat.clone());
+    chat_open.connect_activate(move |_, param| {
+        let Some(win) = win.upgrade() else { return };
+        win.present();
+        let Some(conv) = param.and_then(|p| p.get::<String>()).and_then(|k| crate::chat::ConvId::from_key(&k)) else { return };
+        show_section(&nav, "chat");
+        chat.open(&conv);
+    });
+    app.add_action(&chat_open);
+    let show = gtk4::gio::SimpleAction::new(SHOW_SECTION, Some(glib::VariantTy::STRING));
+    let (win, nav) = (ui.win.downgrade(), ui.sidebar.nav.clone());
+    show.connect_activate(move |_, param| {
+        let Some(win) = win.upgrade() else { return };
+        win.present();
+        if let Some(name) = param.and_then(|p| p.str()) {
+            show_section(&nav, name);
+        }
+    });
+    app.add_action(&show);
 }
 
 /// Switch to the sidebar's section `name` ("chat", "rooms"…), as a click would.

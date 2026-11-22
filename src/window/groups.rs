@@ -317,6 +317,7 @@ impl GroupsPage {
                         "user" => req.from,
                         "group" => req.group
                     )));
+                    n.set_default_action_and_target_value(&format!("app.{}", super::SHOW_SECTION), Some(&"groups".to_variant()));
                     app.send_notification(Some(&notification_id(&req.id)), &n);
                 }
             }
