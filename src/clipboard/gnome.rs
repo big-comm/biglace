@@ -101,6 +101,37 @@ pub fn set(c: &Content) -> bool {
     })
 }
 
+/// Put the extension in GNOME's list of extensions to run, as its package
+/// can't for each person: true when done (it starts now, or at the next login
+/// for a shell that started before the extension was installed). False where
+/// GNOME Shell or the extension isn't installed.
+pub fn turn_on() -> bool {
+    let known = gio::SettingsSchemaSource::default().and_then(|s| s.lookup("org.gnome.shell", true)).is_some();
+    let installed = std::iter::once(glib::user_data_dir())
+        .chain(glib::system_data_dirs())
+        .any(|d| d.join("gnome-shell/extensions").join(EXTENSION_UUID).join("metadata.json").is_file());
+    if !known || !installed {
+        return false;
+    }
+    let shell = gio::Settings::new("org.gnome.shell");
+    let on = shell.strv("enabled-extensions");
+    if !on.iter().any(|u| u == EXTENSION_UUID) {
+        let mut list: Vec<&str> = on.iter().map(glib::GStringPtr::as_str).collect();
+        list.push(EXTENSION_UUID);
+        if shell.set_strv("enabled-extensions", list).is_err() {
+            return false;
+        }
+    }
+    let off = shell.strv("disabled-extensions");
+    if off.iter().any(|u| u == EXTENSION_UUID) {
+        let list: Vec<&str> = off.iter().map(glib::GStringPtr::as_str).filter(|u| *u != EXTENSION_UUID).collect();
+        if shell.set_strv("disabled-extensions", list).is_err() {
+            return false;
+        }
+    }
+    true
+}
+
 /// Whether GNOME Shell runs and has the extension, and whether it is on; `None` outside GNOME.
 pub async fn extension_on() -> Option<bool> {
     let conn = gio::bus_get_future(gio::BusType::Session).await.ok()?;

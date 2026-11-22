@@ -66,6 +66,10 @@ pub struct Config {
     /// phones (shared unless the person turned it off).
     #[serde(default)]
     pub no_clipboard_sharing: bool,
+    /// We turned the GNOME extension on once, when we first found it; since
+    /// then it is on or off as the person leaves it.
+    #[serde(default)]
+    pub gnome_extension_turned_on: bool,
 
     /// Per-peer SSH login overrides, keyed by hostname. Takes precedence over
     /// the `os_user` propagated by the panel (Option D), which itself falls
