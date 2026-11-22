@@ -885,8 +885,17 @@ impl ChatPage {
         while let Some(child) = self.messages.first_child() {
             self.messages.remove(&child);
         }
-        self.conv_title.set_text(&id.name);
-        if id.is_group() {
+        self.conv_title.set_text(&chat::label(&id.name));
+        if id.is_lan() {
+            // No account behind it: no photo to fetch, no calls (they go over the tailnet).
+            // "Maria (notebook)": initials from the words, not the parenthesis.
+            self.conv_avatar.set_text(Some(&chat::label(&id.name).replace(['(', ')'], "")));
+            self.conv_avatar.set_icon_name(None);
+            self.conv_avatar.set_show_initials(true);
+            self.conv_avatar.set_custom_image(gtk4::gdk::Paintable::NONE);
+            self.conv_subtitle.set_text(&tr!("On this local network"));
+            self.btn_call.set_visible(false);
+        } else if id.is_group() {
             self.conv_avatar.set_text(Some(&id.name));
             self.conv_avatar.set_icon_name(Some("system-users-symbolic"));
             self.conv_avatar.set_show_initials(false);
@@ -1144,7 +1153,7 @@ impl ChatPage {
         let title = if conv.is_group() {
             trf!("{user} in {group}", "user" => m.from, "group" => conv.name)
         } else {
-            m.from.clone()
+            chat::label(&m.from)
         };
         let n = gtk4::gio::Notification::new(&title);
         n.set_body(Some(&message_line(m, 140)));
@@ -1449,11 +1458,11 @@ fn conv_row(c: &chat::Summary, online: Option<bool>) -> gtk4::ListBoxRow {
     let line = gtk4::Box::new(gtk4::Orientation::Horizontal, 10);
     line.set_margin_top(6);
     line.set_margin_bottom(6);
-    let avatar = libadwaita::Avatar::new(42, Some(&c.id.name), !c.id.is_group());
+    let avatar = libadwaita::Avatar::new(42, Some(&chat::label(&c.id.name).replace(['(', ')'], "")), !c.id.is_group());
     if c.id.is_group() {
         avatar.set_icon_name(Some("system-users-symbolic"));
         crate::avatars::bind_group(&avatar, &c.id.name);
-    } else {
+    } else if !c.id.is_lan() {
         crate::avatars::bind(&avatar, &c.id.name);
     }
     if online == Some(true) {
@@ -1473,7 +1482,7 @@ fn conv_row(c: &chat::Summary, online: Option<bool>) -> gtk4::ListBoxRow {
     texts.set_hexpand(true);
     texts.set_valign(gtk4::Align::Center);
     let top = gtk4::Box::new(gtk4::Orientation::Horizontal, 6);
-    let name = gtk4::Label::new(Some(&c.id.name));
+    let name = gtk4::Label::new(Some(&chat::label(&c.id.name)));
     name.add_css_class("heading");
     name.set_xalign(0.0);
     name.set_hexpand(true);
@@ -1687,7 +1696,7 @@ impl ChatPage {
             let quote = gtk4::Box::new(gtk4::Orientation::Vertical, 0);
             quote.add_css_class("bubble-reply");
             quote.add_css_class(&format!("reply-color-{}", color_index(&r.from)));
-            let who = gtk4::Label::new(Some(&r.from));
+            let who = gtk4::Label::new(Some(&chat::label(&r.from)));
             who.add_css_class("bubble-reply-name");
             who.set_xalign(0.0);
             let what = gtk4::Label::new(Some(&r.preview));
@@ -1943,7 +1952,7 @@ impl ChatPage {
     fn start_reply(&self, m: &Message) {
         *self.state.editing.borrow_mut() = None;
         *self.state.reply_to.borrow_mut() = Some(m.id.clone());
-        self.show_reply_bar("mail-reply-sender-symbolic", &trf!("Reply to {name}", "name" => m.from), &chat::preview_line(m));
+        self.show_reply_bar("mail-reply-sender-symbolic", &trf!("Reply to {name}", "name" => chat::label(&m.from)), &chat::preview_line(m));
     }
 
     fn start_edit(&self, m: &Message) {

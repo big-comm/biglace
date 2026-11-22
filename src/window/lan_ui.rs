@@ -21,6 +21,9 @@ struct State {
 /// Wire the switch and the devices row, and follow the network (once, at startup).
 pub fn wire(win: &libadwaita::ApplicationWindow, toast: &libadwaita::ToastOverlay, sidebar: &super::sidebar::Sidebar, cfg: &Rc<RefCell<config::Config>>) {
     let state: Rc<RefCell<State>> = Rc::default();
+    for paired in crate::lan::peers::list() {
+        crate::chat::open(&crate::chat::ConvId::lan(&paired.key));
+    }
     let on = cfg.borrow().lan_enabled;
     sidebar.switch_lan.set_active(on);
     sidebar.lan_devices_row.set_visible(on);
@@ -55,7 +58,11 @@ pub fn wire(win: &libadwaita::ApplicationWindow, toast: &libadwaita::ToastOverla
                     ask_code(&win, &name, &code, answer);
                     continue;
                 }
-                LanEvent::Paired { name } => super::show_toast(&toast, &trf!("Paired with {name}", "name" => name), 4),
+                LanEvent::Paired { key, name } => {
+                    // Its conversation shows in Chat right away.
+                    crate::chat::open(&crate::chat::ConvId::lan(&key));
+                    super::show_toast(&toast, &trf!("Paired with {name}", "name" => name), 4);
+                }
                 LanEvent::PairFailed { name } => super::show_toast(&toast, &trf!("Not paired with {name}", "name" => name), 5),
             }
             // Who's nearby and where each pairing stands.

@@ -2,6 +2,7 @@
 //! and listing the others, and pairing both ways. Whoever started a pairing
 //! or got asked, both people see the code and answer.
 
+use std::collections::HashSet;
 use std::io::{Read, Write};
 use std::net::{SocketAddr, TcpListener, TcpStream};
 use std::sync::{Arc, Mutex, OnceLock};
@@ -12,6 +13,7 @@ use ed25519_dalek::SigningKey;
 use super::discovery::{self, Nearby};
 use super::handshake::{self, Peer, Purpose};
 use super::{peers, tls};
+use crate::remote::{read_frame, write_frame, Kind};
 
 /// How long a person has to answer a pairing code.
 const ANSWER_WAIT: Duration = Duration::from_secs(120);
@@ -24,8 +26,8 @@ pub enum LanEvent {
     Nearby(Vec<Nearby>),
     /// Pairing with `name`: show `code`, and send the person's answer.
     Code { name: String, code: String, answer: std::sync::mpsc::SyncSender<bool> },
-    /// Paired with `name`.
-    Paired { name: String },
+    /// Paired with `name`, whose device key is `key`.
+    Paired { key: String, name: String },
     /// A pairing that didn't happen (refused, timed out, broken off).
     PairFailed { name: String },
 }
@@ -53,6 +55,12 @@ fn me() -> &'static Mutex<Option<Arc<Me>>> {
 
 fn current() -> Option<Arc<Me>> {
     me().lock().ok()?.clone()
+}
+
+/// The devices nearby now, where [`deliver`] finds them.
+fn nearby() -> &'static Mutex<Vec<Nearby>> {
+    static NEARBY: Mutex<Vec<Nearby>> = Mutex::new(Vec::new());
+    &NEARBY
 }
 
 /// Start, once: listen, announce us as `name` and follow the others.
@@ -85,7 +93,14 @@ pub fn start(name: &str) -> anyhow::Result<()> {
                 .await
                 .inspect_err(|e| crate::tailscale::dbg(&format!("lan: not announced: {e}")))
                 .ok();
-            let browsing = Box::pin(discovery::browse(&public, |list| LISTENERS.send(LanEvent::Nearby(list))));
+            let browsing = Box::pin(discovery::browse(&public, |list| {
+                if let Ok(mut n) = nearby().lock() {
+                    n.clone_from(&list);
+                }
+                LISTENERS.send(LanEvent::Nearby(list));
+                // Someone may be back with messages waiting for them.
+                crate::chat::kick();
+            }));
             if let futures_util::future::Either::Left((Err(e), _)) = futures_util::future::select(browsing, Box::pin(quitting.recv())).await {
                 crate::tailscale::dbg(&format!("lan: not browsing: {e}"));
             }
@@ -112,7 +127,7 @@ fn settle(s: &mut (impl Read + Write), peer: &Peer, code: String) {
     let ours = answered.recv_timeout(ANSWER_WAIT).unwrap_or(false);
     let paired = handshake::agree(s, ours).unwrap_or(false);
     if paired && peers::add(peers::Paired { key: peer.key.clone(), name: peer.name.clone(), since: crate::chat::now_ms() / 1000 }).is_ok() {
-        LISTENERS.send(LanEvent::Paired { name: peer.name.clone() });
+        LISTENERS.send(LanEvent::Paired { key: peer.key.clone(), name: peer.name.clone() });
     } else {
         LISTENERS.send(LanEvent::PairFailed { name: peer.name.clone() });
     }
@@ -130,9 +145,42 @@ fn incoming(tcp: TcpStream, server: &tls::Server) {
             Ok(code) => settle(&mut s, &peer, code),
             Err(_) => LISTENERS.send(LanEvent::PairFailed { name: peer.name }),
         },
-        // Conversations come in the next step.
-        Purpose::Talk => {}
+        Purpose::Talk => talk(&mut s, &peer),
     }
+}
+
+/// Messages from a paired device, each acknowledged once kept.
+fn talk(s: &mut (impl Read + Write), peer: &Peer) {
+    while let Ok((Kind::Chat, payload)) = read_frame(s) {
+        let Some(id) = crate::chat::accept_lan(&peer.key, &payload) else { break };
+        let ack = serde_json::to_vec(&[id]).unwrap_or_default();
+        if write_frame(s, Kind::ChatAck, &ack).is_err() {
+            break;
+        }
+    }
+}
+
+/// Send `payloads` (chat wires) to the paired device `key`, if it's nearby;
+/// the ids it acknowledged.
+pub fn deliver(key: &str, payloads: &[Vec<u8>]) -> Result<HashSet<String>, String> {
+    let me = current().ok_or("the local network is off")?;
+    let device = nearby().lock().ok().and_then(|n| n.iter().find(|d| d.key == key).cloned()).ok_or("not nearby")?;
+    let addr: SocketAddr = format!("{}:{}", device.address, device.port).parse().map_err(|_| "bad address")?;
+    let mut s = connect(addr).ok_or("unreachable")?;
+    let fingerprint = tls::peer_fingerprint(&s).map_err(|e| e.to_string())?;
+    handshake::client(&mut s, &fingerprint, &me.key, &me.name, Purpose::Talk, Some(key)).map_err(|e| e.to_string())?;
+    for payload in payloads {
+        write_frame(&mut s, Kind::Chat, payload).map_err(|e| e.to_string())?;
+    }
+    let mut acked = HashSet::new();
+    while acked.len() < payloads.len() {
+        match read_frame(&mut s) {
+            Ok((Kind::ChatAck, payload)) => acked.extend(serde_json::from_slice::<Vec<String>>(&payload).unwrap_or_default()),
+            Ok(_) => {}
+            Err(_) => break,
+        }
+    }
+    Ok(acked)
 }
 
 /// TLS to the BigLace at `addr` (who it is gets proven by the handshake).

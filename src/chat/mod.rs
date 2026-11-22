@@ -58,6 +58,13 @@ impl ConvId {
     pub fn is_group(&self) -> bool {
         self.kind == "group"
     }
+    /// With a device paired on the local network, named by its device key (see `crate::lan`).
+    pub fn lan(key: &str) -> Self {
+        Self { kind: "lan".into(), name: key.into() }
+    }
+    pub fn is_lan(&self) -> bool {
+        self.kind == "lan"
+    }
     /// File-safe key (`dm-bruna`, `group-familia`).
     pub fn key(&self) -> String {
         format!("{}-{}", self.kind, self.name)
@@ -69,7 +76,7 @@ impl ConvId {
         conv.valid().then_some(conv)
     }
     fn valid(&self) -> bool {
-        (self.kind == "dm" || self.kind == "group") && name_ok(&self.name)
+        matches!(self.kind.as_str(), "dm" | "group" | "lan") && name_ok(&self.name)
     }
 }
 
@@ -803,7 +810,7 @@ pub fn mark_read(id: &ConvId) {
             }
         }
     }
-    if let Some(at) = read_up_to {
+    if let Some(at) = read_up_to.filter(|_| !id.is_lan()) {
         // Off the caller's thread: finding who we are may ask tailscale.
         let id = id.clone();
         let _ = std::thread::Builder::new().name("biglace-read".into()).spawn(move || post_own(&id, Op::Read { at }));
@@ -1040,6 +1047,9 @@ fn post_with(conv: &ConvId, text: &str, file: Option<(Offer, PathBuf)>, extra: E
     if text.len() > MAX_TEXT {
         return Err(crate::tr!("message too long"));
     }
+    if conv.is_lan() {
+        return post_lan(conv, text, file, extra);
+    }
     let me = me(Duration::from_secs(300)).ok_or_else(|| crate::tr!("not signed in to a BigScale network"))?;
     let recipients = recipients(conv, &me).ok_or_else(|| crate::tr!("you are not in that group"))?;
     let wire = Wire {
@@ -1096,6 +1106,163 @@ fn post_with(conv: &ConvId, text: &str, file: Option<(Offer, PathBuf)>, extra: E
     emit(ChatEvent::Changed(conv.clone()));
     kick();
     Ok(wire.id)
+}
+
+/// Outbox node of a device paired on the local network: this, then its key.
+const LAN_NODE: &str = "lan:";
+
+/// [`post_with`] to a device paired on the local network: no account, no
+/// tailnet; we are our device key.
+fn post_lan(conv: &ConvId, text: &str, file: Option<(Offer, PathBuf)>, extra: Extra) -> Result<String, String> {
+    if file.is_some() {
+        return Err(crate::tr!("Files can't go over the local network yet."));
+    }
+    let me = crate::device_key::public_key().ok_or("no device key")?;
+    let wire = Wire {
+        id: new_id(),
+        conv: conv.clone(),
+        text: text.to_string(),
+        at: now_ms(),
+        file: None,
+        reply_to: extra.reply_to.clone(),
+        forwarded_from: extra.forwarded_from.clone(),
+        op: extra.op.clone(),
+        relayed: None,
+    };
+    let message = Message {
+        id: wire.id.clone(),
+        from: me.clone(),
+        device: String::new(),
+        text: wire.text.clone(),
+        at: wire.at,
+        mine: true,
+        delivered: vec![],
+        file: None,
+        reply_to: extra.reply_to,
+        forwarded_from: extra.forwarded_from,
+        reactions: BTreeMap::new(),
+        edited_at: 0,
+        deleted: false,
+        call: None,
+    };
+    let id = wire.id.clone();
+    if let Ok(mut s) = store().lock() {
+        match &wire.op {
+            Some(op) => {
+                s.apply_op(conv, &me, op);
+            }
+            None => {
+                s.add(conv, message, false);
+            }
+        }
+        s.outbox.push(Pending { node: format!("{LAN_NODE}{}", conv.name), to_user: conv.name.clone(), wire });
+        s.save_outbox();
+    }
+    emit(ChatEvent::Changed(conv.clone()));
+    kick();
+    Ok(id)
+}
+
+/// A message (or a step) from `sender`, a device paired on the local
+/// network; the id to acknowledge, `None` to have it sent again later.
+#[cfg(target_os = "linux")]
+pub(crate) fn accept_lan(sender: &str, payload: &[u8]) -> Option<String> {
+    let wire: Wire = serde_json::from_slice(payload).ok()?;
+    let own = crate::device_key::public_key()?;
+    if !lan_wire_ok(&wire, &own) {
+        // Never good: acknowledged so it isn't sent again.
+        return Some(wire.id);
+    }
+    if !rate_ok(sender) {
+        return None;
+    }
+    let conv = ConvId::lan(sender);
+    match &wire.op {
+        Some(Op::Typing) => emit(ChatEvent::Typing { conv, user: sender.to_string() }),
+        Some(op @ (Op::React { .. } | Op::Edit { .. } | Op::Delete { .. } | Op::Pin { .. })) => {
+            if store().lock().map(|mut s| s.apply_op(&conv, sender, op)).unwrap_or(false) {
+                emit(ChatEvent::Changed(conv));
+            }
+        }
+        Some(_) => {}
+        None => {
+            let message = Message {
+                id: wire.id.clone(),
+                from: sender.to_string(),
+                device: String::new(),
+                text: wire.text.clone(),
+                at: wire.at,
+                mine: false,
+                delivered: vec![],
+                file: None,
+                reply_to: wire.reply_to.clone(),
+                forwarded_from: wire.forwarded_from.clone(),
+                reactions: BTreeMap::new(),
+                edited_at: 0,
+                deleted: false,
+                call: None,
+            };
+            if store().lock().map(|mut s| s.add(&conv, message.clone(), true)).unwrap_or(false) {
+                emit(ChatEvent::Changed(conv.clone()));
+                emit(ChatEvent::Incoming { conv, message: Box::new(message) });
+            }
+        }
+    }
+    Some(wire.id)
+}
+
+/// What a paired device may send us: written to us, no file (its server is
+/// the tailnet's), nothing passed on, and the same limits as the tailnet's.
+fn lan_wire_ok(wire: &Wire, own: &str) -> bool {
+    wire.conv.is_lan()
+        && wire.conv.name == own
+        && wire.file.is_none()
+        && wire.relayed.is_none()
+        && wire.text.len() <= MAX_TEXT
+        && !wire.id.is_empty()
+        && wire.id.len() <= 64
+        && wire.id.bytes().all(|c| c.is_ascii_alphanumeric())
+        && wire.reply_to.as_ref().is_none_or(ReplyRef::valid)
+        && wire.forwarded_from.as_deref().is_none_or(name_ok)
+}
+
+/// Hand what waits for a device paired on the local network to it, if it's nearby.
+fn deliver_lan(key: &str, items: &[Pending]) {
+    #[cfg(target_os = "linux")]
+    {
+        let payloads: Vec<Vec<u8>> = items.iter().filter_map(|p| serde_json::to_vec(&p.wire).ok()).collect();
+        let Ok(acked) = crate::lan::pairing::deliver(key, &payloads) else { return };
+        let mut changed = HashSet::new();
+        if let Ok(mut s) = store().lock() {
+            for p in items.iter().filter(|p| acked.contains(&p.wire.id)) {
+                s.outbox.retain(|x| !(x.node == p.node && x.wire.id == p.wire.id));
+                if p.wire.op.is_none() && s.delivered(&p.wire.conv, &p.wire.id, key) {
+                    changed.insert(p.wire.conv.clone());
+                }
+            }
+            s.save_outbox();
+        }
+        for conv in changed {
+            emit(ChatEvent::Changed(conv));
+        }
+    }
+    #[cfg(not(target_os = "linux"))]
+    let _ = (key, items);
+}
+
+/// How a name shows: a device paired on the local network by the name it
+/// gave, us as "You", everyone else as is.
+pub fn label(name: &str) -> String {
+    #[cfg(target_os = "linux")]
+    {
+        if crate::device_key::public_key().is_some_and(|own| own == name) {
+            return crate::tr!("You");
+        }
+        if let Some(paired) = crate::lan::peers::list().into_iter().find(|p| p.key == name) {
+            return paired.name;
+        }
+    }
+    name.to_string()
 }
 
 /// Do `op` in `conv`, for everyone there; `fallback` is what older
@@ -1270,6 +1437,10 @@ fn deliver_pending() {
         by_node.entry(p.node.clone()).or_default().push(p);
     }
     for (node, items) in by_node {
+        if let Some(key) = node.strip_prefix(LAN_NODE) {
+            deliver_lan(key, &items);
+            continue;
+        }
         let Some(peer) = peers.iter().find(|p| p.id == node) else {
             // That device left the network: nothing will ever reach it.
             if !peers.is_empty() {
@@ -1784,6 +1955,30 @@ mod tests {
         let json = serde_json::to_value(&w).unwrap();
         assert_eq!(json["relayed"], serde_json::json!({"from": "bruna", "device": "phone"}));
         assert!(serde_json::to_value(wire(ConvId::direct("tales"))).unwrap().get("relayed").is_none(), "absent when not passed on");
+    }
+
+    #[test]
+    fn lan_takes_only_what_is_written_to_us() {
+        let own = "K".repeat(43);
+        let base = || Wire { conv: ConvId::lan(&own), ..wire(ConvId::lan(&own)) };
+        let with = |f: &dyn Fn(&mut Wire)| {
+            let mut w = base();
+            f(&mut w);
+            w
+        };
+        let offer = Offer { name: "a.txt".into(), size: 1, kind: FileKind::File, thumb: None, width: 0, height: 0, duration_ms: 0, wave: vec![], sha256: None };
+        for (w, ok, case) in [
+            (base(), true, "a message to us"),
+            (with(&|w| w.conv = ConvId::lan(&"X".repeat(43))), false, "written to another device"),
+            (with(&|w| w.conv = ConvId::direct(&own)), false, "not a local network conversation"),
+            (with(&|w| w.file = Some(offer.clone())), false, "a file"),
+            (with(&|w| w.relayed = Some(Relayed { from: "bruna".into(), device: "nb".into() })), false, "passed on"),
+            (with(&|w| w.id = "../x".into()), false, "a bad id"),
+            (with(&|w| w.text = "x".repeat(MAX_TEXT + 1)), false, "too long"),
+            (with(&|w| w.forwarded_from = Some("a b".into())), false, "a bad forwarded name"),
+        ] {
+            assert_eq!(lan_wire_ok(&w, &own), ok, "{case}");
+        }
     }
 
     /// The read step as the phone app reads and writes it.
