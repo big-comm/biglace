@@ -381,21 +381,13 @@ pub fn serve(stream: TcpStream, peer: IpAddr, headers: &std::collections::HashMa
     }
     let Some((id, offset)) = parse_path(path) else { return respond(&stream, 400, "Bad Request") };
     let me = super::my_user();
-    let found = shares().lock().ok().and_then(|l| l.iter().find(|s| s.id == id).cloned());
-    let Some(share) = found.filter(|s| s.to.contains(&identity.login) || me.as_deref() == Some(identity.login.as_str()))
-    else {
-        // Unknown and not-for-you look the same.
-        return respond(&stream, 404, "Not Found");
+    let mine = me.as_deref() == Some(identity.login.as_str());
+    let (file, left) = match open_share(id, &identity.login, mine, offset) {
+        Ok(found) => found,
+        Err(ShareError::Missing) => return respond(&stream, 404, "Not Found"),
+        Err(ShareError::Gone) => return respond(&stream, 410, "Gone"),
+        Err(ShareError::Range) => return respond(&stream, 416, "Range Not Satisfiable"),
     };
-    let Ok(mut file) = std::fs::File::open(&share.path) else { return respond(&stream, 410, "Gone") };
-    if file.metadata().map(|m| m.len()).ok() != Some(share.size) {
-        // Changed or replaced since it was sent.
-        return respond(&stream, 410, "Gone");
-    }
-    if offset > share.size || file.seek(SeekFrom::Start(offset)).is_err() {
-        return respond(&stream, 416, "Range Not Satisfiable");
-    }
-    let left = share.size - offset;
     let mut out = &stream;
     let _ = stream.set_write_timeout(Some(Duration::from_secs(30)));
     if write!(out, "HTTP/1.1 200 OK\r\nContent-Type: application/octet-stream\r\nContent-Length: {left}\r\n\r\n").is_err() {
@@ -403,6 +395,40 @@ pub fn serve(stream: TcpStream, peer: IpAddr, headers: &std::collections::HashMa
     }
     let sent = std::io::copy(&mut file.take(left), &mut out);
     tailscale::dbg(&format!("file: {id} to {}@{}: {sent:?}", identity.login, identity.device));
+}
+
+/// Why a shared file can't be read.
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub(crate) enum ShareError {
+    /// Unknown, or not for whoever asks: the two look the same.
+    Missing,
+    /// Moved, changed or replaced since it was sent.
+    Gone,
+    /// An offset past its end.
+    Range,
+}
+
+/// Shared file `id` opened at `offset` for `who` (or for us, `mine`): the
+/// file and how many bytes are left.
+pub(crate) fn open_share(id: &str, who: &str, mine: bool, offset: u64) -> Result<(std::fs::File, u64), ShareError> {
+    let found = shares().lock().ok().and_then(|l| l.iter().find(|s| s.id == id).cloned());
+    let share = found.filter(|s| mine || s.to.iter().any(|t| t == who)).ok_or(ShareError::Missing)?;
+    let mut file = std::fs::File::open(&share.path).map_err(|_| ShareError::Gone)?;
+    if file.metadata().map(|m| m.len()).ok() != Some(share.size) {
+        return Err(ShareError::Gone);
+    }
+    if offset > share.size || file.seek(SeekFrom::Start(offset)).is_err() {
+        return Err(ShareError::Range);
+    }
+    Ok((file, share.size - offset))
+}
+
+/// What a person reads when `e` stops a download.
+pub(crate) fn share_error_text(e: ShareError) -> String {
+    match e {
+        ShareError::Gone => crate::tr!("the file is no longer on their computer (moved or changed)"),
+        ShareError::Missing | ShareError::Range => crate::tr!("the file isn't available"),
+    }
 }
 
 // ─── Fetching ───────────────────────────────────────────────────────────────
@@ -485,30 +511,10 @@ pub(super) fn fetch(conv: &ConvId, id: &str) -> Result<PathBuf, String> {
     std::fs::create_dir_all(&dir).map_err(|e| e.to_string())?;
     let part = dir.join(format!(".biglace-{id}.part"));
 
-    // The sender's devices that are on; the one it was sent from first.
-    let mut peers: Vec<_> = tailscale::get_peers()
-        .into_iter()
-        .filter(|p| p.user == message.from && p.online && !p.ipv4.is_empty())
-        .collect();
-    peers.sort_by_key(|p| {
-        let label = p.dns_name.split('.').next().unwrap_or_default().to_string();
-        !(p.hostname == message.device || label == message.device)
-    });
-    if peers.is_empty() {
-        return Err(crate::trf!("{user}'s computer is off or offline — try again when it's back", "user" => message.from));
-    }
-    let mut last_error = String::new();
-    for peer in &peers {
-        match fetch_from(&peer.ipv4, conv, id, &part, size) {
-            Ok(()) => {
-                last_error.clear();
-                break;
-            }
-            Err(e) => last_error = e,
-        }
-    }
-    if !last_error.is_empty() {
-        return Err(last_error);
+    if conv.is_lan() {
+        lan_fetch(conv, id, &part, size)?;
+    } else {
+        fetch_over_tailnet(conv, id, &message, &part, size)?;
     }
     if let Some(expected) = &file.offer.sha256 {
         if !sha256_of(&part)?.eq_ignore_ascii_case(expected) {
@@ -530,6 +536,55 @@ pub(super) fn fetch(conv: &ConvId, id: &str) -> Result<PathBuf, String> {
     Ok(fin)
 }
 
+/// Download `part` of message `id` from the sender's devices that are on,
+/// the one it was sent from first.
+fn fetch_over_tailnet(conv: &ConvId, id: &str, message: &super::Message, part: &Path, size: u64) -> Result<(), String> {
+    let mut peers: Vec<_> = tailscale::get_peers()
+        .into_iter()
+        .filter(|p| p.user == message.from && p.online && !p.ipv4.is_empty())
+        .collect();
+    peers.sort_by_key(|p| {
+        let label = p.dns_name.split('.').next().unwrap_or_default().to_string();
+        !(p.hostname == message.device || label == message.device)
+    });
+    if peers.is_empty() {
+        return Err(crate::trf!("{user}'s computer is off or offline — try again when it's back", "user" => message.from));
+    }
+    let mut last_error = String::new();
+    for peer in &peers {
+        match fetch_from(&peer.ipv4, conv, id, part, size) {
+            Ok(()) => {
+                last_error.clear();
+                break;
+            }
+            Err(e) => last_error = e,
+        }
+    }
+    if !last_error.is_empty() {
+        return Err(last_error);
+    }
+    Ok(())
+}
+
+/// Download `part` of message `id` from the device paired on the local network that sent it.
+fn lan_fetch(conv: &ConvId, id: &str, part: &Path, size: u64) -> Result<(), String> {
+    #[cfg(target_os = "linux")]
+    {
+        let have = crate::lan::pairing::fetch_file(&conv.name, id, part, size, &mut |done| {
+            emit(ChatEvent::Progress { conv: conv.clone(), id: id.to_string(), done, total: size });
+        })?;
+        if have != size {
+            return Err(crate::tr!("the transfer was interrupted — try again to resume it"));
+        }
+        Ok(())
+    }
+    #[cfg(not(target_os = "linux"))]
+    {
+        let _ = (conv, id, part, size);
+        Err("no local network here".into())
+    }
+}
+
 fn fetch_from(ip: &str, conv: &ConvId, id: &str, part: &Path, size: u64) -> Result<(), String> {
     fetch_part(ip, id, part, size, &mut |done| {
         emit(ChatEvent::Progress { conv: conv.clone(), id: id.to_string(), done, total: size });
@@ -547,37 +602,42 @@ pub(crate) fn fetch_part(ip: &str, id: &str, part: &Path, size: u64, progress: &
     if have < size {
         let path = format!("{PATH_PREFIX}{id}/{have}");
         let (stream, mut reader) = crate::remote::client::dial(ip, &path, &[], Duration::from_secs(15)).map_err(|e| match e {
-            crate::remote::client::OpenError::Other(s) if s == "HTTP 410" => {
-                crate::tr!("the file is no longer on their computer (moved or changed)")
-            }
-            crate::remote::client::OpenError::Other(s) if s == "HTTP 404" => crate::tr!("the file isn't available"),
+            crate::remote::client::OpenError::Other(s) if s == "HTTP 410" => share_error_text(ShareError::Gone),
+            crate::remote::client::OpenError::Other(s) if s == "HTTP 404" => share_error_text(ShareError::Missing),
             other => format!("{other:?}"),
         })?;
         let _ = stream.set_read_timeout(Some(Duration::from_secs(30)));
-        let mut out = std::fs::OpenOptions::new().create(true).append(true).open(part).map_err(|e| e.to_string())?;
-        let mut buf = vec![0u8; 256 * 1024];
-        let mut last = Instant::now();
-        while have < size {
-            let want = buf.len().min((size - have) as usize);
-            let n = reader.read(&mut buf[..want]).map_err(|e| e.to_string())?;
-            if n == 0 {
-                break;
-            }
-            out.write_all(&buf[..n]).map_err(|e| e.to_string())?;
-            have += n as u64;
-            if last.elapsed() >= Duration::from_millis(150) {
-                last = Instant::now();
-                progress(have);
-            }
-        }
+        have = append_part(&mut reader, part, have, size, progress)?;
         let _ = stream.shutdown(std::net::Shutdown::Both);
-        out.flush().map_err(|e| e.to_string())?;
     }
     if have != size {
         return Err(crate::tr!("the transfer was interrupted — try again to resume it"));
     }
     progress(size);
     Ok(())
+}
+
+/// The bytes `reader` gives, appended to `part` (which holds `have` of
+/// `size`) until `size` or the end: how many `part` holds then.
+pub(crate) fn append_part(reader: &mut impl Read, part: &Path, mut have: u64, size: u64, progress: &mut dyn FnMut(u64)) -> Result<u64, String> {
+    let mut out = std::fs::OpenOptions::new().create(true).append(true).open(part).map_err(|e| e.to_string())?;
+    let mut buf = vec![0u8; 256 * 1024];
+    let mut last = Instant::now();
+    while have < size {
+        let want = buf.len().min(usize::try_from(size - have).unwrap_or(usize::MAX));
+        let n = reader.read(&mut buf[..want]).map_err(|e| e.to_string())?;
+        if n == 0 {
+            break;
+        }
+        out.write_all(&buf[..n]).map_err(|e| e.to_string())?;
+        have += n as u64;
+        if last.elapsed() >= Duration::from_millis(150) {
+            last = Instant::now();
+            progress(have);
+        }
+    }
+    out.flush().map_err(|e| e.to_string())?;
+    Ok(have)
 }
 
 #[cfg(test)]

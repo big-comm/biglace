@@ -153,20 +153,78 @@ fn incoming(tcp: TcpStream, server: &tls::Server) {
     }
 }
 
-/// Messages from a paired device, each acknowledged once kept.
+/// A paired device asks for the file it was offered in message `file`, from `offset` on.
+#[derive(serde::Serialize, serde::Deserialize)]
+struct FileAsk {
+    file: String,
+    offset: u64,
+}
+
+/// The answer before the bytes: how many follow, or why none.
+#[derive(serde::Serialize, serde::Deserialize)]
+struct FileAnswer {
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    size: Option<u64>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    error: Option<String>,
+}
+
+const GONE: &str = "gone";
+
+/// Messages from a paired device, each acknowledged once kept, or one file it asks for.
 fn talk(s: &mut (impl Read + Write), peer: &Peer) {
-    while let Ok((Kind::Chat, payload)) = read_frame(s) {
-        let Some(id) = crate::chat::accept_lan(&peer.key, &payload) else { break };
-        let ack = serde_json::to_vec(&[id]).unwrap_or_default();
-        if write_frame(s, Kind::ChatAck, &ack).is_err() {
-            break;
+    loop {
+        match read_frame(s) {
+            Ok((Kind::Chat, payload)) => {
+                let Some(id) = crate::chat::accept_lan(&peer.key, &payload) else { break };
+                let ack = serde_json::to_vec(&[id]).unwrap_or_default();
+                if write_frame(s, Kind::ChatAck, &ack).is_err() {
+                    break;
+                }
+            }
+            Ok((Kind::Lan, payload)) => {
+                if let Ok(ask) = serde_json::from_slice::<FileAsk>(&payload) {
+                    send_file(s, &peer.key, &ask);
+                }
+                break;
+            }
+            _ => break,
         }
     }
 }
 
-/// Send `payloads` (chat wires) to the paired device `key`, if it's nearby;
-/// the ids it acknowledged.
-pub fn deliver(key: &str, payloads: &[Vec<u8>]) -> Result<HashSet<String>, String> {
+fn send_file(s: &mut (impl Read + Write), who: &str, ask: &FileAsk) {
+    use crate::chat::files::{open_share, ShareError};
+    match open_share(&ask.file, who, false, ask.offset) {
+        Ok((file, left)) => {
+            if handshake::send(s, &FileAnswer { size: Some(left), error: None }).is_ok() {
+                let _ = std::io::copy(&mut std::io::Read::take(file, left), s);
+                let _ = s.flush();
+            }
+        }
+        Err(e) => {
+            let why = if e == ShareError::Gone { GONE } else { "missing" };
+            let _ = handshake::send(s, &FileAnswer { size: None, error: Some(why.into()) });
+        }
+    }
+}
+
+/// Fetch (the rest of) file `id` from the paired device `key` into `part`,
+/// which holds `size` once whole: how many bytes it holds now.
+pub fn fetch_file(key: &str, id: &str, part: &std::path::Path, size: u64, progress: &mut dyn FnMut(u64)) -> Result<u64, String> {
+    let have = std::fs::metadata(part).map(|m| m.len()).unwrap_or(0).min(size);
+    let mut s = talk_to(key)?;
+    handshake::send(&mut s, &FileAsk { file: id.to_string(), offset: have }).map_err(|e| e.to_string())?;
+    let answer: FileAnswer = handshake::recv(&mut s).map_err(|e| e.to_string())?;
+    match (answer.size, answer.error.as_deref()) {
+        (Some(left), None) if have + left == size => crate::chat::files::append_part(&mut s, part, have, size, progress),
+        (_, Some(GONE)) => Err(crate::chat::files::share_error_text(crate::chat::files::ShareError::Gone)),
+        _ => Err(crate::chat::files::share_error_text(crate::chat::files::ShareError::Missing)),
+    }
+}
+
+/// A proven TLS connection to the paired device `key`, where it is now (or was last).
+fn talk_to(key: &str) -> Result<openssl::ssl::SslStream<TcpStream>, String> {
     let me = current().ok_or("the local network is off")?;
     let found = nearby().lock().ok().and_then(|n| n.iter().find(|d| d.key == key).map(|d| (d.address.clone(), d.port)));
     let remembered = || peers::list().into_iter().find(|p| p.key == key).and_then(|p| p.address).map(|a| (a, super::PORT));
@@ -175,6 +233,13 @@ pub fn deliver(key: &str, payloads: &[Vec<u8>]) -> Result<HashSet<String>, Strin
     let mut s = connect(addr).ok_or("unreachable")?;
     let fingerprint = tls::peer_fingerprint(&s).map_err(|e| e.to_string())?;
     handshake::client(&mut s, &fingerprint, &me.key, &me.name, Purpose::Talk, Some(key)).map_err(|e| e.to_string())?;
+    Ok(s)
+}
+
+/// Send `payloads` (chat wires) to the paired device `key`, if it's nearby;
+/// the ids it acknowledged.
+pub fn deliver(key: &str, payloads: &[Vec<u8>]) -> Result<HashSet<String>, String> {
+    let mut s = talk_to(key)?;
     for payload in payloads {
         write_frame(&mut s, Kind::Chat, payload).map_err(|e| e.to_string())?;
     }

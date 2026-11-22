@@ -1114,9 +1114,6 @@ const LAN_NODE: &str = "lan:";
 /// [`post_with`] to a device paired on the local network: no account, no
 /// tailnet; we are our device key.
 fn post_lan(conv: &ConvId, text: &str, file: Option<(Offer, PathBuf)>, extra: Extra) -> Result<String, String> {
-    if file.is_some() {
-        return Err(crate::tr!("Files can't go over the local network yet."));
-    }
     #[cfg(target_os = "linux")]
     if !crate::lan::peers::is_paired(&conv.name) {
         return Err(crate::trf!("Not paired with {name}", "name" => label(&conv.name)));
@@ -1127,7 +1124,7 @@ fn post_lan(conv: &ConvId, text: &str, file: Option<(Offer, PathBuf)>, extra: Ex
         conv: conv.clone(),
         text: text.to_string(),
         at: now_ms(),
-        file: None,
+        file: file.as_ref().map(|(o, _)| o.clone()),
         reply_to: extra.reply_to.clone(),
         forwarded_from: extra.forwarded_from.clone(),
         op: extra.op.clone(),
@@ -1141,7 +1138,11 @@ fn post_lan(conv: &ConvId, text: &str, file: Option<(Offer, PathBuf)>, extra: Ex
         at: wire.at,
         mine: true,
         delivered: vec![],
-        file: None,
+        file: file.as_ref().map(|(o, path)| Attachment {
+            offer: o.clone(),
+            path: Some(path.to_string_lossy().into_owned()),
+            state: FileState::Done,
+        }),
         reply_to: extra.reply_to,
         forwarded_from: extra.forwarded_from,
         reactions: BTreeMap::new(),
@@ -1150,6 +1151,10 @@ fn post_lan(conv: &ConvId, text: &str, file: Option<(Offer, PathBuf)>, extra: Ex
         call: None,
     };
     let id = wire.id.clone();
+    if let Some((o, path)) = &file {
+        // Served to the paired device when it asks (see lan::pairing::fetch_file).
+        files::share(&id, path, o.size, std::slice::from_ref(&conv.name));
+    }
     if let Ok(mut s) = store().lock() {
         match &wire.op {
             Some(op) => {
@@ -1198,7 +1203,7 @@ pub(crate) fn accept_lan(sender: &str, payload: &[u8]) -> Option<String> {
                 at: wire.at,
                 mine: false,
                 delivered: vec![],
-                file: None,
+                file: wire.file.clone().map(|offer| Attachment { offer, path: None, state: FileState::Offered }),
                 reply_to: wire.reply_to.clone(),
                 forwarded_from: wire.forwarded_from.clone(),
                 reactions: BTreeMap::new(),
@@ -1208,6 +1213,10 @@ pub(crate) fn accept_lan(sender: &str, payload: &[u8]) -> Option<String> {
             };
             if store().lock().map(|mut s| s.add(&conv, message.clone(), true)).unwrap_or(false) {
                 emit(ChatEvent::Changed(conv.clone()));
+                // Pictures and voice messages come down by themselves, as on the tailnet.
+                if message.file.as_ref().is_some_and(|f| f.offer.fetch_by_itself()) {
+                    files::download(&conv, &message.id);
+                }
                 emit(ChatEvent::Incoming { conv, message: Box::new(message) });
             }
         }
@@ -1215,12 +1224,12 @@ pub(crate) fn accept_lan(sender: &str, payload: &[u8]) -> Option<String> {
     Some(wire.id)
 }
 
-/// What a paired device may send us: written to us, no file (its server is
-/// the tailnet's), nothing passed on, and the same limits as the tailnet's.
+/// What a paired device may send us: written to us, nothing passed on, and
+/// the same limits as the tailnet's.
 fn lan_wire_ok(wire: &Wire, own: &str) -> bool {
     wire.conv.is_lan()
         && wire.conv.name == own
-        && wire.file.is_none()
+        && wire.file.as_ref().is_none_or(Offer::valid)
         && wire.relayed.is_none()
         && wire.text.len() <= MAX_TEXT
         && !wire.id.is_empty()
@@ -1984,7 +1993,8 @@ mod tests {
             (base(), true, "a message to us"),
             (with(&|w| w.conv = ConvId::lan(&"X".repeat(43))), false, "written to another device"),
             (with(&|w| w.conv = ConvId::direct(&own)), false, "not a local network conversation"),
-            (with(&|w| w.file = Some(offer.clone())), false, "a file"),
+            (with(&|w| w.file = Some(offer.clone())), true, "a file offered"),
+            (with(&|w| w.file = Some(Offer { name: "../x".into(), ..offer.clone() })), false, "a file with a bad name"),
             (with(&|w| w.relayed = Some(Relayed { from: "bruna".into(), device: "nb".into() })), false, "passed on"),
             (with(&|w| w.id = "../x".into()), false, "a bad id"),
             (with(&|w| w.text = "x".repeat(MAX_TEXT + 1)), false, "too long"),
