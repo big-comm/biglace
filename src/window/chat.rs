@@ -1374,17 +1374,18 @@ impl ChatPage {
             move |(people, groups)| {
                 status2.set_title(&tr!("Nobody you can reach yet."));
                 let add = |id: ConvId, subtitle: String, online: bool| {
+                    let shown = chat::label(&id.name);
                     let row = libadwaita::ActionRow::builder()
-                        .title(glib::markup_escape_text(&id.name).as_str())
+                        .title(glib::markup_escape_text(&shown).as_str())
                         .subtitle(subtitle)
                         .activatable(true)
                         .build();
-                    row.set_widget_name(&id.name);
-                    let avatar = libadwaita::Avatar::new(32, Some(&id.name), !id.is_group());
+                    row.set_widget_name(&shown);
+                    let avatar = libadwaita::Avatar::new(32, Some(&shown.replace(['(', ')'], "")), !id.is_group());
                     if id.is_group() {
                         avatar.set_icon_name(Some("system-users-symbolic"));
                         crate::avatars::bind_group(&avatar, &id.name);
-                    } else {
+                    } else if !id.is_lan() {
                         crate::avatars::bind(&avatar, &id.name);
                     }
                     row.add_prefix(&avatar);
@@ -1407,6 +1408,10 @@ impl ChatPage {
                 }
                 for g in groups {
                     add(ConvId::group(&g), tr!("Group"), false);
+                }
+                #[cfg(target_os = "linux")]
+                for paired in crate::lan::peers::paired() {
+                    add(ConvId::lan(&paired.key), tr!("On this local network"), false);
                 }
             },
         );
