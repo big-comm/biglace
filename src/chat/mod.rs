@@ -1386,21 +1386,29 @@ pub fn typing(conv: &ConvId) {
         }
         last.insert(conv.clone(), Instant::now());
     }
+    let wire = Wire {
+        id: new_id(),
+        conv: conv.clone(),
+        text: String::new(),
+        at: now_ms(),
+        file: None,
+        reply_to: None,
+        forwarded_from: None,
+        op: Some(Op::Typing),
+        relayed: None,
+    };
     let conv = conv.clone();
     let _ = std::thread::Builder::new().name("biglace-typing".into()).spawn(move || {
+        if conv.is_lan() {
+            // Straight to the paired device, if it's within reach: typing isn't queued.
+            #[cfg(target_os = "linux")]
+            if let Ok(payload) = serde_json::to_vec(&wire) {
+                let _ = crate::lan::pairing::deliver(&conv.name, &[payload]);
+            }
+            return;
+        }
         let Some(me) = me(Duration::from_secs(300)) else { return };
         let recipients = recipients(&conv, &me).unwrap_or_default();
-        let wire = Wire {
-            id: new_id(),
-            conv: conv.clone(),
-            text: String::new(),
-            at: now_ms(),
-            file: None,
-            reply_to: None,
-            forwarded_from: None,
-            op: Some(Op::Typing),
-            relayed: None,
-        };
         for p in tailscale::get_peers() {
             if !p.online || p.ipv4.is_empty() || !recipients.contains(&p.user) || !understands_ops(&p.ipv4) {
                 continue;

@@ -893,14 +893,12 @@ impl ChatPage {
             self.conv_avatar.set_icon_name(None);
             self.conv_avatar.set_show_initials(true);
             self.conv_avatar.set_custom_image(gtk4::gdk::Paintable::NONE);
-            self.conv_subtitle.set_text(&tr!("On this local network"));
             self.btn_call.set_visible(false);
         } else if id.is_group() {
             self.conv_avatar.set_text(Some(&id.name));
             self.conv_avatar.set_icon_name(Some("system-users-symbolic"));
             self.conv_avatar.set_show_initials(false);
             crate::avatars::bind_group(&self.conv_avatar, &id.name);
-            self.conv_subtitle.set_text(&tr!("Group"));
             self.btn_call.set_visible(false);
         } else {
             self.btn_call.set_menu_model(Some(&super::call_ui::call_menu(&id.name)));
@@ -909,8 +907,8 @@ impl ChatPage {
             self.conv_avatar.set_icon_name(None);
             self.conv_avatar.set_show_initials(true);
             crate::avatars::bind(&self.conv_avatar, &id.name);
-            self.conv_subtitle.set_text(&tr!("Direct conversation"));
         }
+        self.conv_subtitle.set_text(&subtitle(id));
         for m in chat::messages(id) {
             // Pictures and voice messages that didn't come down yet.
             // (Not our own: what we sent and is gone here was moved or
@@ -2233,8 +2231,19 @@ impl ChatPage {
         glib::timeout_add_local_once(std::time::Duration::from_secs(5), move || {
             if page.state.typing_gen.get() == gen {
                 page.conv_subtitle.remove_css_class("typing");
-                page.conv_subtitle.set_text(&if conv.is_group() { tr!("Group") } else { tr!("Direct conversation") });
+                page.conv_subtitle.set_text(&subtitle(&conv));
             }
         });
+    }
+}
+
+/// What the header says under a conversation's name when nobody is typing.
+fn subtitle(conv: &ConvId) -> String {
+    if conv.is_lan() {
+        tr!("On this local network")
+    } else if conv.is_group() {
+        tr!("Group")
+    } else {
+        tr!("Direct conversation")
     }
 }

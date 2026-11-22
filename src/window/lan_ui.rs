@@ -92,7 +92,7 @@ fn fill(list: &gtk4::ListBox, nearby: &[Nearby]) {
     let away: Vec<_> = paired.iter().filter(|p| !nearby.iter().any(|n| n.key == p.key)).collect();
     if nearby.is_empty() && away.is_empty() {
         let empty = gtk4::Label::builder()
-            .label(tr!("No BigLace nearby. The other device needs the local network turned on, on this same network."))
+            .label(tr!("No BigLace nearby. The other device needs the local network turned on, on this same network. Guest Wi-Fi and some routers keep devices apart: use the main network."))
             .wrap(true)
             .margin_top(18)
             .margin_bottom(18)
