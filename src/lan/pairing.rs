@@ -126,7 +126,7 @@ fn settle(s: &mut (impl Read + Write), peer: &Peer, code: String) {
     LISTENERS.send(LanEvent::Code { name: peer.name.clone(), code, answer });
     let ours = answered.recv_timeout(ANSWER_WAIT).unwrap_or(false);
     let paired = handshake::agree(s, ours).unwrap_or(false);
-    if paired && peers::add(peers::Paired { key: peer.key.clone(), name: peer.name.clone(), since: crate::chat::now_ms() / 1000 }).is_ok() {
+    if paired && peers::add(peers::Paired { key: peer.key.clone(), name: peer.name.clone(), since: crate::chat::now_ms() / 1000, forgotten: false }).is_ok() {
         LISTENERS.send(LanEvent::Paired { key: peer.key.clone(), name: peer.name.clone() });
     } else {
         LISTENERS.send(LanEvent::PairFailed { name: peer.name.clone() });

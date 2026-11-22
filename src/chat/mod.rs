@@ -1117,6 +1117,10 @@ fn post_lan(conv: &ConvId, text: &str, file: Option<(Offer, PathBuf)>, extra: Ex
     if file.is_some() {
         return Err(crate::tr!("Files can't go over the local network yet."));
     }
+    #[cfg(target_os = "linux")]
+    if !crate::lan::peers::is_paired(&conv.name) {
+        return Err(crate::trf!("Not paired with {name}", "name" => label(&conv.name)));
+    }
     let me = crate::device_key::public_key().ok_or("no device key")?;
     let wire = Wire {
         id: new_id(),
@@ -1248,6 +1252,15 @@ fn deliver_lan(key: &str, items: &[Pending]) {
     }
     #[cfg(not(target_os = "linux"))]
     let _ = (key, items);
+}
+
+/// A device paired on the local network was forgotten: what waited for it never goes.
+pub fn forget_lan(key: &str) {
+    let node = format!("{LAN_NODE}{key}");
+    if let Ok(mut s) = store().lock() {
+        s.outbox.retain(|p| p.node != node);
+        s.save_outbox();
+    }
 }
 
 /// How a name shows: a device paired on the local network by the name it

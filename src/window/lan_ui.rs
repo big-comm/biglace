@@ -21,7 +21,7 @@ struct State {
 /// Wire the switch and the devices row, and follow the network (once, at startup).
 pub fn wire(win: &libadwaita::ApplicationWindow, toast: &libadwaita::ToastOverlay, sidebar: &super::sidebar::Sidebar, cfg: &Rc<RefCell<config::Config>>) {
     let state: Rc<RefCell<State>> = Rc::default();
-    for paired in crate::lan::peers::list() {
+    for paired in crate::lan::peers::paired() {
         crate::chat::open(&crate::chat::ConvId::lan(&paired.key));
     }
     let on = cfg.borrow().lan_enabled;
@@ -83,12 +83,14 @@ fn start(toast: &libadwaita::ToastOverlay) {
     }
 }
 
-/// The devices nearby, each with a Pair button.
+/// The devices nearby, each with Pair, and the paired ones, each with Forget.
 fn fill(list: &gtk4::ListBox, nearby: &[Nearby]) {
     while let Some(child) = list.first_child() {
         list.remove(&child);
     }
-    if nearby.is_empty() {
+    let paired = crate::lan::peers::paired();
+    let away: Vec<_> = paired.iter().filter(|p| !nearby.iter().any(|n| n.key == p.key)).collect();
+    if nearby.is_empty() && away.is_empty() {
         let empty = gtk4::Label::builder()
             .label(tr!("No BigLace nearby. The other device needs the local network turned on, on this same network."))
             .wrap(true)
@@ -101,10 +103,22 @@ fn fill(list: &gtk4::ListBox, nearby: &[Nearby]) {
         list.append(&empty);
         return;
     }
+    let forget = |row: &libadwaita::ActionRow, key: &str| {
+        let button = gtk4::Button::builder().label(tr!("Forget")).valign(gtk4::Align::Center).build();
+        let (key, list, nearby) = (key.to_string(), list.downgrade(), nearby.to_vec());
+        button.connect_clicked(move |_| {
+            crate::lan::peers::remove(&key);
+            crate::chat::forget_lan(&key);
+            if let Some(list) = list.upgrade() {
+                fill(&list, &nearby);
+            }
+        });
+        row.add_suffix(&button);
+    };
     for device in nearby {
         let row = libadwaita::ActionRow::builder().title(&device.name).subtitle(&device.address).build();
-        if crate::lan::peers::is_paired(&device.key) {
-            row.add_suffix(&gtk4::Label::builder().label(tr!("Paired")).css_classes(["dim-label"]).build());
+        if paired.iter().any(|p| p.key == device.key) {
+            forget(&row, &device.key);
             list.append(&row);
             continue;
         }
@@ -116,6 +130,11 @@ fn fill(list: &gtk4::ListBox, nearby: &[Nearby]) {
             pairing::pair_with(device.clone());
         });
         row.add_suffix(&pair);
+        list.append(&row);
+    }
+    for device in away {
+        let row = libadwaita::ActionRow::builder().title(&device.name).subtitle(tr!("Paired, not nearby")).build();
+        forget(&row, &device.key);
         list.append(&row);
     }
 }

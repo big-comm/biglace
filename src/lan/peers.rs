@@ -12,6 +12,9 @@ pub struct Paired {
     pub name: String,
     /// When we paired, seconds since the epoch.
     pub since: u64,
+    /// Forgotten: kept only for its name in our history; it can only pair again.
+    #[serde(default)]
+    pub forgotten: bool,
 }
 
 pub fn list() -> Vec<Paired> {
@@ -23,7 +26,12 @@ pub fn list() -> Vec<Paired> {
 }
 
 pub fn is_paired(key: &str) -> bool {
-    list().iter().any(|p| p.key == key)
+    list().iter().any(|p| p.key == key && !p.forgotten)
+}
+
+/// The paired devices, without the forgotten ones.
+pub fn paired() -> Vec<Paired> {
+    list().into_iter().filter(|p| !p.forgotten).collect()
 }
 
 /// Remember `paired`, replacing an earlier pairing with the same device.
@@ -32,6 +40,17 @@ pub fn add(paired: Paired) -> std::io::Result<()> {
     all.retain(|p| p.key != paired.key);
     all.push(paired);
     save(&all)
+}
+
+/// Forget a paired device: it can only pair again.
+pub fn remove(key: &str) {
+    let mut all = list();
+    for p in all.iter_mut().filter(|p| p.key == key) {
+        p.forgotten = true;
+    }
+    if let Err(e) = save(&all) {
+        crate::tailscale::dbg(&format!("lan: {FILE} not saved: {e}"));
+    }
 }
 
 fn save(all: &[Paired]) -> std::io::Result<()> {
