@@ -34,6 +34,9 @@ const AUTO_IMAGE_MAX: u64 = 20 << 20;
 const THUMB_SIDE: i32 = 320;
 /// Shared files are served this long after being sent.
 const SHARE_DAYS: u64 = 90;
+/// How long a local network download keeps trying while nothing arrives.
+#[cfg(target_os = "linux")]
+const LAN_PATIENCE: Duration = Duration::from_secs(45);
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Default, Serialize, Deserialize)]
 #[serde(rename_all = "lowercase")]
@@ -566,17 +569,38 @@ fn fetch_over_tailnet(conv: &ConvId, id: &str, message: &super::Message, part: &
     Ok(())
 }
 
-/// Download `part` of message `id` from the device paired on the local network that sent it.
+/// Download `part` of message `id` from the device paired on the local network
+/// that sent it, resuming by itself after a stall or a dropped connection; it
+/// gives up once nothing arrived for [`LAN_PATIENCE`].
 fn lan_fetch(conv: &ConvId, id: &str, part: &Path, size: u64) -> Result<(), String> {
     #[cfg(target_os = "linux")]
     {
-        let have = crate::lan::pairing::fetch_file(&conv.name, id, part, size, &mut |done| {
-            emit(ChatEvent::Progress { conv: conv.clone(), id: id.to_string(), done, total: size });
-        })?;
-        if have != size {
-            return Err(crate::tr!("the transfer was interrupted — try again to resume it"));
+        use crate::lan::pairing::{fetch_file, LanError};
+        let mut moved = Instant::now();
+        loop {
+            let before = std::fs::metadata(part).map_or(0, |m| m.len());
+            let tried = fetch_file(&conv.name, id, part, size, &mut |done| {
+                emit(ChatEvent::Progress { conv: conv.clone(), id: id.to_string(), done, total: size });
+            });
+            let reason = match tried {
+                Ok(have) if have == size => return Ok(()),
+                Ok(have) if have > before => {
+                    moved = Instant::now();
+                    continue;
+                }
+                Ok(_) => crate::tr!("the transfer was interrupted — try again to resume it"),
+                Err(LanError::Refused(e)) => return Err(share_error_text(e)),
+                Err(LanError::Off) => return Err(crate::tr!("the local network is off")),
+                Err(LanError::Unreachable) => crate::trf!(
+                    "{name} can't be reached on the local network — try again when it's nearby",
+                    "name" => super::label(&conv.name)
+                ),
+            };
+            if moved.elapsed() >= LAN_PATIENCE {
+                return Err(reason);
+            }
+            std::thread::sleep(Duration::from_secs(1));
         }
-        Ok(())
     }
     #[cfg(not(target_os = "linux"))]
     {

@@ -19,6 +19,8 @@ use crate::remote::{read_frame, write_frame, Kind};
 const ANSWER_WAIT: Duration = Duration::from_secs(120);
 /// Reads on the network give up after this, so a silent peer can't hold a thread.
 const READ_WAIT: Duration = Duration::from_secs(30);
+/// A file transfer silent this long is given up, to be resumed on a fresh connection.
+const STALL: Duration = Duration::from_secs(10);
 
 #[derive(Clone)]
 pub enum LanEvent {
@@ -148,6 +150,8 @@ fn incoming(tcp: TcpStream, server: &tls::Server) {
         },
         Purpose::Talk => {
             peers::seen_at(&peer.key, &address);
+            let _ = s.get_ref().set_read_timeout(Some(READ_WAIT));
+            let _ = s.get_ref().set_write_timeout(Some(STALL));
             talk(&mut s, &peer);
         }
     }
@@ -209,39 +213,60 @@ fn send_file(s: &mut (impl Read + Write), who: &str, ask: &FileAsk) {
     }
 }
 
+/// Why a paired device wasn't reached, or wouldn't send a file.
+pub(crate) enum LanError {
+    /// The local network is off here.
+    Off,
+    /// The device is out of reach, or isn't the paired one.
+    Unreachable,
+    /// It answered that it won't send the file.
+    Refused(crate::chat::files::ShareError),
+}
+
 /// Fetch (the rest of) file `id` from the paired device `key` into `part`,
-/// which holds `size` once whole: how many bytes it holds now.
-pub fn fetch_file(key: &str, id: &str, part: &std::path::Path, size: u64, progress: &mut dyn FnMut(u64)) -> Result<u64, String> {
+/// which holds `size` once whole: how many bytes it holds now, also when
+/// the transfer broke off (another call resumes it).
+pub(crate) fn fetch_file(key: &str, id: &str, part: &std::path::Path, size: u64, progress: &mut dyn FnMut(u64)) -> Result<u64, LanError> {
+    use crate::chat::files::ShareError;
     let have = std::fs::metadata(part).map(|m| m.len()).unwrap_or(0).min(size);
     let mut s = talk_to(key)?;
-    handshake::send(&mut s, &FileAsk { file: id.to_string(), offset: have }).map_err(|e| e.to_string())?;
-    let answer: FileAnswer = handshake::recv(&mut s).map_err(|e| e.to_string())?;
+    let _ = s.get_ref().set_read_timeout(Some(STALL));
+    handshake::send(&mut s, &FileAsk { file: id.to_string(), offset: have }).map_err(|_| LanError::Unreachable)?;
+    let answer: FileAnswer = handshake::recv(&mut s).map_err(|_| LanError::Unreachable)?;
     match (answer.size, answer.error.as_deref()) {
-        (Some(left), None) if have + left == size => crate::chat::files::append_part(&mut s, part, have, size, progress),
-        (_, Some(GONE)) => Err(crate::chat::files::share_error_text(crate::chat::files::ShareError::Gone)),
-        _ => Err(crate::chat::files::share_error_text(crate::chat::files::ShareError::Missing)),
+        (Some(left), None) if have + left == size => Ok(crate::chat::files::append_part(&mut s, part, have, size, progress)
+            .unwrap_or_else(|_| std::fs::metadata(part).map(|m| m.len()).unwrap_or(have))),
+        (_, Some(GONE)) => Err(LanError::Refused(ShareError::Gone)),
+        _ => Err(LanError::Refused(ShareError::Missing)),
     }
 }
 
-/// A proven TLS connection to the paired device `key`, at its announced or remembered address.
-fn talk_to(key: &str) -> Result<openssl::ssl::SslStream<TcpStream>, String> {
-    let me = current().ok_or("the local network is off")?;
-    let found = nearby().lock().ok().and_then(|n| n.iter().find(|d| d.key == key).map(|d| (d.address.clone(), d.port)));
-    let remembered = || peers::list().into_iter().find(|p| p.key == key).and_then(|p| p.address).map(|a| (a, super::PORT));
-    let (address, port) = found.or_else(remembered).ok_or("not nearby")?;
-    let addr: SocketAddr = format!("{address}:{port}").parse().map_err(|_| "bad address")?;
-    let mut s = connect(addr).ok_or("unreachable")?;
-    let fingerprint = tls::peer_fingerprint(&s).map_err(|e| e.to_string())?;
-    handshake::client(&mut s, &fingerprint, &me.key, &me.name, Purpose::Talk, Some(key)).map_err(|e| e.to_string())?;
-    Ok(s)
+/// A proven TLS connection to the paired device `key`, at its announced
+/// address or, failing that, where it was last.
+fn talk_to(key: &str) -> Result<openssl::ssl::SslStream<TcpStream>, LanError> {
+    let me = current().ok_or(LanError::Off)?;
+    let found = nearby().lock().ok().and_then(|n| n.iter().find(|d| d.key == key).map(|d| format!("{}:{}", d.address, d.port)));
+    let remembered = peers::list().into_iter().find(|p| p.key == key).and_then(|p| p.address).map(|a| format!("{a}:{}", super::PORT));
+    let mut places: Vec<String> = found.into_iter().chain(remembered).collect();
+    places.dedup();
+    for place in places {
+        let Ok(addr) = place.parse::<SocketAddr>() else { continue };
+        let Some(mut s) = connect(addr) else { continue };
+        let Ok(fingerprint) = tls::peer_fingerprint(&s) else { continue };
+        if handshake::client(&mut s, &fingerprint, &me.key, &me.name, Purpose::Talk, Some(key)).is_ok() {
+            return Ok(s);
+        }
+    }
+    Err(LanError::Unreachable)
 }
 
 /// Send `payloads` (chat wires) to the paired device `key`, if it's nearby;
 /// the ids it acknowledged.
-pub fn deliver(key: &str, payloads: &[Vec<u8>]) -> Result<HashSet<String>, String> {
+pub(crate) fn deliver(key: &str, payloads: &[Vec<u8>]) -> Result<HashSet<String>, LanError> {
     let mut s = talk_to(key)?;
+    let _ = s.get_ref().set_read_timeout(Some(READ_WAIT));
     for payload in payloads {
-        write_frame(&mut s, Kind::Chat, payload).map_err(|e| e.to_string())?;
+        write_frame(&mut s, Kind::Chat, payload).map_err(|_| LanError::Unreachable)?;
     }
     let mut acked = HashSet::new();
     while acked.len() < payloads.len() {

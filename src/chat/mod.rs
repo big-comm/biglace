@@ -1459,67 +1459,81 @@ fn deliver_pending() {
     for p in outbox {
         by_node.entry(p.node.clone()).or_default().push(p);
     }
-    for (node, items) in by_node {
-        if let Some(key) = node.strip_prefix(LAN_NODE) {
-            deliver_lan(key, &items);
-            continue;
+    // Each device on its own thread: one out of reach doesn't hold up the others.
+    std::thread::scope(|scope| {
+        for (node, items) in by_node {
+            let peers = &peers;
+            scope.spawn(move || deliver_node(&node, items, peers));
         }
-        let Some(peer) = peers.iter().find(|p| p.id == node) else {
-            // That device left the network: nothing will ever reach it.
-            if !peers.is_empty() {
-                drop_pending(&items);
-            }
-            continue;
-        };
-        if !peer.online || peer.ipv4.is_empty() {
-            continue;
+    });
+}
+
+/// Send what waits for the device `node` to it, if it's reachable.
+fn deliver_node(node: &str, items: Vec<Pending>, peers: &[tailscale::Peer]) {
+    if let Some(key) = node.strip_prefix(LAN_NODE) {
+        deliver_lan(key, &items);
+        return;
+    }
+    let Some(peer) = peers.iter().find(|p| p.id == node) else {
+        // That device left the network: nothing will ever reach it.
+        if !peers.is_empty() {
+            drop_pending(&items);
         }
-        // A device that doesn't take reads would refuse them for ever: it
-        // doesn't hear them.
-        // Nor what was passed on, which it would show as ours.
-        let (unheard, items): (Vec<Pending>, Vec<Pending>) = items.into_iter().partition(|p| {
-            (matches!(p.wire.op, Some(Op::Read { .. })) && !crate::agent::client::supports(&peer.ipv4, READ_CAPABILITY))
-                || (p.wire.relayed.is_some() && !crate::agent::client::supports(&peer.ipv4, RELAY_CAPABILITY))
-        });
-        drop_pending(&unheard);
-        // Older versions: ops become their plain-text stand-in; those with
-        // nothing to say (a reaction taken back, typing) are skipped.
-        let items: Vec<Pending> = if items.iter().any(|p| p.wire.op.is_some()) && !understands_ops(&peer.ipv4) {
-            let (silent, rest): (Vec<Pending>, Vec<Pending>) = items.into_iter().partition(|p| {
-                matches!(p.wire.op, Some(Op::React { on: false, .. } | Op::Typing | Op::Call { .. } | Op::Send { .. }))
-            });
-            drop_pending(&silent);
-            rest.into_iter()
-                .map(|mut p| {
-                    p.wire.op = None;
-                    p
-                })
-                .collect()
-        } else {
-            items
-        };
-        if items.is_empty() {
-            continue;
-        }
-        match deliver_to(&peer.ipv4, &items) {
-            Ok(acked) => {
-                let mut changed = HashSet::new();
-                if let Ok(mut s) = store().lock() {
-                    for p in items.iter().filter(|p| acked.contains(&p.wire.id)) {
-                        s.outbox.retain(|x| !(x.node == p.node && x.wire.id == p.wire.id));
-                        let me = my_user().unwrap_or_default();
-                        if p.to_user != me && s.delivered(&p.wire.conv, &p.wire.id, &p.to_user) {
-                            changed.insert(p.wire.conv.clone());
-                        }
+        return;
+    };
+    if !peer.online || peer.ipv4.is_empty() {
+        return;
+    }
+    let items = heard_by(&peer.ipv4, items);
+    if items.is_empty() {
+        return;
+    }
+    match deliver_to(&peer.ipv4, &items) {
+        Ok(acked) => {
+            let mut changed = HashSet::new();
+            if let Ok(mut s) = store().lock() {
+                for p in items.iter().filter(|p| acked.contains(&p.wire.id)) {
+                    s.outbox.retain(|x| !(x.node == p.node && x.wire.id == p.wire.id));
+                    let me = my_user().unwrap_or_default();
+                    if p.to_user != me && s.delivered(&p.wire.conv, &p.wire.id, &p.to_user) {
+                        changed.insert(p.wire.conv.clone());
                     }
-                    s.save_outbox();
                 }
-                for c in changed {
-                    emit(ChatEvent::Changed(c));
-                }
+                s.save_outbox();
             }
-            Err(e) => tailscale::dbg(&format!("chat: {} unreachable: {e}", peer.hostname)),
+            for c in changed {
+                emit(ChatEvent::Changed(c));
+            }
         }
+        Err(e) => tailscale::dbg(&format!("chat: {} unreachable: {e}", peer.hostname)),
+    }
+}
+
+/// What of `items` the device at `ip` hears; the rest leaves the outbox.
+fn heard_by(ip: &str, items: Vec<Pending>) -> Vec<Pending> {
+    // A device that doesn't take reads would refuse them for ever: it
+    // doesn't hear them.
+    // Nor what was passed on, which it would show as ours.
+    let (unheard, items): (Vec<Pending>, Vec<Pending>) = items.into_iter().partition(|p| {
+        (matches!(p.wire.op, Some(Op::Read { .. })) && !crate::agent::client::supports(ip, READ_CAPABILITY))
+            || (p.wire.relayed.is_some() && !crate::agent::client::supports(ip, RELAY_CAPABILITY))
+    });
+    drop_pending(&unheard);
+    // Older versions: ops become their plain-text stand-in; those with
+    // nothing to say (a reaction taken back, typing) are skipped.
+    if items.iter().any(|p| p.wire.op.is_some()) && !understands_ops(ip) {
+        let (silent, rest): (Vec<Pending>, Vec<Pending>) = items.into_iter().partition(|p| {
+            matches!(p.wire.op, Some(Op::React { on: false, .. } | Op::Typing | Op::Call { .. } | Op::Send { .. }))
+        });
+        drop_pending(&silent);
+        rest.into_iter()
+            .map(|mut p| {
+                p.wire.op = None;
+                p
+            })
+            .collect()
+    } else {
+        items
     }
 }
 
