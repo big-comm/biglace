@@ -189,6 +189,9 @@ pub enum Op {
         #[serde(default, skip_serializing_if = "Vec::is_empty")]
         items: Vec<crate::transfer::Item>,
     },
+    /// Read on another of our own devices, up to the message written at
+    /// `at` (milliseconds); only between our devices, not kept.
+    Read { at: u64 },
 }
 
 /// One emoji (or a short sequence of them) as a reaction.
@@ -259,6 +262,8 @@ pub enum ChatEvent {
     TransferFailed { conv: ConvId, id: String, reason: String },
     /// Someone is typing in this conversation.
     Typing { conv: ConvId, user: String },
+    /// Read on another of our devices: its notification goes.
+    ReadElsewhere(ConvId),
 }
 
 /// The history and the outbox, on disk under `dir`.
@@ -369,6 +374,20 @@ impl Store {
     }
 
     /// `sender` did `op` in `conv`. True when something changed.
+    /// Read up to `at` on another of our devices: what came later stays
+    /// unread. True when that changed the count.
+    fn read_until(&mut self, conv: &ConvId, at: u64) -> bool {
+        let Some(c) = self.convs.get_mut(conv) else { return false };
+        let later = c.messages.iter().filter(|m| !m.mine && m.at > at).count();
+        let unread = u32::try_from(later).unwrap_or(u32::MAX).min(c.unread);
+        if unread == c.unread {
+            return false;
+        }
+        c.unread = unread;
+        self.save(conv);
+        true
+    }
+
     fn apply_op(&mut self, conv: &ConvId, sender: &str, op: &Op) -> bool {
         let Some(c) = self.convs.get_mut(conv) else { return false };
         let find = |c: &mut Conversation, id: &str| c.messages.iter().position(|m| m.id == id);
@@ -425,7 +444,7 @@ impl Store {
                 c.pinned = target.clone();
                 true
             }
-            Op::Typing | Op::Call { .. } | Op::Send { .. } => false,
+            Op::Typing | Op::Call { .. } | Op::Send { .. } | Op::Read { .. } => false,
         };
         if changed {
             self.save(conv);
@@ -761,16 +780,52 @@ pub fn messages(id: &ConvId) -> Vec<Message> {
     store().lock().ok().and_then(|s| s.convs.get(id).map(|c| c.messages.clone())).unwrap_or_default()
 }
 
-/// The conversation is on screen: nothing unread in it anymore.
+/// The conversation is on screen: nothing unread in it anymore, here and
+/// (once they hear it) on our other devices.
 pub fn mark_read(id: &ConvId) {
+    let mut read_up_to = None;
     if let Ok(mut s) = store().lock() {
         if let Some(c) = s.convs.get_mut(id) {
             if c.unread > 0 {
                 c.unread = 0;
+                read_up_to = c.messages.iter().filter(|m| !m.mine).map(|m| m.at).max();
                 s.save(id);
             }
         }
     }
+    if let Some(at) = read_up_to {
+        // Off the caller's thread: finding who we are may ask tailscale.
+        let id = id.clone();
+        let _ = std::thread::Builder::new().name("biglace-read".into()).spawn(move || post_own(&id, Op::Read { at }));
+    }
+}
+
+/// Queue `op` in `conv` for our own other devices alone.
+fn post_own(conv: &ConvId, op: Op) {
+    let Some(me) = me(Duration::from_secs(300)) else { return };
+    let wire = Wire {
+        id: new_id(),
+        conv: conv.clone(),
+        text: String::new(),
+        at: now_ms(),
+        file: None,
+        reply_to: None,
+        forwarded_from: None,
+        op: Some(op),
+    };
+    let pending: Vec<Pending> = tailscale::get_peers()
+        .iter()
+        .filter(|p| p.user == me.user && !p.id.is_empty())
+        .map(|p| Pending { wire: wire.clone(), to_user: p.user.clone(), node: p.id.clone() })
+        .collect();
+    if pending.is_empty() {
+        return;
+    }
+    if let Ok(mut s) = store().lock() {
+        s.outbox.extend(pending);
+        s.save_outbox();
+    }
+    kick();
 }
 
 pub fn unread_total() -> u32 {
@@ -1132,6 +1187,8 @@ pub fn typing(conv: &ConvId) {
 
 /// Announced by versions that understand ops (reactions, edits…).
 pub const OPS_CAPABILITY: &str = "chat2";
+/// Announced by versions that take [`Op::Read`] from our other devices.
+pub const READ_CAPABILITY: &str = "read-sync";
 
 fn understands_ops(ip: &str) -> bool {
     crate::agent::client::supports(ip, OPS_CAPABILITY)
@@ -1185,6 +1242,12 @@ fn deliver_pending() {
         if !peer.online || peer.ipv4.is_empty() {
             continue;
         }
+        // A device that doesn't take reads would refuse them for ever: it
+        // doesn't hear them.
+        let (unheard, items): (Vec<Pending>, Vec<Pending>) = items.into_iter().partition(|p| {
+            matches!(p.wire.op, Some(Op::Read { .. })) && !crate::agent::client::supports(&peer.ipv4, READ_CAPABILITY)
+        });
+        drop_pending(&unheard);
         // Older versions: ops become their plain-text stand-in; those with
         // nothing to say (a reaction taken back, typing) are skipped.
         let items: Vec<Pending> = if items.iter().any(|p| p.wire.op.is_some()) && !understands_ops(&peer.ipv4) {
@@ -1356,6 +1419,10 @@ pub fn accept(stream: TcpStream, peer: IpAddr, headers: &HashMap<String, String>
             } else if let Op::Send { send, action, items } = op {
                 if !conv.is_group() && conv.name == sender {
                     crate::transfer::received(&sender, &identity.device, &peer.to_string(), send, *action, items);
+                }
+            } else if let Op::Read { at } = op {
+                if sender == me.user && store().lock().map(|mut s| s.read_until(conv, *at)).unwrap_or(false) {
+                    emit(ChatEvent::ReadElsewhere(conv.clone()));
                 }
             } else if store().lock().map(|mut s| s.apply_op(conv, &sender, op)).unwrap_or(false) {
                 emit(ChatEvent::Changed(conv.clone()));
@@ -1608,5 +1675,47 @@ mod tests {
         let mode = std::fs::metadata(dir.join("dm-bruna.json")).unwrap().permissions().mode();
         assert_eq!(mode & 0o777, 0o600);
         let _ = std::fs::remove_dir_all(&dir);
+    }
+
+    #[test]
+    fn read_elsewhere_keeps_later_unread() {
+        let dir = std::env::temp_dir().join(format!("biglace-chat-test-{}", new_id()));
+        let conv = ConvId::direct("bruna");
+        let mut s = Store::open(&dir);
+        for (id, at) in [("a", 10), ("b", 20), ("c", 30)] {
+            let mut w = wire(conv.clone());
+            w.id = id.into();
+            let m = Message {
+                id: id.into(),
+                from: "bruna".into(),
+                device: "nb".into(),
+                text: w.text,
+                at,
+                mine: false,
+                delivered: vec![],
+                file: None,
+                reply_to: None,
+                forwarded_from: None,
+                reactions: BTreeMap::new(),
+                edited_at: 0,
+                deleted: false,
+                call: None,
+            };
+            assert!(s.add(&conv, m, true));
+        }
+        assert!(s.read_until(&conv, 20), "read up to b on the phone: c, later, stays unread");
+        assert_eq!(s.convs[&conv].unread, 1);
+        assert!(!s.read_until(&conv, 20), "nothing new");
+        assert!(!s.read_until(&conv, 5), "an older read never adds unread messages back");
+        assert!(!s.read_until(&ConvId::direct("nobody"), 30));
+        assert_eq!(Store::open(&dir).convs[&conv].unread, 1, "saved");
+        let _ = std::fs::remove_dir_all(&dir);
+    }
+
+    /// The read step as the phone app reads and writes it.
+    #[test]
+    fn read_step_matches_phone_wire() {
+        let json = serde_json::to_value(Op::Read { at: 1_700_000_000_123 }).unwrap();
+        assert_eq!(json, serde_json::json!({"type": "read", "at": 1_700_000_000_123_u64}));
     }
 }

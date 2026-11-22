@@ -1002,6 +1002,16 @@ impl ChatPage {
                 }
             }
             ChatEvent::Typing { conv, user } => self.show_typing(&conv, &user),
+            ChatEvent::ReadElsewhere(conv) => {
+                if let Some(app) = self.win.application() {
+                    app.withdraw_notification(&notification_id(&conv));
+                }
+                if self.state.visible.get() {
+                    self.refresh_list();
+                } else {
+                    self.update_badge();
+                }
+            }
             ChatEvent::Incoming { conv, message } => {
                 let looking = self.state.visible.get()
                     && self.win.is_active()
