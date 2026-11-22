@@ -1,6 +1,6 @@
 [package]
 name = "biglace"
-version = "1.67.0"
+version = "1.68.0"
 edition = "2021"
 authors = ["BigCommunity"]
 description = "Mesh VPN client with a graphical interface for Headscale/Tailscale"
@@ -58,6 +58,9 @@ tikv-jemallocator = { version = "0.6", default-features = false, features = ["ba
 # Native OS credential storage. Per-target features avoid pulling in the
 # wrong backend on cross-compiles (e.g. don't drag D-Bus into a Windows build).
 [target.'cfg(target_os = "linux")'.dependencies]
+# Local network without a server (crate::lan): a certificate made at each
+# start for TLS. Already in the build through native-tls.
+openssl = "0.10"
 keyring = { version = "3", default-features = false, features = ["sync-secret-service", "crypto-rust"] }
 # StatusNotifierItem (KDE/freedesktop tray spec, also honored by GNOME via the
 # AppIndicator extension). `async-io` picks the lighter zbus backend; `blocking`

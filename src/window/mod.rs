@@ -21,6 +21,8 @@ mod rooms;
 mod sidebar;
 mod transfer_ui;
 mod clipboard_ui;
+#[cfg(target_os = "linux")]
+mod lan_ui;
 mod style;
 
 use gtk4::{glib, prelude::*};
@@ -507,6 +509,8 @@ pub fn build(app: &libadwaita::Application, start_hidden: bool) {
     phone_link::wire(&ctx.ui.win, &ctx.ui.toast, ctx.refresh_tx.clone());
     transfer_ui::wire(&ctx.ui.win);
     clipboard_ui::wire(&ctx.ui.win, &ctx.ui.toast, &ctx.ui.sidebar, &ctx.cfg);
+    #[cfg(target_os = "linux")]
+    lan_ui::wire(&ctx.ui.win, &ctx.ui.toast, &ctx.ui.sidebar, &ctx.cfg);
     setup_close_to_tray(&ctx, tray_active);
 
     // Two main-loop tasks drive the refresh cycle:

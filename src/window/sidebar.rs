@@ -32,6 +32,9 @@ pub struct Sidebar {
     pub switch_clipboard: gtk4::Switch,
     pub gnome_clipboard_row: libadwaita::ActionRow,
     pub btn_gnome_extension: gtk4::Button,
+    pub switch_lan: gtk4::Switch,
+    /// "Devices nearby", while the local network is on.
+    pub lan_devices_row: libadwaita::ActionRow,
     pub btn_connect: gtk4::Button,
     /// Unread messages, on the Chat row (hidden at zero).
     pub chat_badge: gtk4::Label,
@@ -435,6 +438,26 @@ pub fn build() -> Sidebar {
     gnome_clipboard_row.add_suffix(&btn_gnome_extension);
     grp_prefs.add(&gnome_clipboard_row);
 
+    let lan_row = libadwaita::ActionRow::builder()
+        .title(tr!("Local network without a server"))
+        .subtitle(tr!("Pair with devices on this network and talk to them directly"))
+        .build();
+    let lan_icon = gtk4::Image::from_icon_name("network-wired-symbolic");
+    lan_icon.set_pixel_size(20);
+    lan_row.add_prefix(&lan_icon);
+    let switch_lan = gtk4::Switch::builder().valign(gtk4::Align::Center).tooltip_text(tr!("Toggle the local network")).build();
+    lan_row.add_suffix(&switch_lan);
+    lan_row.set_activatable_widget(Some(&switch_lan));
+    grp_prefs.add(&lan_row);
+    let lan_devices_row = libadwaita::ActionRow::builder()
+        .title(tr!("Devices nearby"))
+        .subtitle(tr!("Pair a device on this network"))
+        .activatable(true)
+        .visible(false)
+        .build();
+    lan_devices_row.add_suffix(&gtk4::Image::from_icon_name("go-next-symbolic"));
+    grp_prefs.add(&lan_devices_row);
+
     // ── Connect / Disconnect button ──
     let btn_connect = gtk4::Button::builder()
         .label(tr!("Connect"))
@@ -495,6 +518,8 @@ pub fn build() -> Sidebar {
         switch_clipboard,
         gnome_clipboard_row,
         btn_gnome_extension,
+        switch_lan,
+        lan_devices_row,
         btn_connect,
         chat_badge,
         avatar,

@@ -97,6 +97,9 @@ pub enum Kind {
     /// Phone ↔ its owner's computers (JSON): battery, calls, links,
     /// notifications and replies (see `crate::link`).
     Link = 18,
+    /// Local network, no server (JSON): proving device keys and pairing
+    /// (see `crate::lan`).
+    Lan = 19,
 }
 
 /// Announced by hosts that can fit their resolution to the viewer's window.
@@ -134,6 +137,7 @@ impl Kind {
             16 => Some(Self::Resize),
             17 => Some(Self::CamVideo),
             18 => Some(Self::Link),
+            19 => Some(Self::Lan),
             _ => None,
         }
     }

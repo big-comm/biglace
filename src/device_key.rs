@@ -68,6 +68,11 @@ fn key() -> Option<SigningKey> {
     guard.clone()
 }
 
+/// This installation's key, for protocols that sign their own messages (see `crate::lan`).
+pub(crate) fn signing_key() -> Option<SigningKey> {
+    key()
+}
+
 /// Public key, base64url (43 chars), sent when enrolling so the panel can
 /// pin it to the new device.
 pub fn public_key() -> Option<String> {
@@ -89,7 +94,7 @@ pub fn proof_message(challenge: &str) -> String {
     format!("biglace-proof-v1\n{challenge}")
 }
 
-fn hex(bytes: &[u8]) -> String {
+pub(crate) fn hex(bytes: &[u8]) -> String {
     bytes.iter().map(|b| format!("{b:02x}")).collect()
 }
 

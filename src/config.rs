@@ -70,6 +70,10 @@ pub struct Config {
     /// then it is on or off as the person leaves it.
     #[serde(default)]
     pub gnome_extension_turned_on: bool,
+    /// Announce us and talk to paired devices on the local network, with
+    /// no server (off until the person turns it on: it shows us to the network).
+    #[serde(default)]
+    pub lan_enabled: bool,
 
     /// Per-peer SSH login overrides, keyed by hostname. Takes precedence over
     /// the `os_user` propagated by the panel (Option D), which itself falls

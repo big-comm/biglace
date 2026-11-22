@@ -8,6 +8,7 @@
 //! - `config`: this device's settings and identity on the network.
 //! - `device_key`: the key proving to the panel that a request comes from this device.
 //! - `i18n`: gettext translation.
+//! - `lan`: the local network without a server: pairing by code, then TLS between paired devices.
 //! - `invite`, `panel`: joining a network and talking to the BigScale panel.
 //! - `launchers`: the terminal, file manager and log viewer this app spawns.
 //! - `link`: our phones' connection (battery, calls, links, notifications).
@@ -34,6 +35,8 @@ mod config;
 mod device_key;
 mod i18n;
 mod invite;
+#[cfg(target_os = "linux")]
+mod lan;
 mod launchers;
 mod link;
 mod panel;
@@ -80,7 +83,7 @@ pub static MALLOC_CONF: &[u8] = b"background_thread:true,dirty_decay_ms:1000,muz
 /// creates (feat → minor, fix/perf/docs/… → patch, breaking → major) by
 /// rewriting this assignment. Reading it from `CARGO_PKG_VERSION` hid it from
 /// gitrepo, which is how the version sat at 1.0.0 through dozens of releases.
-pub const APP_VERSION: &str = "1.67.0";
+pub const APP_VERSION: &str = "1.68.0";
 pub const APP_ID: &str = "org.communitybig.biglace";
 
 /// Date-based build stamp (`YY.MM.DD-HHMM`) — the scheme the GitHub release
