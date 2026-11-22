@@ -229,6 +229,16 @@ struct Wire {
     /// versions show instead ("reacted with ❤️"…).
     #[serde(default, skip_serializing_if = "Option::is_none")]
     op: Option<Op>,
+    /// Passed on by one of the recipient's own devices: who wrote it, from
+    /// which device. Taken only from a device of our own account.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    relayed: Option<Relayed>,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+struct Relayed {
+    from: String,
+    device: String,
 }
 
 /// A message waiting to reach one device.
@@ -812,12 +822,32 @@ fn post_own(conv: &ConvId, op: Op) {
         reply_to: None,
         forwarded_from: None,
         op: Some(op),
+        relayed: None,
     };
-    let pending: Vec<Pending> = tailscale::get_peers()
+    queue(&wire, &[], &me.user, true);
+}
+
+/// Who `conv` goes to besides us; `None` for a group we're not in.
+fn recipients(conv: &ConvId, me: &Me) -> Option<Vec<String>> {
+    if conv.is_group() {
+        Some(me.groups.get(&conv.name)?.iter().filter(|u| **u != me.user).cloned().collect())
+    } else {
+        Some(vec![conv.name.clone()])
+    }
+}
+
+/// `wire` for every device of `users`, and for our own other devices when `ours`.
+fn pending_for(wire: &Wire, users: &[String], me: &str, ours: bool) -> Vec<Pending> {
+    tailscale::get_peers()
         .iter()
-        .filter(|p| p.user == me.user && !p.id.is_empty())
+        .filter(|p| !p.user.is_empty() && !p.id.is_empty() && (users.contains(&p.user) || (ours && p.user == me)))
         .map(|p| Pending { wire: wire.clone(), to_user: p.user.clone(), node: p.id.clone() })
-        .collect();
+        .collect()
+}
+
+/// Put `wire` in the outbox for `users` (and our own devices when `ours`).
+fn queue(wire: &Wire, users: &[String], me: &str, ours: bool) {
+    let pending = pending_for(wire, users, me, ours);
     if pending.is_empty() {
         return;
     }
@@ -826,6 +856,32 @@ fn post_own(conv: &ConvId, op: Op) {
         s.save_outbox();
     }
     kick();
+}
+
+/// Pass on what reached us, in case its writer's device has gone quiet: our
+/// own words to the conversation's people, someone else's to our devices.
+fn pass_on(wire: &Wire, conv: &ConvId, author: &str, device: &str, me: &Me) {
+    if wire.relayed.is_some() || matches!(wire.op, Some(Op::Typing | Op::Call { .. } | Op::Send { .. } | Op::Read { .. })) {
+        return;
+    }
+    if author == me.user {
+        if let Some(users) = recipients(conv, me) {
+            queue(wire, &users, &me.user, false);
+        }
+    } else {
+        let mut on = wire.clone();
+        on.relayed = Some(Relayed { from: author.to_string(), device: device.to_string() });
+        queue(&on, &[], &me.user, true);
+    }
+}
+
+/// Who wrote `wire`: the caller, or, when one of our own devices passes on
+/// someone else's message, the author it names.
+fn author_of(wire: &Wire, caller: &str, caller_device: &str, me: &str) -> (String, String) {
+    match &wire.relayed {
+        Some(r) if caller == me && r.from != me && name_ok(&r.from) && r.device.len() <= 64 => (r.from.clone(), r.device.clone()),
+        _ => (caller.to_string(), caller_device.to_string()),
+    }
 }
 
 pub fn unread_total() -> u32 {
@@ -952,6 +1008,7 @@ pub(crate) fn send_op_now(ip: &str, user: &str, op: Op) -> Result<(), String> {
         reply_to: None,
         forwarded_from: None,
         op: Some(op),
+        relayed: None,
     };
     let id = wire.id.clone();
     let acked = deliver_to(ip, &[Pending { wire, to_user: user.to_string(), node: String::new() }])?;
@@ -984,17 +1041,7 @@ fn post_with(conv: &ConvId, text: &str, file: Option<(Offer, PathBuf)>, extra: E
         return Err(crate::tr!("message too long"));
     }
     let me = me(Duration::from_secs(300)).ok_or_else(|| crate::tr!("not signed in to a BigScale network"))?;
-    let recipients: Vec<String> = if conv.is_group() {
-        me.groups
-            .get(&conv.name)
-            .ok_or_else(|| crate::tr!("you are not in that group"))?
-            .iter()
-            .filter(|u| **u != me.user)
-            .cloned()
-            .collect()
-    } else {
-        vec![conv.name.clone()]
-    };
+    let recipients = recipients(conv, &me).ok_or_else(|| crate::tr!("you are not in that group"))?;
     let wire = Wire {
         id: new_id(),
         conv: conv.clone(),
@@ -1004,6 +1051,7 @@ fn post_with(conv: &ConvId, text: &str, file: Option<(Offer, PathBuf)>, extra: E
         reply_to: extra.reply_to.clone(),
         forwarded_from: extra.forwarded_from.clone(),
         op: extra.op.clone(),
+        relayed: None,
     };
     let device = tailscale::get_status().hostname.unwrap_or_default();
     let message = Message {
@@ -1031,16 +1079,7 @@ fn post_with(conv: &ConvId, text: &str, file: Option<(Offer, PathBuf)>, extra: E
         files::share(&wire.id, path, o.size, &recipients);
     }
     // Every device of every recipient, and our own other devices.
-    let peers = tailscale::get_peers();
-    let mut pending = Vec::new();
-    for p in &peers {
-        if p.user.is_empty() || p.id.is_empty() {
-            continue;
-        }
-        if recipients.contains(&p.user) || p.user == me.user {
-            pending.push(Pending { wire: wire.clone(), to_user: p.user.clone(), node: p.id.clone() });
-        }
-    }
+    let pending = pending_for(&wire, &recipients, &me.user, true);
     if let Ok(mut s) = store().lock() {
         // An op changes what's here; a message is added.
         match &extra.op {
@@ -1160,11 +1199,7 @@ pub fn typing(conv: &ConvId) {
     let conv = conv.clone();
     let _ = std::thread::Builder::new().name("biglace-typing".into()).spawn(move || {
         let Some(me) = me(Duration::from_secs(300)) else { return };
-        let recipients: Vec<String> = if conv.is_group() {
-            me.groups.get(&conv.name).cloned().unwrap_or_default().into_iter().filter(|u| *u != me.user).collect()
-        } else {
-            vec![conv.name.clone()]
-        };
+        let recipients = recipients(&conv, &me).unwrap_or_default();
         let wire = Wire {
             id: new_id(),
             conv: conv.clone(),
@@ -1174,6 +1209,7 @@ pub fn typing(conv: &ConvId) {
             reply_to: None,
             forwarded_from: None,
             op: Some(Op::Typing),
+            relayed: None,
         };
         for p in tailscale::get_peers() {
             if !p.online || p.ipv4.is_empty() || !recipients.contains(&p.user) || !understands_ops(&p.ipv4) {
@@ -1189,6 +1225,8 @@ pub fn typing(conv: &ConvId) {
 pub const OPS_CAPABILITY: &str = "chat2";
 /// Announced by versions that take [`Op::Read`] from our other devices.
 pub const READ_CAPABILITY: &str = "read-sync";
+/// Announced by versions that take messages our other devices pass on (see `pass_on`).
+pub const RELAY_CAPABILITY: &str = "relay";
 
 fn understands_ops(ip: &str) -> bool {
     crate::agent::client::supports(ip, OPS_CAPABILITY)
@@ -1244,8 +1282,10 @@ fn deliver_pending() {
         }
         // A device that doesn't take reads would refuse them for ever: it
         // doesn't hear them.
+        // Nor what was passed on, which it would show as ours.
         let (unheard, items): (Vec<Pending>, Vec<Pending>) = items.into_iter().partition(|p| {
-            matches!(p.wire.op, Some(Op::Read { .. })) && !crate::agent::client::supports(&peer.ipv4, READ_CAPABILITY)
+            (matches!(p.wire.op, Some(Op::Read { .. })) && !crate::agent::client::supports(&peer.ipv4, READ_CAPABILITY))
+                || (p.wire.relayed.is_some() && !crate::agent::client::supports(&peer.ipv4, RELAY_CAPABILITY))
         });
         drop_pending(&unheard);
         // Older versions: ops become their plain-text stand-in; those with
@@ -1393,13 +1433,14 @@ pub fn accept(stream: TcpStream, peer: IpAddr, headers: &HashMap<String, String>
     let Ok(read_half) = stream.try_clone() else { return };
     let mut reader = BufReader::new(read_half);
     let mut writer = stream;
-    let sender = identity.login.clone();
+    let caller = identity.login.clone();
     let mut refreshed = false;
     while let Ok((Kind::Chat, payload)) = read_frame(&mut reader) {
         let Ok(wire) = serde_json::from_slice::<Wire>(&payload) else { continue };
-        if !rate_ok(&sender) {
+        if !rate_ok(&caller) {
             break;
         }
+        let (sender, device) = author_of(&wire, &caller, &identity.device, &me.user);
         let mut placed = place(&wire, &sender, &me);
         // A group we don't know of yet (just created, or just joined)?
         if placed.is_none() && wire.conv.is_group() && !refreshed {
@@ -1426,6 +1467,7 @@ pub fn accept(stream: TcpStream, peer: IpAddr, headers: &HashMap<String, String>
                 }
             } else if store().lock().map(|mut s| s.apply_op(conv, &sender, op)).unwrap_or(false) {
                 emit(ChatEvent::Changed(conv.clone()));
+                pass_on(&wire, conv, &sender, &device, &me);
             }
             placed = None;
         }
@@ -1433,7 +1475,7 @@ pub fn accept(stream: TcpStream, peer: IpAddr, headers: &HashMap<String, String>
             let message = Message {
                 id: wire.id.clone(),
                 from: sender.clone(),
-                device: identity.device.clone(),
+                device: device.clone(),
                 text: wire.text.clone(),
                 at: wire.at,
                 mine,
@@ -1449,6 +1491,7 @@ pub fn accept(stream: TcpStream, peer: IpAddr, headers: &HashMap<String, String>
             let added = store().lock().map(|mut s| s.add(&conv, message.clone(), !mine)).unwrap_or(false);
             if added {
                 emit(ChatEvent::Changed(conv.clone()));
+                pass_on(&wire, &conv, &sender, &device, &me);
                 // Pictures and voice messages come down by themselves.
                 if message.file.as_ref().is_some_and(|f| f.offer.fetch_by_itself()) {
                     files::download(&conv, &message.id);
@@ -1489,7 +1532,7 @@ mod tests {
     }
 
     fn wire(conv: ConvId) -> Wire {
-        Wire { id: "a1".into(), conv, text: "oi".into(), at: 1, file: None, reply_to: None, forwarded_from: None, op: None }
+        Wire { id: "a1".into(), conv, text: "oi".into(), at: 1, file: None, reply_to: None, forwarded_from: None, op: None, relayed: None }
     }
 
     #[test]
@@ -1539,7 +1582,7 @@ mod tests {
         s.add(&old, msg("m3", 3), true);
         s.add(&new, msg("m2", 2), false);
         s.add(&new, msg("m3", 3), false);
-        let wire = Wire { id: "w".into(), conv: old.clone(), text: "x".into(), at: 4, file: None, reply_to: None, forwarded_from: None, op: None };
+        let wire = Wire { id: "w".into(), conv: old.clone(), text: "x".into(), at: 4, file: None, reply_to: None, forwarded_from: None, op: None, relayed: None };
         s.outbox.push(Pending { wire, to_user: "bruna".into(), node: "n".into() });
         s.save(&old);
 
@@ -1710,6 +1753,37 @@ mod tests {
         assert!(!s.read_until(&ConvId::direct("nobody"), 30));
         assert_eq!(Store::open(&dir).convs[&conv].unread, 1, "saved");
         let _ = std::fs::remove_dir_all(&dir);
+    }
+
+    /// Only our own devices may say someone else wrote what they pass on.
+    #[test]
+    fn relayed_author_only_from_our_devices() {
+        let relayed = |from: &str| {
+            let mut w = wire(ConvId::direct("tales"));
+            w.relayed = Some(Relayed { from: from.into(), device: "phone".into() });
+            w
+        };
+        let plain = wire(ConvId::direct("tales"));
+        for (w, caller, expected) in [
+            (relayed("bruna"), "tales", ("bruna", "phone")),
+            (relayed("bruna"), "mallory", ("mallory", "nb")),
+            (relayed("tales"), "tales", ("tales", "nb")),
+            (relayed("../x"), "tales", ("tales", "nb")),
+            (plain.clone(), "tales", ("tales", "nb")),
+            (plain, "bruna", ("bruna", "nb")),
+        ] {
+            assert_eq!(author_of(&w, caller, "nb", "tales"), (expected.0.to_string(), expected.1.to_string()), "caller {caller}");
+        }
+    }
+
+    /// A passed-on message as the phone app reads and writes it.
+    #[test]
+    fn relayed_matches_phone_wire() {
+        let mut w = wire(ConvId::direct("tales"));
+        w.relayed = Some(Relayed { from: "bruna".into(), device: "phone".into() });
+        let json = serde_json::to_value(&w).unwrap();
+        assert_eq!(json["relayed"], serde_json::json!({"from": "bruna", "device": "phone"}));
+        assert!(serde_json::to_value(wire(ConvId::direct("tales"))).unwrap().get("relayed").is_none(), "absent when not passed on");
     }
 
     /// The read step as the phone app reads and writes it.
