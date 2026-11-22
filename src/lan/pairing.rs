@@ -223,7 +223,7 @@ pub fn fetch_file(key: &str, id: &str, part: &std::path::Path, size: u64, progre
     }
 }
 
-/// A proven TLS connection to the paired device `key`, where it is now (or was last).
+/// A proven TLS connection to the paired device `key`, at its announced or remembered address.
 fn talk_to(key: &str) -> Result<openssl::ssl::SslStream<TcpStream>, String> {
     let me = current().ok_or("the local network is off")?;
     let found = nearby().lock().ok().and_then(|n| n.iter().find(|d| d.key == key).map(|d| (d.address.clone(), d.port)));

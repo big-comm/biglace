@@ -1130,26 +1130,7 @@ fn post_lan(conv: &ConvId, text: &str, file: Option<(Offer, PathBuf)>, extra: Ex
         op: extra.op.clone(),
         relayed: None,
     };
-    let message = Message {
-        id: wire.id.clone(),
-        from: me.clone(),
-        device: String::new(),
-        text: wire.text.clone(),
-        at: wire.at,
-        mine: true,
-        delivered: vec![],
-        file: file.as_ref().map(|(o, path)| Attachment {
-            offer: o.clone(),
-            path: Some(path.to_string_lossy().into_owned()),
-            state: FileState::Done,
-        }),
-        reply_to: extra.reply_to,
-        forwarded_from: extra.forwarded_from,
-        reactions: BTreeMap::new(),
-        edited_at: 0,
-        deleted: false,
-        call: None,
-    };
+    let message = own_lan_message(&wire, &me, file.as_ref());
     let id = wire.id.clone();
     if let Some((o, path)) = &file {
         // Served to the paired device when it asks (see lan::pairing::fetch_file).
@@ -1170,6 +1151,26 @@ fn post_lan(conv: &ConvId, text: &str, file: Option<(Offer, PathBuf)>, extra: Ex
     emit(ChatEvent::Changed(conv.clone()));
     kick();
     Ok(id)
+}
+
+/// What we wrote in `wire`, as our history keeps it.
+fn own_lan_message(wire: &Wire, me: &str, file: Option<&(Offer, PathBuf)>) -> Message {
+    Message {
+        id: wire.id.clone(),
+        from: me.to_string(),
+        device: String::new(),
+        text: wire.text.clone(),
+        at: wire.at,
+        mine: true,
+        delivered: vec![],
+        file: file.map(|(o, path)| Attachment { offer: o.clone(), path: Some(path.to_string_lossy().into_owned()), state: FileState::Done }),
+        reply_to: wire.reply_to.clone(),
+        forwarded_from: wire.forwarded_from.clone(),
+        reactions: BTreeMap::new(),
+        edited_at: 0,
+        deleted: false,
+        call: None,
+    }
 }
 
 /// A message (or a step) from `sender`, a device paired on the local

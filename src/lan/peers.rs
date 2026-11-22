@@ -56,7 +56,7 @@ pub fn remove(key: &str) {
     }
 }
 
-/// Remember where `key` is now (only written when it moved).
+/// Remember `key`'s current address (the file is written only when it differs).
 pub fn seen_at(key: &str, address: &str) {
     let mut all = list();
     let Some(p) = all.iter_mut().find(|p| p.key == key && p.address.as_deref() != Some(address)) else { return };
