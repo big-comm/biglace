@@ -151,6 +151,14 @@ fn media(
     frame.add_css_class("bubble-media");
     frame.set_overflow(gtk4::Overflow::Hidden);
     frame.set_child(Some(&picture));
+    // Until it's here, the small preview is blurred under a veil (as Telegram does): a promise, not a broken picture.
+    if local.is_none() {
+        picture.add_css_class("media-veiled");
+        let veil = gtk4::Box::new(gtk4::Orientation::Vertical, 0);
+        veil.add_css_class("media-veil");
+        veil.set_can_target(false);
+        frame.add_overlay(&veil);
+    }
     frame.set_halign(gtk4::Align::Start);
     if texture.is_none() {
         frame.add_css_class("no-preview");
@@ -176,12 +184,23 @@ fn media(
         center.append(&round);
         frame.add_overlay(&center);
     }
-    // Bottom left: size (or progress).
+    // Bottom left: a video says so, with its length; then the size (or progress).
     let pill = gtk4::Box::new(gtk4::Orientation::Vertical, 3);
     pill.add_css_class("media-pill");
     pill.set_halign(gtk4::Align::Start);
     pill.set_valign(gtk4::Align::End);
+    if video {
+        let kind = gtk4::Box::new(gtk4::Orientation::Horizontal, 4);
+        let icon = gtk4::Image::from_icon_name("camera-video-symbolic");
+        icon.update_property(&[gtk4::accessible::Property::Label(&tr!("Video"))]);
+        kind.append(&icon);
+        if f.offer.duration_ms > 0 {
+            kind.append(&gtk4::Label::new(Some(&voice::clock(f.offer.duration_ms))));
+        }
+        pill.append(&kind);
+    }
     status.set_text(&glib::format_size(f.offer.size));
+    status.set_visible(local.is_none() || busy);
     pill.append(status);
     bar.set_size_request(90, -1);
     pill.append(bar);

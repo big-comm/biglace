@@ -286,6 +286,8 @@ textview.chat-input, textview.chat-input > text { background: transparent; font-
 .bubble.media > label { margin: 4px 8px 0 8px; }
 .bubble-media { border-radius: 14px; }
 .bubble-media.no-preview { background-color: alpha(black, 0.35); }
+.media-veiled { filter: blur(12px); }
+.media-veil { background-color: alpha(black, 0.25); }
 .media-round {
     min-width: 50px;
     min-height: 50px;

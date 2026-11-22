@@ -85,6 +85,17 @@ pub fn css() -> String {
     css.push_str(
         r#"
 .swatch-accent { background-color: @accent_bg_color; }
+/* Colour pooling from the corners, as Telegram's default wallpaper, under faint dots; over the view colour, so dark stays dark. */
+.chat-backdrop.chat-bg-default {
+    background-color: @view_bg_color;
+    background-image:
+        radial-gradient(circle, alpha(@view_fg_color, 0.06) 1.2px, transparent 1.6px),
+        radial-gradient(circle farthest-corner at 0% 0%, alpha(#5fb98a, 0.42), transparent 75%),
+        radial-gradient(circle farthest-corner at 100% 0%, alpha(#e8cf6a, 0.38), transparent 75%),
+        radial-gradient(circle farthest-corner at 0% 100%, alpha(#3fa7a0, 0.38), transparent 75%),
+        radial-gradient(circle farthest-corner at 100% 100%, alpha(#a6cd5c, 0.38), transparent 75%);
+    background-size: 18px 18px, 100% 100%, 100% 100%, 100% 100%, 100% 100%;
+}
 .chat-backdrop.chat-bg-plain { background-image: none; background-color: @view_bg_color; }
 .chat-backdrop.chat-bg-dots {
     background-image: radial-gradient(circle, alpha(@view_fg_color, 0.13) 1.2px, transparent 1.6px);

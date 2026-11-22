@@ -194,7 +194,10 @@ pub fn send_file(conv: &ConvId, path: &Path) -> Result<(), String> {
     offer.sha256 = Some(sha256_of(path)?);
     let preview = match offer.kind {
         FileKind::Image => image_thumb(path),
-        FileKind::Video => video_thumb(path),
+        FileKind::Video => video_thumb(path).map(|(jpeg, w, h, duration_ms)| {
+            offer.duration_ms = duration_ms;
+            (jpeg, w, h)
+        }),
         _ => None,
     };
     match preview {
@@ -272,8 +275,9 @@ fn small_jpeg(
     None
 }
 
-/// A frame from about a second into a video → (JPEG preview, width, height).
-fn video_thumb(path: &Path) -> Option<(Vec<u8>, u32, u32)> {
+/// A frame from about a second into a video → (JPEG preview, width, height,
+/// length in milliseconds or 0 when unknown).
+fn video_thumb(path: &Path) -> Option<(Vec<u8>, u32, u32, u64)> {
     use gstreamer as gst;
     use gstreamer::prelude::*;
     gst::init().ok()?;
@@ -296,6 +300,7 @@ fn video_thumb(path: &Path) -> Option<(Vec<u8>, u32, u32)> {
         if !wait(&bus) {
             return None;
         }
+        let duration_ms = playbin.query_duration::<gst::ClockTime>().map_or(0, gst::ClockTime::mseconds);
         if playbin
             .seek_simple(gst::SeekFlags::FLUSH | gst::SeekFlags::KEY_UNIT, gst::ClockTime::from_seconds(1))
             .is_ok()
@@ -314,7 +319,7 @@ fn video_thumb(path: &Path) -> Option<(Vec<u8>, u32, u32)> {
         let bytes = gtk4::glib::Bytes::from(buffer.as_slice());
         let frame = gtk4::gdk_pixbuf::Pixbuf::from_bytes(&bytes, gtk4::gdk_pixbuf::Colorspace::Rgb, false, 8, w, h, stride);
         let jpeg = small_jpeg(&frame, w, h, gtk4::gdk_pixbuf::InterpType::Bilinear)?;
-        Some((jpeg, w as u32, h as u32))
+        Some((jpeg, w as u32, h as u32, duration_ms))
     })();
     let _ = playbin.set_state(gst::State::Null);
     result
