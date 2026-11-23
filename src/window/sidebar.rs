@@ -470,6 +470,20 @@ pub fn build() -> Sidebar {
              becomes reachable by the other peers in your account."
         ))
         .build();
+    // The local network a click away, above Connect: the two never run
+    // together. It mirrors the switch in Preferences, confirmation included.
+    let quick_lan = gtk4::Box::new(gtk4::Orientation::Horizontal, 8);
+    quick_lan.set_margin_start(12);
+    quick_lan.set_margin_end(12);
+    let quick_icon = gtk4::Image::from_icon_name("network-wired-symbolic");
+    let quick_label = gtk4::Label::builder().label(tr!("Use only the local network")).xalign(0.0).hexpand(true).wrap(true).build();
+    let quick_switch = gtk4::Switch::builder().valign(gtk4::Align::Center).build();
+    quick_switch.update_property(&[gtk4::accessible::Property::Label(&tr!("Use only the local network"))]);
+    switch_lan.bind_property("active", &quick_switch, "active").bidirectional().sync_create().build();
+    quick_lan.append(&quick_icon);
+    quick_lan.append(&quick_label);
+    quick_lan.append(&quick_switch);
+    bottom_full.append(&quick_lan);
     bottom_full.append(&btn_connect);
 
     // The rail keeps only our photo (same menu).

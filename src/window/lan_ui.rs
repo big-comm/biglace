@@ -31,6 +31,7 @@ pub fn wire(win: &libadwaita::ApplicationWindow, toast: &libadwaita::ToastOverla
         start(toast);
     }
     wire_switch(win, toast, sidebar, cfg);
+    ask_if_both_on(win, sidebar, cfg);
     let (win2, state2) = (win.clone(), state.clone());
     sidebar.lan_devices_row.connect_activated(move |_| show_nearby(&win2, &state2));
     let (win, toast) = (win.downgrade(), toast.clone());
@@ -81,6 +82,34 @@ fn wire_switch(win: &libadwaita::ApplicationWindow, toast: &libadwaita::ToastOve
         }
         turn(&cfg, &row, &toast, active, &connect);
         glib::Propagation::Proceed
+    });
+}
+
+/// Both on, as versions before local-only mode left them: once BigScale
+/// shows as connected, ask once which one to keep.
+fn ask_if_both_on(win: &libadwaita::ApplicationWindow, sidebar: &super::sidebar::Sidebar, cfg: &Rc<RefCell<config::Config>>) {
+    if !cfg.borrow().lan_enabled || cfg.borrow().left_for_lan {
+        return;
+    }
+    let asked = std::cell::Cell::new(false);
+    let (win, switch, cfg) = (win.clone(), sidebar.switch_lan.clone(), cfg.clone());
+    sidebar.btn_connect.connect_notify_local(Some("css-classes"), move |connect, _| {
+        if asked.get() || !connect.has_css_class("destructive-action") || !switch.is_active() {
+            return;
+        }
+        asked.set(true);
+        let (switch, cfg, connect) = (switch.clone(), cfg.clone(), connect.clone());
+        confirm_local_only(&win, move |yes| {
+            if yes {
+                let mut c = cfg.borrow_mut();
+                c.left_for_lan = true;
+                config::save_or_warn(&c);
+                drop(c);
+                connect.emit_clicked();
+            } else {
+                switch.set_active(false);
+            }
+        });
     });
 }
 

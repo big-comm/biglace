@@ -820,11 +820,15 @@ pub fn messages(id: &ConvId) -> Vec<Message> {
 
 /// The conversation is on screen: nothing unread in it anymore, here and
 /// (once they hear it) on our other devices.
-pub fn mark_read(id: &ConvId) {
+/// `id` is read: its unread count goes, and our other devices hear it.
+/// True when something was unread.
+pub fn mark_read(id: &ConvId) -> bool {
     let mut read_up_to = None;
+    let mut was_unread = false;
     if let Ok(mut s) = store().lock() {
         if let Some(c) = s.convs.get_mut(id) {
             if c.unread > 0 {
+                was_unread = true;
                 c.unread = 0;
                 read_up_to = c.messages.iter().filter(|m| !m.mine).map(|m| m.at).max();
                 s.save(id);
@@ -836,6 +840,7 @@ pub fn mark_read(id: &ConvId) {
         let id = id.clone();
         let _ = std::thread::Builder::new().name("biglace-read".into()).spawn(move || post_own(&id, Op::Read { at }));
     }
+    was_unread
 }
 
 /// Queue `op` in `conv` for our own other devices alone.

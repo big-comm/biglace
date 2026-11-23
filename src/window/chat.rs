@@ -754,6 +754,15 @@ impl ChatPage {
                 }
             });
         }
+        // Read once the person scrolls down to the newest message.
+        {
+            let (page, scroll) = (page.clone(), page.scroll.clone());
+            scroll.connect_edge_reached(move |_, edge| {
+                if edge == gtk4::PositionType::Bottom {
+                    page.mark_current_read();
+                }
+            });
+        }
         // Read when the window comes back to the front.
         {
             let page = page.clone();
@@ -937,13 +946,15 @@ impl ChatPage {
         if !self.state.visible.get() || !self.win.is_active() {
             return;
         }
-        if let Some(id) = self.state.current.borrow().clone() {
-            chat::mark_read(&id);
-            if let Some(app) = self.win.application() {
-                app.withdraw_notification(&notification_id(&id));
-            }
+        let Some(id) = self.state.current.borrow().clone() else { return };
+        if !chat::mark_read(&id) {
+            return;
+        }
+        if let Some(app) = self.win.application() {
+            app.withdraw_notification(&notification_id(&id));
         }
         self.update_badge();
+        self.refresh_list();
     }
 
     fn send_typed(&self) {
@@ -1029,7 +1040,12 @@ impl ChatPage {
                 if !looking && !elsewhere && !self.embedded.get() {
                     self.notify(&conv, &message);
                 }
-                self.update_badge();
+                if looking {
+                    // Arrived in front of the person: read already.
+                    self.mark_current_read();
+                } else {
+                    self.update_badge();
+                }
             }
         }
     }
