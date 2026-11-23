@@ -19,12 +19,17 @@ fn notification_id(id: &str) -> String {
 }
 
 /// Pick files and offer them to `user`'s device `name` at `ip`.
-pub fn send_files(win: &libadwaita::ApplicationWindow, toast: &libadwaita::ToastOverlay, ip: &str, user: &str, name: &str) {
+pub fn send_files(
+    win: &libadwaita::ApplicationWindow,
+    toast: &libadwaita::ToastOverlay,
+    name: &str,
+    send: impl FnOnce(&[PathBuf]) -> Result<usize, String> + Send + 'static,
+) {
     let dialog = gtk4::FileDialog::builder()
         .title(trf!("Send files to {name}", "name" => name))
         .modal(true)
         .build();
-    let (ip, user, name, toast) = (ip.to_string(), user.to_string(), name.to_string(), toast.clone());
+    let (name, toast) = (name.to_string(), toast.clone());
     dialog.open_multiple(Some(win), gio::Cancellable::NONE, move |result| {
         let Ok(list) = result else { return };
         let paths: Vec<PathBuf> = (0..list.n_items())
@@ -38,7 +43,7 @@ pub fn send_files(win: &libadwaita::ApplicationWindow, toast: &libadwaita::Toast
         let toast = toast.clone();
         let who = name.clone();
         super::run_in_background(
-            move || transfer::send(&ip, &user, &paths),
+            move || send(&paths),
             move |r| match r {
                 Ok(_) => super::show_toast(&toast, &trf!("Waiting for {name} to accept…", "name" => who), 5),
                 Err(e) => super::show_toast(&toast, &e, 8),
@@ -117,7 +122,7 @@ fn notify(app: &gtk4::Application, event: TransferEvent, shown: &mut std::collec
             if shown.insert(id.clone(), percent) == Some(percent) {
                 return;
             }
-            let n = gio::Notification::new(&trf!("Receiving files from {user}", "user" => from));
+            let n = gio::Notification::new(&trf!("Receiving files from {user}", "user" => crate::chat::label(&from)));
             n.set_body(Some(&format!(
                 "{percent}% · {} / {}",
                 glib::format_size(done),
@@ -128,9 +133,9 @@ fn notify(app: &gtk4::Application, event: TransferEvent, shown: &mut std::collec
         TransferEvent::Received { id, from, dir, count } => {
             shown.remove(&id);
             let n = gio::Notification::new(&if count == 1 {
-                trf!("File received from {user}", "user" => from)
+                trf!("File received from {user}", "user" => crate::chat::label(&from))
             } else {
-                trf!("{count} files received from {user}", "user" => from, "count" => count.to_string())
+                trf!("{count} files received from {user}", "user" => crate::chat::label(&from), "count" => count.to_string())
             });
             n.set_body(Some(&dir.to_string_lossy()));
             let path = dir.to_string_lossy().into_owned();
@@ -139,7 +144,7 @@ fn notify(app: &gtk4::Application, event: TransferEvent, shown: &mut std::collec
         }
         TransferEvent::Failed { id, from, reason } => {
             shown.remove(&id);
-            let n = gio::Notification::new(&trf!("Couldn't receive the files from {user}", "user" => from));
+            let n = gio::Notification::new(&trf!("Couldn't receive the files from {user}", "user" => crate::chat::label(&from)));
             n.set_body(Some(&reason));
             app.send_notification(Some(&notification_id(&id)), &n);
         }
@@ -154,9 +159,9 @@ fn notify(app: &gtk4::Application, event: TransferEvent, shown: &mut std::collec
 fn offer(id: &str, from: &str, device: &str, items: &[transfer::Item]) -> gio::Notification {
     let total: u64 = items.iter().map(|i| i.size).sum();
     let n = gio::Notification::new(&if items.len() == 1 {
-        trf!("{user} wants to send you a file", "user" => from)
+        trf!("{user} wants to send you a file", "user" => crate::chat::label(from))
     } else {
-        trf!("{user} wants to send you {count} files", "user" => from, "count" => items.len().to_string())
+        trf!("{user} wants to send you {count} files", "user" => crate::chat::label(from), "count" => items.len().to_string())
     });
     let names: Vec<&str> = items.iter().take(3).map(|i| i.name.as_str()).collect();
     let more = if items.len() > 3 { " …" } else { "" };
@@ -171,10 +176,10 @@ fn offer(id: &str, from: &str, device: &str, items: &[transfer::Item]) -> gio::N
 /// What `to` did with files we sent.
 fn answer(to: &str, action: Action, count: usize) -> String {
     match action {
-        Action::Accept => trf!("{user} accepted: sending…", "user" => to),
-        Action::Decline => trf!("{user} declined the files", "user" => to),
-        Action::Done if count == 1 => trf!("{user} received the file", "user" => to),
-        Action::Done => trf!("{user} received the {count} files", "user" => to, "count" => count.to_string()),
-        _ => trf!("{user} couldn't receive the files", "user" => to),
+        Action::Accept => trf!("{user} accepted: sending…", "user" => crate::chat::label(to)),
+        Action::Decline => trf!("{user} declined the files", "user" => crate::chat::label(to)),
+        Action::Done if count == 1 => trf!("{user} received the file", "user" => crate::chat::label(to)),
+        Action::Done => trf!("{user} received the {count} files", "user" => crate::chat::label(to), "count" => count.to_string()),
+        _ => trf!("{user} couldn't receive the files", "user" => crate::chat::label(to)),
     }
 }

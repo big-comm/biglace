@@ -598,20 +598,24 @@ fn fetch_over_tailnet(conv: &ConvId, id: &str, message: &super::Message, part: &
 }
 
 /// Download `part` of message `id` from the device paired on the local network
-/// that sent it, resuming by itself after a stall or a dropped connection; it
-/// gives up once nothing arrived for [`LAN_PATIENCE`]. The SHA-256 the sender
-/// gave, if any.
+/// that sent it (see [`lan_fetch_part`]). The SHA-256 the sender gave, if any.
 fn lan_fetch(conv: &ConvId, id: &str, part: &Path, size: u64) -> Result<Option<String>, String> {
+    lan_fetch_part(&conv.name, id, part, size, &mut |done| {
+        emit(ChatEvent::Progress { conv: conv.clone(), id: id.to_string(), done, total: size });
+    })
+}
+
+/// Fetch shared file `id` into `part` from the device `key` paired on the local
+/// network, resuming by itself after a stall or a dropped connection; it gives
+/// up once nothing arrived for [`LAN_PATIENCE`]. The SHA-256 the sender gave, if any.
+pub(crate) fn lan_fetch_part(key: &str, id: &str, part: &Path, size: u64, progress: &mut dyn FnMut(u64)) -> Result<Option<String>, String> {
     #[cfg(target_os = "linux")]
     {
         use crate::lan::pairing::{fetch_file, LanError};
         let mut moved = Instant::now();
         loop {
             let before = std::fs::metadata(part).map_or(0, |m| m.len());
-            let tried = fetch_file(&conv.name, id, part, size, &mut |done| {
-                emit(ChatEvent::Progress { conv: conv.clone(), id: id.to_string(), done, total: size });
-            });
-            let reason = match tried {
+            let reason = match fetch_file(key, id, part, size, progress) {
                 Ok((have, sha256)) if have == size => return Ok(sha256),
                 Ok((have, _)) if have > before => {
                     moved = Instant::now();
@@ -622,7 +626,7 @@ fn lan_fetch(conv: &ConvId, id: &str, part: &Path, size: u64) -> Result<Option<S
                 Err(LanError::Off) => return Err(crate::tr!("the local network is off")),
                 Err(LanError::Unreachable) => crate::trf!(
                     "{name} can't be reached on the local network — try again when it's nearby",
-                    "name" => super::label(&conv.name)
+                    "name" => super::label(key)
                 ),
             };
             if moved.elapsed() >= LAN_PATIENCE {
@@ -633,7 +637,7 @@ fn lan_fetch(conv: &ConvId, id: &str, part: &Path, size: u64) -> Result<Option<S
     }
     #[cfg(not(target_os = "linux"))]
     {
-        let _ = (conv, id, part, size);
+        let _ = (key, id, part, size, progress);
         Err("no local network here".into())
     }
 }

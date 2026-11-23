@@ -8,6 +8,8 @@
 //!   or declines. Accepted files come straight from the sender, resume after
 //!   a dropped connection, and are checked against their SHA-256.
 //! - Each step tells the sender how it went.
+//! - A device paired on the local network takes the same steps over the
+//!   pairing's connection, named by its device key instead of an account.
 
 use std::collections::HashMap;
 use std::path::{Path, PathBuf};
@@ -90,15 +92,23 @@ fn emit(e: TransferEvent) {
     LISTENERS.send(e);
 }
 
+/// How the other device is reached: on the tailnet at its address, or paired on
+/// the local network (the account then is its device key).
+#[derive(Debug, Clone, PartialEq, Eq)]
+enum Route {
+    Tailnet(String),
+    Lan,
+}
+
 /// An offer to us, waiting for an answer.
 struct Incoming {
     from: String,
-    ip: String,
+    route: Route,
     items: Vec<Item>,
     at: Instant,
 }
 
-/// An offer we made: to whom, at which device, with how many files.
+/// An offer we made: to whom, with how many files.
 struct Outgoing {
     to: String,
     count: usize,
@@ -114,12 +124,23 @@ fn outgoing() -> &'static Mutex<HashMap<String, Outgoing>> {
     O.get_or_init(Mutex::default)
 }
 
-fn tell(ip: &str, user: &str, id: &str, action: Action) {
-    let (ip, user, id) = (ip.to_string(), user.to_string(), id.to_string());
+/// Hand `op` to `user`'s device along `route`, now.
+fn send_op(route: &Route, user: &str, op: Op) -> Result<(), String> {
+    match route {
+        Route::Tailnet(ip) => chat::send_op_now(ip, user, op),
+        #[cfg(target_os = "linux")]
+        Route::Lan => chat::send_op_lan(user, op),
+        #[cfg(not(target_os = "linux"))]
+        Route::Lan => Err("no local network here".into()),
+    }
+}
+
+fn tell(route: &Route, user: &str, id: &str, action: Action) {
+    let (route, user, id) = (route.clone(), user.to_string(), id.to_string());
     let _ = std::thread::Builder::new().name("biglace-send-tell".into()).spawn(move || {
         let op = Op::Send { send: id, action, items: vec![] };
-        if let Err(e) = chat::send_op_now(&ip, &user, op) {
-            tailscale::dbg(&format!("send: {action:?} to {ip}: {e}"));
+        if let Err(e) = send_op(&route, &user, op) {
+            tailscale::dbg(&format!("send: {action:?} to {route:?}: {e}"));
         }
     });
 }
@@ -127,6 +148,15 @@ fn tell(ip: &str, user: &str, id: &str, action: Action) {
 /// Offer `paths` to `user`'s device at `ip`. Blocking (reads every file to
 /// hash it): off the UI thread. The number of files offered.
 pub fn send(ip: &str, user: &str, paths: &[PathBuf]) -> Result<usize, String> {
+    offer(&Route::Tailnet(ip.to_string()), user, paths)
+}
+
+/// [`send`] to the device `key` paired on the local network.
+pub fn send_lan(key: &str, paths: &[PathBuf]) -> Result<usize, String> {
+    offer(&Route::Lan, key, paths)
+}
+
+fn offer(route: &Route, user: &str, paths: &[PathBuf]) -> Result<usize, String> {
     if paths.is_empty() || paths.len() > MAX_ITEMS {
         return Err(crate::trf!("Pick between 1 and {count} files.", "count" => MAX_ITEMS.to_string()));
     }
@@ -136,7 +166,7 @@ pub fn send(ip: &str, user: &str, paths: &[PathBuf]) -> Result<usize, String> {
     }
     let id = chat::new_id();
     let count = items.len();
-    chat::send_op_now(ip, user, Op::Send { send: id.clone(), action: Action::Offer, items })?;
+    send_op(route, user, Op::Send { send: id.clone(), action: Action::Offer, items })?;
     outgoing()
         .lock()
         .unwrap_or_else(std::sync::PoisonError::into_inner)
@@ -164,6 +194,15 @@ fn share(path: &Path, user: &str) -> Result<Item, String> {
 
 /// A transfer step from `sender`'s device `device` at `ip` (agent thread).
 pub fn received(sender: &str, device: &str, ip: &str, id: &str, action: Action, items: &[Item]) {
+    step(sender, device, Route::Tailnet(ip.to_string()), id, action, items);
+}
+
+/// A transfer step from the device `key` paired on the local network.
+pub fn received_lan(key: &str, id: &str, action: Action, items: &[Item]) {
+    step(key, "", Route::Lan, id, action, items);
+}
+
+fn step(sender: &str, device: &str, route: Route, id: &str, action: Action, items: &[Item]) {
     if id.is_empty() || id.len() > 64 || !id.bytes().all(|b| b.is_ascii_alphanumeric()) {
         return;
     }
@@ -179,7 +218,7 @@ pub fn received(sender: &str, device: &str, ip: &str, id: &str, action: Action, 
             }
             offers.insert(
                 id.to_string(),
-                Incoming { from: sender.to_string(), ip: ip.to_string(), items: items.to_vec(), at: Instant::now() },
+                Incoming { from: sender.to_string(), route, items: items.to_vec(), at: Instant::now() },
             );
             drop(offers);
             emit(TransferEvent::Offered { id: id.into(), from: sender.into(), device: device.into(), items: items.to_vec() });
@@ -221,7 +260,7 @@ fn expire_later(id: &str) {
 /// Refuse offer `id`.
 pub fn decline(id: &str) {
     let Some(offer) = incoming().lock().unwrap_or_else(std::sync::PoisonError::into_inner).remove(id) else { return };
-    tell(&offer.ip, &offer.from, id, Action::Decline);
+    tell(&offer.route, &offer.from, id, Action::Decline);
     emit(TransferEvent::Gone { id: id.into() });
 }
 
@@ -231,16 +270,16 @@ pub fn accept(id: &str, dir: Option<PathBuf>) {
     let Some(offer) = incoming().lock().unwrap_or_else(std::sync::PoisonError::into_inner).remove(id) else { return };
     let id = id.to_string();
     let dir = dir.unwrap_or_else(files::downloads_dir);
-    tell(&offer.ip, &offer.from, &id, Action::Accept);
+    tell(&offer.route, &offer.from, &id, Action::Accept);
     let _ = std::thread::Builder::new().name("biglace-receive".into()).spawn(move || {
         match fetch_all(&id, &offer, &dir) {
             Ok(count) => {
-                tell(&offer.ip, &offer.from, &id, Action::Done);
+                tell(&offer.route, &offer.from, &id, Action::Done);
                 emit(TransferEvent::Received { id, from: offer.from, dir, count });
             }
             Err(reason) => {
                 tailscale::dbg(&format!("receive {id}: {reason}"));
-                tell(&offer.ip, &offer.from, &id, Action::Failed);
+                tell(&offer.route, &offer.from, &id, Action::Failed);
                 emit(TransferEvent::Failed { id, from: offer.from, reason });
             }
         }
@@ -257,7 +296,12 @@ fn fetch_all(id: &str, offer: &Incoming, dir: &Path) -> Result<usize, String> {
         let mut progress = |done: u64| {
             emit(TransferEvent::Progress { id: id.into(), from: offer.from.clone(), done: before + done, total });
         };
-        files::fetch_part(&offer.ip, &item.id, &part, item.size, &mut progress)?;
+        match &offer.route {
+            Route::Tailnet(ip) => files::fetch_part(ip, &item.id, &part, item.size, &mut progress)?,
+            Route::Lan => {
+                files::lan_fetch_part(&offer.from, &item.id, &part, item.size, &mut progress)?;
+            }
+        }
         if !files::sha256_of(&part)?.eq_ignore_ascii_case(&item.sha256) {
             let _ = std::fs::remove_file(&part);
             return Err(crate::trf!("{name} arrived different from the original (damaged on the way).", "name" => item.name));

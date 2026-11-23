@@ -362,7 +362,8 @@ pub fn build(peer: &Peer, ctx: &PeerCtx) -> libadwaita::ExpanderRow {
             let (ip, user, name, toast) = (peer.ipv4.clone(), peer.user.clone(), peer.display_name(), ctx.toast.clone());
             btn_send.connect_clicked(move |b| {
                 if let Some(win) = b.root().and_downcast::<libadwaita::ApplicationWindow>() {
-                    super::transfer_ui::send_files(&win, &toast, &ip, &user, &name);
+                    let (ip, user) = (ip.clone(), user.clone());
+                    super::transfer_ui::send_files(&win, &toast, &name, move |paths| crate::transfer::send(&ip, &user, paths));
                 }
             });
             row.add_suffix(&btn_send);

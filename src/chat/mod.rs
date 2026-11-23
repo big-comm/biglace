@@ -1081,6 +1081,32 @@ pub(crate) fn send_op_now(ip: &str, user: &str, op: Op) -> Result<(), String> {
     }
 }
 
+/// [`send_op_now`] to the device `key` paired on the local network.
+#[cfg(target_os = "linux")]
+pub(crate) fn send_op_lan(key: &str, op: Op) -> Result<(), String> {
+    let wire = Wire {
+        id: new_id(),
+        conv: ConvId::lan(key),
+        text: String::new(),
+        at: now_ms(),
+        file: None,
+        reply_to: None,
+        forwarded_from: None,
+        op: Some(op),
+        relayed: None,
+    };
+    let payload = serde_json::to_vec(&wire).map_err(|e| e.to_string())?;
+    let acked = crate::lan::pairing::deliver(key, &[payload]).map_err(|_| crate::trf!(
+        "{name} can't be reached on the local network — try again when it's nearby",
+        "name" => label(key)
+    ))?;
+    if acked.contains(&wire.id) {
+        Ok(())
+    } else {
+        Err("not acknowledged".into())
+    }
+}
+
 /// What comes with a message besides its text.
 #[derive(Default)]
 struct Extra {
@@ -1254,6 +1280,7 @@ pub(crate) fn accept_lan(sender: &str, payload: &[u8]) -> Option<String> {
                 emit(ChatEvent::Changed(conv));
             }
         }
+        Some(Op::Send { send, action, items }) => crate::transfer::received_lan(sender, send, *action, items),
         Some(_) => {}
         None => {
             let message = Message {

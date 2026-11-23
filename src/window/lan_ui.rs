@@ -23,6 +23,8 @@ pub fn wire(
     for paired in crate::lan::peers::paired() {
         crate::chat::open(&crate::chat::ConvId::lan(&paired.key));
     }
+    // Before the network starts: its first list of devices nearby would be lost.
+    let events = pairing::events();
     let on = cfg.borrow().lan_enabled;
     crate::chat::set_local_only(on);
     sidebar.switch_lan.set_active(on);
@@ -30,12 +32,11 @@ pub fn wire(
         start(toast, &content.lan_qr);
     }
     let nearby: Rc<RefCell<Vec<Nearby>>> = Rc::default();
-    fill(&content.lan_list, &nearby);
+    fill(&content.lan_list, &nearby, toast);
     wire_switch(win, toast, sidebar, &content.lan_qr, cfg, refresh);
     ask_if_both_on(win, sidebar, cfg);
     let (win, toast, list) = (win.downgrade(), toast.clone(), content.lan_list.clone());
     glib::spawn_future_local(async move {
-        let events = pairing::events();
         while let Ok(event) = events.recv().await {
             let Some(win) = win.upgrade() else { break };
             match event {
@@ -52,7 +53,7 @@ pub fn wire(
                 LanEvent::PairFailed { name } => super::show_toast(&toast, &trf!("Not paired with {name}", "name" => name), 5),
             }
             // Who's nearby and where each pairing stands.
-            fill(&list, &nearby);
+            fill(&list, &nearby, &toast);
         }
     });
 }
@@ -182,7 +183,7 @@ fn start(toast: &libadwaita::ToastOverlay, qr: &gtk4::Box) {
 }
 
 /// The devices nearby, each with Pair, and the paired ones, each with Forget.
-fn fill(list: &gtk4::ListBox, shared: &Rc<RefCell<Vec<Nearby>>>) {
+fn fill(list: &gtk4::ListBox, shared: &Rc<RefCell<Vec<Nearby>>>, toast: &libadwaita::ToastOverlay) {
     let nearby = &*shared.borrow();
     while let Some(child) = list.first_child() {
         list.remove(&child);
@@ -190,26 +191,17 @@ fn fill(list: &gtk4::ListBox, shared: &Rc<RefCell<Vec<Nearby>>>) {
     let paired = crate::lan::peers::paired();
     let away: Vec<_> = paired.iter().filter(|p| !nearby.iter().any(|n| n.key == p.key)).collect();
     if nearby.is_empty() && away.is_empty() {
-        let empty = gtk4::Label::builder()
-            .label(tr!("No BigLace nearby. The other device needs the local network turned on, on this same network. Guest Wi-Fi and some routers keep devices apart: use the main network."))
-            .wrap(true)
-            .margin_top(18)
-            .margin_bottom(18)
-            .margin_start(12)
-            .margin_end(12)
-            .css_classes(["dim-label"])
-            .build();
-        list.append(&empty);
+        list.append(&nobody_nearby());
         return;
     }
     let forget = |row: &libadwaita::ActionRow, key: &str| {
         let button = gtk4::Button::builder().label(tr!("Forget")).valign(gtk4::Align::Center).build();
-        let (key, list, nearby) = (key.to_string(), list.downgrade(), shared.clone());
+        let (key, list, nearby, toast) = (key.to_string(), list.downgrade(), shared.clone(), toast.clone());
         button.connect_clicked(move |_| {
             crate::lan::peers::remove(&key);
             crate::chat::forget_lan(&key);
             if let Some(list) = list.upgrade() {
-                fill(&list, &nearby);
+                fill(&list, &nearby, &toast);
             }
         });
         row.add_suffix(&button);
@@ -217,6 +209,12 @@ fn fill(list: &gtk4::ListBox, shared: &Rc<RefCell<Vec<Nearby>>>) {
     for device in nearby {
         let row = libadwaita::ActionRow::builder().title(&device.name).subtitle(&device.address).build();
         if paired.iter().any(|p| p.key == device.key) {
+            if let Some(login) = &device.login {
+                add_ssh_buttons(&row, &device.address, login, toast);
+            }
+            if device.takes_files {
+                add_send_button(&row, device, toast);
+            }
             forget(&row, &device.key);
             list.append(&row);
             continue;
@@ -236,6 +234,60 @@ fn fill(list: &gtk4::ListBox, shared: &Rc<RefCell<Vec<Nearby>>>) {
         forget(&row, &device.key);
         list.append(&row);
     }
+}
+
+/// What the list says while no BigLace is in sight, and why that may be.
+fn nobody_nearby() -> gtk4::Label {
+    gtk4::Label::builder()
+        .label(tr!("No BigLace nearby. The other device needs the local network turned on, on this same network. Guest Wi-Fi and some routers keep devices apart: use the main network."))
+        .wrap(true)
+        .margin_top(18)
+        .margin_bottom(18)
+        .margin_start(12)
+        .margin_end(12)
+        .css_classes(["dim-label"])
+        .build()
+}
+
+/// Terminal and files of a paired computer, over SSH to its address on this network.
+fn add_ssh_buttons(row: &libadwaita::ActionRow, address: &str, login: &str, toast: &libadwaita::ToastOverlay) {
+    type Open = fn(&str, &str) -> Result<(), String>;
+    let buttons: [(&str, String, Open); 2] = [
+        ("utilities-terminal-symbolic", tr!("Open terminal (SSH)"), crate::launchers::open_terminal),
+        ("folder-symbolic", tr!("Open files (SFTP)"), crate::launchers::open_files),
+    ];
+    for (icon, tooltip, open) in buttons {
+        let button = gtk4::Button::builder().icon_name(icon).css_classes(["flat"]).valign(gtk4::Align::Center).tooltip_text(tooltip).build();
+        let (address, login, toast) = (address.to_string(), login.to_string(), toast.clone());
+        button.connect_clicked(move |_| {
+            let (address, login) = (address.clone(), login.clone());
+            let toast = toast.clone();
+            super::run_in_background(move || open(&address, &login), move |outcome| {
+                if let Err(message) = outcome {
+                    super::show_toast(&toast, &message, 6);
+                }
+            });
+        });
+        row.add_suffix(&button);
+    }
+}
+
+/// Send files to a paired device: it accepts or declines them, as on the tailnet.
+fn add_send_button(row: &libadwaita::ActionRow, device: &Nearby, toast: &libadwaita::ToastOverlay) {
+    let button = gtk4::Button::builder()
+        .icon_name("document-send-symbolic")
+        .css_classes(["flat"])
+        .valign(gtk4::Align::Center)
+        .tooltip_text(tr!("Send files"))
+        .build();
+    let (key, name, toast) = (device.key.clone(), device.name.clone(), toast.clone());
+    button.connect_clicked(move |b| {
+        if let Some(win) = b.root().and_downcast::<libadwaita::ApplicationWindow>() {
+            let key = key.clone();
+            super::transfer_ui::send_files(&win, &toast, &name, move |paths| crate::transfer::send_lan(&key, paths));
+        }
+    });
+    row.add_suffix(&button);
 }
 
 /// The code both people compare; our person's answer goes back to the pairing.
