@@ -166,20 +166,37 @@ fn start(toast: &libadwaita::ToastOverlay, qr: &gtk4::Box) {
     while let Some(child) = qr.first_child() {
         qr.remove(&child);
     }
-    // For a phone, or a network where devices don't see each other: it scans this.
-    if let Some(texture) = pairing::link().and_then(|l| super::invites::qr_texture(&l)) {
-        let caption = gtk4::Label::builder()
-            .label(tr!("Or scan this code with BigLace on the phone (Settings, Local network)"))
-            .wrap(true)
-            .justify(gtk4::Justification::Center)
-            .css_classes(["dim-label"])
-            .build();
-        qr.append(&caption);
-        let picture = gtk4::Picture::for_paintable(&texture);
-        picture.set_size_request(200, 200);
-        picture.set_halign(gtk4::Align::Center);
-        qr.append(&picture);
+    // For a phone, or a network where devices don't see each other: it scans a code.
+    if let Some(link) = pairing::link() {
+        let button = gtk4::Button::builder().label(tr!("Pair a phone")).halign(gtk4::Align::Center).css_classes(["pill"]).build();
+        button.connect_clicked(move |b| show_pairing_code(b, &link));
+        qr.append(&button);
     }
+}
+
+/// The code a phone scans to pair with us, in a window of its own.
+fn show_pairing_code(from: &gtk4::Button, link: &str) {
+    let Some(texture) = super::invites::qr_texture(link) else { return };
+    let code = gtk4::Image::from_paintable(Some(&texture));
+    code.set_pixel_size(240);
+    let how = gtk4::Label::builder()
+        .label(tr!("On the phone, turn on Use only the local network, then tap Scan a computer's code."))
+        .wrap(true)
+        .max_width_chars(36)
+        .justify(gtk4::Justification::Center)
+        .build();
+    let page = gtk4::Box::builder().orientation(gtk4::Orientation::Vertical).spacing(18).margin_top(12).margin_bottom(24).margin_start(24).margin_end(24).build();
+    page.append(&how);
+    page.append(&code);
+    let view = libadwaita::ToolbarView::new();
+    view.add_top_bar(&libadwaita::HeaderBar::new());
+    view.set_content(Some(&page));
+    let window = libadwaita::Window::builder().title(tr!("Pair a phone")).modal(true).resizable(false).content(&view).build();
+    if let Some(parent) = from.root().and_downcast::<gtk4::Window>() {
+        window.set_transient_for(Some(&parent));
+    }
+    super::dialogs::close_on_escape(&window);
+    window.present();
 }
 
 /// The devices nearby, each with Pair, and the paired ones, each with Forget.
