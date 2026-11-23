@@ -22,6 +22,7 @@ use std::collections::{BTreeMap, HashMap, HashSet};
 use std::io::{BufReader, Write};
 use std::net::{IpAddr, TcpStream};
 use std::path::{Path, PathBuf};
+use std::sync::atomic::{AtomicBool, Ordering};
 use std::sync::{Mutex, OnceLock};
 use std::time::{Duration, Instant};
 
@@ -281,6 +282,8 @@ pub enum ChatEvent {
     Typing { conv: ConvId, user: String },
     /// Read on another of our devices: its notification goes.
     ReadElsewhere(ConvId),
+    /// The local network went on or off: other conversations show (see [`shown`]).
+    ShownChanged,
 }
 
 /// The history and the outbox, on disk under `dir`.
@@ -811,7 +814,29 @@ fn emit(e: ChatEvent) {
 }
 
 pub fn conversations() -> Vec<Summary> {
-    store().lock().map(|s| s.summaries()).unwrap_or_default()
+    let mut all = store().lock().map(|s| s.summaries()).unwrap_or_default();
+    all.retain(|c| shown(&c.id));
+    all
+}
+
+/// Only the local network is on (BigScale left for it).
+static LOCAL_ONLY: AtomicBool = AtomicBool::new(false);
+
+/// Show the local network's conversations, and only them, while it is on.
+pub fn set_local_only(on: bool) {
+    if LOCAL_ONLY.swap(on, Ordering::Relaxed) != on {
+        emit(ChatEvent::ShownChanged);
+    }
+}
+
+/// Only the local network's conversations show.
+pub fn local_only() -> bool {
+    LOCAL_ONLY.load(Ordering::Relaxed)
+}
+
+/// Whether `conv` shows: one network at a time, as the devices page.
+pub fn shown(conv: &ConvId) -> bool {
+    conv.is_lan() == local_only()
 }
 
 pub fn messages(id: &ConvId) -> Vec<Message> {
@@ -898,6 +923,10 @@ fn pass_on(wire: &Wire, conv: &ConvId, author: &str, device: &str, me: &Me) {
         return;
     }
     if author == me.user {
+        // Our own conversation went from its writer to each of our devices already.
+        if conv.name == me.user && !conv.is_group() {
+            return;
+        }
         if let Some(users) = recipients(conv, me) {
             queue(wire, &users, &me.user, false);
         }
@@ -918,7 +947,7 @@ fn author_of(wire: &Wire, caller: &str, caller_device: &str, me: &str) -> (Strin
 }
 
 pub fn unread_total() -> u32 {
-    store().lock().map(|s| s.convs.values().map(|c| c.unread).sum()).unwrap_or(0)
+    store().lock().map(|s| s.convs.iter().filter(|(id, _)| shown(id)).map(|(_, c)| c.unread).sum()).unwrap_or(0)
 }
 
 /// Make sure a conversation exists (an empty one shows in the list).
@@ -1319,6 +1348,19 @@ pub fn label(name: &str) -> String {
     name.to_string()
 }
 
+/// Our own conversation: what we write there reaches our other devices.
+pub fn is_own(conv: &ConvId) -> bool {
+    !conv.is_group() && !conv.is_lan() && my_user().is_some_and(|me| me == conv.name)
+}
+
+/// How a conversation shows: ours as "My devices", the rest by [`label`].
+pub fn title(conv: &ConvId) -> String {
+    if is_own(conv) {
+        return crate::tr!("My devices");
+    }
+    label(&conv.name)
+}
+
 /// Do `op` in `conv`, for everyone there; `fallback` is what older
 /// versions show instead.
 fn send_op(conv: &ConvId, op: Op, fallback: String) -> Result<(), String> {
@@ -1651,6 +1693,9 @@ fn place(wire: &Wire, sender: &str, me: &Me) -> Option<(ConvId, bool)> {
             return None;
         }
         Some((wire.conv.clone(), mine))
+    } else if mine && wire.conv.name == me.user {
+        // Written to our own devices from another of them: news here.
+        Some((wire.conv.clone(), false))
     } else if mine {
         // A copy of what we wrote to someone, from another of our devices.
         Some((wire.conv.clone(), true))
@@ -1791,6 +1836,8 @@ mod tests {
         assert_eq!(place(&wire(ConvId::direct("bruno")), "bruna", &me), None);
         // My other device copies what I wrote to Bruno.
         assert_eq!(place(&wire(ConvId::direct("bruno")), "tales", &me), Some((ConvId::direct("bruno"), true)));
+        // My other device writes to my devices: news here, not a copy of mine.
+        assert_eq!(place(&wire(ConvId::direct("tales")), "tales", &me), Some((ConvId::direct("tales"), false)));
         // Group: only from its members, only for groups I'm in.
         assert_eq!(place(&wire(ConvId::group("familia")), "bruna", &me), Some((ConvId::group("familia"), false)));
         assert_eq!(place(&wire(ConvId::group("familia")), "bruno", &me), None);

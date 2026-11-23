@@ -849,7 +849,8 @@ impl ChatPage {
     /// Rebuild the conversation list (groups always listed).
     fn refresh_list(&self) {
         let mut convs = chat::conversations();
-        for g in chat::my_groups() {
+        let local_only = chat::local_only();
+        for g in chat::my_groups().into_iter().filter(|_| !local_only) {
             let id = ConvId::group(&g);
             if !convs.iter().any(|c| c.id == id) {
                 convs.push(chat::Summary { id, last: None, unread: 0 });
@@ -867,7 +868,7 @@ impl ChatPage {
             }
         }
         // Everyone else on the network, right there: one click to talk.
-        let people = people_to_list(&convs);
+        let people = if local_only { vec![] } else { people_to_list(&convs) };
         *self.state.people.borrow_mut() = people_signature(&people);
         if !people.is_empty() {
             let title = gtk4::Label::new(Some(&tr!("People on the network")));
@@ -895,7 +896,7 @@ impl ChatPage {
         while let Some(child) = self.messages.first_child() {
             self.messages.remove(&child);
         }
-        self.conv_title.set_text(&chat::label(&id.name));
+        self.conv_title.set_text(&chat::title(id));
         if id.is_lan() {
             // No account behind it: no calls (they go over the tailnet).
             // "Maria (notebook)": initials from the words, not the parenthesis.
@@ -912,7 +913,8 @@ impl ChatPage {
             self.btn_call.set_visible(false);
         } else {
             self.btn_call.set_menu_model(Some(&super::call_ui::call_menu(&id.name)));
-            self.btn_call.set_visible(true);
+            // Nobody to call in our own conversation.
+            self.btn_call.set_visible(!chat::is_own(id));
             self.conv_avatar.set_text(Some(&id.name));
             self.conv_avatar.set_icon_name(None);
             self.conv_avatar.set_show_initials(true);
@@ -1021,6 +1023,15 @@ impl ChatPage {
                 }
             }
             ChatEvent::Typing { conv, user } => self.show_typing(&conv, &user),
+            ChatEvent::ShownChanged => {
+                let hidden = self.state.current.borrow().as_ref().is_some_and(|c| !chat::shown(c));
+                if hidden {
+                    *self.state.current.borrow_mut() = None;
+                    self.stack.set_visible_child_name("none");
+                }
+                self.refresh_list();
+                self.update_badge();
+            }
             ChatEvent::ReadElsewhere(conv) => {
                 if let Some(app) = self.win.application() {
                     app.withdraw_notification(&notification_id(&conv));
@@ -1389,7 +1400,7 @@ impl ChatPage {
             move |(people, groups)| {
                 status2.set_title(&tr!("Nobody you can reach yet."));
                 let add = |id: ConvId, subtitle: String, online: bool| {
-                    let shown = chat::label(&id.name);
+                    let shown = chat::title(&id);
                     let row = libadwaita::ActionRow::builder()
                         .title(glib::markup_escape_text(&shown).as_str())
                         .subtitle(subtitle)
@@ -1420,15 +1431,23 @@ impl ChatPage {
                     });
                     list2.append(&row);
                 };
-                for (user, online) in people {
-                    add(ConvId::direct(&user), if online { tr!("online") } else { tr!("offline") }, online);
-                }
-                for g in groups {
-                    add(ConvId::group(&g), tr!("Group"), false);
+                // One network at a time, as the conversation list.
+                if !chat::local_only() {
+                    if let Some(me) = chat::my_user() {
+                        add(ConvId::direct(&me), tr!("To your other devices"), false);
+                    }
+                    for (user, online) in people {
+                        add(ConvId::direct(&user), if online { tr!("online") } else { tr!("offline") }, online);
+                    }
+                    for g in groups {
+                        add(ConvId::group(&g), tr!("Group"), false);
+                    }
                 }
                 #[cfg(target_os = "linux")]
-                for paired in crate::lan::peers::paired() {
-                    add(ConvId::lan(&paired.key), tr!("On this local network"), false);
+                if chat::local_only() {
+                    for paired in crate::lan::peers::paired() {
+                        add(ConvId::lan(&paired.key), tr!("On this local network"), false);
+                    }
                 }
             },
         );
@@ -1480,7 +1499,7 @@ fn conv_row(c: &chat::Summary, online: Option<bool>) -> gtk4::ListBoxRow {
     let line = gtk4::Box::new(gtk4::Orientation::Horizontal, 10);
     line.set_margin_top(6);
     line.set_margin_bottom(6);
-    let avatar = libadwaita::Avatar::new(42, Some(&chat::label(&c.id.name).replace(['(', ')'], "")), !c.id.is_group());
+    let avatar = libadwaita::Avatar::new(42, Some(&chat::title(&c.id).replace(['(', ')'], "")), !c.id.is_group());
     if c.id.is_group() {
         avatar.set_icon_name(Some("system-users-symbolic"));
         crate::avatars::bind_group(&avatar, &c.id.name);
@@ -1506,7 +1525,7 @@ fn conv_row(c: &chat::Summary, online: Option<bool>) -> gtk4::ListBoxRow {
     texts.set_hexpand(true);
     texts.set_valign(gtk4::Align::Center);
     let top = gtk4::Box::new(gtk4::Orientation::Horizontal, 6);
-    let name = gtk4::Label::new(Some(&chat::label(&c.id.name)));
+    let name = gtk4::Label::new(Some(&chat::title(&c.id)));
     name.add_css_class("heading");
     name.set_xalign(0.0);
     name.set_hexpand(true);
@@ -2282,6 +2301,8 @@ fn subtitle(conv: &ConvId) -> String {
         tr!("On this local network")
     } else if conv.is_group() {
         tr!("Group")
+    } else if chat::is_own(conv) {
+        tr!("To your other devices")
     } else {
         tr!("Direct conversation")
     }

@@ -24,6 +24,7 @@ pub fn wire(
         crate::chat::open(&crate::chat::ConvId::lan(&paired.key));
     }
     let on = cfg.borrow().lan_enabled;
+    crate::chat::set_local_only(on);
     sidebar.switch_lan.set_active(on);
     if on {
         start(toast, &content.lan_qr);
@@ -125,6 +126,7 @@ fn turn(cfg: &Rc<RefCell<config::Config>>, qr: &gtk4::Box, toast: &libadwaita::T
         c.left_for_lan = on;
         config::save_or_warn(&c);
     }
+    crate::chat::set_local_only(on);
     if on {
         start(toast, qr);
     } else {
