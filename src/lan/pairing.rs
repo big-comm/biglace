@@ -164,18 +164,37 @@ struct FileAsk {
     offset: u64,
 }
 
-/// The answer before the bytes: how many follow, or why none.
+/// The answer before the bytes: how many follow and the whole file's SHA-256
+/// (hex; the message carries none), or why none.
 #[derive(serde::Serialize, serde::Deserialize)]
 struct FileAnswer {
     #[serde(default, skip_serializing_if = "Option::is_none")]
     size: Option<u64>,
     #[serde(default, skip_serializing_if = "Option::is_none")]
+    sha256: Option<String>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
     error: Option<String>,
+}
+
+/// A paired device asks for our profile photo, naming the version it has (empty: none).
+#[derive(serde::Serialize, serde::Deserialize)]
+struct PhotoAsk {
+    photo: String,
+}
+
+/// Our photo's version, and its size when the bytes follow (the asker has another
+/// version); no version without a photo. Older versions answer without one.
+#[derive(serde::Serialize, serde::Deserialize)]
+struct PhotoAnswer {
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    photo: Option<String>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    size: Option<u64>,
 }
 
 const GONE: &str = "gone";
 
-/// Messages from a paired device, each acknowledged once kept, or one file it asks for.
+/// Messages from a paired device, each acknowledged once kept, or one file or our photo it asks for.
 fn talk(s: &mut (impl Read + Write), peer: &Peer) {
     loop {
         match read_frame(s) {
@@ -189,6 +208,8 @@ fn talk(s: &mut (impl Read + Write), peer: &Peer) {
             Ok((Kind::Lan, payload)) => {
                 if let Ok(ask) = serde_json::from_slice::<FileAsk>(&payload) {
                     send_file(s, &peer.key, &ask);
+                } else if let Ok(ask) = serde_json::from_slice::<PhotoAsk>(&payload) {
+                    send_photo(s, &ask);
                 }
                 break;
             }
@@ -201,14 +222,27 @@ fn send_file(s: &mut (impl Read + Write), who: &str, ask: &FileAsk) {
     use crate::chat::files::{open_share, ShareError};
     match open_share(&ask.file, who, false, ask.offset) {
         Ok((file, left)) => {
-            if handshake::send(s, &FileAnswer { size: Some(left), error: None }).is_ok() {
+            let sha256 = crate::chat::files::share_sha256(&ask.file);
+            if handshake::send(s, &FileAnswer { size: Some(left), sha256, error: None }).is_ok() {
                 let _ = std::io::copy(&mut std::io::Read::take(file, left), s);
                 let _ = s.flush();
             }
         }
         Err(e) => {
             let why = if e == ShareError::Gone { GONE } else { "missing" };
-            let _ = handshake::send(s, &FileAnswer { size: None, error: Some(why.into()) });
+            let _ = handshake::send(s, &FileAnswer { size: None, sha256: None, error: Some(why.into()) });
+        }
+    }
+}
+
+fn send_photo(s: &mut (impl Read + Write), ask: &PhotoAsk) {
+    let photo = crate::avatars::own_photo();
+    let version = photo.as_deref().map(crate::avatars::hash_of);
+    let fresh = photo.filter(|_| version.as_deref() != Some(ask.photo.as_str()));
+    let answer = PhotoAnswer { photo: version, size: fresh.as_ref().map(|b| b.len() as u64) };
+    if handshake::send(s, &answer).is_ok() {
+        if let Some(bytes) = fresh {
+            let _ = s.write_all(&bytes).and_then(|()| s.flush());
         }
     }
 }
@@ -225,20 +259,52 @@ pub(crate) enum LanError {
 
 /// Fetch (the rest of) file `id` from the paired device `key` into `part`,
 /// which holds `size` once whole: how many bytes it holds now, also when
-/// the transfer broke off (another call resumes it).
-pub(crate) fn fetch_file(key: &str, id: &str, part: &std::path::Path, size: u64, progress: &mut dyn FnMut(u64)) -> Result<u64, LanError> {
+/// the transfer broke off (another call resumes it), and the SHA-256 the
+/// sender gave, if any.
+pub(crate) fn fetch_file(key: &str, id: &str, part: &std::path::Path, size: u64, progress: &mut dyn FnMut(u64)) -> Result<(u64, Option<String>), LanError> {
     use crate::chat::files::ShareError;
     let have = std::fs::metadata(part).map(|m| m.len()).unwrap_or(0).min(size);
     let mut s = talk_to(key)?;
-    let _ = s.get_ref().set_read_timeout(Some(STALL));
+    // The sender may hash a large file before it answers.
+    let _ = s.get_ref().set_read_timeout(Some(READ_WAIT));
     handshake::send(&mut s, &FileAsk { file: id.to_string(), offset: have }).map_err(|_| LanError::Unreachable)?;
     let answer: FileAnswer = handshake::recv(&mut s).map_err(|_| LanError::Unreachable)?;
+    let _ = s.get_ref().set_read_timeout(Some(STALL));
     match (answer.size, answer.error.as_deref()) {
-        (Some(left), None) if have + left == size => Ok(crate::chat::files::append_part(&mut s, part, have, size, progress)
-            .unwrap_or_else(|_| std::fs::metadata(part).map(|m| m.len()).unwrap_or(have))),
+        (Some(left), None) if have + left == size => {
+            let held = crate::chat::files::append_part(&mut s, part, have, size, progress)
+                .unwrap_or_else(|_| std::fs::metadata(part).map(|m| m.len()).unwrap_or(have));
+            Ok((held, answer.sha256))
+        }
         (_, Some(GONE)) => Err(LanError::Refused(ShareError::Gone)),
         _ => Err(LanError::Refused(ShareError::Missing)),
     }
+}
+
+/// A paired device's profile photo: its version, and the bytes when ours differ.
+pub(crate) struct Photo {
+    pub version: String,
+    pub bytes: Option<Vec<u8>>,
+}
+
+/// What the paired device `key` says about its profile photo, given the version
+/// we hold (empty: none): `None` when it has none. Bytes are at most `max`.
+pub(crate) fn fetch_photo(key: &str, have: &str, max: u64) -> Result<Option<Photo>, LanError> {
+    let mut s = talk_to(key)?;
+    let _ = s.get_ref().set_read_timeout(Some(STALL));
+    handshake::send(&mut s, &PhotoAsk { photo: have.to_string() }).map_err(|_| LanError::Unreachable)?;
+    let answer: PhotoAnswer = handshake::recv(&mut s).map_err(|_| LanError::Unreachable)?;
+    let Some(version) = answer.photo else { return Ok(None) };
+    let bytes = match answer.size {
+        Some(n) if n <= max => {
+            let mut b = vec![0; usize::try_from(n).map_err(|_| LanError::Unreachable)?];
+            s.read_exact(&mut b).map_err(|_| LanError::Unreachable)?;
+            Some(b)
+        }
+        Some(_) => return Err(LanError::Unreachable),
+        None => None,
+    };
+    Ok(Some(Photo { version, bytes }))
 }
 
 /// A proven TLS connection to the paired device `key`, at its announced

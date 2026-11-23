@@ -1135,6 +1135,11 @@ fn post_lan(conv: &ConvId, text: &str, file: Option<(Offer, PathBuf)>, extra: Ex
     if let Some((o, path)) = &file {
         // Served to the paired device when it asks (see lan::pairing::fetch_file).
         files::share(&id, path, o.size, std::slice::from_ref(&conv.name));
+        if o.sha256.is_none() {
+            // Ready by the time the paired device asks for the file.
+            let id = id.clone();
+            let _ = std::thread::Builder::new().name("biglace-hash".into()).spawn(move || files::share_sha256(&id));
+        }
     }
     if let Ok(mut s) = store().lock() {
         match &wire.op {

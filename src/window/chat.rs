@@ -887,12 +887,12 @@ impl ChatPage {
         }
         self.conv_title.set_text(&chat::label(&id.name));
         if id.is_lan() {
-            // No account behind it: no photo to fetch, no calls (they go over the tailnet).
+            // No account behind it: no calls (they go over the tailnet).
             // "Maria (notebook)": initials from the words, not the parenthesis.
             self.conv_avatar.set_text(Some(&chat::label(&id.name).replace(['(', ')'], "")));
             self.conv_avatar.set_icon_name(None);
             self.conv_avatar.set_show_initials(true);
-            self.conv_avatar.set_custom_image(gtk4::gdk::Paintable::NONE);
+            crate::avatars::bind_lan(&self.conv_avatar, &id.name);
             self.btn_call.set_visible(false);
         } else if id.is_group() {
             self.conv_avatar.set_text(Some(&id.name));
@@ -1383,7 +1383,9 @@ impl ChatPage {
                     if id.is_group() {
                         avatar.set_icon_name(Some("system-users-symbolic"));
                         crate::avatars::bind_group(&avatar, &id.name);
-                    } else if !id.is_lan() {
+                    } else if id.is_lan() {
+                        crate::avatars::bind_lan(&avatar, &id.name);
+                    } else {
                         crate::avatars::bind(&avatar, &id.name);
                     }
                     row.add_prefix(&avatar);
@@ -1465,7 +1467,9 @@ fn conv_row(c: &chat::Summary, online: Option<bool>) -> gtk4::ListBoxRow {
     if c.id.is_group() {
         avatar.set_icon_name(Some("system-users-symbolic"));
         crate::avatars::bind_group(&avatar, &c.id.name);
-    } else if !c.id.is_lan() {
+    } else if c.id.is_lan() {
+        crate::avatars::bind_lan(&avatar, &c.id.name);
+    } else {
         crate::avatars::bind(&avatar, &c.id.name);
     }
     if online == Some(true) {

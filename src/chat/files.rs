@@ -193,8 +193,11 @@ pub fn send_file(conv: &ConvId, path: &Path) -> Result<(), String> {
         wave: vec![],
         sha256: None,
     };
-    // What arrives is checked against this (a damaged copy is refused).
-    offer.sha256 = Some(sha256_of(path)?);
+    // What arrives is checked against the hash (a damaged copy is refused). On the
+    // local network it comes with the transfer, so a large file shows up at once.
+    if !conv.is_lan() {
+        offer.sha256 = Some(sha256_of(path)?);
+    }
     let preview = match offer.kind {
         FileKind::Image => image_thumb(path),
         FileKind::Video => video_thumb(path).map(|(jpeg, w, h, duration_ms)| {
@@ -338,6 +341,9 @@ struct Share {
     size: u64,
     to: Vec<String>,
     at: u64,
+    /// SHA-256 (hex) of a file offered without one, once worked out.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    sha256: Option<String>,
 }
 
 fn shares() -> &'static Mutex<Vec<Share>> {
@@ -355,10 +361,31 @@ pub(crate) fn share(id: &str, path: &Path, size: u64, to: &[String]) {
     let Ok(mut list) = shares().lock() else { return };
     let now = now_ms();
     list.retain(|s| now.saturating_sub(s.at) < SHARE_DAYS * 24 * 3600 * 1000);
-    list.push(Share { id: id.into(), path: path.to_path_buf(), size, to: to.to_vec(), at: now });
-    if let Ok(json) = serde_json::to_vec(&*list) {
+    list.push(Share { id: id.into(), path: path.to_path_buf(), size, to: to.to_vec(), at: now, sha256: None });
+    save_shares(&list);
+}
+
+fn save_shares(list: &[Share]) {
+    if let Ok(json) = serde_json::to_vec(list) {
         write_private(&chat_dir().join("shares"), &json);
     }
+}
+
+/// SHA-256 (hex) of shared file `id`, worked out the first time and kept.
+/// Blocking: reads the whole file.
+pub(crate) fn share_sha256(id: &str) -> Option<String> {
+    let share = shares().lock().ok()?.iter().find(|s| s.id == id).cloned()?;
+    if share.sha256.is_some() {
+        return share.sha256;
+    }
+    let hash = sha256_of(&share.path).ok()?;
+    if let Ok(mut list) = shares().lock() {
+        if let Some(s) = list.iter_mut().find(|s| s.id == id) {
+            s.sha256 = Some(hash.clone());
+            save_shares(&list);
+        }
+    }
+    Some(hash)
 }
 
 fn respond(mut stream: &TcpStream, status: u16, reason: &str) {
@@ -514,12 +541,13 @@ pub(super) fn fetch(conv: &ConvId, id: &str) -> Result<PathBuf, String> {
     std::fs::create_dir_all(&dir).map_err(|e| e.to_string())?;
     let part = dir.join(format!(".biglace-{id}.part"));
 
-    if conv.is_lan() {
-        lan_fetch(conv, id, &part, size)?;
+    let answered = if conv.is_lan() {
+        lan_fetch(conv, id, &part, size)?
     } else {
         fetch_over_tailnet(conv, id, &message, &part, size)?;
-    }
-    if let Some(expected) = &file.offer.sha256 {
+        None
+    };
+    if let Some(expected) = file.offer.sha256.as_ref().or(answered.as_ref()) {
         if !sha256_of(&part)?.eq_ignore_ascii_case(expected) {
             let _ = std::fs::remove_file(&part);
             return Err(crate::tr!("the file arrived different from the original (damaged on the way) — download it again"));
@@ -571,8 +599,9 @@ fn fetch_over_tailnet(conv: &ConvId, id: &str, message: &super::Message, part: &
 
 /// Download `part` of message `id` from the device paired on the local network
 /// that sent it, resuming by itself after a stall or a dropped connection; it
-/// gives up once nothing arrived for [`LAN_PATIENCE`].
-fn lan_fetch(conv: &ConvId, id: &str, part: &Path, size: u64) -> Result<(), String> {
+/// gives up once nothing arrived for [`LAN_PATIENCE`]. The SHA-256 the sender
+/// gave, if any.
+fn lan_fetch(conv: &ConvId, id: &str, part: &Path, size: u64) -> Result<Option<String>, String> {
     #[cfg(target_os = "linux")]
     {
         use crate::lan::pairing::{fetch_file, LanError};
@@ -583,8 +612,8 @@ fn lan_fetch(conv: &ConvId, id: &str, part: &Path, size: u64) -> Result<(), Stri
                 emit(ChatEvent::Progress { conv: conv.clone(), id: id.to_string(), done, total: size });
             });
             let reason = match tried {
-                Ok(have) if have == size => return Ok(()),
-                Ok(have) if have > before => {
+                Ok((have, sha256)) if have == size => return Ok(sha256),
+                Ok((have, _)) if have > before => {
                     moved = Instant::now();
                     continue;
                 }

@@ -7,8 +7,10 @@
 //!
 //! A group's photo works the same way: it lives on the devices of the person
 //! who created the group (only they set it) and is handed to the group's
-//! members at `/v1/group-avatar/<group>`. Photos are kept by key: an account
-//! name, or `group.<name>` (account names never hold a dot).
+//! members at `/v1/group-avatar/<group>`. A device paired on the local
+//! network hands out its photo over that connection (`lan::pairing`).
+//! Photos are kept by key: an account name, `group.<name>`, or
+//! `lan.<device key>` (account names never hold a dot).
 
 use std::collections::HashMap;
 use std::path::PathBuf;
@@ -29,17 +31,38 @@ fn name_ok(user: &str) -> bool {
 }
 
 const GROUP_KEY: &str = "group.";
+const LAN_KEY: &str = "lan.";
 
 fn group_key(group: &str) -> String {
     format!("{GROUP_KEY}{group}")
 }
 
-/// An account name, or `group.<name>` for a group's photo.
+/// The photo key of the device paired on the local network as `device`,
+/// `None` for anything but a device key.
+fn lan_key(device: &str) -> Option<String> {
+    device_key_ok(device).then(|| format!("{LAN_KEY}{device}"))
+}
+
+/// The device key behind a [`lan_key`].
+fn lan_device(key: &str) -> Option<&str> {
+    key.strip_prefix(LAN_KEY).filter(|device| device_key_ok(device))
+}
+
+/// An Ed25519 public key in URL-safe base64, as devices name themselves on the local network.
+fn device_key_ok(device: &str) -> bool {
+    use base64::Engine;
+    base64::engine::general_purpose::URL_SAFE_NO_PAD.decode(device).is_ok_and(|k| k.len() == 32)
+}
+
+/// An account name, `group.<name>` for a group's photo, or a [`lan_key`].
 fn key_ok(key: &str) -> bool {
-    match key.strip_prefix(GROUP_KEY) {
-        Some(group) => crate::invite::group_name_ok(group),
-        None => name_ok(key),
+    if let Some(group) = key.strip_prefix(GROUP_KEY) {
+        return crate::invite::group_name_ok(group);
     }
+    if key.starts_with(LAN_KEY) {
+        return lan_device(key).is_some();
+    }
+    name_ok(key)
 }
 
 /// `file` is a cached photo of `key`: `<key>-<16 hex digits>`, so `big`
@@ -91,6 +114,14 @@ fn texture_for(user: &str) -> Option<gdk::Texture> {
 /// Show `user`'s photo in `avatar` (now if cached, else when it arrives).
 pub fn bind(avatar: &libadwaita::Avatar, user: &str) {
     bind_key(avatar, user);
+}
+
+/// Show the photo of the device paired on the local network as `device` in `avatar`.
+pub fn bind_lan(avatar: &libadwaita::Avatar, device: &str) {
+    match lan_key(device) {
+        Some(key) => bind_key(avatar, &key),
+        None => unbind(avatar),
+    }
 }
 
 /// Show group `group`'s photo in `avatar` (now if cached, else when it arrives).
@@ -211,7 +242,13 @@ fn own_group_path(group: &str) -> PathBuf {
     glib::user_config_dir().join("biglace").join("groups").join(format!("{group}.jpg"))
 }
 
-fn hash_of(bytes: &[u8]) -> String {
+/// Our own photo as handed out, if we set one.
+pub(crate) fn own_photo() -> Option<Vec<u8>> {
+    std::fs::read(own_path()).ok().filter(|b| is_image(b) && b.len() as u64 <= MAX_PHOTO)
+}
+
+/// A photo's version, as others compare it with the copy they hold.
+pub(crate) fn hash_of(bytes: &[u8]) -> String {
     use sha2::{Digest, Sha256};
     Sha256::digest(bytes).iter().take(8).map(|b| format!("{b:02x}")).collect()
 }
@@ -256,6 +293,10 @@ fn fetch(keys: &[String]) {
     let peers = crate::tailscale::get_peers();
     let _ = std::fs::create_dir_all(cache_dir());
     for key in keys {
+        if let Some(device) = lan_device(key) {
+            take_lan(key, device);
+            continue;
+        }
         // Whose devices hold the photo, and where on their agent.
         let (holder, local, photo_path) = match key.strip_prefix(GROUP_KEY) {
             Some(group) => {
@@ -344,32 +385,65 @@ fn take_remote(key: &str, holder: &str, photo_path: &str, peers: &[crate::tailsc
             }
         }
     }
-    let now = Instant::now();
     match answer {
-        // Nobody to ask now: keep what we have, ask again later.
-        Remote::Unreachable => {
-            if let Ok(mut k) = known().lock() {
-                k.insert(key.to_string(), (None, now - RECHECK + Duration::from_secs(60)));
-            }
-            if cached_any(key).is_some() {
-                let _ = updates().0.try_send(key.to_string());
-            }
-        }
+        Remote::Unreachable => retry_soon(key),
         Remote::NoPhoto => forget(key),
         Remote::Photo(h) => {
             if let Ok(mut k) = known().lock() {
-                k.insert(key.to_string(), (Some(h.clone()), now));
+                k.insert(key.to_string(), (Some(h.clone()), Instant::now()));
             }
             if !cached_path(key, &h).exists() {
                 if let Some(bytes) = download(&from_ip, photo_path) {
-                    remove_cached(key);
-                    // Named by what it really is, not what was claimed.
-                    let _ = std::fs::write(cached_path(key, &hash_of(&bytes)), &bytes);
-                    let _ = updates().0.try_send(key.to_string());
+                    keep(key, &bytes);
                 }
             }
         }
     }
+}
+
+/// The paired device's: asked over the local network, with the version we hold.
+fn take_lan(key: &str, device: &str) {
+    #[cfg(target_os = "linux")]
+    {
+        let have = cached_any(key)
+            .and_then(|p| p.file_name()?.to_str()?.strip_prefix(key)?.strip_prefix('-').map(str::to_string))
+            .unwrap_or_default();
+        match crate::lan::pairing::fetch_photo(device, &have, MAX_PHOTO) {
+            Ok(None) => forget(key),
+            Ok(Some(crate::lan::pairing::Photo { version, bytes })) => {
+                if let Ok(mut k) = known().lock() {
+                    k.insert(key.to_string(), (Some(version), Instant::now()));
+                }
+                if let Some(bytes) = bytes.filter(|b| is_image(b)) {
+                    keep(key, &bytes);
+                }
+            }
+            Err(_) => retry_soon(key),
+        }
+    }
+    #[cfg(not(target_os = "linux"))]
+    {
+        let _ = device;
+        forget(key);
+    }
+}
+
+/// Nobody to ask now: keep what we have, ask again in a minute.
+fn retry_soon(key: &str) {
+    if let Ok(mut k) = known().lock() {
+        k.insert(key.to_string(), (None, Instant::now() - RECHECK + Duration::from_secs(60)));
+    }
+    if cached_any(key).is_some() {
+        let _ = updates().0.try_send(key.to_string());
+    }
+}
+
+/// `bytes` is the photo of `key` now: cached and shown.
+fn keep(key: &str, bytes: &[u8]) {
+    remove_cached(key);
+    // Named by what it really is, not what was claimed.
+    let _ = std::fs::write(cached_path(key, &hash_of(bytes)), bytes);
+    let _ = updates().0.try_send(key.to_string());
 }
 
 /// Another computer asks for our photo (agent thread).
@@ -530,6 +604,19 @@ pub fn refresh_group(group: &str) {
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    #[test]
+    fn lan_keys_round_trip() {
+        use base64::Engine;
+        let device = base64::engine::general_purpose::URL_SAFE_NO_PAD.encode([7u8; 32]);
+        let key = lan_key(&device).unwrap();
+        assert_eq!(key, format!("lan.{device}"));
+        assert!(key_ok(&key));
+        assert_eq!(lan_device(&key), Some(device.as_str()));
+        assert!(lan_key("short").is_none());
+        assert!(lan_key("11qYAYKxCrfVS/7TyWQHOg7hcvPapiMlrwIaaPcHURo=").is_none(), "standard base64");
+        assert!(!key_ok("lan.abc"));
+    }
 
     #[test]
     fn photo_keys() {
