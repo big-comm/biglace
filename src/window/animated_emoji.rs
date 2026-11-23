@@ -40,6 +40,7 @@ fn animation(emoji: &'static str) -> Option<PixbufAnimation> {
             .or_insert_with(|| {
                 let bytes = glib::Bytes::from_static(source(emoji)?);
                 let stream = gio::MemoryInputStream::from_bytes(&bytes);
+                // allow-noisy-log: a reaction left static says why, as the rest of the app reports failures.
                 PixbufAnimation::from_stream(&stream, gio::Cancellable::NONE)
                     .inspect_err(|e| eprintln!("[biglace] reaction {emoji}: {e}"))
                     .ok()
