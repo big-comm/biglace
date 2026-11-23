@@ -88,7 +88,8 @@ fn signature(m: &Message) -> String {
 }
 
 /// Quick reactions offered first (like Telegram's).
-const QUICK_REACTIONS: [&str; 6] = ["❤️", "👍", "👀", "🙏", "🤓", "😢"];
+/// The reactions shown before the arrow brings the rest.
+const FIRST_REACTIONS: usize = 7;
 
 type UnreadHook = RefCell<Option<Box<dyn Fn(u32)>>>;
 
@@ -1860,51 +1861,22 @@ impl ChatPage {
         (outer.upcast(), tick, file)
     }
 
-    /// The actions popover for message `m`, Telegram-style: quick
-    /// reactions on top, then reply, edit, pin, copy, forward, delete, select.
+    /// The actions popover for message `m`, as in Telegram: its reactions,
+    /// animated, in a capsule on top; reply, copy, forward, pin, edit,
+    /// select and delete in a card below it.
     fn show_actions(&self, anchor: &gtk4::Box, m: &Message, x: f64, y: f64) {
         let Some(conv) = self.current() else { return };
         let pop = gtk4::Popover::builder().has_arrow(false).build();
         pop.add_css_class("msg-actions");
         pop.set_parent(anchor);
         pop.set_pointing_to(Some(&gtk4::gdk::Rectangle::new(x as i32, y as i32, 1, 1)));
-        let col = gtk4::Box::new(gtk4::Orientation::Vertical, 2);
+        let col = gtk4::Box::new(gtk4::Orientation::Vertical, 8);
         if !m.deleted {
-            let row = gtk4::Box::new(gtk4::Orientation::Horizontal, 2);
-            row.add_css_class("react-row");
-            for emoji in QUICK_REACTIONS {
-                let b = gtk4::Button::builder().label(emoji).build();
-                b.add_css_class("react-pick");
-                let (page, id, pop) = (self.clone(), m.id.clone(), pop.clone());
-                b.connect_clicked(move |_| {
-                    pop.popdown();
-                    page.react(&id, emoji);
-                });
-                row.append(&b);
-            }
-            let more = gtk4::Button::builder()
-                .icon_name("pan-down-symbolic")
-                .tooltip_text(tr!("More reactions"))
-                .build();
-            more.add_css_class("react-more");
-            {
-                let (page, id, pop, anchor) = (self.clone(), m.id.clone(), pop.clone(), anchor.clone());
-                more.connect_clicked(move |_| {
-                    pop.popdown();
-                    let (page2, id2) = (page.clone(), id.clone());
-                    let picker = super::emoji_picker::build(move |e| page2.react(&id2, e));
-                    picker.set_parent(&anchor);
-                    picker.connect_closed(|p| {
-                        let p = p.clone();
-                        glib::idle_add_local_once(move || p.unparent());
-                    });
-                    picker.popup();
-                });
-            }
-            row.append(&more);
-            col.append(&row);
-            col.append(&gtk4::Separator::new(gtk4::Orientation::Horizontal));
+            col.append(&self.reaction_capsule(&pop, anchor, &m.id));
         }
+        let card = gtk4::Box::new(gtk4::Orientation::Vertical, 2);
+        card.add_css_class("msg-menu-card");
+        card.set_halign(gtk4::Align::Start);
         let item = |icon: &str, label: String, destructive: bool, act: Box<dyn Fn()>| {
             let b = gtk4::Button::builder()
                 .child(&libadwaita::ButtonContent::builder().icon_name(icon).label(label).halign(gtk4::Align::Start).build())
@@ -1918,15 +1890,17 @@ impl ChatPage {
                 pop.popdown();
                 act();
             });
-            col.append(&b);
+            card.append(&b);
         };
         if !m.deleted {
             let (page, msg) = (self.clone(), m.clone());
             item("mail-reply-sender-symbolic", tr!("Reply"), false, Box::new(move || page.start_reply(&msg)));
-            if m.mine && m.file.is_none() && m.forwarded_from.is_none() && !m.text.trim().is_empty() {
-                let (page, msg) = (self.clone(), m.clone());
-                item("document-edit-symbolic", tr!("Edit"), false, Box::new(move || page.start_edit(&msg)));
+            if !m.text.trim().is_empty() {
+                let (page, id) = (self.clone(), m.id.clone());
+                item("edit-copy-symbolic", tr!("Copy text"), false, Box::new(move || page.copy_messages(std::slice::from_ref(&id))));
             }
+            let (page, id) = (self.clone(), m.id.clone());
+            item("mail-forward-symbolic", tr!("Forward"), false, Box::new(move || page.forward_dialog(vec![id.clone()])));
             let pinned_now = chat::pinned(&conv).is_some_and(|p| p.id == m.id);
             let (page, id) = (self.clone(), m.id.clone());
             item(
@@ -1935,23 +1909,68 @@ impl ChatPage {
                 false,
                 Box::new(move || page.toggle_pin(&id, pinned_now)),
             );
-            if !m.text.trim().is_empty() {
-                let (page, id) = (self.clone(), m.id.clone());
-                item("edit-copy-symbolic", tr!("Copy text"), false, Box::new(move || page.copy_messages(std::slice::from_ref(&id))));
+            if m.mine && m.file.is_none() && m.forwarded_from.is_none() && !m.text.trim().is_empty() {
+                let (page, msg) = (self.clone(), m.clone());
+                item("document-edit-symbolic", tr!("Edit"), false, Box::new(move || page.start_edit(&msg)));
             }
-            let (page, id) = (self.clone(), m.id.clone());
-            item("mail-forward-symbolic", tr!("Forward"), false, Box::new(move || page.forward_dialog(vec![id.clone()])));
         }
         let (page, id) = (self.clone(), m.id.clone());
-        item("user-trash-symbolic", tr!("Delete"), true, Box::new(move || page.confirm_delete(vec![id.clone()])));
-        let (page, id) = (self.clone(), m.id.clone());
         item("object-select-symbolic", tr!("Select"), false, Box::new(move || page.start_selection(&id)));
+        let (page, id) = (self.clone(), m.id.clone());
+        item("user-trash-symbolic", tr!("Delete"), true, Box::new(move || page.confirm_delete(vec![id.clone()])));
+        col.append(&card);
         pop.set_child(Some(&col));
         pop.connect_closed(|p| {
             let p = p.clone();
             glib::idle_add_local_once(move || p.unparent());
         });
         pop.popup();
+    }
+
+    /// The first reactions, animated; the arrow brings the rest and then any emoji.
+    fn reaction_capsule(&self, pop: &gtk4::Popover, anchor: &gtk4::Box, id: &str) -> gtk4::Box {
+        let row = gtk4::Box::new(gtk4::Orientation::Horizontal, 0);
+        row.add_css_class("react-capsule");
+        row.set_halign(gtk4::Align::Start);
+        let pick = |emoji: &'static str| {
+            let b = gtk4::Button::builder().child(&super::animated_emoji::build(emoji, 30)).tooltip_text(emoji).build();
+            b.add_css_class("react-pick");
+            let (page, id, pop) = (self.clone(), id.to_string(), pop.clone());
+            b.connect_clicked(move |_| {
+                pop.popdown();
+                page.react(&id, emoji);
+            });
+            b
+        };
+        let (first, rest) = super::animated_emoji::REACTIONS.split_at(FIRST_REACTIONS);
+        for &emoji in first {
+            row.append(&pick(emoji));
+        }
+        let more = gtk4::Button::builder().icon_name("pan-down-symbolic").tooltip_text(tr!("More reactions")).build();
+        more.add_css_class("react-more");
+        row.append(&more);
+        let rest: Vec<gtk4::Button> = rest.iter().map(|&emoji| pick(emoji)).collect();
+        let (page, id, pop, anchor) = (self.clone(), id.to_string(), pop.clone(), anchor.clone());
+        more.connect_clicked(move |more| {
+            // First the other reactions, in place of the arrow; then any emoji.
+            let row = more.parent().and_downcast::<gtk4::Box>();
+            if let Some(row) = row.filter(|_| rest.first().is_some_and(|b| b.parent().is_none())) {
+                for b in &rest {
+                    row.insert_child_after(b, more.prev_sibling().as_ref());
+                }
+                return;
+            }
+            pop.popdown();
+            let (page, id) = (page.clone(), id.clone());
+            let picker = super::emoji_picker::build(move |e| page.react(&id, e));
+            picker.set_parent(&anchor);
+            picker.connect_closed(|p| {
+                let p = p.clone();
+                glib::idle_add_local_once(move || p.unparent());
+            });
+            picker.popup();
+        });
+        row
     }
 
     fn react(&self, id: &str, emoji: &str) {

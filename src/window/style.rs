@@ -224,9 +224,11 @@ button.call-answer:hover { background-color: #33d17a; }
 }
 .reaction-chip.mine { background-color: alpha(@accent_bg_color, 0.85); color: @accent_fg_color; }
 .bubble.mine .reaction-chip.mine { background-color: alpha(@accent_fg_color, 0.9); color: @accent_bg_color; }
-popover.msg-actions > contents { padding: 6px; border-radius: 14px; min-width: 230px; }
-.react-row { padding: 2px 2px 6px 2px; }
-.react-pick { font-size: 20px; padding: 2px 5px; min-width: 0; min-height: 0; border-radius: 999px; background: none; box-shadow: none; }
+popover.msg-actions > contents { padding: 12px; background: none; box-shadow: none; border: none; }
+.react-capsule, .msg-menu-card { background-color: @popover_bg_color; color: @popover_fg_color; box-shadow: 0 2px 10px alpha(black, 0.25), 0 0 0 1px alpha(black, 0.06); }
+.react-capsule { padding: 4px 6px; border-radius: 999px; }
+.msg-menu-card { padding: 6px; border-radius: 14px; min-width: 220px; }
+.react-pick { font-size: 22px; padding: 4px; min-width: 0; min-height: 0; border-radius: 999px; background: none; box-shadow: none; }
 .react-pick:hover { background-color: alpha(currentColor, 0.10); }
 .react-more { min-width: 30px; min-height: 30px; border-radius: 999px; background: none; box-shadow: none; }
 .msg-action { padding: 6px 10px; border-radius: 8px; }

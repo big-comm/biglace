@@ -1,4 +1,5 @@
 mod access_page;
+mod animated_emoji;
 mod call_ui;
 mod chat;
 mod chat_media;
