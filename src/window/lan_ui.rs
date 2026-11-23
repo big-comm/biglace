@@ -30,21 +30,7 @@ pub fn wire(win: &libadwaita::ApplicationWindow, toast: &libadwaita::ToastOverla
     if on {
         start(toast);
     }
-    let (row, toast2, cfg) = (sidebar.lan_devices_row.clone(), toast.clone(), cfg.clone());
-    sidebar.switch_lan.connect_state_set(move |_, active| {
-        {
-            let mut c = cfg.borrow_mut();
-            c.lan_enabled = active;
-            config::save_or_warn(&c);
-        }
-        row.set_visible(active);
-        if active {
-            start(&toast2);
-        } else {
-            pairing::stop();
-        }
-        glib::Propagation::Proceed
-    });
+    wire_switch(win, toast, sidebar, cfg);
     let (win2, state2) = (win.clone(), state.clone());
     sidebar.lan_devices_row.connect_activated(move |_| show_nearby(&win2, &state2));
     let (win, toast) = (win.downgrade(), toast.clone());
@@ -72,6 +58,71 @@ pub fn wire(win: &libadwaita::ApplicationWindow, toast: &libadwaita::ToastOverla
             }
         }
     });
+}
+
+/// The local network's switch: on while on BigScale leaves it first, once
+/// the person agrees.
+fn wire_switch(win: &libadwaita::ApplicationWindow, toast: &libadwaita::ToastOverlay, sidebar: &super::sidebar::Sidebar, cfg: &Rc<RefCell<config::Config>>) {
+    let (row, toast, cfg, connect, win) = (sidebar.lan_devices_row.clone(), toast.clone(), cfg.clone(), sidebar.btn_connect.clone(), win.clone());
+    sidebar.switch_lan.connect_state_set(move |switch, active| {
+        if active && connect.has_css_class("destructive-action") {
+            let (switch, row, toast, cfg, connect) = (switch.clone(), row.clone(), toast.clone(), cfg.clone(), connect.clone());
+            confirm_local_only(&win, move |yes| {
+                if !yes {
+                    switch.set_active(false);
+                    return;
+                }
+                cfg.borrow_mut().left_for_lan = true;
+                connect.emit_clicked();
+                switch.set_state(true);
+                turn(&cfg, &row, &toast, true, &connect);
+            });
+            return glib::Propagation::Stop;
+        }
+        turn(&cfg, &row, &toast, active, &connect);
+        glib::Propagation::Proceed
+    });
+}
+
+/// Turn the local network on or off; off connects BigScale again when we
+/// left it for the local network.
+fn turn(cfg: &Rc<RefCell<config::Config>>, row: &libadwaita::ActionRow, toast: &libadwaita::ToastOverlay, on: bool, connect: &gtk4::Button) {
+    let back = {
+        let mut c = cfg.borrow_mut();
+        c.lan_enabled = on;
+        let back = !on && c.left_for_lan;
+        if !on {
+            c.left_for_lan = false;
+        }
+        config::save_or_warn(&c);
+        back
+    };
+    row.set_visible(on);
+    if on {
+        start(toast);
+    } else {
+        pairing::stop();
+        if back && !connect.has_css_class("destructive-action") {
+            connect.emit_clicked();
+        }
+    }
+}
+
+/// "Use only the local network?": BigScale stays off while it is on.
+/// `answer` gets whether the person agreed.
+fn confirm_local_only(win: &libadwaita::ApplicationWindow, answer: impl Fn(bool) + 'static) {
+    let dlg = libadwaita::MessageDialog::new(
+        Some(win),
+        Some(&tr!("Use only the local network?")),
+        Some(&tr!("You leave BigScale while the local network is on, and connect again when you turn it off.")),
+    );
+    dlg.add_response("cancel", &tr!("Cancel"));
+    dlg.add_response("local", &tr!("Use only the local network"));
+    dlg.set_response_appearance("local", libadwaita::ResponseAppearance::Suggested);
+    dlg.set_default_response(Some("local"));
+    dlg.set_close_response("cancel");
+    dlg.connect_response(None, move |_, response| answer(response == "local"));
+    dlg.present();
 }
 
 fn start(toast: &libadwaita::ToastOverlay) {

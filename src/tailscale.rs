@@ -1179,12 +1179,15 @@ pub fn connect(server: &str, authkey: &str, pending_key: bool, hostname: &str) -
     let same_server = current_control_url().is_some_and(|c| same_url(&c, server));
     if pre_status.registered && !pending_key && (authkey.is_empty() || same_server) {
         dbg("connect: cached registration present — trying keyless reconnect");
-        if try_reconnect().is_ok() && wait_until_online() {
+        if try_reconnect(server, hostname).is_ok() && wait_until_online() {
             dbg("connect: reconnected via cached registration (no key needed)");
             apply_saved_hostname(hostname);
             return Ok(());
         }
-        dbg("connect: keyless reconnect didn't take — (re)authenticating with the key");
+        // Registered here with only the saved one-time key: re-authenticating
+        // with it can only fail and log the device out. Keep the registration.
+        dbg("connect: keyless reconnect didn't take — keeping the registration");
+        bail!(tr!("Couldn't reconnect to the network. Try again in a moment."));
     }
 
     let key = registration_key(server, authkey, pre_status.registered)?;
@@ -1278,8 +1281,18 @@ fn wait_until_online() -> bool {
 /// Resume an existing registration without changing any stored preferences.
 /// A bare `tailscale up` preserves exit-node, DNS, SSH, shields-up, and route
 /// settings configured by BigLace or another Tailscale client.
-fn try_reconnect() -> Result<()> {
-    run_tailscale_with_fallback(&["up", "--timeout=10s"])
+fn try_reconnect(server: &str, hostname: &str) -> Result<()> {
+    // `tailscale up` refuses unless every setting that differs from the
+    // default is named again: the ones enrollment set, without the key.
+    let (s_arg, h_arg) = (format!("--login-server={server}"), format!("--hostname={hostname}"));
+    let mut args = vec!["up", "--accept-routes", "--timeout=10s"];
+    if !server.is_empty() {
+        args.push(&s_arg);
+    }
+    if !hostname.is_empty() {
+        args.push(&h_arg);
+    }
+    run_tailscale_with_fallback(&args)
 }
 
 /// Enroll or deliberately re-authenticate against a control server. Reset is
@@ -1288,7 +1301,7 @@ fn try_reconnect() -> Result<()> {
 fn try_connect_with_key(server: &str, authkey: &str, hostname: &str) -> Result<()> {
     let user = std::env::var("USER").unwrap_or_default();
     // Enrollment intentionally starts from a complete preference set. Normal
-    // reconnects use the bare `tailscale up` path above and preserve prefs.
+    // reconnects go through `try_reconnect`, which keeps the registration.
     // --timeout bounds how long `tailscale up` waits to reach Running. Without
     // it, a rejected/expired key sends the daemon into a NeedsLogin state where
     // `up` blocks forever waiting for an interactive browser login — which BigLace

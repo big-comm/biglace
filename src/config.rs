@@ -74,6 +74,10 @@ pub struct Config {
     /// no server (off until the person turns it on: it shows us to the network).
     #[serde(default)]
     pub lan_enabled: bool,
+    /// We left BigScale when the local network was turned on: turning it
+    /// off connects again. The two never run together.
+    #[serde(default)]
+    pub left_for_lan: bool,
 
     /// Per-peer SSH login overrides, keyed by hostname. Takes precedence over
     /// the `os_user` propagated by the panel (Option D), which itself falls

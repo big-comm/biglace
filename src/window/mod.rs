@@ -592,7 +592,8 @@ pub fn build(app: &libadwaita::Application, start_hidden: bool) {
 
     {
         let c = cfg.borrow().clone();
-        if c.auto_connect && has_connect_config(&c) {
+        // Left for the local network: BigScale waits until it is turned off.
+        if c.auto_connect && has_connect_config(&c) && !(c.lan_enabled && c.left_for_lan) {
             // Probe off-thread so a hung tailscaled at login can't freeze the
             // just-shown window; fire do_connect from the main loop once the
             // probe reports the daemon is up but not yet connected.
@@ -1907,6 +1908,11 @@ fn wire_signals(ctx: &Ctx) {
                     },
                 );
             } else {
+                // BigScale and the local network never run together.
+                if ctx2.ui.sidebar.switch_lan.is_active() {
+                    ctx2.cfg.borrow_mut().left_for_lan = false;
+                    ctx2.ui.sidebar.switch_lan.set_active(false);
+                }
                 let c = ctx2.cfg.borrow().clone();
                 if c.authkey.trim().is_empty() && !c.enrolled {
                     ctx2.ui.toast.add_toast(
