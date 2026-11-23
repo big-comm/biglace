@@ -11,36 +11,34 @@ use crate::lan::discovery::Nearby;
 use crate::lan::pairing::{self, LanEvent};
 use crate::{config, tr, trf};
 
-/// The devices nearby, and the list showing them while its window is open.
-#[derive(Default)]
-struct State {
-    nearby: Vec<Nearby>,
-    shown: Option<glib::WeakRef<gtk4::ListBox>>,
-}
-
-/// Wire the switch and the devices row, and follow the network (once, at startup).
-pub fn wire(win: &libadwaita::ApplicationWindow, toast: &libadwaita::ToastOverlay, sidebar: &super::sidebar::Sidebar, cfg: &Rc<RefCell<config::Config>>) {
-    let state: Rc<RefCell<State>> = Rc::default();
+/// Wire the switch and the devices nearby on the main page, and follow the network (once, at startup).
+pub fn wire(
+    win: &libadwaita::ApplicationWindow,
+    toast: &libadwaita::ToastOverlay,
+    sidebar: &super::sidebar::Sidebar,
+    content: &super::content::Content,
+    cfg: &Rc<RefCell<config::Config>>,
+    refresh: async_channel::Sender<()>,
+) {
     for paired in crate::lan::peers::paired() {
         crate::chat::open(&crate::chat::ConvId::lan(&paired.key));
     }
     let on = cfg.borrow().lan_enabled;
     sidebar.switch_lan.set_active(on);
-    sidebar.lan_devices_row.set_visible(on);
     if on {
-        start(toast);
+        start(toast, &content.lan_qr);
     }
-    wire_switch(win, toast, sidebar, cfg);
+    let nearby: Rc<RefCell<Vec<Nearby>>> = Rc::default();
+    fill(&content.lan_list, &nearby);
+    wire_switch(win, toast, sidebar, &content.lan_qr, cfg, refresh);
     ask_if_both_on(win, sidebar, cfg);
-    let (win2, state2) = (win.clone(), state.clone());
-    sidebar.lan_devices_row.connect_activated(move |_| show_nearby(&win2, &state2));
-    let (win, toast) = (win.downgrade(), toast.clone());
+    let (win, toast, list) = (win.downgrade(), toast.clone(), content.lan_list.clone());
     glib::spawn_future_local(async move {
         let events = pairing::events();
         while let Ok(event) = events.recv().await {
             let Some(win) = win.upgrade() else { break };
             match event {
-                LanEvent::Nearby(list) => state.borrow_mut().nearby = list,
+                LanEvent::Nearby(found) => *nearby.borrow_mut() = found,
                 LanEvent::Code { name, code, answer } => {
                     ask_code(&win, &name, &code, answer);
                     continue;
@@ -53,34 +51,39 @@ pub fn wire(win: &libadwaita::ApplicationWindow, toast: &libadwaita::ToastOverla
                 LanEvent::PairFailed { name } => super::show_toast(&toast, &trf!("Not paired with {name}", "name" => name), 5),
             }
             // Who's nearby and where each pairing stands.
-            let shown = state.borrow().shown.as_ref().and_then(glib::WeakRef::upgrade);
-            if let Some(list) = shown {
-                fill(&list, &state.borrow().nearby);
-            }
+            fill(&list, &nearby);
         }
     });
 }
 
 /// The local network's switch: on while on BigScale leaves it first, once
-/// the person agrees.
-fn wire_switch(win: &libadwaita::ApplicationWindow, toast: &libadwaita::ToastOverlay, sidebar: &super::sidebar::Sidebar, cfg: &Rc<RefCell<config::Config>>) {
-    let (row, toast, cfg, connect, win) = (sidebar.lan_devices_row.clone(), toast.clone(), cfg.clone(), sidebar.btn_connect.clone(), win.clone());
+/// the person agrees. Either way the window shows the network now in use.
+fn wire_switch(
+    win: &libadwaita::ApplicationWindow,
+    toast: &libadwaita::ToastOverlay,
+    sidebar: &super::sidebar::Sidebar,
+    qr: &gtk4::Box,
+    cfg: &Rc<RefCell<config::Config>>,
+    refresh: async_channel::Sender<()>,
+) {
+    let (qr, toast, cfg, connect, win) = (qr.clone(), toast.clone(), cfg.clone(), sidebar.btn_connect.clone(), win.clone());
     sidebar.switch_lan.connect_state_set(move |switch, active| {
         if active && connect.has_css_class("destructive-action") {
-            let (switch, row, toast, cfg, connect) = (switch.clone(), row.clone(), toast.clone(), cfg.clone(), connect.clone());
+            let (switch, qr, toast, cfg, connect, refresh) = (switch.clone(), qr.clone(), toast.clone(), cfg.clone(), connect.clone(), refresh.clone());
             confirm_local_only(&win, move |yes| {
                 if !yes {
                     switch.set_active(false);
                     return;
                 }
-                cfg.borrow_mut().left_for_lan = true;
                 connect.emit_clicked();
                 switch.set_state(true);
-                turn(&cfg, &row, &toast, true, &connect);
+                turn(&cfg, &qr, &toast, true, &connect);
+                let _ = refresh.try_send(());
             });
             return glib::Propagation::Stop;
         }
-        turn(&cfg, &row, &toast, active, &connect);
+        turn(&cfg, &qr, &toast, active, &connect);
+        let _ = refresh.try_send(());
         glib::Propagation::Proceed
     });
 }
@@ -113,25 +116,20 @@ fn ask_if_both_on(win: &libadwaita::ApplicationWindow, sidebar: &super::sidebar:
     });
 }
 
-/// Turn the local network on or off; off connects BigScale again when we
-/// left it for the local network.
-fn turn(cfg: &Rc<RefCell<config::Config>>, row: &libadwaita::ActionRow, toast: &libadwaita::ToastOverlay, on: bool, connect: &gtk4::Button) {
-    let back = {
+/// Turn the local network on or off: on leaves BigScale, off connects it
+/// again (when this device has a way in).
+fn turn(cfg: &Rc<RefCell<config::Config>>, qr: &gtk4::Box, toast: &libadwaita::ToastOverlay, on: bool, connect: &gtk4::Button) {
+    {
         let mut c = cfg.borrow_mut();
         c.lan_enabled = on;
-        let back = !on && c.left_for_lan;
-        if !on {
-            c.left_for_lan = false;
-        }
+        c.left_for_lan = on;
         config::save_or_warn(&c);
-        back
-    };
-    row.set_visible(on);
+    }
     if on {
-        start(toast);
+        start(toast, qr);
     } else {
         pairing::stop();
-        if back && !connect.has_css_class("destructive-action") {
+        if connect.is_sensitive() && !connect.has_css_class("destructive-action") {
             connect.emit_clicked();
         }
     }
@@ -154,17 +152,36 @@ fn confirm_local_only(win: &libadwaita::ApplicationWindow, answer: impl Fn(bool)
     dlg.present();
 }
 
-fn start(toast: &libadwaita::ToastOverlay) {
+/// Announce us and look for the others; the code to scan follows our address.
+fn start(toast: &libadwaita::ToastOverlay, qr: &gtk4::Box) {
     // The person and the machine: one person often has several.
     let (real, host) = (glib::real_name().to_string_lossy().into_owned(), glib::host_name().to_string());
     let name = if real.trim().is_empty() || real == "Unknown" { host } else { format!("{real} ({host})") };
     if let Err(e) = pairing::start(&name) {
         super::show_toast(toast, &trf!("Could not turn on the local network: {error}", "error" => e), 8);
     }
+    while let Some(child) = qr.first_child() {
+        qr.remove(&child);
+    }
+    // For a phone, or a network where devices don't see each other: it scans this.
+    if let Some(texture) = pairing::link().and_then(|l| super::invites::qr_texture(&l)) {
+        let caption = gtk4::Label::builder()
+            .label(tr!("Or scan this code with BigLace on the phone (Settings, Local network)"))
+            .wrap(true)
+            .justify(gtk4::Justification::Center)
+            .css_classes(["dim-label"])
+            .build();
+        qr.append(&caption);
+        let picture = gtk4::Picture::for_paintable(&texture);
+        picture.set_size_request(200, 200);
+        picture.set_halign(gtk4::Align::Center);
+        qr.append(&picture);
+    }
 }
 
 /// The devices nearby, each with Pair, and the paired ones, each with Forget.
-fn fill(list: &gtk4::ListBox, nearby: &[Nearby]) {
+fn fill(list: &gtk4::ListBox, shared: &Rc<RefCell<Vec<Nearby>>>) {
+    let nearby = &*shared.borrow();
     while let Some(child) = list.first_child() {
         list.remove(&child);
     }
@@ -185,7 +202,7 @@ fn fill(list: &gtk4::ListBox, nearby: &[Nearby]) {
     }
     let forget = |row: &libadwaita::ActionRow, key: &str| {
         let button = gtk4::Button::builder().label(tr!("Forget")).valign(gtk4::Align::Center).build();
-        let (key, list, nearby) = (key.to_string(), list.downgrade(), nearby.to_vec());
+        let (key, list, nearby) = (key.to_string(), list.downgrade(), shared.clone());
         button.connect_clicked(move |_| {
             crate::lan::peers::remove(&key);
             crate::chat::forget_lan(&key);
@@ -217,42 +234,6 @@ fn fill(list: &gtk4::ListBox, nearby: &[Nearby]) {
         forget(&row, &device.key);
         list.append(&row);
     }
-}
-
-fn show_nearby(win: &libadwaita::ApplicationWindow, state: &Rc<RefCell<State>>) {
-    let list = gtk4::ListBox::builder().selection_mode(gtk4::SelectionMode::None).css_classes(["boxed-list"]).build();
-    fill(&list, &state.borrow().nearby);
-    state.borrow_mut().shown = Some(list.downgrade());
-    let page = gtk4::Box::builder().orientation(gtk4::Orientation::Vertical).spacing(12).margin_top(12).margin_bottom(18).margin_start(18).margin_end(18).build();
-    page.append(&list);
-    // For a phone, or a network where devices don't see each other: it scans this.
-    if let Some(texture) = pairing::link().and_then(|l| super::invites::qr_texture(&l)) {
-        let caption = gtk4::Label::builder()
-            .label(tr!("Or scan this code with BigLace on the phone (Settings, Local network)"))
-            .wrap(true)
-            .justify(gtk4::Justification::Center)
-            .margin_top(6)
-            .css_classes(["dim-label"])
-            .build();
-        page.append(&caption);
-        let picture = gtk4::Picture::for_paintable(&texture);
-        picture.set_size_request(200, 200);
-        picture.set_halign(gtk4::Align::Center);
-        page.append(&picture);
-    }
-    let view = libadwaita::ToolbarView::new();
-    view.add_top_bar(&libadwaita::HeaderBar::new());
-    view.set_content(Some(&gtk4::ScrolledWindow::builder().child(&page).propagate_natural_height(true).build()));
-    let dialog = libadwaita::Window::builder()
-        .title(tr!("Devices nearby"))
-        .transient_for(win)
-        .modal(true)
-        .default_width(420)
-        .default_height(560)
-        .content(&view)
-        .build();
-    super::dialogs::close_on_escape(&dialog);
-    dialog.present();
 }
 
 /// The code both people compare; our person's answer goes back to the pairing.

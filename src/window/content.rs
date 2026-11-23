@@ -29,6 +29,10 @@ pub struct Content {
     pub peers_list: gtk4::ListBox,
     pub search: gtk4::SearchEntry,
     pub bottom_label: gtk4::Label,
+    /// The devices nearby, while only the local network is on (see `super::lan_ui`).
+    pub lan_list: gtk4::ListBox,
+    /// The code a phone scans to pair, under `lan_list`.
+    pub lan_qr: gtk4::Box,
 }
 
 pub fn build() -> Content {
@@ -171,6 +175,9 @@ pub fn build() -> Content {
     }
     stack.add_named(&page_connected, Some("connected"));
 
+    let (page_lan, lan_list, lan_qr) = build_lan_page();
+    stack.add_named(&page_lan, Some("lan"));
+
     toolbar.set_content(Some(&stack));
 
     // ─── Bottom info bar ──────────────────────────────────────────────────
@@ -207,6 +214,8 @@ pub fn build() -> Content {
         peers_list: peers_list.clone(),
         search: search.clone(),
         bottom_label,
+        lan_list,
+        lan_qr,
     }
 }
 
@@ -383,4 +392,26 @@ fn build_connected_page() -> (
     let clamp = libadwaita::Clamp::builder().maximum_size(960).tightening_threshold(720).child(&outer).build();
     scroll.set_child(Some(&clamp));
     (scroll, self_row, btn_copy_self_ip, peers_list)
+}
+
+/// Only the local network: who is nearby, to pair with or already paired.
+fn build_lan_page() -> (gtk4::ScrolledWindow, gtk4::ListBox, gtk4::Box) {
+    let outer = gtk4::Box::new(gtk4::Orientation::Vertical, 12);
+    outer.set_margin_start(18);
+    outer.set_margin_end(18);
+    outer.set_margin_top(18);
+    outer.set_margin_bottom(18);
+    let header = gtk4::Label::new(Some(&tr!("Devices nearby")));
+    header.set_xalign(0.0);
+    header.add_css_class("heading");
+    outer.append(&header);
+    let lan_list = gtk4::ListBox::builder().selection_mode(gtk4::SelectionMode::None).css_classes(["boxed-list"]).build();
+    lan_list.update_property(&[gtk4::accessible::Property::Label(&tr!("Devices nearby"))]);
+    outer.append(&lan_list);
+    let lan_qr = gtk4::Box::new(gtk4::Orientation::Vertical, 6);
+    lan_qr.set_margin_top(12);
+    outer.append(&lan_qr);
+    let clamp = libadwaita::Clamp::builder().maximum_size(960).tightening_threshold(720).child(&outer).build();
+    let scroll = gtk4::ScrolledWindow::builder().hscrollbar_policy(gtk4::PolicyType::Never).vexpand(true).child(&clamp).build();
+    (scroll, lan_list, lan_qr)
 }

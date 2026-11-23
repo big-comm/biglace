@@ -899,7 +899,7 @@ fn segment(s: &str) -> std::result::Result<&str, MemberError> {
     }
 }
 
-// ─── Our own names (any member, over the tailnet) ───────────────────────────
+// Our own names: any member changes them, over the tailnet.
 
 /// Which of our names: the account everyone sees, or this device's.
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]

@@ -512,7 +512,7 @@ pub fn build(app: &libadwaita::Application, start_hidden: bool) {
     transfer_ui::wire(&ctx.ui.win);
     clipboard_ui::wire(&ctx.ui.win, &ctx.ui.toast, &ctx.ui.sidebar, &ctx.cfg);
     #[cfg(target_os = "linux")]
-    lan_ui::wire(&ctx.ui.win, &ctx.ui.toast, &ctx.ui.sidebar, &ctx.cfg);
+    lan_ui::wire(&ctx.ui.win, &ctx.ui.toast, &ctx.ui.sidebar, &ctx.ui.content, &ctx.cfg, ctx.refresh_tx.clone());
     #[cfg(target_os = "linux")]
     visits_ui::wire(&ctx.ui.win, ctx.tray.clone());
     setup_close_to_tray(&ctx, tray_active);
@@ -1716,7 +1716,7 @@ fn wire_signals(ctx: &Ctx) {
         });
     }
 
-    // ── Identity row pencil → our names ──
+    // The identity row's pencil changes our names.
     {
         let win_w = ctx.ui.win.clone();
         let toast_w = ctx.ui.toast.clone();
@@ -2337,7 +2337,10 @@ fn apply_state(ctx: &Ctx, state: AppState, status: &Status, peers: &[Peer]) {
     for c in ["idle", "connected", "connecting", "error"] {
         ui.content.status_dot.remove_css_class(c);
     }
+    // Only the local network: BigScale is off on purpose, and the page lists who is nearby.
+    let lan_only = cfg_snap.lan_enabled && matches!(state, AppState::NotSignedIn | AppState::Disconnected);
     let (dot_class, status_text) = match state {
+        _ if lan_only => ("connected", tr!("Local network")),
         AppState::ServiceStopped => ("error", tr!("Service stopped")),
         AppState::NotSignedIn => ("idle", tr!("Not signed in")),
         AppState::Disconnected => ("idle", tr!("Disconnected")),
@@ -2374,7 +2377,7 @@ fn apply_state(ctx: &Ctx, state: AppState, status: &Status, peers: &[Peer]) {
     // before the failure, so a badge claiming DNS is down contradicts what the
     // user can plainly see and reads as a false alarm. What's actually broken
     // is tailscaled's ability to *manage* it.
-    ui.content.dns_badge.set_visible(status.dns_broken);
+    ui.content.dns_badge.set_visible(status.dns_broken && !lan_only);
     if status.dns_broken {
         ui.content
             .dns_badge
@@ -2395,6 +2398,7 @@ fn apply_state(ctx: &Ctx, state: AppState, status: &Status, peers: &[Peer]) {
 
     // ── Stack page ──
     let page = match state {
+        _ if lan_only => "lan",
         AppState::ServiceStopped => "service",
         AppState::NotSignedIn => "not-signed-in",
         AppState::Disconnected => "disconnected",
@@ -2495,6 +2499,8 @@ fn apply_state(ctx: &Ctx, state: AppState, status: &Status, peers: &[Peer]) {
     }
 
     // ── Connect / Disconnect button ──
+    // On the local network its switch is the way back to BigScale.
+    ui.sidebar.btn_connect.set_visible(!lan_only);
     ui.sidebar.btn_connect.remove_css_class("suggested-action");
     ui.sidebar
         .btn_connect
