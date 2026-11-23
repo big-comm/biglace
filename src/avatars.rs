@@ -124,6 +124,17 @@ pub fn bind_lan(avatar: &libadwaita::Avatar, device: &str) {
     }
 }
 
+/// [`bind_lan`], asking the device again now: opening its conversation is
+/// when a photo just set there, or a device just back in reach, gets noticed.
+pub fn bind_lan_fresh(avatar: &libadwaita::Avatar, device: &str) {
+    if let Some(key) = lan_key(device) {
+        if let Ok(mut k) = known().lock() {
+            k.remove(&key);
+        }
+    }
+    bind_lan(avatar, device);
+}
+
 /// Show group `group`'s photo in `avatar` (now if cached, else when it arrives).
 pub fn bind_group(avatar: &libadwaita::Avatar, group: &str) {
     bind_key(avatar, &group_key(group));

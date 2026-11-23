@@ -892,7 +892,7 @@ impl ChatPage {
             self.conv_avatar.set_text(Some(&chat::label(&id.name).replace(['(', ')'], "")));
             self.conv_avatar.set_icon_name(None);
             self.conv_avatar.set_show_initials(true);
-            crate::avatars::bind_lan(&self.conv_avatar, &id.name);
+            crate::avatars::bind_lan_fresh(&self.conv_avatar, &id.name);
             self.btn_call.set_visible(false);
         } else if id.is_group() {
             self.conv_avatar.set_text(Some(&id.name));
