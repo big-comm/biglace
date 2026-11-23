@@ -333,6 +333,21 @@ mod tests {
     use super::*;
 
     #[test]
+    fn renames_lead_to_current_name() {
+        let r = |pairs: &[(&str, &str)]| -> Vec<Renamed> {
+            pairs.iter().map(|(from, to)| Renamed { from: (*from).into(), to: (*to).into() }).collect()
+        };
+        let own = |pairs: &[(&str, &str)]| -> Vec<(String, String)> {
+            pairs.iter().map(|(a, b)| ((*a).to_string(), (*b).to_string())).collect()
+        };
+        assert_eq!(current_names(&[]), own(&[]));
+        assert_eq!(current_names(&r(&[("a", "b")])), own(&[("a", "b")]));
+        assert_eq!(current_names(&r(&[("a", "b"), ("b", "c")])), own(&[("a", "c"), ("b", "c")]));
+        assert_eq!(current_names(&r(&[("a", "b"), ("b", "a")])), own(&[("b", "a")]), "back to the first name");
+        assert_eq!(current_names(&r(&[("a", "b"), ("x", "y")])), own(&[("a", "b"), ("x", "y")]));
+    }
+
+    #[test]
     fn network_settings_reach_the_app() {
         let mine: MyInvites = serde_json::from_str(r#"{"invites":[],"groups":[]}"#).unwrap();
         assert!(mine.can_invite, "older panels let every member invite");
@@ -836,6 +851,33 @@ pub struct MyGroups {
     #[serde(default)]
     pub is_admin: bool,
     pub groups: Vec<GroupInfo>,
+    /// Accounts that took another name, oldest first.
+    #[serde(default)]
+    pub renamed: Vec<Renamed>,
+}
+
+#[derive(Debug, Clone, Deserialize)]
+pub struct Renamed {
+    pub from: String,
+    pub to: String,
+}
+
+/// Each old account name and the name it leads to now, following renames in
+/// order (`a`→`b` then `b`→`c` gives `a` and `b` → `c`); a name that came back
+/// to itself is left out.
+pub fn current_names(renamed: &[Renamed]) -> Vec<(String, String)> {
+    let mut now: Vec<(String, String)> = Vec::new();
+    for r in renamed {
+        for (_, to) in now.iter_mut().filter(|(_, to)| *to == r.from) {
+            to.clone_from(&r.to);
+        }
+        match now.iter_mut().find(|(from, _)| *from == r.from) {
+            Some((_, to)) => to.clone_from(&r.to),
+            None => now.push((r.from.clone(), r.to.clone())),
+        }
+    }
+    now.retain(|(from, to)| from != to);
+    now
 }
 
 /// Group names the panel accepts: lowercase letters, digits and hyphens.
@@ -855,6 +897,70 @@ fn segment(s: &str) -> std::result::Result<&str, MemberError> {
     } else {
         Err(MemberError::Other("invalid name".into()))
     }
+}
+
+// ─── Our own names (any member, over the tailnet) ───────────────────────────
+
+/// Which of our names: the account everyone sees, or this device's.
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum NameKind {
+    Account,
+    Device,
+}
+
+impl NameKind {
+    fn field(self) -> &'static str {
+        match self {
+            NameKind::Account => "account",
+            NameKind::Device => "device",
+        }
+    }
+}
+
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Deserialize)]
+#[serde(rename_all = "lowercase")]
+pub enum NameState {
+    Free,
+    Yours,
+    Taken,
+    Invalid,
+}
+
+/// What the panel says about a name someone is typing.
+#[derive(Debug, Clone, Deserialize)]
+pub struct NameCheck {
+    pub state: NameState,
+}
+
+/// Percent-encode everything but unreserved characters, for a query value.
+fn query_value(s: &str) -> String {
+    let mut out = String::with_capacity(s.len());
+    for b in s.bytes() {
+        if b.is_ascii_alphanumeric() || matches!(b, b'-' | b'_' | b'.' | b'~') {
+            out.push(char::from(b));
+        } else {
+            out.push_str(&format!("%{b:02X}"));
+        }
+    }
+    out
+}
+
+/// Whether `raw` could be our account or device name. Blocking.
+pub fn check_name(kind: NameKind, raw: &str) -> std::result::Result<NameCheck, MemberError> {
+    let path = format!("/api/me/name?{}={}", kind.field(), query_value(raw));
+    let r = member_call("GET", &path, None)?;
+    panel::read_json_limited(r).map_err(|e| MemberError::Other(e.to_string()))
+}
+
+/// Take `raw` as our account or device name; the name it became. A taken
+/// name is refused (`name_taken`), never adjusted. Blocking.
+pub fn take_name(kind: NameKind, raw: &str) -> std::result::Result<String, MemberError> {
+    #[derive(Deserialize)]
+    struct Taken {
+        name: String,
+    }
+    let r = member_call("POST", "/api/me/name", Some(serde_json::json!({ kind.field(): raw })))?;
+    panel::read_json_limited::<Taken>(r).map(|t| t.name).map_err(|e| MemberError::Other(e.to_string()))
 }
 
 pub fn my_groups() -> std::result::Result<MyGroups, MemberError> {

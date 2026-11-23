@@ -3,7 +3,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: biglace\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-11-20 07:04-0300\n"
+"POT-Creation-Date: 2026-11-23 00:11-0300\n"
 "PO-Revision-Date: 2026-05-01 15:44\n"
 "Last-Translator: Translation Automator <auto@translator.ai>\n"
 "Language-Team: Chinese <zh@li.org>\n"
@@ -1599,25 +1599,6 @@ msgstr "请填写 URL、用户名和密码。"
 msgid "Signed in. Press Connect to join the network."
 msgstr "已登录。点击“连接”以加入网络。"
 
-msgid "Rename this device"
-msgstr "重命名此设备"
-
-msgid ""
-"The name this device shows to other peers on the VPN. Lowercase letters, "
-"digits and hyphens. Example: tales-laptop."
-msgstr ""
-"此设备在 VPN 上向其他对等节点显示的名称。仅限小写字母、数字和连字符。示例："
-"tales-laptop。"
-
-msgid "Save & apply"
-msgstr "保存并应用"
-
-msgid "Saved. The new name will take effect the next time you connect."
-msgstr "已保存。新名称将在您下次连接时生效。"
-
-msgid "Device renamed."
-msgstr "设备已重命名。"
-
 #, rust-format
 msgid "Rename failed: {error}"
 msgstr "重命名失败：{error}"
@@ -2416,9 +2397,6 @@ msgid ""
 "locked screen — ask the person to unlock it"
 msgstr "那边的屏幕已锁定，而 GNOME 不允许远程访问锁定的屏幕 — 请让对方解锁"
 
-msgid "access to the camera was refused"
-msgstr "摄像头访问被拒绝"
-
 msgid "Mute or unmute the microphone in a BigLace room"
 msgstr "在 BigLace 房间中静音或取消静音麦克风"
 
@@ -2441,121 +2419,8 @@ msgstr "无法读取已保存的预授权密钥：{error}"
 msgid "the screen capture ended"
 msgstr "屏幕捕获已结束"
 
-#~ msgid "Panel credentials"
-#~ msgstr "面板凭据"
-
-#~ msgid "Username"
-#~ msgstr "用户名"
-
-#~ msgid "Sign in to connect"
-#~ msgstr "登录以连接"
-
-#~ msgid "Use the panel on the left to sign in or paste a pre-auth key."
-#~ msgstr "使用左侧面板登录或粘贴预授权密钥。"
-
-#~ msgid "Connect via panel account"
-#~ msgstr "通过面板账户连接"
-
-#~ msgid ""
-#~ "Sign in with your BigScale panel username and password. A device identity "
-#~ "will be created on the network automatically — no manual key needed."
-#~ msgstr ""
-#~ "使用您的 BigScale 面板用户名和密码登录。设备身份将自动在网络中创建——无需手"
-#~ "动输入密钥。"
-
-#~ msgid "Connected ·"
-#~ msgstr "已连接 ·"
-
-#~ msgid "Device name"
-#~ msgstr "设备名称"
-
-#~ msgid "Save the server and key above"
-#~ msgstr "保存上述服务器和密钥"
-
-#~ msgid "Network identifier (will be created if new)"
-#~ msgstr "网络标识符（若为新网络将自动创建）"
-
-#~ msgid ""
-#~ "Use your BigScale panel username and password to generate a key "
-#~ "automatically."
-#~ msgstr "使用您的 BigScale 面板用户名和密码自动生成密钥。"
-
-#~ msgid "Network user identifier"
-#~ msgstr "网络用户标识符"
-
-#~ msgid "Switch account"
-#~ msgstr "切换账号"
-
-#~ msgid "Use a pre-auth key"
-#~ msgstr "使用预授权密钥"
-
-#~ msgid "Paste the key your administrator sent you"
-#~ msgstr "粘贴管理员发送给您的密钥"
-
-#~ msgid "Sign in with your BigScale panel account"
-#~ msgstr "使用您的 BigScale 面板账号登录"
-
-#~ msgid "Refresh list"
-#~ msgstr "刷新列表"
-
-#~ msgid "Files"
-#~ msgstr "文件"
-
-#~ msgid "Terminal"
-#~ msgstr "终端"
-
-#~ msgid "Key generated successfully."
-#~ msgstr "密钥生成成功。"
-
-#~ msgid "Service not found"
-#~ msgstr "未找到服务"
-
-#~ msgid ""
-#~ "The tailscaled service is not running.\n"
-#~ "Click below to start it."
-#~ msgstr ""
-#~ "tailscaled 服务未运行。\n"
-#~ "点击下方按钮启动它。"
-
-#~ msgid "Server"
-#~ msgstr "服务器"
-
-#~ msgid "Address of your BigScale/Headscale server."
-#~ msgstr "您的 BigScale/Headscale 服务器地址。"
-
-#~ msgid "Your identity on the network"
-#~ msgstr "您在网络中的身份标识"
-
-#~ msgid ""
-#~ "Personal key generated for you in the BigScale panel (\"New key\" in "
-#~ "Users). Each person uses their own — this is not the server's key."
-#~ msgstr ""
-#~ "在 BigScale 面板中为您生成的个人密钥（用户设置中的\"新建密钥\"）。每人使用"
-#~ "自己的密钥——这不是服务器密钥。"
-
-#~ msgid "Pre-auth key (yours)"
-#~ msgstr "预授权密钥（您的）"
-
-#~ msgid "Name shown to other devices on the network."
-#~ msgstr "向网络中其他设备显示的名称。"
-
-#~ msgid "Options"
-#~ msgstr "选项"
-
-#~ msgid "Connect automatically on startup"
-#~ msgstr "开机自动连接"
-
-#~ msgid "Please wait..."
-#~ msgstr "请稍候..."
-
-#~ msgid "Connected to the network"
-#~ msgstr "已连接到网络"
-
-#~ msgid "Your IP address"
-#~ msgstr "您的 IP 地址"
-
-#~ msgid "No other devices found."
-#~ msgstr "未找到其他设备。"
+msgid "Username"
+msgstr "用户名"
 
 msgid "Change the group's photo"
 msgstr "更改群组照片"
@@ -2608,7 +2473,8 @@ msgstr "重命名群组"
 msgid "Rename {group}"
 msgstr "重命名 {group}"
 
-msgid "Its members, conversation, room and photo keep going under the new name."
+msgid ""
+"Its members, conversation, room and photo keep going under the new name."
 msgstr "成员、对话、房间和照片都会沿用新名称。"
 
 msgid "Rename"
@@ -2617,7 +2483,9 @@ msgstr "重命名"
 msgid "The group is called {group} now."
 msgstr "群组现在名为 {group}。"
 
-msgid "Your phone must already be on the network, with BigLace. This computer joins the same account."
+msgid ""
+"Your phone must already be on the network, with BigLace. This computer joins "
+"the same account."
 msgstr "你的手机必须已通过 BigLace 加入网络。这台电脑将加入同一个账户。"
 
 msgid "Network address"
@@ -2626,8 +2494,11 @@ msgstr "网络地址"
 msgid "Show the code"
 msgstr "显示代码"
 
-msgid "On the phone, open BigLace, tap “Scan QR code” and point it at this code. Then confirm on the phone."
-msgstr "在手机上打开 BigLace，点击“扫描二维码”并对准这个代码。然后在手机上确认。"
+msgid ""
+"On the phone, open BigLace, tap “Scan QR code” and point it at this code. "
+"Then confirm on the phone."
+msgstr ""
+"在手机上打开 BigLace，点击“扫描二维码”并对准这个代码。然后在手机上确认。"
 
 msgid "Type the network address, e.g. vpn.example.org."
 msgstr "输入网络地址，例如 vpn.example.org。"
@@ -2802,7 +2673,8 @@ msgid "BigLace extension for GNOME"
 msgstr "适用于 GNOME 的 BigLace 扩展"
 
 #: src/window/sidebar.rs:427
-msgid "Needed for the phone to get what you copy while BigLace is in the background"
+msgid ""
+"Needed for the phone to get what you copy while BigLace is in the background"
 msgstr "BigLace 在后台时，需要它才能把你复制的内容发到手机"
 
 #: src/window/sidebar.rs:431
@@ -2845,12 +2717,13 @@ msgid "Could not turn on the local network: {error}"
 msgstr "无法开启局域网：{error}"
 
 #: src/window/lan_ui.rs:86
-msgid "No BigLace nearby. The other device needs the local network turned on, on this same network. Guest Wi-Fi and some routers keep devices apart: use the main network."
-msgstr "附近没有 BigLace。另一台设备需要在同一网络中开启局域网。访客 Wi-Fi 和某些路由器会隔离设备：请使用主网络。"
-
-#: src/window/lan_ui.rs:100
-msgid "Paired"
-msgstr "已配对"
+msgid ""
+"No BigLace nearby. The other device needs the local network turned on, on "
+"this same network. Guest Wi-Fi and some routers keep devices apart: use the "
+"main network."
+msgstr ""
+"附近没有 BigLace。另一台设备需要在同一网络中开启局域网。访客 Wi-Fi 和某些路由"
+"器会隔离设备：请使用主网络。"
 
 #: src/window/lan_ui.rs:104 src/window/lan_ui.rs:148
 msgid "Pair"
@@ -2895,5 +2768,212 @@ msgid "the local network is off"
 msgstr "本地网络已关闭"
 
 #: src/chat/files.rs
-msgid "{name} can't be reached on the local network — try again when it's nearby"
+msgid ""
+"{name} can't be reached on the local network — try again when it's nearby"
 msgstr "无法在本地网络上连接到 {name} — 等它在附近时再试"
+
+msgid "End remote access"
+msgstr "结束远程访问"
+
+msgid "How everyone sees you in conversations."
+msgstr "大家在对话中看到的你的名称。"
+
+msgid "How this computer appears in the device list."
+msgstr "这台计算机在设备列表中显示的名称。"
+
+msgid "Your names"
+msgstr "你的名称"
+
+msgid "Checking…"
+msgstr "正在检查…"
+
+#, rust-format
+msgid "{name} is free."
+msgstr "{name} 可以使用。"
+
+#, rust-format
+msgid "{name} is already taken. Choose another name."
+msgstr "{name} 已被使用。请选择其他名称。"
+
+msgid "Couldn't check the name with the panel. Try again in a moment."
+msgstr "无法通过面板检查该名称。请稍后重试。"
+
+msgid "Names saved."
+msgstr "名称已保存。"
+
+msgid "Someone just took that name. Choose another name."
+msgstr "有人刚刚用了这个名称。请选择其他名称。"
+
+msgid "You changed your name a moment ago. Wait a minute and try again."
+msgstr "你刚刚更改过名称。请等待一分钟后重试。"
+
+msgid ""
+"Changing names needs a newer BigScale server. Ask your administrator to "
+"update it."
+msgstr "更改名称需要较新的 BigScale 服务器。请让管理员更新服务器。"
+
+msgid "Opened a terminal"
+msgstr "打开了终端"
+
+msgid "Browsed the files"
+msgstr "浏览了文件"
+
+#, rust-format
+msgid "{user} opened a terminal on this computer"
+msgstr "{user} 在这台计算机上打开了终端"
+
+#, rust-format
+msgid "{user} is browsing the files on this computer"
+msgstr "{user} 正在浏览这台计算机上的文件"
+
+msgid "It goes on until they close it, or until you end it."
+msgstr "会一直持续，直到对方关闭或你结束它。"
+
+msgid "Couldn't end the access"
+msgstr "无法结束访问"
+
+#, rust-format
+msgid "{user} · terminal"
+msgstr "{user} · 终端"
+
+#, rust-format
+msgid "{user} · files"
+msgstr "{user} · 文件"
+
+#~ msgid "Rename this device"
+#~ msgstr "重命名此设备"
+
+#~ msgid ""
+#~ "The name this device shows to other peers on the VPN. Lowercase letters, "
+#~ "digits and hyphens. Example: tales-laptop."
+#~ msgstr ""
+#~ "此设备在 VPN 上向其他对等节点显示的名称。仅限小写字母、数字和连字符。示"
+#~ "例：tales-laptop。"
+
+#~ msgid "Save & apply"
+#~ msgstr "保存并应用"
+
+#~ msgid "Saved. The new name will take effect the next time you connect."
+#~ msgstr "已保存。新名称将在您下次连接时生效。"
+
+#~ msgid "Device renamed."
+#~ msgstr "设备已重命名。"
+
+#~ msgid "access to the camera was refused"
+#~ msgstr "摄像头访问被拒绝"
+
+#~ msgid "Panel credentials"
+#~ msgstr "面板凭据"
+
+#~ msgid "Sign in to connect"
+#~ msgstr "登录以连接"
+
+#~ msgid "Use the panel on the left to sign in or paste a pre-auth key."
+#~ msgstr "使用左侧面板登录或粘贴预授权密钥。"
+
+#~ msgid "Connect via panel account"
+#~ msgstr "通过面板账户连接"
+
+#~ msgid ""
+#~ "Sign in with your BigScale panel username and password. A device identity "
+#~ "will be created on the network automatically — no manual key needed."
+#~ msgstr ""
+#~ "使用您的 BigScale 面板用户名和密码登录。设备身份将自动在网络中创建——无需手"
+#~ "动输入密钥。"
+
+#~ msgid "Connected ·"
+#~ msgstr "已连接 ·"
+
+#~ msgid "Device name"
+#~ msgstr "设备名称"
+
+#~ msgid "Save the server and key above"
+#~ msgstr "保存上述服务器和密钥"
+
+#~ msgid "Network identifier (will be created if new)"
+#~ msgstr "网络标识符（若为新网络将自动创建）"
+
+#~ msgid ""
+#~ "Use your BigScale panel username and password to generate a key "
+#~ "automatically."
+#~ msgstr "使用您的 BigScale 面板用户名和密码自动生成密钥。"
+
+#~ msgid "Network user identifier"
+#~ msgstr "网络用户标识符"
+
+#~ msgid "Switch account"
+#~ msgstr "切换账号"
+
+#~ msgid "Use a pre-auth key"
+#~ msgstr "使用预授权密钥"
+
+#~ msgid "Paste the key your administrator sent you"
+#~ msgstr "粘贴管理员发送给您的密钥"
+
+#~ msgid "Sign in with your BigScale panel account"
+#~ msgstr "使用您的 BigScale 面板账号登录"
+
+#~ msgid "Refresh list"
+#~ msgstr "刷新列表"
+
+#~ msgid "Files"
+#~ msgstr "文件"
+
+#~ msgid "Terminal"
+#~ msgstr "终端"
+
+#~ msgid "Key generated successfully."
+#~ msgstr "密钥生成成功。"
+
+#~ msgid "Service not found"
+#~ msgstr "未找到服务"
+
+#~ msgid ""
+#~ "The tailscaled service is not running.\n"
+#~ "Click below to start it."
+#~ msgstr ""
+#~ "tailscaled 服务未运行。\n"
+#~ "点击下方按钮启动它。"
+
+#~ msgid "Server"
+#~ msgstr "服务器"
+
+#~ msgid "Address of your BigScale/Headscale server."
+#~ msgstr "您的 BigScale/Headscale 服务器地址。"
+
+#~ msgid "Your identity on the network"
+#~ msgstr "您在网络中的身份标识"
+
+#~ msgid ""
+#~ "Personal key generated for you in the BigScale panel (\"New key\" in "
+#~ "Users). Each person uses their own — this is not the server's key."
+#~ msgstr ""
+#~ "在 BigScale 面板中为您生成的个人密钥（用户设置中的\"新建密钥\"）。每人使用"
+#~ "自己的密钥——这不是服务器密钥。"
+
+#~ msgid "Pre-auth key (yours)"
+#~ msgstr "预授权密钥（您的）"
+
+#~ msgid "Name shown to other devices on the network."
+#~ msgstr "向网络中其他设备显示的名称。"
+
+#~ msgid "Options"
+#~ msgstr "选项"
+
+#~ msgid "Connect automatically on startup"
+#~ msgstr "开机自动连接"
+
+#~ msgid "Please wait..."
+#~ msgstr "请稍候..."
+
+#~ msgid "Connected to the network"
+#~ msgstr "已连接到网络"
+
+#~ msgid "Your IP address"
+#~ msgstr "您的 IP 地址"
+
+#~ msgid "No other devices found."
+#~ msgstr "未找到其他设备。"
+
+#~ msgid "Paired"
+#~ msgstr "已配对"

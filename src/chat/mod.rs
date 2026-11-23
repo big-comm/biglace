@@ -323,10 +323,11 @@ impl Store {
 
     /// Group `from` is called `to` now: its history and outbox move over
     /// (merged, without repeats, when both already exist). True if anything moved.
-    fn rename_group(&mut self, from: &str, to: &str) -> bool {
-        let (old, new) = (ConvId::group(from), ConvId::group(to));
-        let Some(moved) = self.convs.remove(&old) else { return false };
-        match self.convs.get_mut(&new) {
+    /// Conversation `old` is called `new` now: its history merges into any
+    /// `new` already holds, its outbox follows. False when there was no `old`.
+    fn rename_conv(&mut self, old: &ConvId, new: &ConvId) -> bool {
+        let Some(moved) = self.convs.remove(old) else { return false };
+        match self.convs.get_mut(new) {
             Some(kept) => {
                 for m in moved.messages {
                     if !kept.messages.iter().any(|k| k.id == m.id) {
@@ -341,10 +342,10 @@ impl Store {
                 self.convs.insert(new.clone(), moved);
             }
         }
-        self.save(&new);
+        self.save(new);
         let _ = std::fs::remove_file(self.dir.join(format!("{}.json", old.key())));
         let mut outbox_changed = false;
-        for p in self.outbox.iter_mut().filter(|p| p.wire.conv == old) {
+        for p in self.outbox.iter_mut().filter(|p| p.wire.conv == *old) {
             p.wire.conv = new.clone();
             outbox_changed = true;
         }
@@ -532,6 +533,7 @@ fn me(max_age: Duration) -> Option<Me> {
     match crate::invite::my_groups() {
         Ok(mine) => {
             follow_renames(&mine.groups);
+            follow_people(&mine.renamed);
             let owners = mine
                 .groups
                 .iter()
@@ -564,10 +566,23 @@ fn follow_renames(groups: &[crate::invite::GroupInfo]) {
 
 /// Group `from` is called `to` now: its conversation and photo move over.
 pub fn group_renamed(from: &str, to: &str) {
-    let moved = store().lock().is_ok_and(|mut s| s.rename_group(from, to));
+    let (old, new) = (ConvId::group(from), ConvId::group(to));
+    let moved = store().lock().is_ok_and(|mut s| s.rename_conv(&old, &new));
     crate::avatars::group_renamed(from, to);
     if moved {
-        emit(ChatEvent::Changed(ConvId::group(to)));
+        emit(ChatEvent::Changed(new));
+    }
+}
+
+/// People who took another account name: their conversation, photo and
+/// access rule follow.
+fn follow_people(renamed: &[crate::invite::Renamed]) {
+    for (from, to) in crate::invite::current_names(renamed) {
+        let (old, new) = (ConvId::direct(&from), ConvId::direct(&to));
+        if store().lock().is_ok_and(|mut s| s.rename_conv(&old, &new)) {
+            emit(ChatEvent::Changed(new));
+        }
+        crate::access::person_renamed(&from, &to);
     }
 }
 
@@ -575,6 +590,12 @@ pub fn group_renamed(from: &str, to: &str) {
 /// Returns our account name.
 pub fn my_groups_refresh() -> Option<String> {
     me(Duration::from_secs(30)).map(|m| m.user)
+}
+
+/// Ask the panel for our account and groups now (after we renamed
+/// ourselves). Blocking.
+pub fn my_groups_reload() -> Option<String> {
+    me(Duration::ZERO).map(|m| m.user)
 }
 
 /// Our account name, if known.
@@ -1807,7 +1828,7 @@ mod tests {
         s.outbox.push(Pending { wire, to_user: "bruna".into(), node: "n".into() });
         s.save(&old);
 
-        assert!(s.rename_group("familia", "familia-silva"));
+        assert!(s.rename_conv(&old, &new));
         assert!(!s.convs.contains_key(&old));
         let ids: Vec<_> = s.convs[&new].messages.iter().map(|m| m.id.as_str()).collect();
         assert_eq!(ids, ["m1", "m2", "m3"]);
@@ -1816,7 +1837,7 @@ mod tests {
         assert!(!dir.join("group-familia.json").exists());
         let again = Store::open(&dir);
         assert_eq!(again.convs[&new].messages.len(), 3);
-        assert!(!s.rename_group("familia", "familia-silva"), "nothing left to move");
+        assert!(!s.rename_conv(&old, &new), "nothing left to move");
         let _ = std::fs::remove_dir_all(&dir);
     }
 

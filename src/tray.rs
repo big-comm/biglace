@@ -45,6 +45,8 @@ pub enum Command {
     ToggleMute,
     /// Leave the voice room.
     LeaveRoom,
+    /// End everyone's SSH access to this computer.
+    EndVisits,
 }
 
 /// Cross-platform handle that lets the GTK main loop push status updates
@@ -64,6 +66,11 @@ impl Handle {
     /// In a voice room (its group, muted), or not.
     pub fn update_room(&self, room: Option<(String, bool)>) {
         self.inner.update_room(room);
+    }
+
+    /// People in this computer over SSH: a line each, and the icon for the first.
+    pub fn update_visits(&self, visits: Vec<(String, &'static str)>) {
+        self.inner.update_visits(visits);
     }
 
     /// The unread messages: their count over the icon, and a short animation

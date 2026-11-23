@@ -111,6 +111,8 @@ impl AccessPage {
                 "screen" => tr!("Remote access"),
                 "watch" => tr!("Watched the screen shared with the room"),
                 "control" => tr!("Got control of the shared screen"),
+                "terminal" => tr!("Opened a terminal"),
+                "files" => tr!("Browsed the files"),
                 "restart" => tr!("Restarted the computer"),
                 "relogin" => tr!("Restarted the session"),
                 "shutdown" => tr!("Shut down the computer"),

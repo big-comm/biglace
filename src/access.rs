@@ -30,7 +30,8 @@ pub struct Entry {
     pub who: String,
     #[serde(default)]
     pub device: String,
-    /// `screen`, `restart`, `relogin`, `shutdown`, `watch`, `control`.
+    /// `screen`, `restart`, `relogin`, `shutdown`, `watch`, `control`,
+    /// `terminal`, `files`.
     pub what: String,
     /// `allowed`, `remembered`, `denied`, `blocked`, `returning`, `ended`.
     pub outcome: String,
@@ -75,7 +76,20 @@ pub fn set_rule(who: &str, rule: Rule) {
     } else {
         r.insert(who.to_string(), rule);
     }
-    if let Ok(json) = serde_json::to_vec_pretty(&*r) {
+    save_rules(&r);
+}
+
+/// The account `from` is called `to` now (the panel keeps the old name for it
+/// alone): its rule goes along.
+pub fn person_renamed(from: &str, to: &str) {
+    let Ok(mut r) = rules_cache().lock() else { return };
+    let Some(rule) = r.remove(from) else { return };
+    r.entry(to.to_string()).or_insert(rule);
+    save_rules(&r);
+}
+
+fn save_rules(r: &BTreeMap<String, Rule>) {
+    if let Ok(json) = serde_json::to_vec_pretty(r) {
         let _ = std::fs::create_dir_all(dir());
         write_private(&rules_path(), &json);
     }

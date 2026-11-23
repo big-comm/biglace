@@ -3,7 +3,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: biglace\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-11-20 07:04-0300\n"
+"POT-Creation-Date: 2026-11-23 00:11-0300\n"
 "PO-Revision-Date: 2026-05-01 15:44\n"
 "Last-Translator: Translation Automator <auto@translator.ai>\n"
 "Language-Team: Ukrainian <uk@li.org>\n"
@@ -1684,25 +1684,6 @@ msgstr "Заповніть URL, ім'я користувача та пароль
 msgid "Signed in. Press Connect to join the network."
 msgstr "Ви ввійшли. Натисніть «Підключитися», щоб приєднатися до мережі."
 
-msgid "Rename this device"
-msgstr "Перейменувати цей пристрій"
-
-msgid ""
-"The name this device shows to other peers on the VPN. Lowercase letters, "
-"digits and hyphens. Example: tales-laptop."
-msgstr ""
-"Ім'я, під яким цей пристрій відображається іншим учасникам VPN. Допускаються "
-"малі літери, цифри та дефіси. Приклад: tales-laptop."
-
-msgid "Save & apply"
-msgstr "Зберегти та застосувати"
-
-msgid "Saved. The new name will take effect the next time you connect."
-msgstr "Збережено. Нове ім'я набуде чинності після наступного підключення."
-
-msgid "Device renamed."
-msgstr "Пристрій перейменовано."
-
 #, rust-format
 msgid "Rename failed: {error}"
 msgstr "Помилка перейменування: {error}"
@@ -2537,9 +2518,6 @@ msgstr ""
 "екран там заблоковано, а GNOME не дозволяє віддалений доступ до "
 "заблокованого екрана — попросіть людину розблокувати його"
 
-msgid "access to the camera was refused"
-msgstr "доступ до камери заборонено"
-
 msgid "Mute or unmute the microphone in a BigLace room"
 msgstr "Увімкнути або вимкнути мікрофон у кімнаті BigLace"
 
@@ -2563,127 +2541,8 @@ msgstr "Не вдалося прочитати збережений ключ п�
 msgid "the screen capture ended"
 msgstr "захоплення екрана завершено"
 
-#~ msgid "Panel credentials"
-#~ msgstr "Облікові дані панелі"
-
-#~ msgid "Username"
-#~ msgstr "Ім'я користувача"
-
-#~ msgid "Sign in to connect"
-#~ msgstr "Увійдіть, щоб підключитися"
-
-#~ msgid "Use the panel on the left to sign in or paste a pre-auth key."
-#~ msgstr ""
-#~ "Використовуйте панель ліворуч, щоб увійти або вставити передзатверджений "
-#~ "ключ."
-
-#~ msgid "Connect via panel account"
-#~ msgstr "Підключитися через обліковий запис панелі"
-
-#~ msgid ""
-#~ "Sign in with your BigScale panel username and password. A device identity "
-#~ "will be created on the network automatically — no manual key needed."
-#~ msgstr ""
-#~ "Увійдіть за допомогою імені користувача та пароля панелі BigScale. "
-#~ "Ідентифікатор пристрою буде створено в мережі автоматично — ручний ключ "
-#~ "не потрібен."
-
-#~ msgid "Connected ·"
-#~ msgstr "Підключено ·"
-
-#~ msgid "Device name"
-#~ msgstr "Назва пристрою"
-
-#~ msgid "Save the server and key above"
-#~ msgstr "Зберегти сервер і ключ вище"
-
-#~ msgid "Network identifier (will be created if new)"
-#~ msgstr "Ідентифікатор мережі (буде створено, якщо новий)"
-
-#~ msgid ""
-#~ "Use your BigScale panel username and password to generate a key "
-#~ "automatically."
-#~ msgstr ""
-#~ "Використовуйте ім'я користувача та пароль панелі BigScale для "
-#~ "автоматичної генерації ключа."
-
-#~ msgid "Network user identifier"
-#~ msgstr "Ідентифікатор користувача мережі"
-
-#~ msgid "Switch account"
-#~ msgstr "Змінити обліковий запис"
-
-#~ msgid "Use a pre-auth key"
-#~ msgstr "Використати передзатверджений ключ"
-
-#~ msgid "Paste the key your administrator sent you"
-#~ msgstr "Вставте ключ, який надіслав ваш адміністратор"
-
-#~ msgid "Sign in with your BigScale panel account"
-#~ msgstr "Увійти за допомогою облікового запису панелі BigScale"
-
-#~ msgid "Refresh list"
-#~ msgstr "Оновити список"
-
-#~ msgid "Files"
-#~ msgstr "Файли"
-
-#~ msgid "Terminal"
-#~ msgstr "Термінал"
-
-#~ msgid "Key generated successfully."
-#~ msgstr "Ключ успішно згенеровано."
-
-#~ msgid "Service not found"
-#~ msgstr "Службу не знайдено"
-
-#~ msgid ""
-#~ "The tailscaled service is not running.\n"
-#~ "Click below to start it."
-#~ msgstr ""
-#~ "Служба tailscaled не запущена.\n"
-#~ "Натисніть нижче, щоб запустити її."
-
-#~ msgid "Server"
-#~ msgstr "Сервер"
-
-#~ msgid "Address of your BigScale/Headscale server."
-#~ msgstr "Адреса вашого сервера BigScale/Headscale."
-
-#~ msgid "Your identity on the network"
-#~ msgstr "Ваша ідентичність у мережі"
-
-#~ msgid ""
-#~ "Personal key generated for you in the BigScale panel (\"New key\" in "
-#~ "Users). Each person uses their own — this is not the server's key."
-#~ msgstr ""
-#~ "Особистий ключ, створений для вас у панелі BigScale (\"Новий ключ\" у "
-#~ "розділі Користувачі). Кожен використовує власний ключ — це не ключ "
-#~ "сервера."
-
-#~ msgid "Pre-auth key (yours)"
-#~ msgstr "Попередньо авторизований ключ (ваш)"
-
-#~ msgid "Name shown to other devices on the network."
-#~ msgstr "Назва, яку бачать інші пристрої в мережі."
-
-#~ msgid "Options"
-#~ msgstr "Параметри"
-
-#~ msgid "Connect automatically on startup"
-#~ msgstr "Підключатися автоматично під час запуску"
-
-#~ msgid "Please wait..."
-#~ msgstr "Зачекайте, будь ласка..."
-
-#~ msgid "Connected to the network"
-#~ msgstr "Підключено до мережі"
-
-#~ msgid "Your IP address"
-#~ msgstr "Ваша IP-адреса"
-
-#~ msgid "No other devices found."
-#~ msgstr "Інших пристроїв не знайдено."
+msgid "Username"
+msgstr "Ім'я користувача"
 
 msgid "Change the group's photo"
 msgstr "Змінити фото групи"
@@ -2736,7 +2595,8 @@ msgstr "Перейменувати групу"
 msgid "Rename {group}"
 msgstr "Перейменувати {group}"
 
-msgid "Its members, conversation, room and photo keep going under the new name."
+msgid ""
+"Its members, conversation, room and photo keep going under the new name."
 msgstr "Учасники, розмова, кімната й фото залишаться під новою назвою."
 
 msgid "Rename"
@@ -2745,8 +2605,12 @@ msgstr "Перейменувати"
 msgid "The group is called {group} now."
 msgstr "Тепер група називається {group}."
 
-msgid "Your phone must already be on the network, with BigLace. This computer joins the same account."
-msgstr "Ваш телефон уже має бути в мережі з BigLace. Цей комп’ютер увійде до того самого облікового запису."
+msgid ""
+"Your phone must already be on the network, with BigLace. This computer joins "
+"the same account."
+msgstr ""
+"Ваш телефон уже має бути в мережі з BigLace. Цей комп’ютер увійде до того "
+"самого облікового запису."
 
 msgid "Network address"
 msgstr "Адреса мережі"
@@ -2754,8 +2618,12 @@ msgstr "Адреса мережі"
 msgid "Show the code"
 msgstr "Показати код"
 
-msgid "On the phone, open BigLace, tap “Scan QR code” and point it at this code. Then confirm on the phone."
-msgstr "На телефоні відкрийте BigLace, торкніться «Сканувати QR-код» і наведіть на цей код. Потім підтвердьте на телефоні."
+msgid ""
+"On the phone, open BigLace, tap “Scan QR code” and point it at this code. "
+"Then confirm on the phone."
+msgstr ""
+"На телефоні відкрийте BigLace, торкніться «Сканувати QR-код» і наведіть на "
+"цей код. Потім підтвердьте на телефоні."
 
 msgid "Type the network address, e.g. vpn.example.org."
 msgstr "Введіть адресу мережі, наприклад vpn.example.org."
@@ -2930,8 +2798,10 @@ msgid "BigLace extension for GNOME"
 msgstr "Розширення BigLace для GNOME"
 
 #: src/window/sidebar.rs:427
-msgid "Needed for the phone to get what you copy while BigLace is in the background"
-msgstr "Потрібне, щоб телефон отримував скопійоване, поки BigLace працює у фоні"
+msgid ""
+"Needed for the phone to get what you copy while BigLace is in the background"
+msgstr ""
+"Потрібне, щоб телефон отримував скопійоване, поки BigLace працює у фоні"
 
 #: src/window/sidebar.rs:431
 msgid "Turn on"
@@ -2973,12 +2843,14 @@ msgid "Could not turn on the local network: {error}"
 msgstr "Не вдалося увімкнути локальну мережу: {error}"
 
 #: src/window/lan_ui.rs:86
-msgid "No BigLace nearby. The other device needs the local network turned on, on this same network. Guest Wi-Fi and some routers keep devices apart: use the main network."
-msgstr "Поруч немає BigLace. На іншому пристрої має бути увімкнена локальна мережа, у цій самій мережі. Гостьові мережі Wi-Fi і деякі роутери ізолюють пристрої: використовуйте основну мережу."
-
-#: src/window/lan_ui.rs:100
-msgid "Paired"
-msgstr "Пару створено"
+msgid ""
+"No BigLace nearby. The other device needs the local network turned on, on "
+"this same network. Guest Wi-Fi and some routers keep devices apart: use the "
+"main network."
+msgstr ""
+"Поруч немає BigLace. На іншому пристрої має бути увімкнена локальна мережа, "
+"у цій самій мережі. Гостьові мережі Wi-Fi і деякі роутери ізолюють пристрої: "
+"використовуйте основну мережу."
 
 #: src/window/lan_ui.rs:104 src/window/lan_ui.rs:148
 msgid "Pair"
@@ -3016,12 +2888,231 @@ msgstr "Пару створено, не поруч"
 
 #: src/window/lan_ui.rs:151
 msgid "Or scan this code with BigLace on the phone (Settings, Local network)"
-msgstr "Або відскануйте цей код у BigLace на телефоні (Налаштування, Локальна мережа)"
+msgstr ""
+"Або відскануйте цей код у BigLace на телефоні (Налаштування, Локальна мережа)"
 
 #: src/chat/files.rs
 msgid "the local network is off"
 msgstr "локальну мережу вимкнено"
 
 #: src/chat/files.rs
-msgid "{name} can't be reached on the local network — try again when it's nearby"
-msgstr "{name} недоступний у локальній мережі — спробуйте ще раз, коли пристрій буде поруч"
+msgid ""
+"{name} can't be reached on the local network — try again when it's nearby"
+msgstr ""
+"{name} недоступний у локальній мережі — спробуйте ще раз, коли пристрій буде "
+"поруч"
+
+msgid "End remote access"
+msgstr "Завершити віддалений доступ"
+
+msgid "How everyone sees you in conversations."
+msgstr "Як вас бачать усі в розмовах."
+
+msgid "How this computer appears in the device list."
+msgstr "Як цей комп'ютер відображається у списку пристроїв."
+
+msgid "Your names"
+msgstr "Ваші імена"
+
+msgid "Checking…"
+msgstr "Перевірка…"
+
+#, rust-format
+msgid "{name} is free."
+msgstr "{name} вільне."
+
+#, rust-format
+msgid "{name} is already taken. Choose another name."
+msgstr "{name} уже зайняте. Виберіть інше ім'я."
+
+msgid "Couldn't check the name with the panel. Try again in a moment."
+msgstr "Не вдалося перевірити ім'я на панелі. Спробуйте ще раз за хвилину."
+
+msgid "Names saved."
+msgstr "Імена збережено."
+
+msgid "Someone just took that name. Choose another name."
+msgstr "Хтось щойно зайняв це ім'я. Виберіть інше ім'я."
+
+msgid "You changed your name a moment ago. Wait a minute and try again."
+msgstr "Ви щойно змінили ім'я. Зачекайте хвилину і спробуйте ще раз."
+
+msgid ""
+"Changing names needs a newer BigScale server. Ask your administrator to "
+"update it."
+msgstr ""
+"Для зміни імен потрібен новіший сервер BigScale. Попросіть адміністратора "
+"оновити його."
+
+msgid "Opened a terminal"
+msgstr "Відкрив(-ла) термінал"
+
+msgid "Browsed the files"
+msgstr "Переглядав(-ла) файли"
+
+#, rust-format
+msgid "{user} opened a terminal on this computer"
+msgstr "{user} відкрив(-ла) термінал на цьому комп'ютері"
+
+#, rust-format
+msgid "{user} is browsing the files on this computer"
+msgstr "{user} переглядає файли на цьому комп'ютері"
+
+msgid "It goes on until they close it, or until you end it."
+msgstr ""
+"Це триває, доки співрозмовник не закриє сеанс або доки ви його не завершите."
+
+msgid "Couldn't end the access"
+msgstr "Не вдалося завершити доступ"
+
+#, rust-format
+msgid "{user} · terminal"
+msgstr "{user} · термінал"
+
+#, rust-format
+msgid "{user} · files"
+msgstr "{user} · файли"
+
+#~ msgid "Rename this device"
+#~ msgstr "Перейменувати цей пристрій"
+
+#~ msgid ""
+#~ "The name this device shows to other peers on the VPN. Lowercase letters, "
+#~ "digits and hyphens. Example: tales-laptop."
+#~ msgstr ""
+#~ "Ім'я, під яким цей пристрій відображається іншим учасникам VPN. "
+#~ "Допускаються малі літери, цифри та дефіси. Приклад: tales-laptop."
+
+#~ msgid "Save & apply"
+#~ msgstr "Зберегти та застосувати"
+
+#~ msgid "Saved. The new name will take effect the next time you connect."
+#~ msgstr "Збережено. Нове ім'я набуде чинності після наступного підключення."
+
+#~ msgid "Device renamed."
+#~ msgstr "Пристрій перейменовано."
+
+#~ msgid "access to the camera was refused"
+#~ msgstr "доступ до камери заборонено"
+
+#~ msgid "Panel credentials"
+#~ msgstr "Облікові дані панелі"
+
+#~ msgid "Sign in to connect"
+#~ msgstr "Увійдіть, щоб підключитися"
+
+#~ msgid "Use the panel on the left to sign in or paste a pre-auth key."
+#~ msgstr ""
+#~ "Використовуйте панель ліворуч, щоб увійти або вставити передзатверджений "
+#~ "ключ."
+
+#~ msgid "Connect via panel account"
+#~ msgstr "Підключитися через обліковий запис панелі"
+
+#~ msgid ""
+#~ "Sign in with your BigScale panel username and password. A device identity "
+#~ "will be created on the network automatically — no manual key needed."
+#~ msgstr ""
+#~ "Увійдіть за допомогою імені користувача та пароля панелі BigScale. "
+#~ "Ідентифікатор пристрою буде створено в мережі автоматично — ручний ключ "
+#~ "не потрібен."
+
+#~ msgid "Connected ·"
+#~ msgstr "Підключено ·"
+
+#~ msgid "Device name"
+#~ msgstr "Назва пристрою"
+
+#~ msgid "Save the server and key above"
+#~ msgstr "Зберегти сервер і ключ вище"
+
+#~ msgid "Network identifier (will be created if new)"
+#~ msgstr "Ідентифікатор мережі (буде створено, якщо новий)"
+
+#~ msgid ""
+#~ "Use your BigScale panel username and password to generate a key "
+#~ "automatically."
+#~ msgstr ""
+#~ "Використовуйте ім'я користувача та пароль панелі BigScale для "
+#~ "автоматичної генерації ключа."
+
+#~ msgid "Network user identifier"
+#~ msgstr "Ідентифікатор користувача мережі"
+
+#~ msgid "Switch account"
+#~ msgstr "Змінити обліковий запис"
+
+#~ msgid "Use a pre-auth key"
+#~ msgstr "Використати передзатверджений ключ"
+
+#~ msgid "Paste the key your administrator sent you"
+#~ msgstr "Вставте ключ, який надіслав ваш адміністратор"
+
+#~ msgid "Sign in with your BigScale panel account"
+#~ msgstr "Увійти за допомогою облікового запису панелі BigScale"
+
+#~ msgid "Refresh list"
+#~ msgstr "Оновити список"
+
+#~ msgid "Files"
+#~ msgstr "Файли"
+
+#~ msgid "Terminal"
+#~ msgstr "Термінал"
+
+#~ msgid "Key generated successfully."
+#~ msgstr "Ключ успішно згенеровано."
+
+#~ msgid "Service not found"
+#~ msgstr "Службу не знайдено"
+
+#~ msgid ""
+#~ "The tailscaled service is not running.\n"
+#~ "Click below to start it."
+#~ msgstr ""
+#~ "Служба tailscaled не запущена.\n"
+#~ "Натисніть нижче, щоб запустити її."
+
+#~ msgid "Server"
+#~ msgstr "Сервер"
+
+#~ msgid "Address of your BigScale/Headscale server."
+#~ msgstr "Адреса вашого сервера BigScale/Headscale."
+
+#~ msgid "Your identity on the network"
+#~ msgstr "Ваша ідентичність у мережі"
+
+#~ msgid ""
+#~ "Personal key generated for you in the BigScale panel (\"New key\" in "
+#~ "Users). Each person uses their own — this is not the server's key."
+#~ msgstr ""
+#~ "Особистий ключ, створений для вас у панелі BigScale (\"Новий ключ\" у "
+#~ "розділі Користувачі). Кожен використовує власний ключ — це не ключ "
+#~ "сервера."
+
+#~ msgid "Pre-auth key (yours)"
+#~ msgstr "Попередньо авторизований ключ (ваш)"
+
+#~ msgid "Name shown to other devices on the network."
+#~ msgstr "Назва, яку бачать інші пристрої в мережі."
+
+#~ msgid "Options"
+#~ msgstr "Параметри"
+
+#~ msgid "Connect automatically on startup"
+#~ msgstr "Підключатися автоматично під час запуску"
+
+#~ msgid "Please wait..."
+#~ msgstr "Зачекайте, будь ласка..."
+
+#~ msgid "Connected to the network"
+#~ msgstr "Підключено до мережі"
+
+#~ msgid "Your IP address"
+#~ msgstr "Ваша IP-адреса"
+
+#~ msgid "No other devices found."
+#~ msgstr "Інших пристроїв не знайдено."
+
+#~ msgid "Paired"
+#~ msgstr "Пару створено"

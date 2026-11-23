@@ -3,7 +3,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: biglace\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-11-20 07:04-0300\n"
+"POT-Creation-Date: 2026-11-23 00:11-0300\n"
 "PO-Revision-Date: 2026-05-01 15:35\n"
 "Last-Translator: Translation Automator <auto@translator.ai>\n"
 "Language-Team: Finnish <fi@li.org>\n"
@@ -1673,27 +1673,6 @@ msgstr "Täytä URL-osoite, käyttäjätunnus ja salasana."
 msgid "Signed in. Press Connect to join the network."
 msgstr "Kirjautunut sisään. Paina Yhdistä liittyäksesi verkkoon."
 
-msgid "Rename this device"
-msgstr "Nimeä tämä laite uudelleen"
-
-msgid ""
-"The name this device shows to other peers on the VPN. Lowercase letters, "
-"digits and hyphens. Example: tales-laptop."
-msgstr ""
-"Nimi, jolla tämä laite näkyy muille vertaisille VPN:ssä. Pienet kirjaimet, "
-"numerot ja yhdysviivat. Esimerkki: tales-laptop."
-
-msgid "Save & apply"
-msgstr "Tallenna ja ota käyttöön"
-
-msgid "Saved. The new name will take effect the next time you connect."
-msgstr ""
-"Tallennettu. Uusi nimi tulee voimaan seuraavan kerran, kun muodostat "
-"yhteyden."
-
-msgid "Device renamed."
-msgstr "Laite nimetty uudelleen."
-
 #, rust-format
 msgid "Rename failed: {error}"
 msgstr "Uudelleennimeäminen epäonnistui: {error}"
@@ -2528,9 +2507,6 @@ msgstr ""
 "näyttö on siellä lukittu, eikä GNOME salli etäkäyttöä lukittuun näyttöön — "
 "pyydä henkilöä avaamaan lukitus"
 
-msgid "access to the camera was refused"
-msgstr "pääsy kameraan evättiin"
-
 msgid "Mute or unmute the microphone in a BigLace room"
 msgstr "Mykistä mikrofoni tai poista mykistys BigLace-huoneessa"
 
@@ -2553,127 +2529,8 @@ msgstr "Tallennettua esivaltuutusavainta ei voitu lukea: {error}"
 msgid "the screen capture ended"
 msgstr "näytön kaappaus päättyi"
 
-#~ msgid "Panel credentials"
-#~ msgstr "Paneelin tunnistetiedot"
-
-#~ msgid "Username"
-#~ msgstr "Käyttäjätunnus"
-
-#~ msgid "Sign in to connect"
-#~ msgstr "Kirjaudu sisään yhdistääksesi"
-
-#~ msgid "Use the panel on the left to sign in or paste a pre-auth key."
-#~ msgstr ""
-#~ "Käytä vasemmanpuoleista paneelia kirjautuaksesi sisään tai liittääksesi "
-#~ "ennakkoon todennusavaimen."
-
-#~ msgid "Connect via panel account"
-#~ msgstr "Yhdistä paneelin tilillä"
-
-#~ msgid ""
-#~ "Sign in with your BigScale panel username and password. A device identity "
-#~ "will be created on the network automatically — no manual key needed."
-#~ msgstr ""
-#~ "Kirjaudu sisään BigScale-paneelin käyttäjätunnuksella ja salasanalla. "
-#~ "Laitetunniste luodaan automaattisesti verkkoon – manuaalista avainta ei "
-#~ "tarvita."
-
-#~ msgid "Connected ·"
-#~ msgstr "Yhdistetty ·"
-
-#~ msgid "Device name"
-#~ msgstr "Laitteen nimi"
-
-#~ msgid "Save the server and key above"
-#~ msgstr "Tallenna yllä oleva palvelin ja avain"
-
-#~ msgid "Network identifier (will be created if new)"
-#~ msgstr "Verkkotunniste (luodaan, jos uusi)"
-
-#~ msgid ""
-#~ "Use your BigScale panel username and password to generate a key "
-#~ "automatically."
-#~ msgstr ""
-#~ "Käytä BigScale-paneelin käyttäjätunnustasi ja salasanaasi avaimen "
-#~ "automaattiseen luomiseen."
-
-#~ msgid "Network user identifier"
-#~ msgstr "Verkon käyttäjätunniste"
-
-#~ msgid "Switch account"
-#~ msgstr "Vaihda tiliä"
-
-#~ msgid "Use a pre-auth key"
-#~ msgstr "Käytä ennakkoon todennusavainta"
-
-#~ msgid "Paste the key your administrator sent you"
-#~ msgstr "Liitä järjestelmänvalvojan lähettämä avain"
-
-#~ msgid "Sign in with your BigScale panel account"
-#~ msgstr "Kirjaudu sisään BigScale-paneelitililläsi"
-
-#~ msgid "Refresh list"
-#~ msgstr "Päivitä lista"
-
-#~ msgid "Files"
-#~ msgstr "Tiedostot"
-
-#~ msgid "Terminal"
-#~ msgstr "Pääte"
-
-#~ msgid "Key generated successfully."
-#~ msgstr "Avain luotu onnistuneesti."
-
-#~ msgid "Service not found"
-#~ msgstr "Palvelua ei löydy"
-
-#~ msgid ""
-#~ "The tailscaled service is not running.\n"
-#~ "Click below to start it."
-#~ msgstr ""
-#~ "Tailscaled-palvelu ei ole käynnissä.\n"
-#~ "Napsauta alla käynnistääksesi se."
-
-#~ msgid "Server"
-#~ msgstr "Palvelin"
-
-#~ msgid "Address of your BigScale/Headscale server."
-#~ msgstr "BigScale/Headscale-palvelimesi osoite."
-
-#~ msgid "Your identity on the network"
-#~ msgstr "Henkilöllisyytesi verkossa"
-
-#~ msgid ""
-#~ "Personal key generated for you in the BigScale panel (\"New key\" in "
-#~ "Users). Each person uses their own — this is not the server's key."
-#~ msgstr ""
-#~ "BigScale-paneelissa sinulle luotu henkilökohtainen avain (\"Uusi avain\" "
-#~ "kohdassa Käyttäjät). Jokainen käyttää omaansa – tämä ei ole palvelimen "
-#~ "avain."
-
-#~ msgid "Pre-auth key (yours)"
-#~ msgstr "Esivaltuutusavain (sinun)"
-
-#~ msgid "Name shown to other devices on the network."
-#~ msgstr "Nimi, joka näkyy muille verkon laitteille."
-
-#~ msgid "Options"
-#~ msgstr "Asetukset"
-
-#~ msgid "Connect automatically on startup"
-#~ msgstr "Yhdistä automaattisesti käynnistyksen yhteydessä"
-
-#~ msgid "Please wait..."
-#~ msgstr "Odota hetki..."
-
-#~ msgid "Connected to the network"
-#~ msgstr "Yhdistetty verkkoon"
-
-#~ msgid "Your IP address"
-#~ msgstr "IP-osoitteesi"
-
-#~ msgid "No other devices found."
-#~ msgstr "Muita laitteita ei löytynyt."
+msgid "Username"
+msgstr "Käyttäjätunnus"
 
 msgid "Change the group's photo"
 msgstr "Vaihda ryhmän kuva"
@@ -2726,7 +2583,8 @@ msgstr "Nimeä ryhmä uudelleen"
 msgid "Rename {group}"
 msgstr "Nimeä {group} uudelleen"
 
-msgid "Its members, conversation, room and photo keep going under the new name."
+msgid ""
+"Its members, conversation, room and photo keep going under the new name."
 msgstr "Jäsenet, keskustelu, huone ja kuva jatkuvat uudella nimellä."
 
 msgid "Rename"
@@ -2735,8 +2593,12 @@ msgstr "Nimeä uudelleen"
 msgid "The group is called {group} now."
 msgstr "Ryhmän nimi on nyt {group}."
 
-msgid "Your phone must already be on the network, with BigLace. This computer joins the same account."
-msgstr "Puhelimesi täytyy olla jo verkossa BigLacen kanssa. Tämä tietokone liittyy samaan tiliin."
+msgid ""
+"Your phone must already be on the network, with BigLace. This computer joins "
+"the same account."
+msgstr ""
+"Puhelimesi täytyy olla jo verkossa BigLacen kanssa. Tämä tietokone liittyy "
+"samaan tiliin."
 
 msgid "Network address"
 msgstr "Verkon osoite"
@@ -2744,8 +2606,12 @@ msgstr "Verkon osoite"
 msgid "Show the code"
 msgstr "Näytä koodi"
 
-msgid "On the phone, open BigLace, tap “Scan QR code” and point it at this code. Then confirm on the phone."
-msgstr "Avaa puhelimessa BigLace, napauta ”Skannaa QR-koodi” ja osoita tätä koodia. Vahvista sitten puhelimessa."
+msgid ""
+"On the phone, open BigLace, tap “Scan QR code” and point it at this code. "
+"Then confirm on the phone."
+msgstr ""
+"Avaa puhelimessa BigLace, napauta ”Skannaa QR-koodi” ja osoita tätä koodia. "
+"Vahvista sitten puhelimessa."
 
 msgid "Type the network address, e.g. vpn.example.org."
 msgstr "Kirjoita verkon osoite, esim. vpn.example.org."
@@ -2920,7 +2786,8 @@ msgid "BigLace extension for GNOME"
 msgstr "BigLace-laajennus GNOMEen"
 
 #: src/window/sidebar.rs:427
-msgid "Needed for the phone to get what you copy while BigLace is in the background"
+msgid ""
+"Needed for the phone to get what you copy while BigLace is in the background"
 msgstr "Tarvitaan, jotta puhelin saa kopioimasi, kun BigLace on taustalla"
 
 #: src/window/sidebar.rs:431
@@ -2933,7 +2800,8 @@ msgstr "Lähiverkko ilman palvelinta"
 
 #: src/window/sidebar.rs:443
 msgid "Pair with devices on this network and talk to them directly"
-msgstr "Muodosta laitepari tämän verkon laitteiden kanssa ja puhu niille suoraan"
+msgstr ""
+"Muodosta laitepari tämän verkon laitteiden kanssa ja puhu niille suoraan"
 
 #: src/window/sidebar.rs:448
 msgid "Toggle the local network"
@@ -2963,12 +2831,14 @@ msgid "Could not turn on the local network: {error}"
 msgstr "Lähiverkkoa ei voitu ottaa käyttöön: {error}"
 
 #: src/window/lan_ui.rs:86
-msgid "No BigLace nearby. The other device needs the local network turned on, on this same network. Guest Wi-Fi and some routers keep devices apart: use the main network."
-msgstr "Lähellä ei ole BigLacea. Toisessa laitteessa lähiverkon on oltava päällä samassa verkossa. Vierasverkot ja jotkin reitittimet pitävät laitteet erillään: käytä pääverkkoa."
-
-#: src/window/lan_ui.rs:100
-msgid "Paired"
-msgstr "Laitepari"
+msgid ""
+"No BigLace nearby. The other device needs the local network turned on, on "
+"this same network. Guest Wi-Fi and some routers keep devices apart: use the "
+"main network."
+msgstr ""
+"Lähellä ei ole BigLacea. Toisessa laitteessa lähiverkon on oltava päällä "
+"samassa verkossa. Vierasverkot ja jotkin reitittimet pitävät laitteet "
+"erillään: käytä pääverkkoa."
 
 #: src/window/lan_ui.rs:104 src/window/lan_ui.rs:148
 msgid "Pair"
@@ -3013,5 +2883,224 @@ msgid "the local network is off"
 msgstr "lähiverkko on pois päältä"
 
 #: src/chat/files.rs
-msgid "{name} can't be reached on the local network — try again when it's nearby"
-msgstr "{name} ei ole tavoitettavissa lähiverkossa — yritä uudelleen, kun se on lähellä"
+msgid ""
+"{name} can't be reached on the local network — try again when it's nearby"
+msgstr ""
+"{name} ei ole tavoitettavissa lähiverkossa — yritä uudelleen, kun se on "
+"lähellä"
+
+msgid "End remote access"
+msgstr "Lopeta etäkäyttö"
+
+msgid "How everyone sees you in conversations."
+msgstr "Miten kaikki näkevät sinut keskusteluissa."
+
+msgid "How this computer appears in the device list."
+msgstr "Miten tämä tietokone näkyy laiteluettelossa."
+
+msgid "Your names"
+msgstr "Nimesi"
+
+msgid "Checking…"
+msgstr "Tarkistetaan…"
+
+#, rust-format
+msgid "{name} is free."
+msgstr "{name} on vapaana."
+
+#, rust-format
+msgid "{name} is already taken. Choose another name."
+msgstr "{name} on jo varattu. Valitse toinen nimi."
+
+msgid "Couldn't check the name with the panel. Try again in a moment."
+msgstr "Nimeä ei voitu tarkistaa paneelista. Yritä hetken kuluttua uudelleen."
+
+msgid "Names saved."
+msgstr "Nimet tallennettu."
+
+msgid "Someone just took that name. Choose another name."
+msgstr "Joku otti juuri tuon nimen. Valitse toinen nimi."
+
+msgid "You changed your name a moment ago. Wait a minute and try again."
+msgstr "Vaihdoit nimesi hetki sitten. Odota minuutti ja yritä uudelleen."
+
+msgid ""
+"Changing names needs a newer BigScale server. Ask your administrator to "
+"update it."
+msgstr ""
+"Nimien vaihtaminen vaatii uudemman BigScale-palvelimen. Pyydä ylläpitäjääsi "
+"päivittämään se."
+
+msgid "Opened a terminal"
+msgstr "Avasi päätteen"
+
+msgid "Browsed the files"
+msgstr "Selasi tiedostoja"
+
+#, rust-format
+msgid "{user} opened a terminal on this computer"
+msgstr "{user} avasi päätteen tällä tietokoneella"
+
+#, rust-format
+msgid "{user} is browsing the files on this computer"
+msgstr "{user} selaa tämän tietokoneen tiedostoja"
+
+msgid "It goes on until they close it, or until you end it."
+msgstr "Se jatkuu, kunnes hän sulkee sen tai kunnes sinä lopetat sen."
+
+msgid "Couldn't end the access"
+msgstr "Käyttöä ei voitu lopettaa"
+
+#, rust-format
+msgid "{user} · terminal"
+msgstr "{user} · pääte"
+
+#, rust-format
+msgid "{user} · files"
+msgstr "{user} · tiedostot"
+
+#~ msgid "Rename this device"
+#~ msgstr "Nimeä tämä laite uudelleen"
+
+#~ msgid ""
+#~ "The name this device shows to other peers on the VPN. Lowercase letters, "
+#~ "digits and hyphens. Example: tales-laptop."
+#~ msgstr ""
+#~ "Nimi, jolla tämä laite näkyy muille vertaisille VPN:ssä. Pienet "
+#~ "kirjaimet, numerot ja yhdysviivat. Esimerkki: tales-laptop."
+
+#~ msgid "Save & apply"
+#~ msgstr "Tallenna ja ota käyttöön"
+
+#~ msgid "Saved. The new name will take effect the next time you connect."
+#~ msgstr ""
+#~ "Tallennettu. Uusi nimi tulee voimaan seuraavan kerran, kun muodostat "
+#~ "yhteyden."
+
+#~ msgid "Device renamed."
+#~ msgstr "Laite nimetty uudelleen."
+
+#~ msgid "access to the camera was refused"
+#~ msgstr "pääsy kameraan evättiin"
+
+#~ msgid "Panel credentials"
+#~ msgstr "Paneelin tunnistetiedot"
+
+#~ msgid "Sign in to connect"
+#~ msgstr "Kirjaudu sisään yhdistääksesi"
+
+#~ msgid "Use the panel on the left to sign in or paste a pre-auth key."
+#~ msgstr ""
+#~ "Käytä vasemmanpuoleista paneelia kirjautuaksesi sisään tai liittääksesi "
+#~ "ennakkoon todennusavaimen."
+
+#~ msgid "Connect via panel account"
+#~ msgstr "Yhdistä paneelin tilillä"
+
+#~ msgid ""
+#~ "Sign in with your BigScale panel username and password. A device identity "
+#~ "will be created on the network automatically — no manual key needed."
+#~ msgstr ""
+#~ "Kirjaudu sisään BigScale-paneelin käyttäjätunnuksella ja salasanalla. "
+#~ "Laitetunniste luodaan automaattisesti verkkoon – manuaalista avainta ei "
+#~ "tarvita."
+
+#~ msgid "Connected ·"
+#~ msgstr "Yhdistetty ·"
+
+#~ msgid "Device name"
+#~ msgstr "Laitteen nimi"
+
+#~ msgid "Save the server and key above"
+#~ msgstr "Tallenna yllä oleva palvelin ja avain"
+
+#~ msgid "Network identifier (will be created if new)"
+#~ msgstr "Verkkotunniste (luodaan, jos uusi)"
+
+#~ msgid ""
+#~ "Use your BigScale panel username and password to generate a key "
+#~ "automatically."
+#~ msgstr ""
+#~ "Käytä BigScale-paneelin käyttäjätunnustasi ja salasanaasi avaimen "
+#~ "automaattiseen luomiseen."
+
+#~ msgid "Network user identifier"
+#~ msgstr "Verkon käyttäjätunniste"
+
+#~ msgid "Switch account"
+#~ msgstr "Vaihda tiliä"
+
+#~ msgid "Use a pre-auth key"
+#~ msgstr "Käytä ennakkoon todennusavainta"
+
+#~ msgid "Paste the key your administrator sent you"
+#~ msgstr "Liitä järjestelmänvalvojan lähettämä avain"
+
+#~ msgid "Sign in with your BigScale panel account"
+#~ msgstr "Kirjaudu sisään BigScale-paneelitililläsi"
+
+#~ msgid "Refresh list"
+#~ msgstr "Päivitä lista"
+
+#~ msgid "Files"
+#~ msgstr "Tiedostot"
+
+#~ msgid "Terminal"
+#~ msgstr "Pääte"
+
+#~ msgid "Key generated successfully."
+#~ msgstr "Avain luotu onnistuneesti."
+
+#~ msgid "Service not found"
+#~ msgstr "Palvelua ei löydy"
+
+#~ msgid ""
+#~ "The tailscaled service is not running.\n"
+#~ "Click below to start it."
+#~ msgstr ""
+#~ "Tailscaled-palvelu ei ole käynnissä.\n"
+#~ "Napsauta alla käynnistääksesi se."
+
+#~ msgid "Server"
+#~ msgstr "Palvelin"
+
+#~ msgid "Address of your BigScale/Headscale server."
+#~ msgstr "BigScale/Headscale-palvelimesi osoite."
+
+#~ msgid "Your identity on the network"
+#~ msgstr "Henkilöllisyytesi verkossa"
+
+#~ msgid ""
+#~ "Personal key generated for you in the BigScale panel (\"New key\" in "
+#~ "Users). Each person uses their own — this is not the server's key."
+#~ msgstr ""
+#~ "BigScale-paneelissa sinulle luotu henkilökohtainen avain (\"Uusi avain\" "
+#~ "kohdassa Käyttäjät). Jokainen käyttää omaansa – tämä ei ole palvelimen "
+#~ "avain."
+
+#~ msgid "Pre-auth key (yours)"
+#~ msgstr "Esivaltuutusavain (sinun)"
+
+#~ msgid "Name shown to other devices on the network."
+#~ msgstr "Nimi, joka näkyy muille verkon laitteille."
+
+#~ msgid "Options"
+#~ msgstr "Asetukset"
+
+#~ msgid "Connect automatically on startup"
+#~ msgstr "Yhdistä automaattisesti käynnistyksen yhteydessä"
+
+#~ msgid "Please wait..."
+#~ msgstr "Odota hetki..."
+
+#~ msgid "Connected to the network"
+#~ msgstr "Yhdistetty verkkoon"
+
+#~ msgid "Your IP address"
+#~ msgstr "IP-osoitteesi"
+
+#~ msgid "No other devices found."
+#~ msgstr "Muita laitteita ei löytynyt."
+
+#~ msgid "Paired"
+#~ msgstr "Laitepari"

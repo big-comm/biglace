@@ -3,7 +3,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: biglace\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-11-20 07:04-0300\n"
+"POT-Creation-Date: 2026-11-23 00:11-0300\n"
 "PO-Revision-Date: 2026-05-01 15:43\n"
 "Last-Translator: Translation Automator <auto@translator.ai>\n"
 "Language-Team: Slovak <sk@li.org>\n"
@@ -1677,25 +1677,6 @@ msgstr "Vyplňte URL, používateľské meno a heslo."
 msgid "Signed in. Press Connect to join the network."
 msgstr "Prihlásené. Stlačte tlačidlo Pripojiť a pripojte sa k sieti."
 
-msgid "Rename this device"
-msgstr "Premenovať toto zariadenie"
-
-msgid ""
-"The name this device shows to other peers on the VPN. Lowercase letters, "
-"digits and hyphens. Example: tales-laptop."
-msgstr ""
-"Názov, pod ktorým sa toto zariadenie zobrazuje ostatným peerom vo VPN. Malé "
-"písmená, číslice a pomlčky. Príklad: tales-laptop."
-
-msgid "Save & apply"
-msgstr "Uložiť a použiť"
-
-msgid "Saved. The new name will take effect the next time you connect."
-msgstr "Uložené. Nový názov sa prejaví pri najbližšom pripojení."
-
-msgid "Device renamed."
-msgstr "Zariadenie premenované."
-
 #, rust-format
 msgid "Rename failed: {error}"
 msgstr "Premenovanie zlyhalo: {error}"
@@ -2526,9 +2507,6 @@ msgstr ""
 "obrazovka je tam zamknutá a GNOME nepovoľuje vzdialený prístup k zamknutej "
 "obrazovke — požiadajte osobu, aby ju odomkla"
 
-msgid "access to the camera was refused"
-msgstr "prístup ku kamere bol zamietnutý"
-
 msgid "Mute or unmute the microphone in a BigLace room"
 msgstr "Stlmiť alebo zapnúť mikrofón v miestnosti BigLace"
 
@@ -2551,127 +2529,8 @@ msgstr "Uložený pred-autentifikačný kľúč sa nepodarilo prečítať: {erro
 msgid "the screen capture ended"
 msgstr "snímanie obrazovky sa skončilo"
 
-#~ msgid "Panel credentials"
-#~ msgstr "Prihlasovacie údaje panela"
-
-#~ msgid "Username"
-#~ msgstr "Používateľské meno"
-
-#~ msgid "Sign in to connect"
-#~ msgstr "Prihlásiť sa pre pripojenie"
-
-#~ msgid "Use the panel on the left to sign in or paste a pre-auth key."
-#~ msgstr ""
-#~ "Použite panel naľavo na prihlásenie alebo vloženie pred-autentifikačného "
-#~ "kľúča."
-
-#~ msgid "Connect via panel account"
-#~ msgstr "Pripojiť sa cez účet v paneli"
-
-#~ msgid ""
-#~ "Sign in with your BigScale panel username and password. A device identity "
-#~ "will be created on the network automatically — no manual key needed."
-#~ msgstr ""
-#~ "Prihláste sa pomocou používateľského mena a hesla z BigScale panela. "
-#~ "Identita zariadenia sa v sieti vytvorí automaticky – nie je potrebný "
-#~ "manuálny kľúč."
-
-#~ msgid "Connected ·"
-#~ msgstr "Pripojené ·"
-
-#~ msgid "Device name"
-#~ msgstr "Názov zariadenia"
-
-#~ msgid "Save the server and key above"
-#~ msgstr "Uložiť server a kľúč vyššie"
-
-#~ msgid "Network identifier (will be created if new)"
-#~ msgstr "Identifikátor siete (vytvorí sa, ak neexistuje)"
-
-#~ msgid ""
-#~ "Use your BigScale panel username and password to generate a key "
-#~ "automatically."
-#~ msgstr ""
-#~ "Použite svoje používateľské meno a heslo z BigScale panela na automatické "
-#~ "vygenerovanie kľúča."
-
-#~ msgid "Network user identifier"
-#~ msgstr "Identifikátor sieťového používateľa"
-
-#~ msgid "Switch account"
-#~ msgstr "Prepnúť účet"
-
-#~ msgid "Use a pre-auth key"
-#~ msgstr "Použiť pred-autentifikačný kľúč"
-
-#~ msgid "Paste the key your administrator sent you"
-#~ msgstr "Vložte kľúč, ktorý vám poslal správca"
-
-#~ msgid "Sign in with your BigScale panel account"
-#~ msgstr "Prihlásiť sa pomocou účtu BigScale panel"
-
-#~ msgid "Refresh list"
-#~ msgstr "Obnoviť zoznam"
-
-#~ msgid "Files"
-#~ msgstr "Súbory"
-
-#~ msgid "Terminal"
-#~ msgstr "Terminál"
-
-#~ msgid "Key generated successfully."
-#~ msgstr "Kľúč bol úspešne vygenerovaný."
-
-#~ msgid "Service not found"
-#~ msgstr "Služba sa nenašla"
-
-#~ msgid ""
-#~ "The tailscaled service is not running.\n"
-#~ "Click below to start it."
-#~ msgstr ""
-#~ "Služba tailscaled nie je spustená.\n"
-#~ "Kliknutím nižšie ju spustíte."
-
-#~ msgid "Server"
-#~ msgstr "Server"
-
-#~ msgid "Address of your BigScale/Headscale server."
-#~ msgstr "Adresa vášho BigScale/Headscale servera."
-
-#~ msgid "Your identity on the network"
-#~ msgstr "Vaša identita v sieti"
-
-#~ msgid ""
-#~ "Personal key generated for you in the BigScale panel (\"New key\" in "
-#~ "Users). Each person uses their own — this is not the server's key."
-#~ msgstr ""
-#~ "Osobný kľúč vygenerovaný pre vás v paneli BigScale (\"Nový kľúč\" v "
-#~ "sekcii Používatelia). Každá osoba používa svoj vlastný – toto nie je kľúč "
-#~ "servera."
-
-#~ msgid "Pre-auth key (yours)"
-#~ msgstr "Pred-autentifikačný kľúč (váš)"
-
-#~ msgid "Name shown to other devices on the network."
-#~ msgstr "Názov zobrazený ostatným zariadeniam v sieti."
-
-#~ msgid "Options"
-#~ msgstr "Možnosti"
-
-#~ msgid "Connect automatically on startup"
-#~ msgstr "Automaticky sa pripojiť pri spustení"
-
-#~ msgid "Please wait..."
-#~ msgstr "Čakajte prosím..."
-
-#~ msgid "Connected to the network"
-#~ msgstr "Pripojené k sieti"
-
-#~ msgid "Your IP address"
-#~ msgstr "Vaša IP adresa"
-
-#~ msgid "No other devices found."
-#~ msgstr "Neboli nájdené žiadne iné zariadenia."
+msgid "Username"
+msgstr "Používateľské meno"
 
 msgid "Change the group's photo"
 msgstr "Zmeniť fotku skupiny"
@@ -2724,7 +2583,8 @@ msgstr "Premenovať skupinu"
 msgid "Rename {group}"
 msgstr "Premenovať {group}"
 
-msgid "Its members, conversation, room and photo keep going under the new name."
+msgid ""
+"Its members, conversation, room and photo keep going under the new name."
 msgstr "Členovia, konverzácia, miestnosť a fotka pokračujú pod novým názvom."
 
 msgid "Rename"
@@ -2733,8 +2593,12 @@ msgstr "Premenovať"
 msgid "The group is called {group} now."
 msgstr "Skupina sa teraz volá {group}."
 
-msgid "Your phone must already be on the network, with BigLace. This computer joins the same account."
-msgstr "Váš telefón už musí byť v sieti s BigLace. Tento počítač sa pripojí k rovnakému účtu."
+msgid ""
+"Your phone must already be on the network, with BigLace. This computer joins "
+"the same account."
+msgstr ""
+"Váš telefón už musí byť v sieti s BigLace. Tento počítač sa pripojí k "
+"rovnakému účtu."
 
 msgid "Network address"
 msgstr "Adresa siete"
@@ -2742,8 +2606,12 @@ msgstr "Adresa siete"
 msgid "Show the code"
 msgstr "Zobraziť kód"
 
-msgid "On the phone, open BigLace, tap “Scan QR code” and point it at this code. Then confirm on the phone."
-msgstr "V telefóne otvorte BigLace, ťuknite na „Naskenovať QR kód“ a namierte na tento kód. Potom to v telefóne potvrďte."
+msgid ""
+"On the phone, open BigLace, tap “Scan QR code” and point it at this code. "
+"Then confirm on the phone."
+msgstr ""
+"V telefóne otvorte BigLace, ťuknite na „Naskenovať QR kód“ a namierte na "
+"tento kód. Potom to v telefóne potvrďte."
 
 msgid "Type the network address, e.g. vpn.example.org."
 msgstr "Napíšte adresu siete, napr. vpn.example.org."
@@ -2918,8 +2786,10 @@ msgid "BigLace extension for GNOME"
 msgstr "Rozšírenie BigLace pre GNOME"
 
 #: src/window/sidebar.rs:427
-msgid "Needed for the phone to get what you copy while BigLace is in the background"
-msgstr "Potrebné, aby telefón dostal, čo skopírujete, keď BigLace beží na pozadí"
+msgid ""
+"Needed for the phone to get what you copy while BigLace is in the background"
+msgstr ""
+"Potrebné, aby telefón dostal, čo skopírujete, keď BigLace beží na pozadí"
 
 #: src/window/sidebar.rs:431
 msgid "Turn on"
@@ -2961,12 +2831,14 @@ msgid "Could not turn on the local network: {error}"
 msgstr "Miestnu sieť sa nepodarilo zapnúť: {error}"
 
 #: src/window/lan_ui.rs:86
-msgid "No BigLace nearby. The other device needs the local network turned on, on this same network. Guest Wi-Fi and some routers keep devices apart: use the main network."
-msgstr "V blízkosti nie je žiadny BigLace. Druhé zariadenie musí mať zapnutú miestnu sieť v tej istej sieti. Wi-Fi pre hostí a niektoré smerovače oddeľujú zariadenia: použite hlavnú sieť."
-
-#: src/window/lan_ui.rs:100
-msgid "Paired"
-msgstr "Spárované"
+msgid ""
+"No BigLace nearby. The other device needs the local network turned on, on "
+"this same network. Guest Wi-Fi and some routers keep devices apart: use the "
+"main network."
+msgstr ""
+"V blízkosti nie je žiadny BigLace. Druhé zariadenie musí mať zapnutú miestnu "
+"sieť v tej istej sieti. Wi-Fi pre hostí a niektoré smerovače oddeľujú "
+"zariadenia: použite hlavnú sieť."
 
 #: src/window/lan_ui.rs:104 src/window/lan_ui.rs:148
 msgid "Pair"
@@ -3004,12 +2876,230 @@ msgstr "Spárované, nie je v blízkosti"
 
 #: src/window/lan_ui.rs:151
 msgid "Or scan this code with BigLace on the phone (Settings, Local network)"
-msgstr "Alebo naskenujte tento kód aplikáciou BigLace v telefóne (Nastavenia, Miestna sieť)"
+msgstr ""
+"Alebo naskenujte tento kód aplikáciou BigLace v telefóne (Nastavenia, "
+"Miestna sieť)"
 
 #: src/chat/files.rs
 msgid "the local network is off"
 msgstr "miestna sieť je vypnutá"
 
 #: src/chat/files.rs
-msgid "{name} can't be reached on the local network — try again when it's nearby"
-msgstr "{name} nie je v miestnej sieti dostupné — skúste to znova, keď bude nablízku"
+msgid ""
+"{name} can't be reached on the local network — try again when it's nearby"
+msgstr ""
+"{name} nie je v miestnej sieti dostupné — skúste to znova, keď bude nablízku"
+
+msgid "End remote access"
+msgstr "Ukončiť vzdialený prístup"
+
+msgid "How everyone sees you in conversations."
+msgstr "Ako vás všetci vidia v konverzáciách."
+
+msgid "How this computer appears in the device list."
+msgstr "Ako sa tento počítač zobrazuje v zozname zariadení."
+
+msgid "Your names"
+msgstr "Vaše mená"
+
+msgid "Checking…"
+msgstr "Kontroluje sa…"
+
+#, rust-format
+msgid "{name} is free."
+msgstr "{name} je voľné."
+
+#, rust-format
+msgid "{name} is already taken. Choose another name."
+msgstr "{name} je už obsadené. Vyberte iné meno."
+
+msgid "Couldn't check the name with the panel. Try again in a moment."
+msgstr "Meno sa nepodarilo overiť v paneli. Skúste to o chvíľu znova."
+
+msgid "Names saved."
+msgstr "Mená uložené."
+
+msgid "Someone just took that name. Choose another name."
+msgstr "Niekto si to meno práve vzal. Vyberte iné meno."
+
+msgid "You changed your name a moment ago. Wait a minute and try again."
+msgstr "Meno ste zmenili pred chvíľou. Počkajte minútu a skúste to znova."
+
+msgid ""
+"Changing names needs a newer BigScale server. Ask your administrator to "
+"update it."
+msgstr ""
+"Zmena mien vyžaduje novší server BigScale. Požiadajte správcu o jeho "
+"aktualizáciu."
+
+msgid "Opened a terminal"
+msgstr "Otvoril(a) terminál"
+
+msgid "Browsed the files"
+msgstr "Prezeral(a) súbory"
+
+#, rust-format
+msgid "{user} opened a terminal on this computer"
+msgstr "{user} otvoril(a) terminál na tomto počítači"
+
+#, rust-format
+msgid "{user} is browsing the files on this computer"
+msgstr "{user} prezerá súbory na tomto počítači"
+
+msgid "It goes on until they close it, or until you end it."
+msgstr "Trvá, kým ho daná osoba nezavrie alebo kým ho neukončíte vy."
+
+msgid "Couldn't end the access"
+msgstr "Prístup sa nepodarilo ukončiť"
+
+#, rust-format
+msgid "{user} · terminal"
+msgstr "{user} · terminál"
+
+#, rust-format
+msgid "{user} · files"
+msgstr "{user} · súbory"
+
+#~ msgid "Rename this device"
+#~ msgstr "Premenovať toto zariadenie"
+
+#~ msgid ""
+#~ "The name this device shows to other peers on the VPN. Lowercase letters, "
+#~ "digits and hyphens. Example: tales-laptop."
+#~ msgstr ""
+#~ "Názov, pod ktorým sa toto zariadenie zobrazuje ostatným peerom vo VPN. "
+#~ "Malé písmená, číslice a pomlčky. Príklad: tales-laptop."
+
+#~ msgid "Save & apply"
+#~ msgstr "Uložiť a použiť"
+
+#~ msgid "Saved. The new name will take effect the next time you connect."
+#~ msgstr "Uložené. Nový názov sa prejaví pri najbližšom pripojení."
+
+#~ msgid "Device renamed."
+#~ msgstr "Zariadenie premenované."
+
+#~ msgid "access to the camera was refused"
+#~ msgstr "prístup ku kamere bol zamietnutý"
+
+#~ msgid "Panel credentials"
+#~ msgstr "Prihlasovacie údaje panela"
+
+#~ msgid "Sign in to connect"
+#~ msgstr "Prihlásiť sa pre pripojenie"
+
+#~ msgid "Use the panel on the left to sign in or paste a pre-auth key."
+#~ msgstr ""
+#~ "Použite panel naľavo na prihlásenie alebo vloženie pred-autentifikačného "
+#~ "kľúča."
+
+#~ msgid "Connect via panel account"
+#~ msgstr "Pripojiť sa cez účet v paneli"
+
+#~ msgid ""
+#~ "Sign in with your BigScale panel username and password. A device identity "
+#~ "will be created on the network automatically — no manual key needed."
+#~ msgstr ""
+#~ "Prihláste sa pomocou používateľského mena a hesla z BigScale panela. "
+#~ "Identita zariadenia sa v sieti vytvorí automaticky – nie je potrebný "
+#~ "manuálny kľúč."
+
+#~ msgid "Connected ·"
+#~ msgstr "Pripojené ·"
+
+#~ msgid "Device name"
+#~ msgstr "Názov zariadenia"
+
+#~ msgid "Save the server and key above"
+#~ msgstr "Uložiť server a kľúč vyššie"
+
+#~ msgid "Network identifier (will be created if new)"
+#~ msgstr "Identifikátor siete (vytvorí sa, ak neexistuje)"
+
+#~ msgid ""
+#~ "Use your BigScale panel username and password to generate a key "
+#~ "automatically."
+#~ msgstr ""
+#~ "Použite svoje používateľské meno a heslo z BigScale panela na automatické "
+#~ "vygenerovanie kľúča."
+
+#~ msgid "Network user identifier"
+#~ msgstr "Identifikátor sieťového používateľa"
+
+#~ msgid "Switch account"
+#~ msgstr "Prepnúť účet"
+
+#~ msgid "Use a pre-auth key"
+#~ msgstr "Použiť pred-autentifikačný kľúč"
+
+#~ msgid "Paste the key your administrator sent you"
+#~ msgstr "Vložte kľúč, ktorý vám poslal správca"
+
+#~ msgid "Sign in with your BigScale panel account"
+#~ msgstr "Prihlásiť sa pomocou účtu BigScale panel"
+
+#~ msgid "Refresh list"
+#~ msgstr "Obnoviť zoznam"
+
+#~ msgid "Files"
+#~ msgstr "Súbory"
+
+#~ msgid "Terminal"
+#~ msgstr "Terminál"
+
+#~ msgid "Key generated successfully."
+#~ msgstr "Kľúč bol úspešne vygenerovaný."
+
+#~ msgid "Service not found"
+#~ msgstr "Služba sa nenašla"
+
+#~ msgid ""
+#~ "The tailscaled service is not running.\n"
+#~ "Click below to start it."
+#~ msgstr ""
+#~ "Služba tailscaled nie je spustená.\n"
+#~ "Kliknutím nižšie ju spustíte."
+
+#~ msgid "Server"
+#~ msgstr "Server"
+
+#~ msgid "Address of your BigScale/Headscale server."
+#~ msgstr "Adresa vášho BigScale/Headscale servera."
+
+#~ msgid "Your identity on the network"
+#~ msgstr "Vaša identita v sieti"
+
+#~ msgid ""
+#~ "Personal key generated for you in the BigScale panel (\"New key\" in "
+#~ "Users). Each person uses their own — this is not the server's key."
+#~ msgstr ""
+#~ "Osobný kľúč vygenerovaný pre vás v paneli BigScale (\"Nový kľúč\" v "
+#~ "sekcii Používatelia). Každá osoba používa svoj vlastný – toto nie je kľúč "
+#~ "servera."
+
+#~ msgid "Pre-auth key (yours)"
+#~ msgstr "Pred-autentifikačný kľúč (váš)"
+
+#~ msgid "Name shown to other devices on the network."
+#~ msgstr "Názov zobrazený ostatným zariadeniam v sieti."
+
+#~ msgid "Options"
+#~ msgstr "Možnosti"
+
+#~ msgid "Connect automatically on startup"
+#~ msgstr "Automaticky sa pripojiť pri spustení"
+
+#~ msgid "Please wait..."
+#~ msgstr "Čakajte prosím..."
+
+#~ msgid "Connected to the network"
+#~ msgstr "Pripojené k sieti"
+
+#~ msgid "Your IP address"
+#~ msgstr "Vaša IP adresa"
+
+#~ msgid "No other devices found."
+#~ msgstr "Neboli nájdené žiadne iné zariadenia."
+
+#~ msgid "Paired"
+#~ msgstr "Spárované"

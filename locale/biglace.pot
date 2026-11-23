@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-11-21 16:35-0300\n"
+"POT-Creation-Date: 2026-11-23 00:11-0300\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -17,387 +17,377 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 
-#: src/autostart.rs:69 src/autostart.rs:182 src/autostart.rs:213
+#: src/autostart.rs
 msgid "Failed to disable start at login"
 msgstr ""
 
-#: src/autostart.rs:94 src/autostart.rs:235
+#: src/autostart.rs
 msgid "Failed to create the autostart folder"
 msgstr ""
 
-#: src/autostart.rs:96 src/autostart.rs:166 src/autostart.rs:237
+#: src/autostart.rs
 msgid "Failed to enable start at login"
 msgstr ""
 
-#: src/launchers.rs:285 src/launchers.rs:328 src/launchers.rs:719
-#: src/launchers.rs:743
+#: src/launchers.rs
 msgid "Invalid device address."
 msgstr ""
 
-#: src/launchers.rs:315
+#: src/launchers.rs
 msgid ""
 "No file manager could open the SFTP location. Install one (Dolphin, "
 "Nautilus, Nemo, Thunar…) and try again."
 msgstr ""
 
-#: src/launchers.rs:371
+#: src/launchers.rs
 msgid ""
 "No file manager could open the SFTP location. Install WinSCP and try again."
 msgstr ""
 
-#: src/launchers.rs:727 src/launchers.rs:771
+#: src/launchers.rs
 msgid ""
 "No terminal emulator found. Install one (Konsole, GNOME Terminal, xterm…) "
 "and try again."
 msgstr ""
 
-#: src/tailscale.rs:985 src/tailscale.rs:1073
+#: src/tailscale.rs
 msgid "Failed to run tailscale"
 msgstr ""
 
-#: src/tailscale.rs:1011 src/tailscale.rs:1053 src/tailscale.rs:1091
-#: src/tailscale.rs:1222
+#: src/tailscale.rs
 msgid "Failed to connect — check the server URL and key."
 msgstr ""
 
-#: src/tailscale.rs:1035
+#: src/tailscale.rs
 msgid "Failed to run pkexec tailscale"
 msgstr ""
 
-#: src/tailscale.rs:1106
+#: src/tailscale.rs
 #, rust-format
 msgid "Couldn't read the saved pre-auth key: {error}"
 msgstr ""
 
-#: src/tailscale.rs:1116 src/tailscale.rs:1137 src/tailscale.rs:1215
+#: src/tailscale.rs
 msgid ""
 "The pre-auth key was rejected by the server. Generate a new key in the "
 "BigScale panel and try again."
 msgstr ""
 
-#: src/tailscale.rs:1118 src/window/mod.rs:1899
+#: src/tailscale.rs src/window/mod.rs
 msgid "Sign in or paste a pre-auth key first."
 msgstr ""
 
-#: src/tailscale.rs:1151 src/window/mod.rs:1908
+#: src/tailscale.rs src/window/mod.rs
 msgid "Enter the server URL before connecting."
 msgstr ""
 
-#: src/tailscale.rs:1218
+#: src/tailscale.rs
 #, rust-format
 msgid "Login rejected by server: {detail}"
 msgstr ""
 
-#: src/tailscale.rs:1351
+#: src/tailscale.rs
 msgid "Could not determine the current user."
 msgstr ""
 
-#: src/tailscale.rs:1357
+#: src/tailscale.rs
 msgid "Failed to run pkexec tailscale set"
 msgstr ""
 
-#: src/tailscale.rs:1359
+#: src/tailscale.rs
 msgid "Failed to set tailscale operator."
 msgstr ""
 
-#: src/tray/linux.rs:89 src/tray/windows.rs:188 src/window/mod.rs:2134
-#: src/window/mod.rs:2295 src/window/mod.rs:2390
+#: src/tray/linux.rs src/tray/windows.rs src/window/mod.rs
 msgid "Connected"
 msgstr ""
 
-#: src/tray/linux.rs:90 src/tray/windows.rs:189
+#: src/tray/linux.rs src/tray/windows.rs
 msgid "Connected · 1 peer"
 msgstr ""
 
-#: src/tray/linux.rs:91 src/tray/windows.rs:193
+#: src/tray/linux.rs src/tray/windows.rs
 #, rust-format
 msgid "Connected · {n} peers"
 msgstr ""
 
-#: src/tray/linux.rs:94 src/tray/windows.rs:196 src/window/mod.rs:2293
-#: src/window/content.rs:51
+#: src/tray/linux.rs src/tray/windows.rs src/window/mod.rs
+#: src/window/content.rs
 msgid "Disconnected"
 msgstr ""
 
-#: src/tray/linux.rs:99
+#: src/tray/linux.rs
 #, rust-format
 msgid "In the room {group} · muted"
 msgstr ""
 
-#: src/tray/linux.rs:101
+#: src/tray/linux.rs
 #, rust-format
 msgid "In the room {group}"
 msgstr ""
 
-#: src/tray/linux.rs:123 src/tray/windows.rs:143 src/window/mod.rs:2454
+#: src/tray/linux.rs src/tray/windows.rs src/window/mod.rs
 msgid "Disconnect"
 msgstr ""
 
-#: src/tray/linux.rs:130 src/tray/windows.rs:87 src/tray/windows.rs:145
-#: src/window/mod.rs:1240 src/window/mod.rs:2464 src/window/mod.rs:2469
-#: src/window/sidebar.rs:440
+#: src/tray/linux.rs src/tray/windows.rs src/window/mod.rs
+#: src/window/sidebar.rs
 msgid "Connect"
 msgstr ""
 
-#: src/tray/linux.rs:138 src/tray/windows.rs:86
+#: src/tray/linux.rs src/tray/windows.rs
 msgid "Show BigLace"
 msgstr ""
 
-#: src/tray/linux.rs:155
+#: src/tray/linux.rs
+msgid "End remote access"
+msgstr ""
+
+#: src/tray/linux.rs
 msgid "Unmute (Ctrl+Alt+M)"
 msgstr ""
 
-#: src/tray/linux.rs:155
+#: src/tray/linux.rs
 msgid "Mute (Ctrl+Alt+M)"
 msgstr ""
 
-#: src/tray/linux.rs:164
+#: src/tray/linux.rs
 msgid "Leave the room"
 msgstr ""
 
-#: src/tray/linux.rs:177 src/tray/windows.rs:88
+#: src/tray/linux.rs src/tray/windows.rs
 msgid "Quit"
 msgstr ""
 
-#: src/window/mod.rs:224 src/window/mod.rs:1434 src/window/invites.rs:448
+#: src/window/mod.rs src/window/invites.rs
 msgid "Invite someone"
 msgstr ""
 
-#: src/window/mod.rs:241
+#: src/window/mod.rs
 msgid "Open admin panel"
 msgstr ""
 
-#: src/window/mod.rs:273 src/window/mod.rs:377 src/window/sidebar.rs:148
+#: src/window/mod.rs src/window/sidebar.rs
 msgid "Devices"
 msgstr ""
 
-#: src/window/mod.rs:364 src/window/sidebar.rs:149 src/window/rooms.rs:107
-#: src/window/chat.rs:128
+#: src/window/mod.rs src/window/sidebar.rs src/window/rooms.rs
+#: src/window/chat.rs
 msgid "Chat"
 msgstr ""
 
-#: src/window/mod.rs:367 src/window/sidebar.rs:152 src/window/invites.rs:231
+#: src/window/mod.rs src/window/sidebar.rs src/window/invites.rs
 msgid "Invites"
 msgstr ""
 
-#: src/window/mod.rs:371 src/window/sidebar.rs:151 src/window/groups.rs:117
+#: src/window/mod.rs src/window/sidebar.rs src/window/groups.rs
 msgid "Groups"
 msgstr ""
 
-#: src/window/mod.rs:375 src/window/sidebar.rs:150 src/window/rooms.rs:90
-#: src/window/rooms.rs:134
+#: src/window/mod.rs src/window/sidebar.rs src/window/rooms.rs
 msgid "Rooms"
 msgstr ""
 
-#: src/window/mod.rs:1145 src/window/chat_theme.rs:412
+#: src/window/mod.rs src/window/chat_theme.rs
 msgid "Pictures"
 msgstr ""
 
-#: src/window/mod.rs:1162
+#: src/window/mod.rs
 msgid "Choose your photo"
 msgstr ""
 
-#: src/window/mod.rs:1174
+#: src/window/mod.rs
 msgid "Photo updated. Everyone you're connected to will see it."
 msgstr ""
 
-#: src/window/mod.rs:1176 src/window/groups.rs:557
+#: src/window/mod.rs src/window/groups.rs
 #, rust-format
 msgid "Could not change the photo: {error}"
 msgstr ""
 
-#: src/window/mod.rs:1200
+#: src/window/mod.rs
 msgid "Sign in with an access key"
 msgstr ""
 
-#: src/window/mod.rs:1209
+#: src/window/mod.rs
 msgid ""
 "Paste the key the administrator gave you. It's used once, to register this "
 "device."
 msgstr ""
 
-#: src/window/mod.rs:1213 src/window/sidebar.rs:263
+#: src/window/mod.rs src/window/sidebar.rs
 msgid "Server URL"
 msgstr ""
 
-#: src/window/mod.rs:1216
+#: src/window/mod.rs
 msgid "Access key"
 msgstr ""
 
-#: src/window/mod.rs:1218 src/window/sidebar.rs:292 src/window/dialogs.rs:391
-#: src/window/dialogs.rs:675 src/window/join_dialog.rs:137
-#: src/window/phone_signin.rs:111
+#: src/window/mod.rs src/window/sidebar.rs src/window/dialogs.rs
+#: src/window/join_dialog.rs src/window/phone_signin.rs
 msgid "Device name on the network"
 msgstr ""
 
-#: src/window/mod.rs:1238 src/window/dialogs.rs:122 src/window/dialogs.rs:135
-#: src/window/dialogs.rs:310 src/window/dialogs.rs:468
-#: src/window/dialogs.rs:705 src/window/join_dialog.rs:215
-#: src/window/invites.rs:424 src/window/groups.rs:516 src/window/groups.rs:649
-#: src/window/remote_ui.rs:299 src/window/chat.rs:372 src/window/chat.rs:402
-#: src/window/chat.rs:2045 src/window/composer.rs:265
-#: src/window/phone_link.rs:134
+#: src/window/mod.rs src/window/dialogs.rs src/window/join_dialog.rs
+#: src/window/invites.rs src/window/groups.rs src/window/remote_ui.rs
+#: src/window/chat.rs src/window/composer.rs src/window/phone_link.rs
+#: src/window/lan_ui.rs
 msgid "Cancel"
 msgstr ""
 
-#: src/window/mod.rs:1289
+#: src/window/mod.rs
 msgid ""
 "The key to this account is no longer on this computer. Join with a new "
 "invite."
 msgstr ""
 
-#: src/window/mod.rs:1304
+#: src/window/mod.rs
 #, rust-format
 msgid "Welcome back, {name}! Connecting…"
 msgstr ""
 
-#: src/window/mod.rs:1315 src/window/mod.rs:1770 src/window/mod.rs:1789
-#: src/window/mod.rs:1885 src/window/mod.rs:2096 src/window/mod.rs:2148
-#: src/window/dialogs.rs:281 src/window/dialogs.rs:634
-#: src/window/dialogs.rs:645 src/window/join_dialog.rs:338
-#: src/window/phone_signin.rs:236
+#: src/window/mod.rs src/window/dialogs.rs src/window/join_dialog.rs
+#: src/window/phone_signin.rs
 #, rust-format
 msgid "Error: {error}"
 msgstr ""
 
-#: src/window/mod.rs:1323
+#: src/window/mod.rs
 #, rust-format
 msgid ""
 "The account {user} no longer exists on this network. Join with a new invite."
 msgstr ""
 
-#: src/window/mod.rs:1370 src/window/mod.rs:1449
+#: src/window/mod.rs
 msgid "Preferences"
 msgstr ""
 
-#: src/window/mod.rs:1373
+#: src/window/mod.rs
 msgid "General"
 msgstr ""
 
-#: src/window/mod.rs:1376
+#: src/window/mod.rs
 msgid "Behaviour"
 msgstr ""
 
-#: src/window/mod.rs:1380 src/window/chat_theme.rs:285
+#: src/window/mod.rs src/window/chat_theme.rs
 msgid "System"
 msgstr ""
 
-#: src/window/mod.rs:1383
+#: src/window/mod.rs
 msgid "Make this user the tailscale operator"
 msgstr ""
 
-#: src/window/mod.rs:1384
+#: src/window/mod.rs
 msgid ""
 "Lets BigLace manage the connection without asking for a password each time"
 msgstr ""
 
-#: src/window/mod.rs:1399
+#: src/window/mod.rs
 msgid "Account"
 msgstr ""
 
-#: src/window/mod.rs:1400
+#: src/window/mod.rs
 msgid ""
 "Signing out removes this device's identity from BigLace. You will need a new "
 "invite or key to join again."
 msgstr ""
 
-#: src/window/mod.rs:1403 src/window/dialogs.rs:123
+#: src/window/mod.rs src/window/dialogs.rs
 msgid "Sign out"
 msgstr ""
 
-#: src/window/mod.rs:1433 src/window/invites.rs:59
+#: src/window/mod.rs src/window/invites.rs
 msgid "Connect a phone"
 msgstr ""
 
-#: src/window/mod.rs:1435 src/window/invites.rs:272
+#: src/window/mod.rs src/window/invites.rs
 msgid "Invites you sent"
 msgstr ""
 
-#: src/window/mod.rs:1438
+#: src/window/mod.rs
 msgid "Change profile photo…"
 msgstr ""
 
-#: src/window/mod.rs:1439 src/window/join_dialog.rs:112
+#: src/window/mod.rs src/window/join_dialog.rs
 msgid "Join with an invite"
 msgstr ""
 
-#: src/window/mod.rs:1440 src/window/content.rs:273
-#: src/window/phone_signin.rs:32
+#: src/window/mod.rs src/window/content.rs src/window/phone_signin.rs
 msgid "Sign in with my phone"
 msgstr ""
 
-#: src/window/mod.rs:1442
+#: src/window/mod.rs
 msgid "Sign in with panel account"
 msgstr ""
 
-#: src/window/mod.rs:1445
+#: src/window/mod.rs
 msgid "Leave the network…"
 msgstr ""
 
-#: src/window/mod.rs:1450
+#: src/window/mod.rs
 msgid "View tailscaled logs"
 msgstr ""
 
-#: src/window/mod.rs:1451
+#: src/window/mod.rs
 msgid "About BigLace"
 msgstr ""
 
-#: src/window/mod.rs:1533
+#: src/window/mod.rs
 msgid "Connect to the network first, then open the invite link again."
 msgstr ""
 
-#: src/window/mod.rs:1539
+#: src/window/mod.rs
 #, rust-format
 msgid "This invite is for another network ({host}). Sign out first to join it."
 msgstr ""
 
-#: src/window/mod.rs:1546
+#: src/window/mod.rs
 msgid ""
 "This device is already signed in. Sign out first to join with an invite."
 msgstr ""
 
-#: src/window/mod.rs:1575
+#: src/window/mod.rs
 msgid "Photo removed."
 msgstr ""
 
-#: src/window/mod.rs:1577
+#: src/window/mod.rs
 #, rust-format
 msgid "Could not remove the photo: {error}"
 msgstr ""
 
-#: src/window/mod.rs:1614
+#: src/window/mod.rs
 #, rust-format
 msgid "Could not open the browser: {error}"
 msgstr ""
 
-#: src/window/mod.rs:1620
+#: src/window/mod.rs
 msgid ""
 "You can't open the admin panel: you're not an administrator of this network, "
 "or the panel can't be reached."
 msgstr ""
 
-#: src/window/mod.rs:1725
+#: src/window/mod.rs
 msgid "Enter the server URL before saving."
 msgstr ""
 
-#: src/window/mod.rs:1734
+#: src/window/mod.rs
 msgid "Enter the pre-auth key before saving."
 msgstr ""
 
-#: src/window/mod.rs:1768
+#: src/window/mod.rs
 msgid "Setup saved"
 msgstr ""
 
-#: src/window/mod.rs:1963
+#: src/window/mod.rs
 msgid "Could not start the Tailscale service."
 msgstr ""
 
-#: src/window/mod.rs:1989 src/window/peer_row.rs:251 src/window/peer_row.rs:388
-#: src/window/peer_row.rs:397
+#: src/window/mod.rs src/window/peer_row.rs
 msgid "IP address copied"
 msgstr ""
 
-#: src/window/mod.rs:2054
+#: src/window/mod.rs
 #, rust-format
 msgid ""
 "Saved, but the pre-auth key could not be stored in the system keyring "
@@ -405,303 +395,322 @@ msgid ""
 "register it anew."
 msgstr ""
 
-#: src/window/mod.rs:2291
+#: src/window/mod.rs
 msgid "Service stopped"
 msgstr ""
 
-#: src/window/mod.rs:2292 src/window/mod.rs:2394
+#: src/window/mod.rs
 msgid "Not signed in"
 msgstr ""
 
-#: src/window/mod.rs:2294 src/window/mod.rs:2459 src/window/content.rs:319
-#: src/window/dialogs.rs:480
+#: src/window/mod.rs src/window/content.rs src/window/dialogs.rs
 msgid "Connecting…"
 msgstr ""
 
-#: src/window/mod.rs:2313
+#: src/window/mod.rs
 msgid "Server unreachable"
 msgstr ""
 
-#: src/window/mod.rs:2331
+#: src/window/mod.rs
 msgid "Tailscale can't set DNS"
 msgstr ""
 
-#: src/window/mod.rs:2339
+#: src/window/mod.rs
 #, rust-format
 msgid "Update available: v{version}"
 msgstr ""
 
-#: src/window/mod.rs:2367
+#: src/window/mod.rs
 #, rust-format
 msgid "Sign in again as {user}"
 msgstr ""
 
-#: src/window/mod.rs:2383 src/window/mod.rs:2403
+#: src/window/mod.rs
 msgid "(no device name)"
 msgstr ""
 
-#: src/window/mod.rs:2397
+#: src/window/mod.rs
 msgid "Sign in or paste a pre-auth key"
 msgstr ""
 
-#: src/window/mod.rs:2408
+#: src/window/mod.rs
 msgid "Server not set"
 msgstr ""
 
-#: src/window/mod.rs:2583
+#: src/window/mod.rs
 msgid "no other devices"
 msgstr ""
 
-#: src/window/mod.rs:2585
+#: src/window/mod.rs
 #, rust-format
 msgid "{online} online"
 msgstr ""
 
-#: src/window/mod.rs:2587
+#: src/window/mod.rs
 #, rust-format
 msgid "{online} online · {offline} offline"
 msgstr ""
 
-#: src/window/mod.rs:2760 src/window/mod.rs:2826
+#: src/window/mod.rs
 msgid "is online"
 msgstr ""
 
-#: src/window/mod.rs:2761 src/window/mod.rs:2828
+#: src/window/mod.rs
 msgid "went offline"
 msgstr ""
 
-#: src/window/mod.rs:2762
+#: src/window/mod.rs
 #, rust-format
 msgid "{count} devices are online"
 msgstr ""
 
-#: src/window/mod.rs:2763
+#: src/window/mod.rs
 #, rust-format
 msgid "{count} devices went offline"
 msgstr ""
 
-#: src/window/mod.rs:2765
+#: src/window/mod.rs
 #, rust-format
 msgid "{on_count} online · {off_count} offline"
 msgstr ""
 
-#: src/window/sidebar.rs:71
+#: src/window/sidebar.rs
 msgid "Show the full sidebar"
 msgstr ""
 
-#: src/window/sidebar.rs:71 src/window/sidebar.rs:110
+#: src/window/sidebar.rs
 msgid "Show only icons in the sidebar"
 msgstr ""
 
-#: src/window/sidebar.rs:145
+#: src/window/sidebar.rs
 msgid "Sections"
 msgstr ""
 
-#: src/window/sidebar.rs:211
+#: src/window/sidebar.rs
 msgid ""
 "Your identity on this mesh — the device name shown to other peers and the "
 "network you're connected to."
 msgstr ""
 
-#: src/window/sidebar.rs:217
+#: src/window/sidebar.rs
 msgid "Change photo…"
 msgstr ""
 
-#: src/window/sidebar.rs:218
+#: src/window/sidebar.rs
 msgid "Remove photo"
 msgstr ""
 
-#: src/window/sidebar.rs:224
+#: src/window/sidebar.rs
 msgid "Change your photo"
 msgstr ""
 
-#: src/window/sidebar.rs:237
+#: src/window/sidebar.rs
 msgid "Rename this device on the network"
 msgstr ""
 
-#: src/window/sidebar.rs:247
+#: src/window/sidebar.rs
 msgid "Advanced: use a pre-auth key"
 msgstr ""
 
-#: src/window/sidebar.rs:249
+#: src/window/sidebar.rs
 msgid "Already have a key from your administrator? Paste it here."
 msgstr ""
 
-#: src/window/sidebar.rs:254
+#: src/window/sidebar.rs
 msgid ""
 "Manual setup — expand to paste a server URL and pre-auth key when you "
 "already received them from your administrator. Most users should sign in "
 "through the panel button above instead."
 msgstr ""
 
-#: src/window/sidebar.rs:267
+#: src/window/sidebar.rs
 msgid ""
 "Address of the coordination server (e.g. vpn.example.org). The https:// "
 "scheme is added automatically if you omit it."
 msgstr ""
 
-#: src/window/sidebar.rs:276
+#: src/window/sidebar.rs
 msgid "Pre-auth key"
 msgstr ""
 
-#: src/window/sidebar.rs:279
+#: src/window/sidebar.rs
 msgid ""
 "One-time or reusable key created on the server (starts with 'hskey-auth-'). "
 "Used to register this device automatically without opening a browser."
 msgstr ""
 
-#: src/window/sidebar.rs:295
+#: src/window/sidebar.rs
 msgid ""
 "The name this device shows to other peers on the VPN — this is the Tailscale "
 "hostname, NOT your computer's name and NOT your user. Lowercase letters, "
 "digits and hyphens. Example: 'tales-laptop', 'francois', 'office-pc'."
 msgstr ""
 
-#: src/window/sidebar.rs:306
+#: src/window/sidebar.rs
 msgid "Apply manual setup"
 msgstr ""
 
-#: src/window/sidebar.rs:308
+#: src/window/sidebar.rs src/window/dialogs.rs
 msgid "Save"
 msgstr ""
 
-#: src/window/sidebar.rs:312
+#: src/window/sidebar.rs
 msgid ""
 "Persist the server, key and device name above. Won't connect — press Connect "
 "afterwards."
 msgstr ""
 
-#: src/window/sidebar.rs:330
+#: src/window/sidebar.rs
 msgid "Connect automatically"
 msgstr ""
 
-#: src/window/sidebar.rs:331
+#: src/window/sidebar.rs
 msgid "Join the network when BigLace starts"
 msgstr ""
 
-#: src/window/sidebar.rs:334
+#: src/window/sidebar.rs
 msgid ""
 "When on, BigLace runs 'tailscale up' as soon as it launches, so you join the "
 "mesh without clicking Connect every time."
 msgstr ""
 
-#: src/window/sidebar.rs:342
+#: src/window/sidebar.rs
 msgid "Toggle auto-connect on startup"
 msgstr ""
 
-#: src/window/sidebar.rs:349
+#: src/window/sidebar.rs
 msgid "Start BigLace with the session"
 msgstr ""
 
-#: src/window/sidebar.rs:350
+#: src/window/sidebar.rs
 msgid "Open BigLace after you sign in to the desktop"
 msgstr ""
 
-#: src/window/sidebar.rs:353
+#: src/window/sidebar.rs
 msgid ""
 "Turn this on to add BigLace to your desktop session startup. Turn it off to "
 "remove it."
 msgstr ""
 
-#: src/window/sidebar.rs:361
+#: src/window/sidebar.rs
 msgid "Toggle start with session"
 msgstr ""
 
-#: src/window/sidebar.rs:368
+#: src/window/sidebar.rs
 msgid "Reconnect on drop"
 msgstr ""
 
-#: src/window/sidebar.rs:369
+#: src/window/sidebar.rs
 msgid "Retry with backoff when the connection is lost"
 msgstr ""
 
-#: src/window/sidebar.rs:372
+#: src/window/sidebar.rs
 msgid ""
 "If the tunnel drops (network change, sleep, server hiccup), BigLace silently "
 "retries with growing delays instead of leaving you offline until you notice."
 msgstr ""
 
-#: src/window/sidebar.rs:381
+#: src/window/sidebar.rs
 msgid "Toggle auto-reconnect"
 msgstr ""
 
-#: src/window/sidebar.rs:388
+#: src/window/sidebar.rs
 msgid "Notify on peer changes"
 msgstr ""
 
-#: src/window/sidebar.rs:390
+#: src/window/sidebar.rs
 msgid "Show a desktop notification when peers go online/offline"
 msgstr ""
 
-#: src/window/sidebar.rs:394
+#: src/window/sidebar.rs
 msgid ""
 "Send a desktop toast when another device on your network goes online or "
 "offline. Rapid bursts are coalesced into a single notification so you don't "
 "get spammed during reconnects."
 msgstr ""
 
-#: src/window/sidebar.rs:403
+#: src/window/sidebar.rs
 msgid "Toggle peer-change notifications"
 msgstr ""
 
-#: src/window/sidebar.rs:410
+#: src/window/sidebar.rs
 msgid "Share the clipboard with my phone"
 msgstr ""
 
-#: src/window/sidebar.rs:411
+#: src/window/sidebar.rs
 msgid "Copy on one, paste on the other: text and pictures"
 msgstr ""
 
-#: src/window/sidebar.rs:418
+#: src/window/sidebar.rs
 msgid "Toggle clipboard sharing"
 msgstr ""
 
-#: src/window/sidebar.rs:426
+#: src/window/sidebar.rs
 msgid "BigLace extension for GNOME"
 msgstr ""
 
-#: src/window/sidebar.rs:427
+#: src/window/sidebar.rs
 msgid ""
 "Needed for the phone to get what you copy while BigLace is in the background"
 msgstr ""
 
-#: src/window/sidebar.rs:431
+#: src/window/sidebar.rs
 msgid "Turn on"
 msgstr ""
 
-#: src/window/sidebar.rs:446
+#: src/window/sidebar.rs
+msgid "Local network without a server"
+msgstr ""
+
+#: src/window/sidebar.rs
+msgid "Pair with devices on this network and talk to them directly"
+msgstr ""
+
+#: src/window/sidebar.rs
+msgid "Toggle the local network"
+msgstr ""
+
+#: src/window/sidebar.rs src/window/lan_ui.rs
+msgid "Devices nearby"
+msgstr ""
+
+#: src/window/sidebar.rs
+msgid "Pair a device on this network"
+msgstr ""
+
+#: src/window/sidebar.rs
 msgid ""
 "Join or leave the mesh network. When connected, this device becomes "
 "reachable by the other peers in your account."
 msgstr ""
 
-#: src/window/sidebar.rs:460
+#: src/window/sidebar.rs
 msgid "Your photo"
 msgstr ""
 
-#: src/window/content.rs:58 src/window/invites.rs:239 src/window/groups.rs:135
-#: src/window/rooms.rs:97 src/window/chat.rs:141
+#: src/window/content.rs src/window/invites.rs src/window/groups.rs
+#: src/window/rooms.rs src/window/chat.rs
 msgid "Main menu"
 msgstr ""
 
-#: src/window/content.rs:64 src/window/content.rs:68
+#: src/window/content.rs
 msgid "Search devices"
 msgstr ""
 
-#: src/window/content.rs:79 src/window/invites.rs:234 src/window/groups.rs:130
-#: src/window/rooms.rs:93
+#: src/window/content.rs src/window/invites.rs src/window/groups.rs
+#: src/window/rooms.rs
 msgid "Refresh"
 msgstr ""
 
-#: src/window/content.rs:87 src/window/invites.rs:403
+#: src/window/content.rs src/window/invites.rs
 msgid "Invite"
 msgstr ""
 
-#: src/window/content.rs:90
+#: src/window/content.rs
 msgid "Invite someone to your network"
 msgstr ""
 
-#: src/window/content.rs:113
+#: src/window/content.rs
 msgid ""
 "Tailscale cannot write this device's DNS settings, so it can no longer keep "
 "peer names working. They may still resolve for now, from the configuration "
@@ -710,255 +719,254 @@ msgid ""
 "distributions `sudo resolvconf -u` repairs it."
 msgstr ""
 
-#: src/window/content.rs:143
+#: src/window/content.rs
 msgid "Not connected"
 msgstr ""
 
-#: src/window/content.rs:144
+#: src/window/content.rs
 msgid "Press Connect on the left to join the network."
 msgstr ""
 
-#: src/window/content.rs:216
+#: src/window/content.rs
 msgid "The tailscale service is not running"
 msgstr ""
 
-#: src/window/content.rs:218
+#: src/window/content.rs
 msgid "BigLace needs the tailscaled background service to manage the network."
 msgstr ""
 
-#: src/window/content.rs:222
+#: src/window/content.rs
 msgid "Start service"
 msgstr ""
 
-#: src/window/content.rs:243
+#: src/window/content.rs
 msgid "Join the network"
 msgstr ""
 
-#: src/window/content.rs:244
+#: src/window/content.rs
 msgid "Choose how you're going to sign in."
 msgstr ""
 
-#: src/window/content.rs:252
+#: src/window/content.rs
 msgid "Ways to sign in"
 msgstr ""
 
-#: src/window/content.rs:267
+#: src/window/content.rs
 msgid "Your account was kept on this computer. No invite needed."
 msgstr ""
 
-#: src/window/content.rs:274
+#: src/window/content.rs
 msgid "Your phone is already on the network with BigLace: scan a code with it."
 msgstr ""
 
-#: src/window/content.rs:279
+#: src/window/content.rs
 msgid "I have an invite"
 msgstr ""
 
-#: src/window/content.rs:280
+#: src/window/content.rs
 msgid "Someone on the network sent you a link or a QR code."
 msgstr ""
 
-#: src/window/content.rs:286
+#: src/window/content.rs
 msgid "I have an access key"
 msgstr ""
 
-#: src/window/content.rs:287
+#: src/window/content.rs
 msgid "A key the administrator created for you (starts with hskey-auth-)."
 msgstr ""
 
-#: src/window/content.rs:292
+#: src/window/content.rs
 msgid "I'm the administrator"
 msgstr ""
 
-#: src/window/content.rs:293
+#: src/window/content.rs
 msgid "Sign in with the BigScale panel's admin username and password."
 msgstr ""
 
-#: src/window/content.rs:345
+#: src/window/content.rs
 msgid "This device"
 msgstr ""
 
-#: src/window/content.rs:355 src/window/peer_row.rs:243
+#: src/window/content.rs src/window/peer_row.rs
 msgid "Copy IP address"
 msgstr ""
 
-#: src/window/content.rs:362
+#: src/window/content.rs
 msgid "Devices on the network"
 msgstr ""
 
-#: src/window/content.rs:371
+#: src/window/content.rs
 msgid "No other devices on the network yet."
 msgstr ""
 
-#: src/window/peer_row.rs:51 src/window/groups.rs:994 src/window/chat.rs:1387
-#: src/window/chat.rs:1487
+#: src/window/peer_row.rs src/window/groups.rs src/window/chat.rs
 msgid "offline"
 msgstr ""
 
-#: src/window/peer_row.rs:61
+#: src/window/peer_row.rs
 msgid "direct"
 msgstr ""
 
-#: src/window/peer_row.rs:62
+#: src/window/peer_row.rs
 msgid "via relay"
 msgstr ""
 
-#: src/window/peer_row.rs:70
+#: src/window/peer_row.rs
 #, rust-format
 msgid "battery {level}%, charging"
 msgstr ""
 
-#: src/window/peer_row.rs:72
+#: src/window/peer_row.rs
 #, rust-format
 msgid "battery {level}%"
 msgstr ""
 
-#: src/window/peer_row.rs:75
+#: src/window/peer_row.rs
 #, rust-format
 msgid "{free} free of {total}"
 msgstr ""
 
-#: src/window/peer_row.rs:148
+#: src/window/peer_row.rs
 msgid "Turn on over the network (Wake-on-LAN)"
 msgstr ""
 
-#: src/window/peer_row.rs:150
+#: src/window/peer_row.rs
 msgid "Turn on over the network"
 msgstr ""
 
-#: src/window/peer_row.rs:161
+#: src/window/peer_row.rs
 #, rust-format
 msgid ""
 "Signal sent to {name} (by {via}). If it's set to turn on over the network, "
 "it shows up in a minute or two."
 msgstr ""
 
-#: src/window/peer_row.rs:165
+#: src/window/peer_row.rs
 #, rust-format
 msgid "Could not turn on {name}: {error}"
 msgstr ""
 
-#: src/window/peer_row.rs:186
+#: src/window/peer_row.rs
 msgid "Unpin from top"
 msgstr ""
 
-#: src/window/peer_row.rs:188
+#: src/window/peer_row.rs
 msgid "Pin to top"
 msgstr ""
 
-#: src/window/peer_row.rs:211
+#: src/window/peer_row.rs
 msgid "Pinned to top"
 msgstr ""
 
-#: src/window/peer_row.rs:213
+#: src/window/peer_row.rs
 msgid "Unpinned"
 msgstr ""
 
-#: src/window/peer_row.rs:267 src/window/peer_row.rs:269
+#: src/window/peer_row.rs
 msgid "See and control the screen"
 msgstr ""
 
-#: src/window/peer_row.rs:316
+#: src/window/peer_row.rs
 msgid "Open terminal (SSH)"
 msgstr ""
 
-#: src/window/peer_row.rs:338
+#: src/window/peer_row.rs
 msgid "Open files (SFTP)"
 msgstr ""
 
-#: src/window/peer_row.rs:360 src/window/chat.rs:1172
+#: src/window/peer_row.rs src/window/chat.rs
 msgid "Send files"
 msgstr ""
 
-#: src/window/peer_row.rs:376
+#: src/window/peer_row.rs
 msgid "DNS name"
 msgstr ""
 
-#: src/window/peer_row.rs:379
+#: src/window/peer_row.rs
 msgid "DNS name copied"
 msgstr ""
 
-#: src/window/peer_row.rs:403
+#: src/window/peer_row.rs
 msgid "Owner"
 msgstr ""
 
-#: src/window/peer_row.rs:434
+#: src/window/peer_row.rs
 msgid "SSH login (override)"
 msgstr ""
 
-#: src/window/peer_row.rs:465
+#: src/window/peer_row.rs
 msgid "Saved"
 msgstr ""
 
-#: src/window/peer_row.rs:477
+#: src/window/peer_row.rs
 msgid "Tags"
 msgstr ""
 
-#: src/window/peer_row.rs:484
+#: src/window/peer_row.rs
 msgid "Last seen"
 msgstr ""
 
-#: src/window/peer_row.rs:491
+#: src/window/peer_row.rs
 msgid "Use as exit node"
 msgstr ""
 
-#: src/window/peer_row.rs:492
+#: src/window/peer_row.rs
 msgid "Route all traffic through this peer"
 msgstr ""
 
-#: src/window/peer_row.rs:529
+#: src/window/peer_row.rs
 msgid "Exit node enabled"
 msgstr ""
 
-#: src/window/peer_row.rs:531
+#: src/window/peer_row.rs
 msgid "Exit node disabled"
 msgstr ""
 
-#: src/window/peer_row.rs:536
+#: src/window/peer_row.rs
 msgid "Failed to update exit node"
 msgstr ""
 
-#: src/window/peer_row.rs:605
+#: src/window/peer_row.rs
 msgid "Copy"
 msgstr ""
 
-#: src/window/dialogs.rs:61
+#: src/window/dialogs.rs
 msgid "Mesh VPN client for BigScale/Headscale."
 msgstr ""
 
-#: src/window/dialogs.rs:76
+#: src/window/dialogs.rs
 msgid "Done. You will no longer need a password to connect or disconnect."
 msgstr ""
 
-#: src/window/dialogs.rs:77
+#: src/window/dialogs.rs
 #, rust-format
 msgid "Failed: {error}"
 msgstr ""
 
-#: src/window/dialogs.rs:81
+#: src/window/dialogs.rs
 msgid "Tailscale operator"
 msgstr ""
 
-#: src/window/dialogs.rs:84
+#: src/window/dialogs.rs
 msgid "OK"
 msgstr ""
 
-#: src/window/dialogs.rs:115
+#: src/window/dialogs.rs
 msgid "Sign out of current account?"
 msgstr ""
 
-#: src/window/dialogs.rs:117
+#: src/window/dialogs.rs
 msgid ""
 "This will disconnect from the network, sign this device out of the current "
 "control server, and forget the saved password. You'll then be able to sign "
 "in with a different account."
 msgstr ""
 
-#: src/window/dialogs.rs:129
+#: src/window/dialogs.rs
 msgid "Leave the network?"
 msgstr ""
 
-#: src/window/dialogs.rs:131
+#: src/window/dialogs.rs
 #, rust-format
 msgid ""
 "This device leaves the network and its name becomes free. Your account "
@@ -969,48 +977,47 @@ msgid ""
 "too."
 msgstr ""
 
-#: src/window/dialogs.rs:136
+#: src/window/dialogs.rs
 msgid "Leave and delete account"
 msgstr ""
 
-#: src/window/dialogs.rs:137 src/window/groups.rs:601 src/window/rooms.rs:192
-#: src/window/rooms.rs:633
+#: src/window/dialogs.rs src/window/groups.rs src/window/rooms.rs
 msgid "Leave"
 msgstr ""
 
-#: src/window/dialogs.rs:145
+#: src/window/dialogs.rs
 msgid "Connect first to delete the account."
 msgstr ""
 
-#: src/window/dialogs.rs:188
+#: src/window/dialogs.rs
 msgid "Signing out…"
 msgstr ""
 
-#: src/window/dialogs.rs:229
+#: src/window/dialogs.rs
 #, rust-format
 msgid ""
 "Signed out. Your account was kept: {count} other device(s) still use it."
 msgstr ""
 
-#: src/window/dialogs.rs:238
+#: src/window/dialogs.rs
 msgid ""
 "Couldn't delete the account: the panel can't be reached. Connect and try "
 "again."
 msgstr ""
 
-#: src/window/dialogs.rs:289
+#: src/window/dialogs.rs
 msgid "Signed out and account deleted."
 msgstr ""
 
-#: src/window/dialogs.rs:291
+#: src/window/dialogs.rs
 msgid "Signed out."
 msgstr ""
 
-#: src/window/dialogs.rs:304
+#: src/window/dialogs.rs
 msgid "Couldn't reach the server"
 msgstr ""
 
-#: src/window/dialogs.rs:306
+#: src/window/dialogs.rs
 #, rust-format
 msgid ""
 "The control server didn't confirm the sign-out: {error}\n"
@@ -1020,54 +1027,54 @@ msgid ""
 "administrator removes it."
 msgstr ""
 
-#: src/window/dialogs.rs:311
+#: src/window/dialogs.rs
 msgid "Sign out on this computer"
 msgstr ""
 
-#: src/window/dialogs.rs:349
+#: src/window/dialogs.rs
 msgid "Sign in as administrator"
 msgstr ""
 
-#: src/window/dialogs.rs:361
+#: src/window/dialogs.rs
 msgid "Panel administrator"
 msgstr ""
 
-#: src/window/dialogs.rs:363
+#: src/window/dialogs.rs
 msgid ""
 "Only for whoever administers the BigScale panel: use the panel's admin "
 "username and password. This device joins the network under the name below. "
 "Everyone else joins with an invite or an access key."
 msgstr ""
 
-#: src/window/dialogs.rs:370
+#: src/window/dialogs.rs
 msgid "Panel URL"
 msgstr ""
 
-#: src/window/dialogs.rs:374
+#: src/window/dialogs.rs
 msgid ""
 "Address of your BigScale panel (e.g. panel.example.org). The https:// scheme "
 "is added automatically if you omit it."
 msgstr ""
 
-#: src/window/dialogs.rs:378
+#: src/window/dialogs.rs
 msgid "Panel admin username"
 msgstr ""
 
-#: src/window/dialogs.rs:381
+#: src/window/dialogs.rs
 msgid "Your panel username — the one you use to sign in to the web panel."
 msgstr ""
 
-#: src/window/dialogs.rs:384
+#: src/window/dialogs.rs
 msgid "Password"
 msgstr ""
 
-#: src/window/dialogs.rs:387
+#: src/window/dialogs.rs
 msgid ""
 "Your panel password. Stored in the OS keyring (libsecret on Linux, Keychain "
 "on macOS, Credential Manager on Windows)."
 msgstr ""
 
-#: src/window/dialogs.rs:401
+#: src/window/dialogs.rs
 msgid ""
 "The name this device shows to other peers on the VPN — this is the Tailscale "
 "hostname, NOT your computer's name and NOT your user. Lowercase letters, "
@@ -1075,62 +1082,104 @@ msgid ""
 "something other peers will recognise."
 msgstr ""
 
-#: src/window/dialogs.rs:473
+#: src/window/dialogs.rs
 msgid "Sign in"
 msgstr ""
 
-#: src/window/dialogs.rs:560
+#: src/window/dialogs.rs
 msgid "Fill in URL, username and password."
 msgstr ""
 
-#: src/window/dialogs.rs:627
+#: src/window/dialogs.rs
 msgid "Signed in. Press Connect to join the network."
 msgstr ""
 
-#: src/window/dialogs.rs:699
-msgid "Rename this device"
+#: src/window/dialogs.rs
+msgid "Username"
 msgstr ""
 
-#: src/window/dialogs.rs:701
-msgid ""
-"The name this device shows to other peers on the VPN. Lowercase letters, "
-"digits and hyphens. Example: tales-laptop."
+#: src/window/dialogs.rs
+msgid "How everyone sees you in conversations."
 msgstr ""
 
-#: src/window/dialogs.rs:706
-msgid "Save & apply"
+#: src/window/dialogs.rs
+msgid "How this computer appears in the device list."
 msgstr ""
 
-#: src/window/dialogs.rs:811
-msgid "Saved. The new name will take effect the next time you connect."
+#: src/window/dialogs.rs
+msgid "Your names"
 msgstr ""
 
-#: src/window/dialogs.rs:822
-msgid "Device renamed."
+#: src/window/dialogs.rs
+msgid "Checking…"
 msgstr ""
 
-#: src/window/dialogs.rs:836
+#: src/window/dialogs.rs
+#, rust-format
+msgid "{name} is free."
+msgstr ""
+
+#: src/window/dialogs.rs
+#, rust-format
+msgid "{name} is already taken. Choose another name."
+msgstr ""
+
+#: src/window/dialogs.rs
+msgid "Couldn't check the name with the panel. Try again in a moment."
+msgstr ""
+
+#: src/window/dialogs.rs
 #, rust-format
 msgid "Rename failed: {error}"
 msgstr ""
 
-#: src/window/dialogs.rs:856
+#: src/window/dialogs.rs
+msgid "Names saved."
+msgstr ""
+
+#: src/window/dialogs.rs
+msgid "Someone just took that name. Choose another name."
+msgstr ""
+
+#: src/window/dialogs.rs
+msgid "You changed your name a moment ago. Wait a minute and try again."
+msgstr ""
+
+#: src/window/dialogs.rs
+msgid ""
+"Changing names needs a newer BigScale server. Ask your administrator to "
+"update it."
+msgstr ""
+
+#: src/window/dialogs.rs src/window/join_dialog.rs src/window/invites.rs
+#: src/window/groups.rs src/window/rooms.rs
+#, rust-format
+msgid "Could not reach the panel: {error}"
+msgstr ""
+
+#: src/window/dialogs.rs src/window/invites.rs src/window/groups.rs
+msgid ""
+"The panel couldn't confirm this device. Make sure BigLace is up to date and "
+"stays open while connected, then try again."
+msgstr ""
+
+#: src/window/dialogs.rs
 msgid "The device name can't be empty."
 msgstr ""
 
-#: src/window/dialogs.rs:859
+#: src/window/dialogs.rs
 msgid "Use 63 characters or fewer."
 msgstr ""
 
-#: src/window/dialogs.rs:863
+#: src/window/dialogs.rs
 msgid "The device name can't start or end with a hyphen."
 msgstr ""
 
-#: src/window/dialogs.rs:870
+#: src/window/dialogs.rs
 msgid "Only lowercase letters, digits and hyphens are allowed."
 msgstr ""
 
-#: src/window/join_dialog.rs:23
+#: src/window/join_dialog.rs
 #, rust-format
 msgid ""
 "That name already belongs to an account on this network, so we suggested "
@@ -1138,2388 +1187,1755 @@ msgid ""
 "you used it, or ask the administrator to free the name."
 msgstr ""
 
-#: src/window/join_dialog.rs:27
+#: src/window/join_dialog.rs
 msgid ""
 "That name already belongs to an account on this network. Try another one, or "
 "ask the administrator to free it."
 msgstr ""
 
-#: src/window/join_dialog.rs:29
+#: src/window/join_dialog.rs
 msgid "Type your name using at least two letters or digits."
 msgstr ""
 
-#: src/window/join_dialog.rs:31
+#: src/window/join_dialog.rs
 msgid "This invite has expired. Ask for a new one."
 msgstr ""
 
-#: src/window/join_dialog.rs:32 src/window/groups.rs:53
+#: src/window/join_dialog.rs src/window/groups.rs
 msgid "This invite was already used. Ask for a new one."
 msgstr ""
 
-#: src/window/join_dialog.rs:33
+#: src/window/join_dialog.rs
 msgid "This invite was cancelled. Ask for a new one."
 msgstr ""
 
-#: src/window/join_dialog.rs:35
+#: src/window/join_dialog.rs
 msgid ""
 "This invite is waiting for the network administrator's approval. Try again "
 "once the person who invited you says it was approved."
 msgstr ""
 
-#: src/window/join_dialog.rs:37
+#: src/window/join_dialog.rs
 msgid "This invite is not valid. Check the link or ask for a new one."
 msgstr ""
 
-#: src/window/join_dialog.rs:39 src/window/groups.rs:57
+#: src/window/join_dialog.rs src/window/groups.rs
 msgid "Too many attempts. Wait a minute and try again."
 msgstr ""
 
-#: src/window/join_dialog.rs:41
+#: src/window/join_dialog.rs
 msgid ""
 "This server doesn't support invites yet. Sign in with a panel account "
 "instead."
 msgstr ""
 
-#: src/window/join_dialog.rs:43 src/window/invites.rs:198
-#: src/window/groups.rs:58 src/window/rooms.rs:471
-#, rust-format
-msgid "Could not reach the panel: {error}"
-msgstr ""
-
-#: src/window/join_dialog.rs:123
+#: src/window/join_dialog.rs
 msgid ""
 "Paste the invite link you received and type your name. Your account is "
 "created and this device joins the network."
 msgstr ""
 
-#: src/window/join_dialog.rs:129
+#: src/window/join_dialog.rs
 msgid "Invite link"
 msgstr ""
 
-#: src/window/join_dialog.rs:132
+#: src/window/join_dialog.rs
 msgid "Your name"
 msgstr ""
 
-#: src/window/join_dialog.rs:134
+#: src/window/join_dialog.rs
 msgid "How others will see you on the network, e.g. 'Maria' or 'Office PC'."
 msgstr ""
 
-#: src/window/join_dialog.rs:140
+#: src/window/join_dialog.rs
 msgid ""
 "The name this device shows to other peers. Lowercase letters, digits and "
 "hyphens. Example: 'maria-laptop'."
 msgstr ""
 
-#: src/window/join_dialog.rs:146
+#: src/window/join_dialog.rs
 msgid "Network"
 msgstr ""
 
-#: src/window/join_dialog.rs:216 src/window/groups.rs:650
-#: src/window/rooms.rs:496
+#: src/window/join_dialog.rs src/window/groups.rs src/window/rooms.rs
 msgid "Join"
 msgstr ""
 
-#: src/window/join_dialog.rs:220
+#: src/window/join_dialog.rs
 msgid "Joining…"
 msgstr ""
 
-#: src/window/join_dialog.rs:282
+#: src/window/join_dialog.rs
 msgid ""
 "That doesn't look like an invite link. It starts with https:// and contains /"
 "join#."
 msgstr ""
 
-#: src/window/join_dialog.rs:289
+#: src/window/join_dialog.rs
 msgid "Type your name."
 msgstr ""
 
-#: src/window/join_dialog.rs:331
+#: src/window/join_dialog.rs
 #, rust-format
 msgid "Welcome, {name}! You joined the group {group}. Connecting…"
 msgstr ""
 
-#: src/window/join_dialog.rs:335
+#: src/window/join_dialog.rs
 #, rust-format
 msgid "Welcome, {name}! Connecting…"
 msgstr ""
 
-#: src/window/invites.rs:68
+#: src/window/invites.rs
 msgid ""
 "On the phone, open BigLace and tap “Scan QR code”, then point it at this "
 "code. The phone joins as one of your devices."
 msgstr ""
 
-#: src/window/invites.rs:74 src/window/invites.rs:108
-#: src/window/phone_signin.rs:177
+#: src/window/invites.rs src/window/phone_signin.rs
 msgid "Asking the panel for a code…"
 msgstr ""
 
-#: src/window/invites.rs:78 src/window/phone_signin.rs:142
+#: src/window/invites.rs src/window/phone_signin.rs
 msgid "New code"
 msgstr ""
 
-#: src/window/invites.rs:122 src/window/phone_signin.rs:245
+#: src/window/invites.rs src/window/phone_signin.rs
 msgid "This code is no longer valid."
 msgstr ""
 
-#: src/window/invites.rs:126
+#: src/window/invites.rs
 #, rust-format
 msgid "Valid for {time} · works once"
 msgstr ""
 
-#: src/window/invites.rs:133
+#: src/window/invites.rs
 msgid ""
 "This network's server doesn't pair phones yet. Ask your administrator to "
 "update the panel, or invite the phone instead."
 msgstr ""
 
-#: src/window/invites.rs:165
+#: src/window/invites.rs
 #, rust-format
 msgid "{device} is connected to your account."
 msgstr ""
 
-#: src/window/invites.rs:178
+#: src/window/invites.rs
 msgid ""
 "Invites from BigLace need a BigScale server that supports them. Ask your "
 "administrator to update the server, or to create the invite in the panel."
 msgstr ""
 
-#: src/window/invites.rs:182
+#: src/window/invites.rs
 msgid "This device can't send invites (it isn't linked to a person's account)."
 msgstr ""
 
-#: src/window/invites.rs:185 src/window/groups.rs:29
+#: src/window/invites.rs src/window/groups.rs
 msgid ""
 "The panel knows this device by a different key (BigLace was reinstalled?). "
 "Leave the network and join again to fix it."
 msgstr ""
 
-#: src/window/invites.rs:188 src/window/groups.rs:32
-msgid ""
-"The panel couldn't confirm this device. Make sure BigLace is up to date and "
-"stays open while connected, then try again."
-msgstr ""
-
-#: src/window/invites.rs:190 src/window/groups.rs:38
+#: src/window/invites.rs src/window/groups.rs
 msgid "You are no longer in that group."
 msgstr ""
 
-#: src/window/invites.rs:192
+#: src/window/invites.rs
 msgid ""
 "On this network everyone can reach everyone, so only the administrator can "
 "invite people."
 msgstr ""
 
-#: src/window/invites.rs:194
+#: src/window/invites.rs
 msgid "You have too many pending invites. Cancel some or try again tomorrow."
 msgstr ""
 
-#: src/window/invites.rs:196
+#: src/window/invites.rs
 msgid ""
 "On this network only administrators invite new people. You can still invite "
 "people already on the network into your groups."
 msgstr ""
 
-#: src/window/invites.rs:204
+#: src/window/invites.rs
 msgid "Waiting to be used"
 msgstr ""
 
-#: src/window/invites.rs:205
+#: src/window/invites.rs
 msgid "Used"
 msgstr ""
 
-#: src/window/invites.rs:206
+#: src/window/invites.rs
 msgid "Expired"
 msgstr ""
 
-#: src/window/invites.rs:207
+#: src/window/invites.rs
 msgid "Cancelled"
 msgstr ""
 
-#: src/window/invites.rs:208
+#: src/window/invites.rs
 msgid "Waiting for an administrator's approval"
 msgstr ""
 
-#: src/window/invites.rs:255
+#: src/window/invites.rs
 msgid "Bring someone to your network"
 msgstr ""
 
-#: src/window/invites.rs:259
+#: src/window/invites.rs
 msgid ""
 "Create a link or QR code and send it to the person. When they join, you two "
 "can reach each other's devices — no administrator needed. The link works "
 "once and stays valid until it's used or you cancel it."
 msgstr ""
 
-#: src/window/invites.rs:281
+#: src/window/invites.rs
 msgid "No invites yet"
 msgstr ""
 
-#: src/window/invites.rs:302
+#: src/window/invites.rs
 msgid "Invites unavailable"
 msgstr ""
 
-#: src/window/invites.rs:401
+#: src/window/invites.rs
 #, rust-format
 msgid "{user} joined"
 msgstr ""
 
-#: src/window/invites.rs:407
+#: src/window/invites.rs
 #, rust-format
 msgid "group {group}"
 msgstr ""
 
-#: src/window/invites.rs:427
+#: src/window/invites.rs
 msgid "Cancel this invite: the link stops working"
 msgstr ""
 
-#: src/window/invites.rs:465
+#: src/window/invites.rs
 msgid "The person you invite will reach your devices, and you theirs."
 msgstr ""
 
-#: src/window/invites.rs:469
+#: src/window/invites.rs
 msgid "Who is it for? (optional)"
 msgstr ""
 
-#: src/window/invites.rs:476
+#: src/window/invites.rs
 msgid "Access"
 msgstr ""
 
-#: src/window/invites.rs:497
+#: src/window/invites.rs
 msgid "Just the two of us"
 msgstr ""
 
-#: src/window/invites.rs:498
+#: src/window/invites.rs
 msgid "You see each other's devices, nobody else"
 msgstr ""
 
-#: src/window/invites.rs:502
+#: src/window/invites.rs
 #, rust-format
 msgid "Also the group {group}"
 msgstr ""
 
-#: src/window/invites.rs:503
+#: src/window/invites.rs
 msgid "They join the group and see everyone in it"
 msgstr ""
 
-#: src/window/invites.rs:509
+#: src/window/invites.rs
 msgid "A network of their own"
 msgstr ""
 
-#: src/window/invites.rs:510
+#: src/window/invites.rs
 msgid ""
 "No link to you: they see only their own devices and whoever they invite "
 "(you're the administrator)"
 msgstr ""
 
-#: src/window/invites.rs:527
+#: src/window/invites.rs
 msgid "Create invite"
 msgstr ""
 
-#: src/window/invites.rs:552
+#: src/window/invites.rs
 msgid "QR code of the invite link"
 msgstr ""
 
-#: src/window/invites.rs:554
+#: src/window/invites.rs
 msgid ""
 "Send the link or let the person scan the code with their phone. It works "
 "once and stays valid until used or cancelled."
 msgstr ""
 
-#: src/window/invites.rs:567
+#: src/window/invites.rs
 msgid "Copy link"
 msgstr ""
 
-#: src/window/invites.rs:572
+#: src/window/invites.rs
 msgid "Done"
 msgstr ""
 
-#: src/window/invites.rs:594
+#: src/window/invites.rs
 msgid "Copied!"
 msgstr ""
 
-#: src/window/invites.rs:629
+#: src/window/invites.rs
 msgid ""
 "This network asks an administrator to approve each invite: the link starts "
 "working once they do. Its status shows in Invites."
 msgstr ""
 
-#: src/window/groups.rs:23
+#: src/window/groups.rs
 msgid ""
 "Groups from BigLace need a newer BigScale server. Ask your administrator to "
 "update it."
 msgstr ""
 
-#: src/window/groups.rs:26
+#: src/window/groups.rs
 msgid "This device isn't linked to a person's account, so it has no groups."
 msgstr ""
 
-#: src/window/groups.rs:35
+#: src/window/groups.rs
 msgid ""
 "On this network everyone already reaches everyone, so groups aren't needed. "
 "The administrator can set access rules first."
 msgstr ""
 
-#: src/window/groups.rs:37
+#: src/window/groups.rs
 msgid "You already created the maximum number of groups."
 msgstr ""
 
-#: src/window/groups.rs:40
+#: src/window/groups.rs
 msgid "A group with that name already exists. Choose another name."
 msgstr ""
 
-#: src/window/groups.rs:41
+#: src/window/groups.rs
 msgid ""
 "Use lowercase letters, digits and hyphens, starting with a letter or digit."
 msgstr ""
 
-#: src/window/groups.rs:43
+#: src/window/groups.rs
 msgid ""
 "The administrator uses this group in the network's rules, so it can't be "
 "deleted. Ask the administrator."
 msgstr ""
 
-#: src/window/groups.rs:45
+#: src/window/groups.rs
 msgid "Only the person who created the group can do that."
 msgstr ""
 
-#: src/window/groups.rs:46
+#: src/window/groups.rs
 msgid "You created this group: delete it instead of leaving."
 msgstr ""
 
-#: src/window/groups.rs:47
+#: src/window/groups.rs
 msgid "This group belongs to the administrator; only they can change it."
 msgstr ""
 
-#: src/window/groups.rs:48
+#: src/window/groups.rs
 msgid "That person is no longer in the group."
 msgstr ""
 
-#: src/window/groups.rs:49
+#: src/window/groups.rs
 msgid "That group no longer exists, or whoever invited you left it."
 msgstr ""
 
-#: src/window/groups.rs:50
+#: src/window/groups.rs
 msgid "That person is no longer on the network."
 msgstr ""
 
-#: src/window/groups.rs:51
+#: src/window/groups.rs
 msgid "You're already in that group."
 msgstr ""
 
-#: src/window/groups.rs:52
+#: src/window/groups.rs
 msgid ""
 "This invite only brings new people into the network, and you're already in "
 "it."
 msgstr ""
 
-#: src/window/groups.rs:54
+#: src/window/groups.rs
 msgid "This invite expired. Ask for a new one."
 msgstr ""
 
-#: src/window/groups.rs:55
+#: src/window/groups.rs
 msgid "This invite is no longer valid. Ask for a new one."
 msgstr ""
 
-#: src/window/groups.rs:56
+#: src/window/groups.rs
 msgid "This invite is still waiting for an administrator's approval."
 msgstr ""
 
-#: src/window/groups.rs:122 src/window/groups.rs:856
+#: src/window/groups.rs
 msgid "New group"
 msgstr ""
 
-#: src/window/groups.rs:125 src/window/groups.rs:182
+#: src/window/groups.rs
 msgid "Create a group"
 msgstr ""
 
-#: src/window/groups.rs:148
+#: src/window/groups.rs
 msgid ""
 "People in the same group reach each other's devices. Create groups for "
 "family, work or friends, and invite people into them."
 msgstr ""
 
-#: src/window/groups.rs:156 src/window/groups.rs:163
+#: src/window/groups.rs
 msgid "Invitations for you"
 msgstr ""
 
-#: src/window/groups.rs:171
+#: src/window/groups.rs
 msgid "Your groups"
 msgstr ""
 
-#: src/window/groups.rs:188
+#: src/window/groups.rs
 msgid "No groups yet"
 msgstr ""
 
-#: src/window/groups.rs:190
+#: src/window/groups.rs
 msgid ""
 "A group lets several people reach each other at once — the family, the "
 "office, a class."
 msgstr ""
 
-#: src/window/groups.rs:203
+#: src/window/groups.rs
 msgid "Groups unavailable"
 msgstr ""
 
-#: src/window/groups.rs:314
+#: src/window/groups.rs
 msgid "Invitation to a group"
 msgstr ""
 
-#: src/window/groups.rs:316
+#: src/window/groups.rs
 #, rust-format
 msgid ""
 "{user} invites you to the group {group}. Open BigLace to accept or decline."
 msgstr ""
 
-#: src/window/groups.rs:331
+#: src/window/groups.rs
 #, rust-format
 msgid "{user} invites you to {group}"
 msgstr ""
 
-#: src/window/groups.rs:335
+#: src/window/groups.rs
 msgid "Joining lets you and the group's members reach each other's devices."
 msgstr ""
 
-#: src/window/groups.rs:339 src/window/call_ui.rs:170 src/window/call_ui.rs:236
-#: src/window/transfer_ui.rs:167
+#: src/window/groups.rs src/window/call_ui.rs src/window/transfer_ui.rs
 msgid "Decline"
 msgstr ""
 
-#: src/window/groups.rs:344 src/window/transfer_ui.rs:165
+#: src/window/groups.rs src/window/transfer_ui.rs
 msgid "Accept"
 msgstr ""
 
-#: src/window/groups.rs:358 src/window/groups.rs:662
+#: src/window/groups.rs
 #, rust-format
 msgid "You joined {group}."
 msgstr ""
 
-#: src/window/groups.rs:360
+#: src/window/groups.rs
 msgid "Invitation declined."
 msgstr ""
 
-#: src/window/groups.rs:383 src/window/rooms.rs:636
+#: src/window/groups.rs src/window/rooms.rs
 msgid "1 person"
 msgstr ""
 
-#: src/window/groups.rs:385 src/window/rooms.rs:638
+#: src/window/groups.rs src/window/rooms.rs
 #, rust-format
 msgid "{count} people"
 msgstr ""
 
-#: src/window/groups.rs:388
+#: src/window/groups.rs
 msgid "Created by you"
 msgstr ""
 
-#: src/window/groups.rs:389
+#: src/window/groups.rs
 #, rust-format
 msgid "Created by {user}"
 msgstr ""
 
-#: src/window/groups.rs:390
+#: src/window/groups.rs
 msgid "Network group (administrator)"
 msgstr ""
 
-#: src/window/groups.rs:404 src/window/rooms.rs:707 src/window/room_stage.rs:52
+#: src/window/groups.rs src/window/rooms.rs src/window/room_stage.rs
 msgid "you"
 msgstr ""
 
-#: src/window/groups.rs:407
+#: src/window/groups.rs
 msgid "owner"
 msgstr ""
 
-#: src/window/groups.rs:421 src/window/groups.rs:424
+#: src/window/groups.rs
 #, rust-format
 msgid "Remove {user} from the group"
 msgstr ""
 
-#: src/window/groups.rs:439
+#: src/window/groups.rs
 msgid "Invite to this group"
 msgstr ""
 
-#: src/window/groups.rs:453 src/window/groups.rs:460 src/window/groups.rs:465
+#: src/window/groups.rs
 msgid "Change the group's photo"
 msgstr ""
 
-#: src/window/groups.rs:454
+#: src/window/groups.rs
 msgid "Remove the group's photo"
 msgstr ""
 
-#: src/window/groups.rs:483 src/window/groups.rs:487
+#: src/window/groups.rs
 msgid "Rename group"
 msgstr ""
 
-#: src/window/groups.rs:494
+#: src/window/groups.rs
 msgid "Delete group"
 msgstr ""
 
-#: src/window/groups.rs:502
+#: src/window/groups.rs
 msgid "Leave group"
 msgstr ""
 
-#: src/window/groups.rs:533
+#: src/window/groups.rs
 msgid "Choose the group's photo"
 msgstr ""
 
-#: src/window/groups.rs:551
+#: src/window/groups.rs
 msgid "Group photo removed."
 msgstr ""
 
-#: src/window/groups.rs:553
+#: src/window/groups.rs
 msgid "Group photo updated. Everyone in the group will see it."
 msgstr ""
 
-#: src/window/groups.rs:578
+#: src/window/groups.rs
 #, rust-format
 msgid "Remove {user}?"
 msgstr ""
 
-#: src/window/groups.rs:580
+#: src/window/groups.rs
 #, rust-format
 msgid ""
 "{user} leaves the group {group} and no longer reaches its members through it."
 msgstr ""
 
-#: src/window/groups.rs:584
+#: src/window/groups.rs
 msgid "Remove"
 msgstr ""
 
-#: src/window/groups.rs:589
+#: src/window/groups.rs
 #, rust-format
 msgid "{user} was removed from the group."
 msgstr ""
 
-#: src/window/groups.rs:599
+#: src/window/groups.rs
 #, rust-format
 msgid "Leave {group}?"
 msgstr ""
 
-#: src/window/groups.rs:600
+#: src/window/groups.rs
 msgid ""
 "You stop reaching the group's members through it. To come back, someone has "
 "to invite you again."
 msgstr ""
 
-#: src/window/groups.rs:604
+#: src/window/groups.rs
 msgid "You left the group."
 msgstr ""
 
-#: src/window/groups.rs:613
+#: src/window/groups.rs
 #, rust-format
 msgid "Delete {group}?"
 msgstr ""
 
-#: src/window/groups.rs:614
+#: src/window/groups.rs
 msgid ""
 "Its members stop reaching each other through this group. People stay on the "
 "network."
 msgstr ""
 
-#: src/window/groups.rs:615 src/window/chat.rs:375 src/window/chat.rs:1904
+#: src/window/groups.rs src/window/chat.rs
 msgid "Delete"
 msgstr ""
 
-#: src/window/groups.rs:618
+#: src/window/groups.rs
 msgid "Group deleted."
 msgstr ""
 
-#: src/window/groups.rs:635 src/window/groups.rs:639
+#: src/window/groups.rs
 #, rust-format
 msgid "Join {group}?"
 msgstr ""
 
-#: src/window/groups.rs:636
+#: src/window/groups.rs
 #, rust-format
 msgid ""
 "{user} invited you. You and the group's members will reach each other's "
 "devices."
 msgstr ""
 
-#: src/window/groups.rs:640
+#: src/window/groups.rs
 msgid "You and the group's members will reach each other's devices."
 msgstr ""
 
-#: src/window/groups.rs:643
+#: src/window/groups.rs
 #, rust-format
 msgid "Connect with {user}?"
 msgstr ""
 
-#: src/window/groups.rs:644
+#: src/window/groups.rs
 #, rust-format
 msgid "You and {user} will reach each other's devices."
 msgstr ""
 
-#: src/window/groups.rs:663
+#: src/window/groups.rs
 msgid "Done. You can now reach each other's devices."
 msgstr ""
 
-#: src/window/groups.rs:678
+#: src/window/groups.rs
 #, rust-format
 msgid "Invite to {group}"
 msgstr ""
 
-#: src/window/groups.rs:693
+#: src/window/groups.rs
 msgid ""
 "Choose people on your network. Each one gets the invitation in BigLace and "
 "decides whether to join."
 msgstr ""
 
-#: src/window/groups.rs:700
+#: src/window/groups.rs
 msgid "Search people"
 msgstr ""
 
-#: src/window/groups.rs:708
+#: src/window/groups.rs
 msgid ""
 "If someone on the network has exactly this name, they get the invitation."
 msgstr ""
 
-#: src/window/groups.rs:722 src/window/chat.rs:864
+#: src/window/groups.rs src/window/chat.rs
 msgid "People on the network"
 msgstr ""
 
-#: src/window/groups.rs:723 src/window/chat.rs:1317
+#: src/window/groups.rs src/window/chat.rs
 msgid "Loading…"
 msgstr ""
 
-#: src/window/groups.rs:750
+#: src/window/groups.rs
 #, rust-format
 msgid "Invite \"{name}\""
 msgstr ""
 
-#: src/window/groups.rs:762
+#: src/window/groups.rs
 msgid "Send invitations"
 msgstr ""
 
-#: src/window/groups.rs:769
+#: src/window/groups.rs
 msgid "Someone not on the network yet? Share an invite link"
 msgstr ""
 
-#: src/window/groups.rs:800
+#: src/window/groups.rs
 msgid "Invitation sent. You'll see the person in the group once they accept."
 msgstr ""
 
-#: src/window/groups.rs:802
+#: src/window/groups.rs
 #, rust-format
 msgid "{count} invitations sent. People show up in the group as they accept."
 msgstr ""
 
-#: src/window/groups.rs:835
+#: src/window/groups.rs
 msgid ""
 "Listed are the people you're already connected to. To invite someone else on "
 "the network, type their exact name. Each one gets the invitation in BigLace "
 "and decides whether to join."
 msgstr ""
 
-#: src/window/groups.rs:837
+#: src/window/groups.rs
 msgid ""
 "Nobody you're connected to yet. Type someone's exact name to invite them."
 msgstr ""
 
-#: src/window/groups.rs:839
+#: src/window/groups.rs
 msgid "Nobody else is on the network yet."
 msgstr ""
 
-#: src/window/groups.rs:855
+#: src/window/groups.rs
 #, rust-format
 msgid "Rename {group}"
 msgstr ""
 
-#: src/window/groups.rs:877
+#: src/window/groups.rs
 msgid "Rename"
 msgstr ""
 
-#: src/window/groups.rs:877
+#: src/window/groups.rs
 msgid "Create group"
 msgstr ""
 
-#: src/window/groups.rs:917
+#: src/window/groups.rs
 #, rust-format
 msgid "Group {group} created. Now invite people into it."
 msgstr ""
 
-#: src/window/groups.rs:919
+#: src/window/groups.rs
 #, rust-format
 msgid "The group is called {group} now."
 msgstr ""
 
-#: src/window/groups.rs:936 src/window/groups.rs:943
+#: src/window/groups.rs
 msgid "For example: family, work, friends."
 msgstr ""
 
-#: src/window/groups.rs:945
+#: src/window/groups.rs
 #, rust-format
 msgid "It will be called \"{name}\"."
 msgstr ""
 
-#: src/window/groups.rs:962
+#: src/window/groups.rs
 msgid ""
 "Its members, conversation, room and photo keep going under the new name."
 msgstr ""
 
-#: src/window/groups.rs:964
+#: src/window/groups.rs
 msgid ""
 "You'll be the group's owner: you invite people into it and can remove them. "
 "Everyone in the group reaches each other's devices."
 msgstr ""
 
-#: src/window/groups.rs:968
+#: src/window/groups.rs
 msgid "Group name"
 msgstr ""
 
-#: src/window/groups.rs:992
+#: src/window/groups.rs
 msgid "typed name"
 msgstr ""
 
-#: src/window/groups.rs:993 src/window/chat.rs:1387 src/window/chat.rs:1486
+#: src/window/groups.rs src/window/chat.rs
 msgid "online"
 msgstr ""
 
-#: src/window/groups.rs:997
+#: src/window/groups.rs
 msgid "already in the group"
 msgstr ""
 
-#: src/window/groups.rs:998
+#: src/window/groups.rs
 msgid "invitation sent, waiting"
 msgstr ""
 
-#: src/window/groups.rs:1013
+#: src/window/groups.rs
 #, rust-format
 msgid "Invite {user}"
 msgstr ""
 
-#: src/window/remote_ui.rs:35
+#: src/window/remote_ui.rs src/window/visits_ui.rs
 msgid "End access"
 msgstr ""
 
-#: src/window/remote_ui.rs:54
+#: src/window/remote_ui.rs
 #, rust-format
 msgid "{who} is seeing and controlling this screen"
 msgstr ""
 
-#: src/window/remote_ui.rs:85
+#: src/window/remote_ui.rs
 msgid "Remote access started"
 msgstr ""
 
-#: src/window/remote_ui.rs:87
+#: src/window/remote_ui.rs
 #, rust-format
 msgid ""
 "{user} ({device}) is seeing and controlling this screen. Open BigLace to end "
 "the access."
 msgstr ""
 
-#: src/window/remote_ui.rs:102
+#: src/window/remote_ui.rs
 #, rust-format
 msgid "Always allow {user} (no more asking)"
 msgstr ""
 
-#: src/window/remote_ui.rs:107 src/window/rooms.rs:774
+#: src/window/remote_ui.rs src/window/rooms.rs
 msgid "Deny"
 msgstr ""
 
-#: src/window/remote_ui.rs:108
+#: src/window/remote_ui.rs
 msgid "Allow access"
 msgstr ""
 
-#: src/window/remote_ui.rs:164
+#: src/window/remote_ui.rs
 msgid "Allow remote access?"
 msgstr ""
 
-#: src/window/remote_ui.rs:170
+#: src/window/remote_ui.rs
 #, rust-format
 msgid "<b>{user}</b> wants to <b>see and control</b> this screen."
 msgstr ""
 
-#: src/window/remote_ui.rs:182
+#: src/window/remote_ui.rs
 msgid "Person"
 msgstr ""
 
-#: src/window/remote_ui.rs:183
+#: src/window/remote_ui.rs
 msgid "Device"
 msgstr ""
 
-#: src/window/remote_ui.rs:200
+#: src/window/remote_ui.rs
 msgid "See everything on your screen"
 msgstr ""
 
-#: src/window/remote_ui.rs:201
+#: src/window/remote_ui.rs
 msgid "Move the mouse and type on this computer"
 msgstr ""
 
-#: src/window/remote_ui.rs:202
+#: src/window/remote_ui.rs
 msgid "Hear this computer's sound"
 msgstr ""
 
-#: src/window/remote_ui.rs:221
+#: src/window/remote_ui.rs
 msgid ""
 "<b>Only allow it if you know this person and are expecting it.</b> You can "
 "end the access at any time from BigLace."
 msgstr ""
 
-#: src/window/remote_ui.rs:251
+#: src/window/remote_ui.rs
 #, rust-format
 msgid "Denied automatically in {seconds} s"
 msgstr ""
 
-#: src/window/remote_ui.rs:281
+#: src/window/remote_ui.rs
 #, rust-format
 msgid "Restart {name}'s computer?"
 msgstr ""
 
-#: src/window/remote_ui.rs:282
+#: src/window/remote_ui.rs
 msgid ""
 "It restarts, signs in by itself and locks the screen right away; this window "
 "connects again when it's back. Unsaved work there is lost."
 msgstr ""
 
-#: src/window/remote_ui.rs:283
+#: src/window/remote_ui.rs
 msgid "Restart"
 msgstr ""
 
-#: src/window/remote_ui.rs:287
+#: src/window/remote_ui.rs
 #, rust-format
 msgid "Restart {name}'s session?"
 msgstr ""
 
-#: src/window/remote_ui.rs:288
+#: src/window/remote_ui.rs
 msgid ""
 "The open programs there close, the computer signs out and back in by itself "
 "(without restarting) and locks the screen; this window connects again. "
 "Unsaved work there is lost."
 msgstr ""
 
-#: src/window/remote_ui.rs:289 src/window/remote_ui.rs:502
+#: src/window/remote_ui.rs
 msgid "Restart the session"
 msgstr ""
 
-#: src/window/remote_ui.rs:293
+#: src/window/remote_ui.rs
 #, rust-format
 msgid "Shut down {name}'s computer?"
 msgstr ""
 
-#: src/window/remote_ui.rs:294
+#: src/window/remote_ui.rs
 msgid ""
 "You won't be able to reach it again until someone turns it on. Unsaved work "
 "there is lost."
 msgstr ""
 
-#: src/window/remote_ui.rs:295
+#: src/window/remote_ui.rs
 msgid "Shut Down"
 msgstr ""
 
-#: src/window/remote_ui.rs:324 src/window/remote_ui.rs:332
-#: src/window/remote_ui.rs:394
+#: src/window/remote_ui.rs
 #, rust-format
 msgid "Screen of {name}"
 msgstr ""
 
-#: src/window/remote_ui.rs:336
+#: src/window/remote_ui.rs
 msgid "Full screen (F11)"
 msgstr ""
 
-#: src/window/remote_ui.rs:342
+#: src/window/remote_ui.rs
 msgid "Mute the remote sound"
 msgstr ""
 
-#: src/window/remote_ui.rs:348
+#: src/window/remote_ui.rs
 #, rust-format
 msgid "Fit {name}'s resolution to this window"
 msgstr ""
 
-#: src/window/remote_ui.rs:360
+#: src/window/remote_ui.rs
 msgid "LIVE"
 msgstr ""
 
-#: src/window/remote_ui.rs:362
+#: src/window/remote_ui.rs
 msgid "You are watching this screen right now"
 msgstr ""
 
-#: src/window/remote_ui.rs:364
+#: src/window/remote_ui.rs
 msgid "You are seeing and controlling this screen right now"
 msgstr ""
 
-#: src/window/remote_ui.rs:372 src/window/remote_ui.rs:818
+#: src/window/remote_ui.rs
 msgid "Request control"
 msgstr ""
 
-#: src/window/remote_ui.rs:375
+#: src/window/remote_ui.rs
 #, rust-format
 msgid "Ask {name} to let you use the mouse and keyboard"
 msgstr ""
 
-#: src/window/remote_ui.rs:399 src/window/remote_ui.rs:816
+#: src/window/remote_ui.rs
 #, rust-format
 msgid "Waiting for {name}…"
 msgstr ""
 
-#: src/window/remote_ui.rs:401
+#: src/window/remote_ui.rs
 msgid "Connecting to the screen shared with the room."
 msgstr ""
 
-#: src/window/remote_ui.rs:403
+#: src/window/remote_ui.rs
 msgid "The person at that computer needs to allow the access."
 msgstr ""
 
-#: src/window/remote_ui.rs:475
+#: src/window/remote_ui.rs
 #, rust-format
 msgid "Asked {name} for control…"
 msgstr ""
 
-#: src/window/remote_ui.rs:496
+#: src/window/remote_ui.rs
 #, rust-format
 msgid "Restart or shut down {name}'s computer"
 msgstr ""
 
-#: src/window/remote_ui.rs:501
+#: src/window/remote_ui.rs
 msgid "Restart and reconnect"
 msgstr ""
 
-#: src/window/remote_ui.rs:503
+#: src/window/remote_ui.rs
 msgid "Shut down"
 msgstr ""
 
-#: src/window/remote_ui.rs:547
+#: src/window/remote_ui.rs
 #, rust-format
 msgid "{name} is back."
 msgstr ""
 
-#: src/window/remote_ui.rs:557
+#: src/window/remote_ui.rs
 #, rust-format
 msgid "{name}'s computer didn't come back after the restart."
 msgstr ""
 
-#: src/window/remote_ui.rs:560
+#: src/window/remote_ui.rs
 #, rust-format
 msgid "{name} didn't allow the access."
 msgstr ""
 
-#: src/window/remote_ui.rs:562
+#: src/window/remote_ui.rs
 msgid ""
 "That computer couldn't confirm this device. Make sure both run an up-to-date "
 "BigLace."
 msgstr ""
 
-#: src/window/remote_ui.rs:565
+#: src/window/remote_ui.rs
 #, rust-format
 msgid ""
 "{name}'s computer can't share its screen (screen sharing isn't available "
 "there)."
 msgstr ""
 
-#: src/window/remote_ui.rs:568
+#: src/window/remote_ui.rs
 #, rust-format
 msgid "Could not connect: {error}"
 msgstr ""
 
-#: src/window/remote_ui.rs:587
+#: src/window/remote_ui.rs
 #, rust-format
 msgid "{name}'s computer said: {error}"
 msgstr ""
 
-#: src/window/remote_ui.rs:605
+#: src/window/remote_ui.rs
 #, rust-format
 msgid "Restarting {name}'s session…"
 msgstr ""
 
-#: src/window/remote_ui.rs:607
+#: src/window/remote_ui.rs
 msgid ""
 "This window connects again by itself when the session is back. It takes a "
 "few seconds."
 msgstr ""
 
-#: src/window/remote_ui.rs:611
+#: src/window/remote_ui.rs
 #, rust-format
 msgid "Restarting {name}…"
 msgstr ""
 
-#: src/window/remote_ui.rs:613
+#: src/window/remote_ui.rs
 msgid ""
 "This window connects again by itself when the computer is back. It takes a "
 "few minutes."
 msgstr ""
 
-#: src/window/remote_ui.rs:659
+#: src/window/remote_ui.rs
 #, rust-format
 msgid "{latency} ms · {fps} fps · {mbps} Mbit/s"
 msgstr ""
 
-#: src/window/remote_ui.rs:710
+#: src/window/remote_ui.rs
 #, rust-format
 msgid "You're controlling {name}'s screen now."
 msgstr ""
 
-#: src/window/remote_ui.rs:714
+#: src/window/remote_ui.rs
 #, rust-format
 msgid "{name} didn't give you control."
 msgstr ""
 
-#: src/window/remote_ui.rs:715
+#: src/window/remote_ui.rs
 #, rust-format
 msgid "{name} took control back."
 msgstr ""
 
-#: src/window/remote_ui.rs:733
+#: src/window/remote_ui.rs
 #, rust-format
 msgid "{name}'s computer is shutting down."
 msgstr ""
 
-#: src/window/remote_ui.rs:735
+#: src/window/remote_ui.rs
 #, rust-format
 msgid "The access to {name}'s screen ended."
 msgstr ""
 
-#: src/window/remote_ui.rs:737
+#: src/window/remote_ui.rs
 #, rust-format
 msgid "The access to {name}'s screen ended: {error}"
 msgstr ""
 
-#: src/window/remote_ui.rs:817
+#: src/window/remote_ui.rs
 msgid "Give back control"
 msgstr ""
 
-#: src/remote/client.rs:304
+#: src/remote/client.rs
 msgid "the connection was lost"
 msgstr ""
 
-#: src/window/rooms.rs:111
+#: src/window/rooms.rs
 msgid "The group's conversation, beside the room"
 msgstr ""
 
-#: src/window/rooms.rs:125
+#: src/window/rooms.rs
 msgid ""
 "Each of your groups has a voice room. Join it and talk with whoever is there "
 "— the sound goes straight between you, through the network."
 msgstr ""
 
-#: src/window/rooms.rs:136
+#: src/window/rooms.rs
 msgid "You're not in any group yet. Create one in Groups."
 msgstr ""
 
-#: src/window/rooms.rs:159
+#: src/window/rooms.rs
 msgid "People in the room"
 msgstr ""
 
-#: src/window/rooms.rs:165
+#: src/window/rooms.rs
 msgid "Everyone"
 msgstr ""
 
-#: src/window/rooms.rs:169
+#: src/window/rooms.rs
 msgid "Who's speaking"
 msgstr ""
 
-#: src/window/rooms.rs:184 src/window/rooms.rs:1043
+#: src/window/rooms.rs
 msgid "Mute"
 msgstr ""
 
-#: src/window/rooms.rs:188
+#: src/window/rooms.rs
 msgid "Mute your microphone for everyone"
 msgstr ""
 
-#: src/window/rooms.rs:203
+#: src/window/rooms.rs
 msgid "Which camera"
 msgstr ""
 
-#: src/window/rooms.rs:216
+#: src/window/rooms.rs
 msgid "Include the computer's sound when sharing the screen"
 msgstr ""
 
-#: src/window/rooms.rs:218
+#: src/window/rooms.rs
 msgid ""
 "Videos and music playing here go to the room too; the room's voices don't "
 "(no echo)"
 msgstr ""
 
-#: src/window/rooms.rs:237
+#: src/window/rooms.rs
 msgid "Rooms unavailable"
 msgstr ""
 
-#: src/window/rooms.rs:369
+#: src/window/rooms.rs
 #, rust-format
 msgid "Could not turn on the camera: {error}"
 msgstr ""
 
-#: src/window/rooms.rs:400 src/room/stage.rs:147
+#: src/window/rooms.rs src/room/stage.rs
 #, rust-format
 msgid "Could not share the screen: {error}"
 msgstr ""
 
-#: src/window/rooms.rs:485
+#: src/window/rooms.rs
 msgid "Nobody here right now"
 msgstr ""
 
-#: src/window/rooms.rs:487
+#: src/window/rooms.rs
 #, rust-format
 msgid "In the room: {people}"
 msgstr ""
 
-#: src/window/rooms.rs:500
+#: src/window/rooms.rs
 #, rust-format
 msgid "Join the room {group}"
 msgstr ""
 
-#: src/window/rooms.rs:509
+#: src/window/rooms.rs
 #, rust-format
 msgid "Could not join {group}: {error}"
 msgstr ""
 
-#: src/window/rooms.rs:625
+#: src/window/rooms.rs
 msgid "📺 You're showing your screen to the room"
 msgstr ""
 
-#: src/window/rooms.rs:627
+#: src/window/rooms.rs
 msgid "📺 You're showing your screen · 1 person watching"
 msgstr ""
 
-#: src/window/rooms.rs:629
+#: src/window/rooms.rs
 #, rust-format
 msgid "📺 You're showing your screen · {count} people watching"
 msgstr ""
 
-#: src/window/rooms.rs:633 src/window/call_ui.rs:206 src/window/call_ui.rs:236
+#: src/window/rooms.rs src/window/call_ui.rs
 msgid "Hang up"
 msgstr ""
 
-#: src/window/rooms.rs:641
+#: src/window/rooms.rs
 #, rust-format
 msgid "{people} · {talking} talking"
 msgstr ""
 
-#: src/window/rooms.rs:710
+#: src/window/rooms.rs
 msgid "connecting…"
 msgstr ""
 
-#: src/window/rooms.rs:718 src/window/rooms.rs:920
+#: src/window/rooms.rs
 msgid "muted"
 msgstr ""
 
-#: src/window/rooms.rs:720
+#: src/window/rooms.rs
 msgid "talking"
 msgstr ""
 
-#: src/window/rooms.rs:722
+#: src/window/rooms.rs
 msgid "quiet"
 msgstr ""
 
-#: src/window/rooms.rs:729 src/window/rooms.rs:735
+#: src/window/rooms.rs
 msgid "Sharing screen"
 msgstr ""
 
-#: src/window/rooms.rs:731
+#: src/window/rooms.rs
 msgid "In control"
 msgstr ""
 
-#: src/window/rooms.rs:731
+#: src/window/rooms.rs
 msgid "Controls your screen now"
 msgstr ""
 
-#: src/window/rooms.rs:733
+#: src/window/rooms.rs
 msgid "Watching"
 msgstr ""
 
-#: src/window/rooms.rs:733
+#: src/window/rooms.rs
 msgid "Watching your screen"
 msgstr ""
 
-#: src/window/rooms.rs:755
+#: src/window/rooms.rs
 #, rust-format
 msgid "{user} is showing their screen"
 msgstr ""
 
-#: src/window/rooms.rs:756 src/window/rooms.rs:879
+#: src/window/rooms.rs
 msgid "Watch"
 msgstr ""
 
-#: src/window/rooms.rs:771
+#: src/window/rooms.rs
 #, rust-format
 msgid "{user} asks to control your screen"
 msgstr ""
 
-#: src/window/rooms.rs:772
+#: src/window/rooms.rs
 msgid ""
 "They'll be able to use your mouse and keyboard. You can take control back at "
 "any time."
 msgstr ""
 
-#: src/window/rooms.rs:775
+#: src/window/rooms.rs
 msgid "Allow"
 msgstr ""
 
-#: src/window/rooms.rs:796
+#: src/window/rooms.rs
 #, rust-format
 msgid "Call with {user}"
 msgstr ""
 
-#: src/window/rooms.rs:797
+#: src/window/rooms.rs
 #, rust-format
 msgid "Room {group}"
 msgstr ""
 
-#: src/window/rooms.rs:803
+#: src/window/rooms.rs
 msgid "Turn off camera"
 msgstr ""
 
-#: src/window/rooms.rs:805
+#: src/window/rooms.rs
 msgid "Turn on camera"
 msgstr ""
 
-#: src/window/rooms.rs:826
+#: src/window/rooms.rs
 msgid "No camera found on this computer"
 msgstr ""
 
-#: src/window/rooms.rs:840
+#: src/window/rooms.rs
 msgid "Stop sharing"
 msgstr ""
 
-#: src/window/rooms.rs:842
+#: src/window/rooms.rs
 msgid "Share screen"
 msgstr ""
 
-#: src/window/rooms.rs:846
+#: src/window/rooms.rs
 msgid "Stop showing your screen to the room"
 msgstr ""
 
-#: src/window/rooms.rs:848
+#: src/window/rooms.rs
 msgid "Show your screen to everyone in the room"
 msgstr ""
 
-#: src/window/rooms.rs:860
+#: src/window/rooms.rs
 msgid "Take back control"
 msgstr ""
 
-#: src/window/rooms.rs:860
+#: src/window/rooms.rs
 msgid "Give control"
 msgstr ""
 
-#: src/window/rooms.rs:862
+#: src/window/rooms.rs
 msgid "Stop them from using your mouse and keyboard"
 msgstr ""
 
-#: src/window/rooms.rs:864
+#: src/window/rooms.rs
 msgid "Let them use your mouse and keyboard"
 msgstr ""
 
-#: src/window/rooms.rs:930
+#: src/window/rooms.rs
 msgid "Sound level"
 msgstr ""
 
-#: src/window/rooms.rs:1041
+#: src/window/rooms.rs
 msgid "Unmute"
 msgstr ""
 
-#: src/window/chat.rs:133 src/window/chat.rs:1291
+#: src/window/chat.rs
 msgid "New chat"
 msgstr ""
 
-#: src/window/chat.rs:137
+#: src/window/chat.rs
 msgid "Start a conversation with someone on the network"
 msgstr ""
 
-#: src/window/chat.rs:145 src/window/chat_theme.rs:252
+#: src/window/chat.rs src/window/chat_theme.rs
 msgid "Chat theme"
 msgstr ""
 
-#: src/window/chat.rs:156
+#: src/window/chat.rs
 msgid "Conversations"
 msgstr ""
 
-#: src/window/chat.rs:157
+#: src/window/chat.rs
 msgid "No conversations yet."
 msgstr ""
 
-#: src/window/chat.rs:191
+#: src/window/chat.rs
 msgid "Search in this conversation (Ctrl+F)"
 msgstr ""
 
-#: src/window/chat.rs:197
+#: src/window/chat.rs
 msgid "Call"
 msgstr ""
 
-#: src/window/chat.rs:207
+#: src/window/chat.rs
 msgid "Pinned message"
 msgstr ""
 
-#: src/window/chat.rs:218 src/window/chat.rs:1892
+#: src/window/chat.rs
 msgid "Unpin"
 msgstr ""
 
-#: src/window/chat.rs:234
+#: src/window/chat.rs
 msgid "Search messages"
 msgstr ""
 
-#: src/window/chat.rs:243
+#: src/window/chat.rs
 msgid "Older"
 msgstr ""
 
-#: src/window/chat.rs:248
+#: src/window/chat.rs
 msgid "Newer"
 msgstr ""
 
-#: src/window/chat.rs:283 src/window/composer.rs:225
+#: src/window/chat.rs src/window/composer.rs
 msgid "Emoji"
 msgstr ""
 
-#: src/window/chat.rs:294
+#: src/window/chat.rs
 msgid "Send files, pictures or videos"
 msgstr ""
 
-#: src/window/chat.rs:299
+#: src/window/chat.rs
 msgid "Send (Enter) — Shift+Enter for a new line"
 msgstr ""
 
-#: src/window/chat.rs:304
+#: src/window/chat.rs
 msgid "Record a voice message"
 msgstr ""
 
-#: src/window/chat.rs:326
+#: src/window/chat.rs
 msgid "Discard"
 msgstr ""
 
-#: src/window/chat.rs:337
+#: src/window/chat.rs
 msgid "Send voice message"
 msgstr ""
 
-#: src/window/chat.rs:373 src/window/chat.rs:1898
+#: src/window/chat.rs
 msgid "Copy text"
 msgstr ""
 
-#: src/window/chat.rs:374 src/window/chat.rs:1901
+#: src/window/chat.rs
 msgid "Forward"
 msgstr ""
 
-#: src/window/chat.rs:454
+#: src/window/chat.rs
 msgid "Talk with your network"
 msgstr ""
 
-#: src/window/chat.rs:456
+#: src/window/chat.rs
 msgid ""
 "Pick a conversation, or start one. Messages go straight between your "
 "computers — the server never sees them."
 msgstr ""
 
-#: src/window/chat.rs:895 src/window/chat.rs:1390 src/window/chat.rs:2212
-msgid "Group"
-msgstr ""
-
-#: src/window/chat.rs:904 src/window/chat.rs:2212
-msgid "Direct conversation"
-msgstr ""
-
-#: src/window/chat.rs:950
+#: src/window/chat.rs
 msgid "That message is too long."
 msgstr ""
 
-#: src/window/chat.rs:965 src/window/chat.rs:1164 src/window/chat.rs:1282
-#: src/window/phone_link.rs:56 src/window/phone_link.rs:80
+#: src/window/chat.rs src/window/phone_link.rs
 #, rust-format
 msgid "Could not send: {error}"
 msgstr ""
 
-#: src/window/chat.rs:1002
+#: src/window/chat.rs
 #, rust-format
 msgid "Could not download: {error}"
 msgstr ""
 
-#: src/window/chat.rs:1136
+#: src/window/chat.rs
 #, rust-format
 msgid "{user} in {group}"
 msgstr ""
 
-#: src/window/chat.rs:1143 src/window/chat.rs:1883 src/window/phone_link.rs:105
+#: src/window/chat.rs src/window/phone_link.rs
 msgid "Reply"
 msgstr ""
 
-#: src/window/chat.rs:1190
+#: src/window/chat.rs
 msgid "Drop to send"
 msgstr ""
 
-#: src/window/chat.rs:1222 src/window/chat.rs:1242
+#: src/window/chat.rs
 #, rust-format
 msgid "Could not record: {error}"
 msgstr ""
 
-#: src/window/chat.rs:1267
+#: src/window/chat.rs
 msgid "Too short — record for at least a second."
 msgstr ""
 
-#: src/window/chat.rs:1312
+#: src/window/chat.rs
 msgid "Search people and groups"
 msgstr ""
 
-#: src/window/chat.rs:1356
+#: src/window/chat.rs
 msgid "Nobody you can reach yet."
 msgstr ""
 
-#: src/window/chat.rs:1482
+#: src/window/chat.rs
+msgid "Group"
+msgstr ""
+
+#: src/window/chat.rs
+msgid "On this local network"
+msgstr ""
+
+#: src/window/chat.rs
 #, rust-format
 msgid "You: {text}"
 msgstr ""
 
-#: src/window/chat.rs:1484
+#: src/window/chat.rs
 msgid "Group conversation"
 msgstr ""
 
-#: src/window/chat.rs:1514
+#: src/window/chat.rs
 #, rust-format
 msgid "Delivered to {people}"
 msgstr ""
 
-#: src/window/chat.rs:1516
+#: src/window/chat.rs
 msgid "Waiting to be delivered"
 msgstr ""
 
-#: src/window/chat.rs:1552
+#: src/window/chat.rs
 msgid "Today"
 msgstr ""
 
-#: src/window/chat.rs:1554
+#: src/window/chat.rs
 msgid "Yesterday"
 msgstr ""
 
-#: src/window/chat.rs:1573 src/window/chat.rs:1711
+#: src/window/chat.rs
 msgid "🗑 Message deleted"
 msgstr ""
 
-#: src/window/chat.rs:1671
+#: src/window/chat.rs
 #, rust-format
 msgid "Forwarded from {name}"
 msgstr ""
 
-#: src/window/chat.rs:1772
+#: src/window/chat.rs
 msgid "edited"
 msgstr ""
 
-#: src/window/chat.rs:1845
+#: src/window/chat.rs
 msgid "More reactions"
 msgstr ""
 
-#: src/window/chat.rs:1886
+#: src/window/chat.rs
 msgid "Edit"
 msgstr ""
 
-#: src/window/chat.rs:1892
+#: src/window/chat.rs
 msgid "Pin"
 msgstr ""
 
-#: src/window/chat.rs:1906
+#: src/window/chat.rs
 msgid "Select"
 msgstr ""
 
-#: src/window/chat.rs:1920
+#: src/window/chat.rs
 #, rust-format
 msgid "Could not react: {error}"
 msgstr ""
 
-#: src/window/chat.rs:1936
+#: src/window/chat.rs
 #, rust-format
 msgid "Reply to {name}"
 msgstr ""
 
-#: src/window/chat.rs:1942
+#: src/window/chat.rs
 msgid "Editing message"
 msgstr ""
 
-#: src/window/chat.rs:1996
+#: src/window/chat.rs
 msgid "Copied."
 msgstr ""
 
-#: src/window/chat.rs:2006
+#: src/window/chat.rs
 msgid "Forward to…"
 msgstr ""
 
-#: src/window/chat.rs:2014
+#: src/window/chat.rs
 msgid "Forwarded."
 msgstr ""
 
-#: src/window/chat.rs:2016
+#: src/window/chat.rs
 #, rust-format
 msgid "Could not forward: {error}"
 msgstr ""
 
-#: src/window/chat.rs:2031
+#: src/window/chat.rs
 msgid "Delete the message?"
 msgstr ""
 
-#: src/window/chat.rs:2033
+#: src/window/chat.rs
 #, rust-format
 msgid "Delete {count} messages?"
 msgstr ""
 
-#: src/window/chat.rs:2040
+#: src/window/chat.rs
 msgid "“For everyone” removes it from the other computers too."
 msgstr ""
 
-#: src/window/chat.rs:2042
+#: src/window/chat.rs
 msgid "It's removed from this computer only."
 msgstr ""
 
-#: src/window/chat.rs:2046
+#: src/window/chat.rs
 msgid "Delete for me"
 msgstr ""
 
-#: src/window/chat.rs:2048
+#: src/window/chat.rs
 msgid "Delete for everyone"
 msgstr ""
 
-#: src/window/chat.rs:2068
+#: src/window/chat.rs
 #, rust-format
 msgid "Could not delete: {error}"
 msgstr ""
 
-#: src/window/chat.rs:2110
+#: src/window/chat.rs
 msgid "1 selected"
 msgstr ""
 
-#: src/window/chat.rs:2112
+#: src/window/chat.rs
 #, rust-format
 msgid "{count} selected"
 msgstr ""
 
-#: src/window/chat.rs:2135
+#: src/window/chat.rs
 msgid "That message isn't here anymore."
 msgstr ""
 
-#: src/window/chat.rs:2168
+#: src/window/chat.rs
 msgid "No results"
 msgstr ""
 
-#: src/window/chat.rs:2190
+#: src/window/chat.rs
 #, rust-format
 msgid "{n} of {total}"
 msgstr ""
 
-#: src/window/chat.rs:2203
+#: src/window/chat.rs
 #, rust-format
 msgid "{user} is typing…"
 msgstr ""
 
-#: src/window/chat.rs:2205
+#: src/window/chat.rs
 msgid "typing…"
 msgstr ""
 
-#: src/window/composer.rs:72 src/window/composer.rs:90
-#: src/window/phone_link.rs:132
+#: src/window/chat.rs
+msgid "Direct conversation"
+msgstr ""
+
+#: src/window/composer.rs src/window/phone_link.rs
 msgid "Message"
 msgstr ""
 
-#: src/window/composer.rs:212
+#: src/window/composer.rs
 msgid "Bold"
 msgstr ""
 
-#: src/window/composer.rs:213
+#: src/window/composer.rs
 msgid "Italic"
 msgstr ""
 
-#: src/window/composer.rs:214
+#: src/window/composer.rs
 msgid "Underline"
 msgstr ""
 
-#: src/window/composer.rs:215
+#: src/window/composer.rs
 msgid "Strikethrough"
 msgstr ""
 
-#: src/window/composer.rs:216
+#: src/window/composer.rs
 msgid "Monospace"
 msgstr ""
 
-#: src/window/composer.rs:217 src/window/composer.rs:262
+#: src/window/composer.rs
 msgid "Create link"
 msgstr ""
 
-#: src/window/composer.rs:218
+#: src/window/composer.rs
 msgid "Plain text"
 msgstr ""
 
-#: src/window/composer.rs:228
+#: src/window/composer.rs
 msgid "Formatting"
 msgstr ""
 
-#: src/window/composer.rs:266
+#: src/window/composer.rs
 msgid "Create"
 msgstr ""
 
-#: src/window/emoji_picker.rs:28
+#: src/window/emoji_picker.rs
 msgid "Smileys & people"
 msgstr ""
 
-#: src/window/emoji_picker.rs:29
+#: src/window/emoji_picker.rs
 msgid "Animals & nature"
 msgstr ""
 
-#: src/window/emoji_picker.rs:30
+#: src/window/emoji_picker.rs
 msgid "Food & drink"
 msgstr ""
 
-#: src/window/emoji_picker.rs:31
+#: src/window/emoji_picker.rs
 msgid "Travel & places"
 msgstr ""
 
-#: src/window/emoji_picker.rs:32
+#: src/window/emoji_picker.rs
 msgid "Activities"
 msgstr ""
 
-#: src/window/emoji_picker.rs:33
+#: src/window/emoji_picker.rs
 msgid "Objects"
 msgstr ""
 
-#: src/window/emoji_picker.rs:34
+#: src/window/emoji_picker.rs
 msgid "Symbols"
 msgstr ""
 
-#: src/window/emoji_picker.rs:35
+#: src/window/emoji_picker.rs
 msgid "Flags"
 msgstr ""
 
-#: src/window/emoji_picker.rs:177
+#: src/window/emoji_picker.rs
 msgid "Search emoji"
 msgstr ""
 
-#: src/window/emoji_picker.rs:194 src/window/emoji_picker.rs:310
+#: src/window/emoji_picker.rs
 msgid "Recently used"
 msgstr ""
 
-#: src/window/emoji_picker.rs:199
+#: src/window/emoji_picker.rs
 msgid "Search results"
 msgstr ""
 
-#: src/chat/mod.rs:832
+#: src/chat/mod.rs
 msgid "Missed voice call"
 msgstr ""
 
-#: src/chat/mod.rs:833
+#: src/chat/mod.rs
 msgid "Missed video call"
 msgstr ""
 
-#: src/chat/mod.rs:834
+#: src/chat/mod.rs
 msgid "Declined voice call"
 msgstr ""
 
-#: src/chat/mod.rs:835
+#: src/chat/mod.rs
 msgid "Declined video call"
 msgstr ""
 
-#: src/chat/mod.rs:836
+#: src/chat/mod.rs
 msgid "Outgoing voice call"
 msgstr ""
 
-#: src/chat/mod.rs:837
+#: src/chat/mod.rs
 msgid "Outgoing video call"
 msgstr ""
 
-#: src/chat/mod.rs:838
+#: src/chat/mod.rs
 msgid "Incoming voice call"
 msgstr ""
 
-#: src/chat/mod.rs:839
+#: src/chat/mod.rs
 msgid "Incoming video call"
 msgstr ""
 
-#: src/chat/mod.rs:843
+#: src/chat/mod.rs
 msgid "declined"
 msgstr ""
 
-#: src/chat/mod.rs:844
+#: src/chat/mod.rs
 msgid "busy"
 msgstr ""
 
-#: src/chat/mod.rs:845
+#: src/chat/mod.rs
 msgid "no answer"
 msgstr ""
 
-#: src/chat/mod.rs:923 src/chat/mod.rs:1024
+#: src/chat/mod.rs
 msgid "message too long"
 msgstr ""
 
-#: src/chat/mod.rs:925
+#: src/chat/mod.rs
 msgid "not signed in to a BigScale network"
 msgstr ""
 
-#: src/chat/mod.rs:929
+#: src/chat/mod.rs
 msgid "you are not in that group"
 msgstr ""
 
-#: src/chat/mod.rs:1016
+#: src/chat/mod.rs src/window/lan_ui.rs
+#, rust-format
+msgid "Not paired with {name}"
+msgstr ""
+
+#: src/chat/mod.rs
+msgid "You"
+msgstr ""
+
+#: src/chat/mod.rs
 #, rust-format
 msgid "{emoji} (reaction to: {text})"
 msgstr ""
 
-#: src/chat/mod.rs:1026
+#: src/chat/mod.rs
 #, rust-format
 msgid "✏️ (edited) {text}"
 msgstr ""
 
-#: src/chat/mod.rs:1033
+#: src/chat/mod.rs
 msgid "🗑 (deleted a message)"
 msgstr ""
 
-#: src/chat/mod.rs:1055
+#: src/chat/mod.rs
 #, rust-format
 msgid "📌 (pinned: {text})"
 msgstr ""
 
-#: src/chat/mod.rs:1056
+#: src/chat/mod.rs
 msgid "📌 (unpinned the message)"
 msgstr ""
 
-#: src/chat/files.rs:173
+#: src/chat/files.rs
 msgid "only files can be sent"
 msgstr ""
 
-#: src/chat/files.rs:176
+#: src/chat/files.rs
 msgid "the file is too big (4 GB at most)"
 msgstr ""
 
-#: src/chat/files.rs:180
+#: src/chat/files.rs
 msgid "that file name can't be sent"
 msgstr ""
 
-#: src/chat/files.rs:492
-#, rust-format
-msgid "{user}'s computer is off or offline — try again when it's back"
+#: src/chat/files.rs
+msgid "the file is no longer on their computer (moved or changed)"
 msgstr ""
 
-#: src/chat/files.rs:510
+#: src/chat/files.rs
+msgid "the file isn't available"
+msgstr ""
+
+#: src/chat/files.rs
 msgid ""
 "the file arrived different from the original (damaged on the way) — download "
 "it again"
 msgstr ""
 
-#: src/chat/files.rs:545
-msgid "the file is no longer on their computer (moved or changed)"
+#: src/chat/files.rs
+#, rust-format
+msgid "{user}'s computer is off or offline — try again when it's back"
 msgstr ""
 
-#: src/chat/files.rs:547
-msgid "the file isn't available"
-msgstr ""
-
-#: src/chat/files.rs:571
+#: src/chat/files.rs
 msgid "the transfer was interrupted — try again to resume it"
-msgstr ""
-
-#: src/chat/voice.rs:83
-msgid "nothing was recorded — is a microphone connected?"
-msgstr ""
-
-#: src/window/chat_media.rs:60
-#, rust-format
-msgid "{done} of {total}"
-msgstr ""
-
-#: src/window/chat_media.rs:170 src/window/chat_media.rs:211
-#: src/window/chat_media.rs:292 src/window/chat_media.rs:387
-msgid "Play"
-msgstr ""
-
-#: src/window/chat_media.rs:173 src/window/chat_media.rs:237
-#: src/window/chat_media.rs:295
-msgid "Download"
-msgstr ""
-
-#: src/window/chat_media.rs:211 src/window/chat_media.rs:234
-msgid "Open"
-msgstr ""
-
-#: src/window/chat_media.rs:261 src/window/media_viewer.rs:44
-msgid "Show in folder"
-msgstr ""
-
-#: src/window/chat_media.rs:387
-msgid "Pause"
-msgstr ""
-
-#: src/window/chat_media.rs:428
-msgid "Photo"
-msgstr ""
-
-#: src/window/chat_media.rs:429
-msgid "Video"
-msgstr ""
-
-#: src/window/chat_media.rs:430
-msgid "Voice message"
-msgstr ""
-
-#: src/window/chat_theme.rs:45
-msgid "System accent"
-msgstr ""
-
-#: src/window/chat_theme.rs:46
-msgid "Blue"
-msgstr ""
-
-#: src/window/chat_theme.rs:47
-msgid "Teal"
-msgstr ""
-
-#: src/window/chat_theme.rs:48
-msgid "Green"
-msgstr ""
-
-#: src/window/chat_theme.rs:49
-msgid "Purple"
-msgstr ""
-
-#: src/window/chat_theme.rs:50
-msgid "Pink"
-msgstr ""
-
-#: src/window/chat_theme.rs:51
-msgid "Orange"
-msgstr ""
-
-#: src/window/chat_theme.rs:52
-msgid "Red"
-msgstr ""
-
-#: src/window/chat_theme.rs:53
-msgid "Graphite"
-msgstr ""
-
-#: src/window/chat_theme.rs:60
-msgid "Default"
-msgstr ""
-
-#: src/window/chat_theme.rs:61
-msgid "Plain"
-msgstr ""
-
-#: src/window/chat_theme.rs:62
-msgid "Dots"
-msgstr ""
-
-#: src/window/chat_theme.rs:63
-msgid "Ocean"
-msgstr ""
-
-#: src/window/chat_theme.rs:64
-msgid "Sunset"
-msgstr ""
-
-#: src/window/chat_theme.rs:65
-msgid "Forest"
-msgstr ""
-
-#: src/window/chat_theme.rs:66
-msgid "Lavender"
-msgstr ""
-
-#: src/window/chat_theme.rs:67
-msgid "Night"
-msgstr ""
-
-#: src/window/chat_theme.rs:239
-msgid "Hi! How does this look? 😊"
-msgstr ""
-
-#: src/window/chat_theme.rs:240
-msgid "Looks great!"
-msgstr ""
-
-#: src/window/chat_theme.rs:279
-msgid "Appearance"
-msgstr ""
-
-#: src/window/chat_theme.rs:286
-msgid "Light"
-msgstr ""
-
-#: src/window/chat_theme.rs:287
-msgid "Dark"
-msgstr ""
-
-#: src/window/chat_theme.rs:311
-msgid "Your messages"
-msgstr ""
-
-#: src/window/chat_theme.rs:351
-msgid "Background"
-msgstr ""
-
-#: src/window/chat_theme.rs:362
-msgid "Picture…"
-msgstr ""
-
-#: src/window/chat_theme.rs:417
-msgid "Choose a background picture"
-msgstr ""
-
-#: src/room/stage.rs:109 src/room/mod.rs:750
-msgid "you are not in a room"
-msgstr ""
-
-#: src/room/stage.rs:111
-msgid "screen sharing isn't available on this computer"
-msgstr ""
-
-#: src/room/stage.rs:173
-#, rust-format
-msgid "The computer's sound can't be shared: {error}"
-msgstr ""
-
-#: src/room/stage.rs:203
-#, rust-format
-msgid "The screen share stopped: {error}"
-msgstr ""
-
-#: src/power.rs:192 src/power.rs:223
-msgid "this computer can't restart remotely (BigLace's helper isn't installed)"
-msgstr ""
-
-#: src/power.rs:198
-#, rust-format
-msgid "could not prepare the automatic sign-in: {error}"
-msgstr ""
-
-#: src/power.rs:214
-#, rust-format
-msgid "could not restart: {error}"
-msgstr ""
-
-#: src/power.rs:228
-#, rust-format
-msgid "could not restart the session: {error}"
-msgstr ""
-
-#: src/power.rs:234
-#, rust-format
-msgid "could not shut down: {error}"
-msgstr ""
-
-#: src/wake.rs:165
-msgid "BigLace doesn't know that computer's network card yet"
-msgstr ""
-
-#: src/wake.rs:177
-msgid "this computer"
-msgstr ""
-
-#: src/wake.rs:193
-msgid "no computer on its network is on to send the signal"
-msgstr ""
-
-#: src/window/access_page.rs:22
-msgid "This computer"
-msgstr ""
-
-#: src/window/access_page.rs:26
-msgid "Who may use this computer remotely"
-msgstr ""
-
-#: src/window/access_page.rs:28
-msgid ""
-"Anyone you're connected to can ask to see and control this screen. Choose "
-"who is let in without asking, and who is never let in."
-msgstr ""
-
-#: src/window/access_page.rs:32
-msgid "History of accesses"
-msgstr ""
-
-#: src/window/access_page.rs:33
-msgid "Kept on this computer only."
-msgstr ""
-
-#: src/window/access_page.rs:36
-msgid "Clear"
-msgstr ""
-
-#: src/window/access_page.rs:78
-msgid "Nobody has asked yet."
-msgstr ""
-
-#: src/window/access_page.rs:79
-msgid "When someone asks, you can choose to always let them in."
-msgstr ""
-
-#: src/window/access_page.rs:83
-msgid "Ask every time"
-msgstr ""
-
-#: src/window/access_page.rs:83
-msgid "Always allow"
-msgstr ""
-
-#: src/window/access_page.rs:83
-msgid "Never allow"
-msgstr ""
-
-#: src/window/access_page.rs:106
-msgid "No accesses yet."
-msgstr ""
-
-#: src/window/access_page.rs:111
-msgid "Remote access"
-msgstr ""
-
-#: src/window/access_page.rs:112
-msgid "Watched the screen shared with the room"
-msgstr ""
-
-#: src/window/access_page.rs:113
-msgid "Got control of the shared screen"
-msgstr ""
-
-#: src/window/access_page.rs:114
-msgid "Restarted the computer"
-msgstr ""
-
-#: src/window/access_page.rs:115
-msgid "Restarted the session"
-msgstr ""
-
-#: src/window/access_page.rs:116
-msgid "Shut down the computer"
-msgstr ""
-
-#: src/window/access_page.rs:120
-msgid "allowed"
-msgstr ""
-
-#: src/window/access_page.rs:121
-msgid "allowed (always)"
-msgstr ""
-
-#: src/window/access_page.rs:122
-msgid "came back after a restart"
-msgstr ""
-
-#: src/window/access_page.rs:123
-msgid "denied"
-msgstr ""
-
-#: src/window/access_page.rs:124
-msgid "blocked (never allowed)"
-msgstr ""
-
-#: src/window/access_page.rs:125
-msgid "ended"
-msgstr ""
-
-#: src/window/access_page.rs:136
-#, rust-format
-msgid "{user} ({device})"
-msgstr ""
-
-#: src/room/shortcut.rs:41
-msgid "Mute or unmute the microphone in a BigLace room"
-msgstr ""
-
-#: src/window/phone_link.rs:96
-#, rust-format
-msgid "Opened a link from {device}"
-msgstr ""
-
-#: src/window/phone_link.rs:102
-#, rust-format
-msgid "{text} (on {device})"
-msgstr ""
-
-#: src/window/phone_link.rs:131
-#, rust-format
-msgid "Reply to {who}"
-msgstr ""
-
-#: src/window/phone_link.rs:135
-msgid "Send"
-msgstr ""
-
-#: src/remote/host.rs:578
-msgid ""
-"the screen there is locked, and GNOME doesn't allow remote access to a "
-"locked screen — ask the person to unlock it"
-msgstr ""
-
-#: src/remote/host.rs:735
-msgid "sharing was stopped on that computer"
-msgstr ""
-
-#: src/remote/host.rs:737
-msgid "the screen capture ended"
-msgstr ""
-
-#: src/window/media_viewer.rs:43
-msgid "Open with another app"
-msgstr ""
-
-#: src/window/media_viewer.rs:45
-msgid "Close"
-msgstr ""
-
-#: src/window/phone_signin.rs:39
-msgid "Show the code"
-msgstr ""
-
-#: src/window/phone_signin.rs:104
-msgid ""
-"Your phone must already be on the network, with BigLace. This computer joins "
-"the same account."
-msgstr ""
-
-#: src/window/phone_signin.rs:108
-msgid "Network address"
-msgstr ""
-
-#: src/window/phone_signin.rs:126
-msgid "Type the network address, e.g. vpn.example.org."
-msgstr ""
-
-#: src/window/phone_signin.rs:135
-msgid ""
-"On the phone, open BigLace, tap “Scan QR code” and point it at this code. "
-"Then confirm on the phone."
-msgstr ""
-
-#: src/window/phone_signin.rs:205
-#, rust-format
-msgid "Waiting for the phone · {time}"
-msgstr ""
-
-#: src/window/phone_signin.rs:234
-#, rust-format
-msgid "This computer joined the account {user}."
-msgstr ""
-
-#: src/call.rs:135 src/call.rs:158
-msgid "You're already in a call."
-msgstr ""
-
-#: src/call.rs:138
-msgid "Leave the room you're in first."
-msgstr ""
-
-#: src/call.rs:149
-#, rust-format
-msgid "{user} can't take calls right now."
-msgstr ""
-
-#: src/call.rs:197 src/call.rs:203 src/call.rs:206
-msgid "The call has ended."
-msgstr ""
-
-#: src/window/call_ui.rs:27 src/window/call_ui.rs:225
-msgid "Voice call"
-msgstr ""
-
-#: src/window/call_ui.rs:27 src/window/call_ui.rs:225
-msgid "Video call"
-msgstr ""
-
-#: src/window/call_ui.rs:51
-#, rust-format
-msgid "Call {user}"
-msgstr ""
-
-#: src/window/call_ui.rs:164
-#, rust-format
-msgid "{user} is video calling you"
-msgstr ""
-
-#: src/window/call_ui.rs:166
-#, rust-format
-msgid "{user} is calling you"
-msgstr ""
-
-#: src/window/call_ui.rs:169 src/window/call_ui.rs:199
-msgid "Answer"
-msgstr ""
-
-#: src/window/call_ui.rs:222
-msgid "Video calling…"
-msgstr ""
-
-#: src/window/call_ui.rs:222
-msgid "Calling…"
-msgstr ""
-
-#: src/window/call_ui.rs:249
-#, rust-format
-msgid "In a call · {time}"
-msgstr ""
-
-#: src/transfer.rs:131
-#, rust-format
-msgid "Pick between 1 and {count} files."
-msgstr ""
-
-#: src/transfer.rs:152
-#, rust-format
-msgid "{name} isn't a file."
-msgstr ""
-
-#: src/transfer.rs:155
-#, rust-format
-msgid "{name} is too big (4 GB at most)."
-msgstr ""
-
-#: src/transfer.rs:158
-#, rust-format
-msgid "{name} has a name that can't be sent."
-msgstr ""
-
-#: src/transfer.rs:263
-#, rust-format
-msgid "{name} arrived different from the original (damaged on the way)."
-msgstr ""
-
-#: src/window/transfer_ui.rs:24
-#, rust-format
-msgid "Send files to {name}"
-msgstr ""
-
-#: src/window/transfer_ui.rs:37
-#, rust-format
-msgid "Preparing the files for {name}…"
-msgstr ""
-
-#: src/window/transfer_ui.rs:43
-#, rust-format
-msgid "Waiting for {name} to accept…"
-msgstr ""
-
-#: src/window/transfer_ui.rs:90
-msgid "Save the files in"
-msgstr ""
-
-#: src/window/transfer_ui.rs:120
-#, rust-format
-msgid "Receiving files from {user}"
-msgstr ""
-
-#: src/window/transfer_ui.rs:131
-#, rust-format
-msgid "File received from {user}"
-msgstr ""
-
-#: src/window/transfer_ui.rs:133
-#, rust-format
-msgid "{count} files received from {user}"
-msgstr ""
-
-#: src/window/transfer_ui.rs:137
-msgid "Open folder"
-msgstr ""
-
-#: src/window/transfer_ui.rs:142
-#, rust-format
-msgid "Couldn't receive the files from {user}"
-msgstr ""
-
-#: src/window/transfer_ui.rs:157
-#, rust-format
-msgid "{user} wants to send you a file"
-msgstr ""
-
-#: src/window/transfer_ui.rs:159
-#, rust-format
-msgid "{user} wants to send you {count} files"
-msgstr ""
-
-#: src/window/transfer_ui.rs:166
-msgid "Save to…"
-msgstr ""
-
-#: src/window/transfer_ui.rs:174
-#, rust-format
-msgid "{user} accepted: sending…"
-msgstr ""
-
-#: src/window/transfer_ui.rs:175
-#, rust-format
-msgid "{user} declined the files"
-msgstr ""
-
-#: src/window/transfer_ui.rs:176
-#, rust-format
-msgid "{user} received the file"
-msgstr ""
-
-#: src/window/transfer_ui.rs:177
-#, rust-format
-msgid "{user} received the {count} files"
-msgstr ""
-
-#: src/window/transfer_ui.rs:178
-#, rust-format
-msgid "{user} couldn't receive the files"
-msgstr ""
-
-#: src/window/sidebar.rs:442
-msgid "Local network without a server"
-msgstr ""
-
-#: src/window/sidebar.rs:443
-msgid "Pair with devices on this network and talk to them directly"
-msgstr ""
-
-#: src/window/sidebar.rs:448
-msgid "Toggle the local network"
-msgstr ""
-
-#: src/window/lan_ui.rs:126 src/window/sidebar.rs:453
-msgid "Devices nearby"
-msgstr ""
-
-#: src/window/sidebar.rs:454
-msgid "Pair a device on this network"
-msgstr ""
-
-#: src/window/lan_ui.rs:58
-#, rust-format
-msgid "Paired with {name}"
-msgstr ""
-
-#: src/window/lan_ui.rs:59
-#, rust-format
-msgid "Not paired with {name}"
-msgstr ""
-
-#: src/window/lan_ui.rs:75
-#, rust-format
-msgid "Could not turn on the local network: {error}"
-msgstr ""
-
-#: src/window/lan_ui.rs:86
-msgid "No BigLace nearby. The other device needs the local network turned on, on this same network. Guest Wi-Fi and some routers keep devices apart: use the main network."
-msgstr ""
-
-#: src/window/lan_ui.rs:100
-msgid "Paired"
-msgstr ""
-
-#: src/window/lan_ui.rs:104 src/window/lan_ui.rs:148
-msgid "Pair"
-msgstr ""
-
-#: src/window/lan_ui.rs:108
-msgid "Waiting…"
-msgstr ""
-
-#: src/window/lan_ui.rs:142
-#, rust-format
-msgid "Pair with {name}?"
-msgstr ""
-
-#: src/window/lan_ui.rs:143
-#, rust-format
-msgid "Check that {name} shows the same code:"
-msgstr ""
-
-#: src/chat/mod.rs:1259
-msgid "You"
-msgstr ""
-
-#: src/window/chat.rs:896
-msgid "On this local network"
-msgstr ""
-
-#: src/window/lan_ui.rs:107
-msgid "Forget"
-msgstr ""
-
-#: src/window/lan_ui.rs:136
-msgid "Paired, not nearby"
-msgstr ""
-
-#: src/window/lan_ui.rs:151
-msgid "Or scan this code with BigLace on the phone (Settings, Local network)"
 msgstr ""
 
 #: src/chat/files.rs
@@ -3527,5 +2943,635 @@ msgid "the local network is off"
 msgstr ""
 
 #: src/chat/files.rs
-msgid "{name} can't be reached on the local network — try again when it's nearby"
+#, rust-format
+msgid ""
+"{name} can't be reached on the local network — try again when it's nearby"
+msgstr ""
+
+#: src/chat/voice.rs
+msgid "nothing was recorded — is a microphone connected?"
+msgstr ""
+
+#: src/window/chat_media.rs
+#, rust-format
+msgid "{done} of {total}"
+msgstr ""
+
+#: src/window/chat_media.rs
+msgid "Play"
+msgstr ""
+
+#: src/window/chat_media.rs
+msgid "Download"
+msgstr ""
+
+#: src/window/chat_media.rs
+msgid "Video"
+msgstr ""
+
+#: src/window/chat_media.rs
+msgid "Open"
+msgstr ""
+
+#: src/window/chat_media.rs src/window/media_viewer.rs
+msgid "Show in folder"
+msgstr ""
+
+#: src/window/chat_media.rs
+msgid "Pause"
+msgstr ""
+
+#: src/window/chat_media.rs
+msgid "Photo"
+msgstr ""
+
+#: src/window/chat_media.rs
+msgid "Voice message"
+msgstr ""
+
+#: src/window/chat_theme.rs
+msgid "System accent"
+msgstr ""
+
+#: src/window/chat_theme.rs
+msgid "Blue"
+msgstr ""
+
+#: src/window/chat_theme.rs
+msgid "Teal"
+msgstr ""
+
+#: src/window/chat_theme.rs
+msgid "Green"
+msgstr ""
+
+#: src/window/chat_theme.rs
+msgid "Purple"
+msgstr ""
+
+#: src/window/chat_theme.rs
+msgid "Pink"
+msgstr ""
+
+#: src/window/chat_theme.rs
+msgid "Orange"
+msgstr ""
+
+#: src/window/chat_theme.rs
+msgid "Red"
+msgstr ""
+
+#: src/window/chat_theme.rs
+msgid "Graphite"
+msgstr ""
+
+#: src/window/chat_theme.rs
+msgid "Default"
+msgstr ""
+
+#: src/window/chat_theme.rs
+msgid "Plain"
+msgstr ""
+
+#: src/window/chat_theme.rs
+msgid "Dots"
+msgstr ""
+
+#: src/window/chat_theme.rs
+msgid "Ocean"
+msgstr ""
+
+#: src/window/chat_theme.rs
+msgid "Sunset"
+msgstr ""
+
+#: src/window/chat_theme.rs
+msgid "Forest"
+msgstr ""
+
+#: src/window/chat_theme.rs
+msgid "Lavender"
+msgstr ""
+
+#: src/window/chat_theme.rs
+msgid "Night"
+msgstr ""
+
+#: src/window/chat_theme.rs
+msgid "Hi! How does this look? 😊"
+msgstr ""
+
+#: src/window/chat_theme.rs
+msgid "Looks great!"
+msgstr ""
+
+#: src/window/chat_theme.rs
+msgid "Appearance"
+msgstr ""
+
+#: src/window/chat_theme.rs
+msgid "Light"
+msgstr ""
+
+#: src/window/chat_theme.rs
+msgid "Dark"
+msgstr ""
+
+#: src/window/chat_theme.rs
+msgid "Your messages"
+msgstr ""
+
+#: src/window/chat_theme.rs
+msgid "Background"
+msgstr ""
+
+#: src/window/chat_theme.rs
+msgid "Picture…"
+msgstr ""
+
+#: src/window/chat_theme.rs
+msgid "Choose a background picture"
+msgstr ""
+
+#: src/room/stage.rs src/room/mod.rs
+msgid "you are not in a room"
+msgstr ""
+
+#: src/room/stage.rs
+msgid "screen sharing isn't available on this computer"
+msgstr ""
+
+#: src/room/stage.rs
+#, rust-format
+msgid "The computer's sound can't be shared: {error}"
+msgstr ""
+
+#: src/room/stage.rs
+#, rust-format
+msgid "The screen share stopped: {error}"
+msgstr ""
+
+#: src/power.rs
+msgid "this computer can't restart remotely (BigLace's helper isn't installed)"
+msgstr ""
+
+#: src/power.rs
+#, rust-format
+msgid "could not prepare the automatic sign-in: {error}"
+msgstr ""
+
+#: src/power.rs
+#, rust-format
+msgid "could not restart: {error}"
+msgstr ""
+
+#: src/power.rs
+#, rust-format
+msgid "could not restart the session: {error}"
+msgstr ""
+
+#: src/power.rs
+#, rust-format
+msgid "could not shut down: {error}"
+msgstr ""
+
+#: src/wake.rs
+msgid "BigLace doesn't know that computer's network card yet"
+msgstr ""
+
+#: src/wake.rs
+msgid "this computer"
+msgstr ""
+
+#: src/wake.rs
+msgid "no computer on its network is on to send the signal"
+msgstr ""
+
+#: src/window/access_page.rs
+msgid "This computer"
+msgstr ""
+
+#: src/window/access_page.rs
+msgid "Who may use this computer remotely"
+msgstr ""
+
+#: src/window/access_page.rs
+msgid ""
+"Anyone you're connected to can ask to see and control this screen. Choose "
+"who is let in without asking, and who is never let in."
+msgstr ""
+
+#: src/window/access_page.rs
+msgid "History of accesses"
+msgstr ""
+
+#: src/window/access_page.rs
+msgid "Kept on this computer only."
+msgstr ""
+
+#: src/window/access_page.rs
+msgid "Clear"
+msgstr ""
+
+#: src/window/access_page.rs
+msgid "Nobody has asked yet."
+msgstr ""
+
+#: src/window/access_page.rs
+msgid "When someone asks, you can choose to always let them in."
+msgstr ""
+
+#: src/window/access_page.rs
+msgid "Ask every time"
+msgstr ""
+
+#: src/window/access_page.rs
+msgid "Always allow"
+msgstr ""
+
+#: src/window/access_page.rs
+msgid "Never allow"
+msgstr ""
+
+#: src/window/access_page.rs
+msgid "No accesses yet."
+msgstr ""
+
+#: src/window/access_page.rs
+msgid "Remote access"
+msgstr ""
+
+#: src/window/access_page.rs
+msgid "Watched the screen shared with the room"
+msgstr ""
+
+#: src/window/access_page.rs
+msgid "Got control of the shared screen"
+msgstr ""
+
+#: src/window/access_page.rs
+msgid "Opened a terminal"
+msgstr ""
+
+#: src/window/access_page.rs
+msgid "Browsed the files"
+msgstr ""
+
+#: src/window/access_page.rs
+msgid "Restarted the computer"
+msgstr ""
+
+#: src/window/access_page.rs
+msgid "Restarted the session"
+msgstr ""
+
+#: src/window/access_page.rs
+msgid "Shut down the computer"
+msgstr ""
+
+#: src/window/access_page.rs
+msgid "allowed"
+msgstr ""
+
+#: src/window/access_page.rs
+msgid "allowed (always)"
+msgstr ""
+
+#: src/window/access_page.rs
+msgid "came back after a restart"
+msgstr ""
+
+#: src/window/access_page.rs
+msgid "denied"
+msgstr ""
+
+#: src/window/access_page.rs
+msgid "blocked (never allowed)"
+msgstr ""
+
+#: src/window/access_page.rs
+msgid "ended"
+msgstr ""
+
+#: src/window/access_page.rs src/window/visits_ui.rs
+#, rust-format
+msgid "{user} ({device})"
+msgstr ""
+
+#: src/room/shortcut.rs
+msgid "Mute or unmute the microphone in a BigLace room"
+msgstr ""
+
+#: src/window/phone_link.rs
+#, rust-format
+msgid "Opened a link from {device}"
+msgstr ""
+
+#: src/window/phone_link.rs
+#, rust-format
+msgid "{text} (on {device})"
+msgstr ""
+
+#: src/window/phone_link.rs
+#, rust-format
+msgid "Reply to {who}"
+msgstr ""
+
+#: src/window/phone_link.rs
+msgid "Send"
+msgstr ""
+
+#: src/remote/host.rs
+msgid ""
+"the screen there is locked, and GNOME doesn't allow remote access to a "
+"locked screen — ask the person to unlock it"
+msgstr ""
+
+#: src/remote/host.rs
+msgid "sharing was stopped on that computer"
+msgstr ""
+
+#: src/remote/host.rs
+msgid "the screen capture ended"
+msgstr ""
+
+#: src/window/media_viewer.rs
+msgid "Open with another app"
+msgstr ""
+
+#: src/window/media_viewer.rs
+msgid "Close"
+msgstr ""
+
+#: src/window/phone_signin.rs
+msgid "Show the code"
+msgstr ""
+
+#: src/window/phone_signin.rs
+msgid ""
+"Your phone must already be on the network, with BigLace. This computer joins "
+"the same account."
+msgstr ""
+
+#: src/window/phone_signin.rs
+msgid "Network address"
+msgstr ""
+
+#: src/window/phone_signin.rs
+msgid "Type the network address, e.g. vpn.example.org."
+msgstr ""
+
+#: src/window/phone_signin.rs
+msgid ""
+"On the phone, open BigLace, tap “Scan QR code” and point it at this code. "
+"Then confirm on the phone."
+msgstr ""
+
+#: src/window/phone_signin.rs
+#, rust-format
+msgid "Waiting for the phone · {time}"
+msgstr ""
+
+#: src/window/phone_signin.rs
+#, rust-format
+msgid "This computer joined the account {user}."
+msgstr ""
+
+#: src/call.rs
+msgid "You're already in a call."
+msgstr ""
+
+#: src/call.rs
+msgid "Leave the room you're in first."
+msgstr ""
+
+#: src/call.rs
+#, rust-format
+msgid "{user} can't take calls right now."
+msgstr ""
+
+#: src/call.rs
+msgid "The call has ended."
+msgstr ""
+
+#: src/window/call_ui.rs
+msgid "Voice call"
+msgstr ""
+
+#: src/window/call_ui.rs
+msgid "Video call"
+msgstr ""
+
+#: src/window/call_ui.rs
+#, rust-format
+msgid "Call {user}"
+msgstr ""
+
+#: src/window/call_ui.rs
+#, rust-format
+msgid "{user} is video calling you"
+msgstr ""
+
+#: src/window/call_ui.rs
+#, rust-format
+msgid "{user} is calling you"
+msgstr ""
+
+#: src/window/call_ui.rs
+msgid "Answer"
+msgstr ""
+
+#: src/window/call_ui.rs
+msgid "Video calling…"
+msgstr ""
+
+#: src/window/call_ui.rs
+msgid "Calling…"
+msgstr ""
+
+#: src/window/call_ui.rs
+#, rust-format
+msgid "In a call · {time}"
+msgstr ""
+
+#: src/transfer.rs
+#, rust-format
+msgid "Pick between 1 and {count} files."
+msgstr ""
+
+#: src/transfer.rs
+#, rust-format
+msgid "{name} isn't a file."
+msgstr ""
+
+#: src/transfer.rs
+#, rust-format
+msgid "{name} is too big (4 GB at most)."
+msgstr ""
+
+#: src/transfer.rs
+#, rust-format
+msgid "{name} has a name that can't be sent."
+msgstr ""
+
+#: src/transfer.rs
+#, rust-format
+msgid "{name} arrived different from the original (damaged on the way)."
+msgstr ""
+
+#: src/window/transfer_ui.rs
+#, rust-format
+msgid "Send files to {name}"
+msgstr ""
+
+#: src/window/transfer_ui.rs
+#, rust-format
+msgid "Preparing the files for {name}…"
+msgstr ""
+
+#: src/window/transfer_ui.rs
+#, rust-format
+msgid "Waiting for {name} to accept…"
+msgstr ""
+
+#: src/window/transfer_ui.rs
+msgid "Save the files in"
+msgstr ""
+
+#: src/window/transfer_ui.rs
+#, rust-format
+msgid "Receiving files from {user}"
+msgstr ""
+
+#: src/window/transfer_ui.rs
+#, rust-format
+msgid "File received from {user}"
+msgstr ""
+
+#: src/window/transfer_ui.rs
+#, rust-format
+msgid "{count} files received from {user}"
+msgstr ""
+
+#: src/window/transfer_ui.rs
+msgid "Open folder"
+msgstr ""
+
+#: src/window/transfer_ui.rs
+#, rust-format
+msgid "Couldn't receive the files from {user}"
+msgstr ""
+
+#: src/window/transfer_ui.rs
+#, rust-format
+msgid "{user} wants to send you a file"
+msgstr ""
+
+#: src/window/transfer_ui.rs
+#, rust-format
+msgid "{user} wants to send you {count} files"
+msgstr ""
+
+#: src/window/transfer_ui.rs
+msgid "Save to…"
+msgstr ""
+
+#: src/window/transfer_ui.rs
+#, rust-format
+msgid "{user} accepted: sending…"
+msgstr ""
+
+#: src/window/transfer_ui.rs
+#, rust-format
+msgid "{user} declined the files"
+msgstr ""
+
+#: src/window/transfer_ui.rs
+#, rust-format
+msgid "{user} received the file"
+msgstr ""
+
+#: src/window/transfer_ui.rs
+#, rust-format
+msgid "{user} received the {count} files"
+msgstr ""
+
+#: src/window/transfer_ui.rs
+#, rust-format
+msgid "{user} couldn't receive the files"
+msgstr ""
+
+#: src/window/lan_ui.rs
+#, rust-format
+msgid "Paired with {name}"
+msgstr ""
+
+#: src/window/lan_ui.rs
+#, rust-format
+msgid "Could not turn on the local network: {error}"
+msgstr ""
+
+#: src/window/lan_ui.rs
+msgid ""
+"No BigLace nearby. The other device needs the local network turned on, on "
+"this same network. Guest Wi-Fi and some routers keep devices apart: use the "
+"main network."
+msgstr ""
+
+#: src/window/lan_ui.rs
+msgid "Forget"
+msgstr ""
+
+#: src/window/lan_ui.rs
+msgid "Pair"
+msgstr ""
+
+#: src/window/lan_ui.rs
+msgid "Waiting…"
+msgstr ""
+
+#: src/window/lan_ui.rs
+msgid "Paired, not nearby"
+msgstr ""
+
+#: src/window/lan_ui.rs
+msgid "Or scan this code with BigLace on the phone (Settings, Local network)"
+msgstr ""
+
+#: src/window/lan_ui.rs
+#, rust-format
+msgid "Pair with {name}?"
+msgstr ""
+
+#: src/window/lan_ui.rs
+#, rust-format
+msgid "Check that {name} shows the same code:"
+msgstr ""
+
+#: src/window/visits_ui.rs
+#, rust-format
+msgid "{user} opened a terminal on this computer"
+msgstr ""
+
+#: src/window/visits_ui.rs
+#, rust-format
+msgid "{user} is browsing the files on this computer"
+msgstr ""
+
+#: src/window/visits_ui.rs
+msgid "It goes on until they close it, or until you end it."
+msgstr ""
+
+#: src/window/visits_ui.rs
+msgid "Couldn't end the access"
+msgstr ""
+
+#: src/window/visits_ui.rs
+#, rust-format
+msgid "{user} · terminal"
+msgstr ""
+
+#: src/window/visits_ui.rs
+#, rust-format
+msgid "{user} · files"
 msgstr ""

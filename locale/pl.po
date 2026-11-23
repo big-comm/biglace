@@ -3,7 +3,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: biglace\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-11-20 07:04-0300\n"
+"POT-Creation-Date: 2026-11-23 00:11-0300\n"
 "PO-Revision-Date: 2026-05-01 15:42\n"
 "Last-Translator: Translation Automator <auto@translator.ai>\n"
 "Language-Team: Polish <pl@li.org>\n"
@@ -1691,25 +1691,6 @@ msgstr "Wprowadź adres URL, nazwę użytkownika i hasło."
 msgid "Signed in. Press Connect to join the network."
 msgstr "Zalogowano. Naciśnij przycisk Połącz, aby dołączyć do sieci."
 
-msgid "Rename this device"
-msgstr "Zmień nazwę tego urządzenia"
-
-msgid ""
-"The name this device shows to other peers on the VPN. Lowercase letters, "
-"digits and hyphens. Example: tales-laptop."
-msgstr ""
-"Nazwa, pod jaką to urządzenie widzą inni uczestnicy sieci VPN. Małe litery, "
-"cyfry i myślniki. Przykład: tales-laptop."
-
-msgid "Save & apply"
-msgstr "Zapisz i zastosuj"
-
-msgid "Saved. The new name will take effect the next time you connect."
-msgstr "Zapisałem. Nowa nazwa zacznie obowiązywać przy następnym połączeniu."
-
-msgid "Device renamed."
-msgstr "Nazwa urządzenia zmieniona."
-
 #, rust-format
 msgid "Rename failed: {error}"
 msgstr "Zmiana nazwy nie powiodła się: {error}"
@@ -2545,9 +2526,6 @@ msgstr ""
 "ekran po drugiej stronie jest zablokowany, a GNOME nie pozwala na zdalny "
 "dostęp do zablokowanego ekranu — poproś tę osobę o odblokowanie"
 
-msgid "access to the camera was refused"
-msgstr "odmówiono dostępu do kamery"
-
 msgid "Mute or unmute the microphone in a BigLace room"
 msgstr "Wycisz lub włącz mikrofon w pokoju BigLace"
 
@@ -2570,127 +2548,8 @@ msgstr "Nie można odczytać zapisanego klucza wstępnej autoryzacji: {error}"
 msgid "the screen capture ended"
 msgstr "przechwytywanie ekranu zostało zakończone"
 
-#~ msgid "Panel credentials"
-#~ msgstr "Dane logowania do panelu"
-
-#~ msgid "Username"
-#~ msgstr "Nazwa użytkownika"
-
-#~ msgid "Sign in to connect"
-#~ msgstr "Zaloguj się, aby się połączyć"
-
-#~ msgid "Use the panel on the left to sign in or paste a pre-auth key."
-#~ msgstr ""
-#~ "Użyj panelu po lewej stronie, aby się zalogować lub wkleić klucz wstępnej "
-#~ "autoryzacji."
-
-#~ msgid "Connect via panel account"
-#~ msgstr "Połącz przez konto panelu"
-
-#~ msgid ""
-#~ "Sign in with your BigScale panel username and password. A device identity "
-#~ "will be created on the network automatically — no manual key needed."
-#~ msgstr ""
-#~ "Zaloguj się przy użyciu nazwy użytkownika i hasła z panelu BigScale. "
-#~ "Tożsamość urządzenia zostanie utworzona automatycznie w sieci – nie jest "
-#~ "wymagany ręczny klucz."
-
-#~ msgid "Connected ·"
-#~ msgstr "Połączono ·"
-
-#~ msgid "Device name"
-#~ msgstr "Nazwa urządzenia"
-
-#~ msgid "Save the server and key above"
-#~ msgstr "Zapisz powyższy serwer i klucz"
-
-#~ msgid "Network identifier (will be created if new)"
-#~ msgstr "Identyfikator sieci (zostanie utworzony, jeśli nie istnieje)"
-
-#~ msgid ""
-#~ "Use your BigScale panel username and password to generate a key "
-#~ "automatically."
-#~ msgstr ""
-#~ "Użyj nazwy użytkownika i hasła z panelu BigScale, aby automatycznie "
-#~ "wygenerować klucz."
-
-#~ msgid "Network user identifier"
-#~ msgstr "Identyfikator użytkownika sieci"
-
-#~ msgid "Switch account"
-#~ msgstr "Zmień konto"
-
-#~ msgid "Use a pre-auth key"
-#~ msgstr "Użyj klucza wstępnej autoryzacji"
-
-#~ msgid "Paste the key your administrator sent you"
-#~ msgstr "Wklej klucz otrzymany od administratora"
-
-#~ msgid "Sign in with your BigScale panel account"
-#~ msgstr "Zaloguj się przy użyciu konta w panelu BigScale"
-
-#~ msgid "Refresh list"
-#~ msgstr "Odśwież listę"
-
-#~ msgid "Files"
-#~ msgstr "Pliki"
-
-#~ msgid "Terminal"
-#~ msgstr "Terminal"
-
-#~ msgid "Key generated successfully."
-#~ msgstr "Klucz został pomyślnie wygenerowany."
-
-#~ msgid "Service not found"
-#~ msgstr "Nie znaleziono usługi"
-
-#~ msgid ""
-#~ "The tailscaled service is not running.\n"
-#~ "Click below to start it."
-#~ msgstr ""
-#~ "Usługa tailscaled nie jest uruchomiona.\n"
-#~ "Kliknij poniżej, aby ją uruchomić."
-
-#~ msgid "Server"
-#~ msgstr "Serwer"
-
-#~ msgid "Address of your BigScale/Headscale server."
-#~ msgstr "Adres Twojego serwera BigScale/Headscale."
-
-#~ msgid "Your identity on the network"
-#~ msgstr "Twoja tożsamość w sieci"
-
-#~ msgid ""
-#~ "Personal key generated for you in the BigScale panel (\"New key\" in "
-#~ "Users). Each person uses their own — this is not the server's key."
-#~ msgstr ""
-#~ "Osobisty klucz wygenerowany dla Ciebie w panelu BigScale (\"Nowy klucz\" "
-#~ "w sekcji Użytkownicy). Każda osoba używa własnego – nie jest to klucz "
-#~ "serwera."
-
-#~ msgid "Pre-auth key (yours)"
-#~ msgstr "Klucz wstępnej autoryzacji (Twój)"
-
-#~ msgid "Name shown to other devices on the network."
-#~ msgstr "Nazwa widoczna dla innych urządzeń w sieci."
-
-#~ msgid "Options"
-#~ msgstr "Opcje"
-
-#~ msgid "Connect automatically on startup"
-#~ msgstr "Łącz automatycznie przy starcie"
-
-#~ msgid "Please wait..."
-#~ msgstr "Proszę czekać..."
-
-#~ msgid "Connected to the network"
-#~ msgstr "Połączono z siecią"
-
-#~ msgid "Your IP address"
-#~ msgstr "Twój adres IP"
-
-#~ msgid "No other devices found."
-#~ msgstr "Nie znaleziono innych urządzeń."
+msgid "Username"
+msgstr "Nazwa użytkownika"
 
 msgid "Change the group's photo"
 msgstr "Zmień zdjęcie grupy"
@@ -2743,7 +2602,8 @@ msgstr "Zmień nazwę grupy"
 msgid "Rename {group}"
 msgstr "Zmień nazwę {group}"
 
-msgid "Its members, conversation, room and photo keep going under the new name."
+msgid ""
+"Its members, conversation, room and photo keep going under the new name."
 msgstr "Członkowie, rozmowa, pokój i zdjęcie pozostają pod nową nazwą."
 
 msgid "Rename"
@@ -2752,8 +2612,12 @@ msgstr "Zmień nazwę"
 msgid "The group is called {group} now."
 msgstr "Grupa nazywa się teraz {group}."
 
-msgid "Your phone must already be on the network, with BigLace. This computer joins the same account."
-msgstr "Twój telefon musi już być w sieci z BigLace. Ten komputer dołączy do tego samego konta."
+msgid ""
+"Your phone must already be on the network, with BigLace. This computer joins "
+"the same account."
+msgstr ""
+"Twój telefon musi już być w sieci z BigLace. Ten komputer dołączy do tego "
+"samego konta."
 
 msgid "Network address"
 msgstr "Adres sieci"
@@ -2761,8 +2625,12 @@ msgstr "Adres sieci"
 msgid "Show the code"
 msgstr "Pokaż kod"
 
-msgid "On the phone, open BigLace, tap “Scan QR code” and point it at this code. Then confirm on the phone."
-msgstr "Na telefonie otwórz BigLace, stuknij „Zeskanuj kod QR” i skieruj na ten kod. Potem potwierdź na telefonie."
+msgid ""
+"On the phone, open BigLace, tap “Scan QR code” and point it at this code. "
+"Then confirm on the phone."
+msgstr ""
+"Na telefonie otwórz BigLace, stuknij „Zeskanuj kod QR” i skieruj na ten kod. "
+"Potem potwierdź na telefonie."
 
 msgid "Type the network address, e.g. vpn.example.org."
 msgstr "Wpisz adres sieci, np. vpn.example.org."
@@ -2937,8 +2805,10 @@ msgid "BigLace extension for GNOME"
 msgstr "Rozszerzenie BigLace dla GNOME"
 
 #: src/window/sidebar.rs:427
-msgid "Needed for the phone to get what you copy while BigLace is in the background"
-msgstr "Potrzebne, aby telefon dostawał to, co kopiujesz, gdy BigLace działa w tle"
+msgid ""
+"Needed for the phone to get what you copy while BigLace is in the background"
+msgstr ""
+"Potrzebne, aby telefon dostawał to, co kopiujesz, gdy BigLace działa w tle"
 
 #: src/window/sidebar.rs:431
 msgid "Turn on"
@@ -2980,12 +2850,14 @@ msgid "Could not turn on the local network: {error}"
 msgstr "Nie można włączyć sieci lokalnej: {error}"
 
 #: src/window/lan_ui.rs:86
-msgid "No BigLace nearby. The other device needs the local network turned on, on this same network. Guest Wi-Fi and some routers keep devices apart: use the main network."
-msgstr "Brak BigLace w pobliżu. Drugie urządzenie musi mieć włączoną sieć lokalną, w tej samej sieci. Sieci Wi-Fi dla gości i niektóre routery oddzielają urządzenia od siebie: użyj sieci głównej."
-
-#: src/window/lan_ui.rs:100
-msgid "Paired"
-msgstr "Sparowano"
+msgid ""
+"No BigLace nearby. The other device needs the local network turned on, on "
+"this same network. Guest Wi-Fi and some routers keep devices apart: use the "
+"main network."
+msgstr ""
+"Brak BigLace w pobliżu. Drugie urządzenie musi mieć włączoną sieć lokalną, w "
+"tej samej sieci. Sieci Wi-Fi dla gości i niektóre routery oddzielają "
+"urządzenia od siebie: użyj sieci głównej."
 
 #: src/window/lan_ui.rs:104 src/window/lan_ui.rs:148
 msgid "Pair"
@@ -3023,12 +2895,232 @@ msgstr "Sparowano, nie w pobliżu"
 
 #: src/window/lan_ui.rs:151
 msgid "Or scan this code with BigLace on the phone (Settings, Local network)"
-msgstr "Albo zeskanuj ten kod aplikacją BigLace w telefonie (Ustawienia, Sieć lokalna)"
+msgstr ""
+"Albo zeskanuj ten kod aplikacją BigLace w telefonie (Ustawienia, Sieć "
+"lokalna)"
 
 #: src/chat/files.rs
 msgid "the local network is off"
 msgstr "sieć lokalna jest wyłączona"
 
 #: src/chat/files.rs
-msgid "{name} can't be reached on the local network — try again when it's nearby"
-msgstr "nie można połączyć się z {name} w sieci lokalnej — spróbuj ponownie, gdy urządzenie będzie w pobliżu"
+msgid ""
+"{name} can't be reached on the local network — try again when it's nearby"
+msgstr ""
+"nie można połączyć się z {name} w sieci lokalnej — spróbuj ponownie, gdy "
+"urządzenie będzie w pobliżu"
+
+msgid "End remote access"
+msgstr "Zakończ dostęp zdalny"
+
+msgid "How everyone sees you in conversations."
+msgstr "Jak wszyscy widzą cię w rozmowach."
+
+msgid "How this computer appears in the device list."
+msgstr "Jak ten komputer wyświetla się na liście urządzeń."
+
+msgid "Your names"
+msgstr "Twoje nazwy"
+
+msgid "Checking…"
+msgstr "Sprawdzanie…"
+
+#, rust-format
+msgid "{name} is free."
+msgstr "{name} jest wolna."
+
+#, rust-format
+msgid "{name} is already taken. Choose another name."
+msgstr "{name} jest już zajęta. Wybierz inną nazwę."
+
+msgid "Couldn't check the name with the panel. Try again in a moment."
+msgstr "Nie udało się sprawdzić nazwy w panelu. Spróbuj ponownie za chwilę."
+
+msgid "Names saved."
+msgstr "Nazwy zapisane."
+
+msgid "Someone just took that name. Choose another name."
+msgstr "Ktoś właśnie zajął tę nazwę. Wybierz inną nazwę."
+
+msgid "You changed your name a moment ago. Wait a minute and try again."
+msgstr "Zmieniłeś(-aś) nazwę przed chwilą. Odczekaj minutę i spróbuj ponownie."
+
+msgid ""
+"Changing names needs a newer BigScale server. Ask your administrator to "
+"update it."
+msgstr ""
+"Zmiana nazw wymaga nowszego serwera BigScale. Poproś administratora o jego "
+"aktualizację."
+
+msgid "Opened a terminal"
+msgstr "Otworzył(a) terminal"
+
+msgid "Browsed the files"
+msgstr "Przeglądał(a) pliki"
+
+#, rust-format
+msgid "{user} opened a terminal on this computer"
+msgstr "{user} otworzył(a) terminal na tym komputerze"
+
+#, rust-format
+msgid "{user} is browsing the files on this computer"
+msgstr "{user} przegląda pliki na tym komputerze"
+
+msgid "It goes on until they close it, or until you end it."
+msgstr "Trwa, dopóki ta osoba go nie zamknie albo dopóki ty go nie zakończysz."
+
+msgid "Couldn't end the access"
+msgstr "Nie udało się zakończyć dostępu"
+
+#, rust-format
+msgid "{user} · terminal"
+msgstr "{user} · terminal"
+
+#, rust-format
+msgid "{user} · files"
+msgstr "{user} · pliki"
+
+#~ msgid "Rename this device"
+#~ msgstr "Zmień nazwę tego urządzenia"
+
+#~ msgid ""
+#~ "The name this device shows to other peers on the VPN. Lowercase letters, "
+#~ "digits and hyphens. Example: tales-laptop."
+#~ msgstr ""
+#~ "Nazwa, pod jaką to urządzenie widzą inni uczestnicy sieci VPN. Małe "
+#~ "litery, cyfry i myślniki. Przykład: tales-laptop."
+
+#~ msgid "Save & apply"
+#~ msgstr "Zapisz i zastosuj"
+
+#~ msgid "Saved. The new name will take effect the next time you connect."
+#~ msgstr ""
+#~ "Zapisałem. Nowa nazwa zacznie obowiązywać przy następnym połączeniu."
+
+#~ msgid "Device renamed."
+#~ msgstr "Nazwa urządzenia zmieniona."
+
+#~ msgid "access to the camera was refused"
+#~ msgstr "odmówiono dostępu do kamery"
+
+#~ msgid "Panel credentials"
+#~ msgstr "Dane logowania do panelu"
+
+#~ msgid "Sign in to connect"
+#~ msgstr "Zaloguj się, aby się połączyć"
+
+#~ msgid "Use the panel on the left to sign in or paste a pre-auth key."
+#~ msgstr ""
+#~ "Użyj panelu po lewej stronie, aby się zalogować lub wkleić klucz wstępnej "
+#~ "autoryzacji."
+
+#~ msgid "Connect via panel account"
+#~ msgstr "Połącz przez konto panelu"
+
+#~ msgid ""
+#~ "Sign in with your BigScale panel username and password. A device identity "
+#~ "will be created on the network automatically — no manual key needed."
+#~ msgstr ""
+#~ "Zaloguj się przy użyciu nazwy użytkownika i hasła z panelu BigScale. "
+#~ "Tożsamość urządzenia zostanie utworzona automatycznie w sieci – nie jest "
+#~ "wymagany ręczny klucz."
+
+#~ msgid "Connected ·"
+#~ msgstr "Połączono ·"
+
+#~ msgid "Device name"
+#~ msgstr "Nazwa urządzenia"
+
+#~ msgid "Save the server and key above"
+#~ msgstr "Zapisz powyższy serwer i klucz"
+
+#~ msgid "Network identifier (will be created if new)"
+#~ msgstr "Identyfikator sieci (zostanie utworzony, jeśli nie istnieje)"
+
+#~ msgid ""
+#~ "Use your BigScale panel username and password to generate a key "
+#~ "automatically."
+#~ msgstr ""
+#~ "Użyj nazwy użytkownika i hasła z panelu BigScale, aby automatycznie "
+#~ "wygenerować klucz."
+
+#~ msgid "Network user identifier"
+#~ msgstr "Identyfikator użytkownika sieci"
+
+#~ msgid "Switch account"
+#~ msgstr "Zmień konto"
+
+#~ msgid "Use a pre-auth key"
+#~ msgstr "Użyj klucza wstępnej autoryzacji"
+
+#~ msgid "Paste the key your administrator sent you"
+#~ msgstr "Wklej klucz otrzymany od administratora"
+
+#~ msgid "Sign in with your BigScale panel account"
+#~ msgstr "Zaloguj się przy użyciu konta w panelu BigScale"
+
+#~ msgid "Refresh list"
+#~ msgstr "Odśwież listę"
+
+#~ msgid "Files"
+#~ msgstr "Pliki"
+
+#~ msgid "Terminal"
+#~ msgstr "Terminal"
+
+#~ msgid "Key generated successfully."
+#~ msgstr "Klucz został pomyślnie wygenerowany."
+
+#~ msgid "Service not found"
+#~ msgstr "Nie znaleziono usługi"
+
+#~ msgid ""
+#~ "The tailscaled service is not running.\n"
+#~ "Click below to start it."
+#~ msgstr ""
+#~ "Usługa tailscaled nie jest uruchomiona.\n"
+#~ "Kliknij poniżej, aby ją uruchomić."
+
+#~ msgid "Server"
+#~ msgstr "Serwer"
+
+#~ msgid "Address of your BigScale/Headscale server."
+#~ msgstr "Adres Twojego serwera BigScale/Headscale."
+
+#~ msgid "Your identity on the network"
+#~ msgstr "Twoja tożsamość w sieci"
+
+#~ msgid ""
+#~ "Personal key generated for you in the BigScale panel (\"New key\" in "
+#~ "Users). Each person uses their own — this is not the server's key."
+#~ msgstr ""
+#~ "Osobisty klucz wygenerowany dla Ciebie w panelu BigScale (\"Nowy klucz\" "
+#~ "w sekcji Użytkownicy). Każda osoba używa własnego – nie jest to klucz "
+#~ "serwera."
+
+#~ msgid "Pre-auth key (yours)"
+#~ msgstr "Klucz wstępnej autoryzacji (Twój)"
+
+#~ msgid "Name shown to other devices on the network."
+#~ msgstr "Nazwa widoczna dla innych urządzeń w sieci."
+
+#~ msgid "Options"
+#~ msgstr "Opcje"
+
+#~ msgid "Connect automatically on startup"
+#~ msgstr "Łącz automatycznie przy starcie"
+
+#~ msgid "Please wait..."
+#~ msgstr "Proszę czekać..."
+
+#~ msgid "Connected to the network"
+#~ msgstr "Połączono z siecią"
+
+#~ msgid "Your IP address"
+#~ msgstr "Twój adres IP"
+
+#~ msgid "No other devices found."
+#~ msgstr "Nie znaleziono innych urządzeń."
+
+#~ msgid "Paired"
+#~ msgstr "Sparowano"

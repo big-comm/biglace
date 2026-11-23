@@ -41,6 +41,8 @@ pub struct BigLaceTray {
     pub peer_count: usize,
     /// In a voice room: its group and whether we're muted.
     pub room: Option<(String, bool)>,
+    /// People in this computer over SSH: a line each, and the icon for it.
+    visits: Vec<(String, &'static str)>,
     /// The new-message animation's frame on show, if it plays.
     frame: Option<&'static str>,
     /// The unread count over the icon (none when nothing is unread).
@@ -71,6 +73,10 @@ impl Tray for BigLaceTray {
         // monochrome indicator on light and dark panels alike. Not named
         // "<app id>-symbolic": docks like XFCE's docklike prefer that name
         // over the app icon and would show the bare glyph in the dock.
+        if let Some((_, icon)) = self.visits.first() {
+            // Someone is in this computer: that matters most.
+            return (*icon).into();
+        }
         match &self.room {
             // In a room: a microphone, so it's obvious at a glance.
             Some((_, false)) => "audio-input-microphone-symbolic".into(),
@@ -103,6 +109,12 @@ impl Tray for BigLaceTray {
                 format!("{line}\n{description}")
             }
             None => description,
+        };
+        let description = if self.visits.is_empty() {
+            description
+        } else {
+            let lines: Vec<&str> = self.visits.iter().map(|(line, _)| line.as_str()).collect();
+            format!("{}\n{description}", lines.join("\n"))
         };
         ToolTip {
             icon_name: self.icon_name(),
@@ -140,6 +152,29 @@ impl Tray for BigLaceTray {
             ..Default::default()
         }
         .into()];
+        if !self.visits.is_empty() {
+            items.push(MenuItem::Separator);
+            for (line, icon) in &self.visits {
+                items.push(
+                    StandardItem {
+                        label: line.clone(),
+                        icon_name: (*icon).into(),
+                        enabled: false,
+                        ..Default::default()
+                    }
+                    .into(),
+                );
+            }
+            items.push(
+                StandardItem {
+                    label: tr!("End remote access"),
+                    icon_name: "process-stop-symbolic".into(),
+                    activate: Box::new(|t: &mut BigLaceTray| t.send(Command::EndVisits)),
+                    ..Default::default()
+                }
+                .into(),
+            );
+        }
         if let Some((title, muted)) = &self.room {
             items.push(MenuItem::Separator);
             items.push(
@@ -203,6 +238,10 @@ impl HandleImpl {
 
     pub fn update_room(&self, room: Option<(String, bool)>) {
         self.handle.update(|t| t.room = room);
+    }
+
+    pub fn update_visits(&self, visits: Vec<(String, &'static str)>) {
+        self.handle.update(|t| t.visits = visits);
     }
 
     /// Show `count` over the icon; a count that grew plays the new-message
@@ -293,6 +332,7 @@ pub fn spawn() -> Option<(async_channel::Receiver<Command>, HandleImpl)> {
         connected: false,
         peer_count: 0,
         room: None,
+        visits: Vec::new(),
         frame: None,
         badge: vec![],
         sender: tx,

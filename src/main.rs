@@ -11,6 +11,7 @@
 //! - `lan`: the local network without a server: pairing by code, then TLS between paired devices.
 //! - `invite`, `panel`: joining a network and talking to the BigScale panel.
 //! - `launchers`: the terminal, file manager and log viewer this app spawns.
+//! - `ssh_watch`: people coming into this computer over SSH (terminal or files).
 //! - `link`: our phones' connection (battery, calls, links, notifications).
 //! - `clipboard`: the clipboard shared with our phones.
 //! - `remote`: remote desktop between devices.
@@ -38,6 +39,8 @@ mod invite;
 #[cfg(target_os = "linux")]
 mod lan;
 mod launchers;
+#[cfg(target_os = "linux")]
+mod ssh_watch;
 mod link;
 mod panel;
 mod remote;
@@ -83,7 +86,7 @@ pub static MALLOC_CONF: &[u8] = b"background_thread:true,dirty_decay_ms:1000,muz
 /// creates (feat → minor, fix/perf/docs/… → patch, breaking → major) by
 /// rewriting this assignment. Reading it from `CARGO_PKG_VERSION` hid it from
 /// gitrepo, which is how the version sat at 1.0.0 through dozens of releases.
-pub const APP_VERSION: &str = "1.74.6";
+pub const APP_VERSION: &str = "1.74.7";
 pub const APP_ID: &str = "org.communitybig.biglace";
 
 /// Date-based build stamp (`YY.MM.DD-HHMM`) — the scheme the GitHub release

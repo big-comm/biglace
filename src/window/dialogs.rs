@@ -1,6 +1,6 @@
 use gtk4::{glib, prelude::*};
 use libadwaita::prelude::*;
-use std::cell::RefCell;
+use std::cell::{Cell, RefCell};
 use std::rc::Rc;
 
 use crate::config;
@@ -27,18 +27,6 @@ pub(super) fn close_on_escape(win: &impl IsA<gtk4::Window>) {
         glib::Propagation::Stop
     });
     win.add_controller(keys);
-}
-
-/// Outcome of the background rename worker (see `show_rename_device`), so the
-/// online probe + `tailscale set --hostname` both run off the GTK thread.
-enum RenameResult {
-    /// Not registered with a control server yet — config saved; the name goes
-    /// out with the enrollment (`tailscale up --hostname`).
-    SavedOffline,
-    /// `tailscale set --hostname` succeeded.
-    Renamed,
-    /// `tailscale set --hostname` failed with this message.
-    Failed(String),
 }
 
 pub fn show_about(parent: &libadwaita::ApplicationWindow) {
@@ -657,195 +645,283 @@ pub fn show_panel_login(
     dlg.present();
 }
 
-/// Prompt the user for a new tailscale hostname and apply it. The dialog
-/// validates client-side (lowercase letters, digits, hyphens — same charset
-/// tailscale accepts as a DNS leaf) before persisting. When the tunnel is up
-/// we push the rename to the running daemon via `tailscale set --hostname=…`
-/// in a worker thread so the call doesn't stall the GTK loop; when offline
-/// we just save the config and the next `tailscale up` will carry the new
-/// hostname through.
-pub fn show_rename_device(
-    parent: &libadwaita::ApplicationWindow,
-    overlay: &libadwaita::ToastOverlay,
-    cfg: &Rc<RefCell<config::Config>>,
-) {
-    let current = cfg.borrow().hostname.clone();
+/// One name being typed: what the panel said about it.
+#[derive(Clone, Copy, PartialEq, Eq)]
+enum Typed {
+    /// The name already in use.
+    Unchanged,
+    /// Not a name yet (empty, or ends in a hyphen mid-word).
+    Incomplete,
+    Checking,
+    Free,
+    Taken,
+    /// The panel couldn't be asked.
+    Unknown,
+}
 
-    let entry = libadwaita::EntryRow::builder()
-        .title(tr!("Device name on the network"))
-        .build();
-    entry.set_text(&sanitize_hostname(&current));
+/// What each of the two entries holds, account first.
+type Typing = Rc<Cell<(Typed, Typed)>>;
+
+/// The pencil on our identity row: our username (with a BigScale panel
+/// behind the network) and this device's name. Each is checked as it is
+/// typed; a name someone else holds can't be saved.
+pub fn show_names(parent: &libadwaita::ApplicationWindow, overlay: &libadwaita::ToastOverlay, cfg: &Rc<RefCell<config::Config>>) {
+    use crate::invite::NameKind;
+
+    let account_now = crate::chat::my_user();
+    let device_now = sanitize_hostname(&cfg.borrow().hostname);
+    let panel = account_now.is_some();
+
+    let outer = gtk4::Box::new(gtk4::Orientation::Vertical, 6);
+    let at = gtk4::Label::new(Some("@"));
+    at.add_css_class("dim-label");
+    let (account, account_note, account_group) = name_entry(
+        &outer,
+        &tr!("Username"),
+        &at,
+        account_now.as_deref().unwrap_or_default(),
+        &tr!("How everyone sees you in conversations."),
+    );
+    account_group.set_visible(panel);
     let host_icon = gtk4::Image::from_icon_name("computer-symbolic");
     host_icon.set_pixel_size(18);
-    entry.add_prefix(&host_icon);
-
-    let group = libadwaita::PreferencesGroup::new();
-    group.add(&entry);
-
-    let lbl_err = gtk4::Label::new(None);
-    lbl_err.add_css_class("error");
-    lbl_err.set_wrap(true);
-    lbl_err.set_max_width_chars(50);
-    lbl_err.set_visible(false);
-    lbl_err.set_xalign(0.0);
-    lbl_err.set_margin_top(8);
-
-    let outer = gtk4::Box::new(gtk4::Orientation::Vertical, 0);
-    outer.append(&group);
-    outer.append(&lbl_err);
-
-    let dlg = libadwaita::MessageDialog::new(
-        Some(parent),
-        Some(&tr!("Rename this device")),
-        Some(&tr!(
-            "The name this device shows to other peers on the VPN. \
-             Lowercase letters, digits and hyphens. Example: tales-laptop."
-        )),
+    let (device, device_note, _) = name_entry(
+        &outer,
+        &tr!("Device name on the network"),
+        &host_icon,
+        &device_now,
+        &tr!("How this computer appears in the device list."),
     );
+
+    let dlg = libadwaita::MessageDialog::new(Some(parent), Some(&tr!("Your names")), None);
     dlg.add_response("cancel", &tr!("Cancel"));
-    dlg.add_response("save", &tr!("Save & apply"));
+    dlg.add_response("save", &tr!("Save"));
     dlg.set_response_appearance("save", libadwaita::ResponseAppearance::Suggested);
     dlg.set_default_response(Some("save"));
     dlg.set_close_response("cancel");
     dlg.set_extra_child(Some(&outer));
 
-    // Validate live and gate the Save response on validity, so an invalid name
-    // simply can't be submitted. The old code let Save fire on an invalid
-    // value, then closed the dialog and only toasted the error — throwing away
-    // whatever the user had typed. Now the dialog stays open until it's valid.
-    let validate: Rc<dyn Fn(&str)> = {
-        let dlg_w = dlg.clone();
-        let lbl_w = lbl_err.clone();
-        Rc::new(move |text: &str| match validate_hostname(text.trim()) {
-            // Mid-word ("tales-" on the way to "tales-cel"): not savable yet,
-            // but not worth a red error either.
-            Err(_) if text.ends_with('-') => {
-                lbl_w.set_visible(false);
-                dlg_w.set_response_enabled("save", false);
-            }
-            Ok(()) => {
-                lbl_w.set_visible(false);
-                dlg_w.set_response_enabled("save", true);
-            }
-            Err(msg) => {
-                dlg_w.set_response_enabled("save", false);
-                // Empty is "not valid yet", not worth a red banner; only show
-                // the message once the user has typed something wrong.
-                if text.trim().is_empty() {
-                    lbl_w.set_visible(false);
-                } else {
-                    lbl_w.set_text(&msg);
-                    lbl_w.set_visible(true);
-                }
-            }
-        })
-    };
-    validate(entry.text().as_str());
-    {
-        let validate2 = validate.clone();
+    let checks = NameChecks::new(panel, &dlg);
+    let typing = checks.typing.clone();
+    checks.watch(&account, &account_note, NameKind::Account, account_now.unwrap_or_default(), 32);
+    checks.watch(&device, &device_note, NameKind::Device, device_now, 63);
+
+    let (cfg, parent, overlay) = (cfg.clone(), parent.clone(), overlay.clone());
+    dlg.connect_response(None, move |dlg, resp| {
+        dlg.close();
+        let (a, d) = typing.get();
+        if resp != "save" {
+            return;
+        }
+        let new_account = (a == Typed::Free).then(|| account.text().to_string());
+        let new_device = (d == Typed::Free).then(|| sanitize_hostname(&device.text()));
+        save_names(&parent, &overlay, &cfg, panel, new_account, new_device);
+    });
+    dlg.present();
+}
+
+/// Checking each name as it is typed.
+struct NameChecks {
+    panel: bool,
+    typing: Typing,
+    /// Enables Save when both names can be kept.
+    gate: Rc<dyn Fn()>,
+}
+
+impl NameChecks {
+    /// Save in `dlg` stays off until both names can be kept and one changed.
+    fn new(panel: bool, dlg: &libadwaita::MessageDialog) -> Self {
+        let typing: Typing = Rc::new(Cell::new((Typed::Unchanged, Typed::Unchanged)));
+        let gate: Rc<dyn Fn()> = {
+            let (dlg, typing) = (dlg.clone(), typing.clone());
+            Rc::new(move || {
+                let (a, d) = typing.get();
+                let fine = |t: Typed| matches!(t, Typed::Unchanged | Typed::Free);
+                dlg.set_response_enabled("save", fine(a) && fine(d) && (a, d) != (Typed::Unchanged, Typed::Unchanged));
+            })
+        };
+        gate();
+        NameChecks { panel, typing, gate }
+    }
+
+    /// Check what `entry` holds against `now` (asking the panel when there is
+    /// one) and say so in `note`. A check that comes back after the text
+    /// changed again is dropped.
+    fn watch(&self, entry: &libadwaita::EntryRow, note: &gtk4::Label, kind: crate::invite::NameKind, now: String, max: usize) {
+        use crate::invite::{self, NameKind};
+
+        let asked: Rc<Cell<u32>> = Rc::default();
+        let (note, typing, gate, panel) = (note.clone(), self.typing.clone(), self.gate.clone(), self.panel);
+        let set = move |t: Typed, text: &str| {
+            let (a, d) = typing.get();
+            typing.set(if kind == NameKind::Account { (t, d) } else { (a, t) });
+            show_typed(&note, t, text);
+            gate();
+        };
         entry.connect_changed(move |e| {
-            let clean = sanitize_hostname_while_typing(&e.text());
+            let mut clean = sanitize_hostname_while_typing(&e.text());
+            clean.truncate(max);
             if clean != e.text().as_str() {
                 e.set_text(&clean);
                 e.set_position(-1);
+                return;
             }
-            validate2(&clean);
+            let ticket = asked.get().wrapping_add(1);
+            asked.set(ticket);
+            if clean == now {
+                return set(Typed::Unchanged, &clean);
+            }
+            if clean.len() < 2 || clean.ends_with('-') {
+                return set(Typed::Incomplete, &clean);
+            }
+            if !panel {
+                // No panel to ask: the network takes any well-formed name.
+                return set(Typed::Free, &clean);
+            }
+            set(Typed::Checking, &clean);
+            let (asked, set, entry) = (asked.clone(), set.clone(), e.clone());
+            glib::timeout_add_local_once(std::time::Duration::from_millis(400), move || {
+                if asked.get() != ticket {
+                    return;
+                }
+                let raw = clean.clone();
+                super::run_in_background(
+                    move || invite::check_name(kind, &raw),
+                    move |r| {
+                        if asked.get() != ticket || entry.text() != clean {
+                            return;
+                        }
+                        set(r.map_or(Typed::Unknown, |c| Typed::from(c.state)), &clean);
+                    },
+                );
+            });
         });
     }
+}
 
-    let entry_w = entry.clone();
-    let cfg_w = cfg.clone();
-    let parent_w = parent.clone();
-    let overlay_w = overlay.clone();
-    dlg.connect_response(None, move |dlg, resp| {
-        if resp != "save" {
-            dlg.close();
-            return;
+impl From<crate::invite::NameState> for Typed {
+    fn from(state: crate::invite::NameState) -> Self {
+        use crate::invite::NameState;
+        match state {
+            NameState::Free => Typed::Free,
+            NameState::Yours => Typed::Unchanged,
+            NameState::Taken => Typed::Taken,
+            NameState::Invalid => Typed::Incomplete,
         }
-        let new_name = entry_w.text().trim().to_string();
-        // Save is only enabled when the value validates (see `validate` above),
-        // so this is a defensive guard, not the primary check.
-        if validate_hostname(&new_name).is_err() {
-            dlg.close();
-            return;
-        }
-        dlg.close();
+    }
+}
 
-        // Persist first so an interrupted apply still ends up with the right
-        // value the next time we connect.
-        {
-            let mut c = cfg_w.borrow_mut();
-            c.hostname = new_name.clone();
-            config::save_or_warn(&c);
+/// The line under an entry for what it holds.
+fn show_typed(note: &gtk4::Label, t: Typed, text: &str) {
+    note.remove_css_class("error");
+    note.remove_css_class("success");
+    let shown = match t {
+        Typed::Unchanged | Typed::Incomplete => String::new(),
+        Typed::Checking => tr!("Checking…"),
+        Typed::Free => {
+            note.add_css_class("success");
+            trf!("{name} is free.", "name" => text)
         }
+        Typed::Taken => {
+            note.add_css_class("error");
+            trf!("{name} is already taken. Choose another name.", "name" => text)
+        }
+        Typed::Unknown => {
+            note.add_css_class("error");
+            tr!("Couldn't check the name with the panel. Try again in a moment.")
+        }
+    };
+    note.set_visible(!shown.is_empty());
+    note.set_text(&shown);
+}
 
-        // Probe the daemon AND push the rename on a worker thread: the probe is
-        // a subprocess that would freeze the GTK loop on a hung daemon.
-        // `tailscale set --hostname` works whenever the node is registered —
-        // connected or not — so only an unregistered device has to wait for
-        // its enrollment. (Gating on "online", as before, left a rename done
-        // while disconnected stuck in the config: the keyless reconnect is a
-        // bare `tailscale up` that never passes a hostname.)
-        let name_t = new_name.clone();
-        let parent_t = parent_w.clone();
-        let overlay_t = overlay_w.clone();
-        super::run_in_background(
-            move || {
-                let registered =
-                    tailscale::is_service_active() && tailscale::get_status().registered;
-                if !registered {
-                    RenameResult::SavedOffline
-                } else {
-                    match tailscale::set_hostname(&name_t) {
-                        Ok(()) => RenameResult::Renamed,
-                        Err(e) => RenameResult::Failed(e.to_string()),
-                    }
+/// Take the new names: the account through the panel; the device through the
+/// panel too when there is one, and as this device's own name.
+fn save_names(
+    parent: &libadwaita::ApplicationWindow,
+    overlay: &libadwaita::ToastOverlay,
+    cfg: &Rc<RefCell<config::Config>>,
+    panel: bool,
+    new_account: Option<String>,
+    new_device: Option<String>,
+) {
+    use crate::invite::{self, NameKind};
+
+    if let Some(name) = &new_device {
+        // Kept for the next `tailscale up`, whatever happens now.
+        let mut c = cfg.borrow_mut();
+        c.hostname.clone_from(name);
+        config::save_or_warn(&c);
+    }
+    let (parent, overlay) = (parent.clone(), overlay.clone());
+    super::run_in_background(
+        move || -> Result<(), String> {
+            if let Some(name) = &new_account {
+                invite::take_name(NameKind::Account, name).map_err(|e| name_failure(&e))?;
+                crate::chat::my_groups_reload();
+            }
+            if let Some(name) = &new_device {
+                if panel {
+                    invite::take_name(NameKind::Device, name).map_err(|e| name_failure(&e))?;
                 }
-            },
-            move |outcome| {
-                match outcome {
-                    RenameResult::SavedOffline => {
-                        overlay_t.add_toast(
-                            libadwaita::Toast::builder()
-                                .title(tr!(
-                                "Saved. The new name will take effect the next time you connect."
-                            ))
-                                .timeout(3)
-                                .build(),
-                        );
-                        gtk4::prelude::WidgetExt::activate_action(&parent_t, "win.refresh", None)
-                            .ok();
-                    }
-                    RenameResult::Renamed => {
-                        overlay_t.add_toast(
-                            libadwaita::Toast::builder()
-                                .title(tr!("Device renamed."))
-                                .timeout(2)
-                                .build(),
-                        );
-                        gtk4::prelude::WidgetExt::activate_action(&parent_t, "win.refresh", None)
-                            .ok();
-                    }
-                    RenameResult::Failed(e) => {
-                        overlay_t.add_toast(
-                            libadwaita::Toast::builder()
-                                // Escape tailscale stderr before it hits the
-                                // markup-aware toast title.
-                                .title(
-                                    glib::markup_escape_text(
-                                        &trf!("Rename failed: {error}", "error" => e),
-                                    )
-                                    .as_str(),
-                                )
-                                .timeout(6)
-                                .build(),
-                        );
-                    }
+                // The device's own name too, so the network name follows it from now on.
+                if tailscale::is_service_active() && tailscale::get_status().registered {
+                    tailscale::set_hostname(name).map_err(|e| trf!("Rename failed: {error}", "error" => e))?;
                 }
-            },
-        );
-    });
-    dlg.present();
+            }
+            Ok(())
+        },
+        move |r| {
+            let text = match r {
+                Ok(()) => tr!("Names saved."),
+                Err(e) => e,
+            };
+            super::show_toast(&overlay, &text, 5);
+            gtk4::prelude::WidgetExt::activate_action(&parent, "win.refresh", None).ok();
+        },
+    );
+}
+
+/// One name's entry in `outer`: its group, saying what the name is for, and
+/// the line under it for what was typed.
+fn name_entry(
+    outer: &gtk4::Box,
+    title: &str,
+    prefix: &impl IsA<gtk4::Widget>,
+    text: &str,
+    what: &str,
+) -> (libadwaita::EntryRow, gtk4::Label, libadwaita::PreferencesGroup) {
+    let entry = libadwaita::EntryRow::builder().title(title).build();
+    entry.add_prefix(prefix);
+    entry.set_text(text);
+    let group = libadwaita::PreferencesGroup::builder().description(what).build();
+    group.add(&entry);
+    let note = note_label();
+    outer.append(&group);
+    outer.append(&note);
+    (entry, note, group)
+}
+
+fn note_label() -> gtk4::Label {
+    let l = gtk4::Label::new(None);
+    l.set_wrap(true);
+    l.set_xalign(0.0);
+    l.set_max_width_chars(50);
+    l.add_css_class("caption");
+    l.set_visible(false);
+    l
+}
+
+/// Sentence for a name the panel refused.
+fn name_failure(e: &crate::invite::MemberError) -> String {
+    use crate::invite::MemberError;
+    match e {
+        MemberError::Other(code) if code == "name_taken" => tr!("Someone just took that name. Choose another name."),
+        MemberError::TooMany => tr!("You changed your name a moment ago. Wait a minute and try again."),
+        MemberError::Unsupported => tr!("Changing names needs a newer BigScale server. Ask your administrator to update it."),
+        MemberError::Other(code) => trf!("Could not reach the panel: {error}", "error" => code),
+        _ => tr!("The panel couldn't confirm this device. Make sure BigLace is up to date and stays open while connected, then try again."),
+    }
 }
 
 /// Validate the user-typed hostname against the same charset tailscale enforces

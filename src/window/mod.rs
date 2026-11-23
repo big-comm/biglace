@@ -23,6 +23,8 @@ mod transfer_ui;
 mod clipboard_ui;
 #[cfg(target_os = "linux")]
 mod lan_ui;
+#[cfg(target_os = "linux")]
+mod visits_ui;
 mod style;
 
 use gtk4::{glib, prelude::*};
@@ -511,6 +513,8 @@ pub fn build(app: &libadwaita::Application, start_hidden: bool) {
     clipboard_ui::wire(&ctx.ui.win, &ctx.ui.toast, &ctx.ui.sidebar, &ctx.cfg);
     #[cfg(target_os = "linux")]
     lan_ui::wire(&ctx.ui.win, &ctx.ui.toast, &ctx.ui.sidebar, &ctx.cfg);
+    #[cfg(target_os = "linux")]
+    visits_ui::wire(&ctx.ui.win, ctx.tray.clone());
     setup_close_to_tray(&ctx, tray_active);
 
     // Two main-loop tasks drive the refresh cycle:
@@ -738,6 +742,12 @@ fn setup_tray(ctx: &Ctx) -> bool {
                 tray::Command::LeaveRoom => {
                     let rooms = ctx2.ui.rooms.clone();
                     run_in_background(crate::call::leave_room, move |()| rooms.refresh());
+                }
+                tray::Command::EndVisits => {
+                    #[cfg(target_os = "linux")]
+                    if let Some(app) = ctx2.ui.win.application() {
+                        visits_ui::end_all(&app);
+                    }
                 }
                 tray::Command::Quit => {
                     if let Some(app) = ctx2.ui.win.application() {
@@ -1705,13 +1715,13 @@ fn wire_signals(ctx: &Ctx) {
         });
     }
 
-    // ── Identity row pencil → rename-device dialog ──
+    // ── Identity row pencil → our names ──
     {
         let win_w = ctx.ui.win.clone();
         let toast_w = ctx.ui.toast.clone();
         let cfg2 = ctx.cfg.clone();
         ctx.ui.sidebar.btn_edit_host.connect_clicked(move |_| {
-            dialogs::show_rename_device(&win_w, &toast_w, &cfg2);
+            dialogs::show_names(&win_w, &toast_w, &cfg2);
         });
     }
 

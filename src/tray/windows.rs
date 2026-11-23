@@ -43,6 +43,9 @@ impl HandleImpl {
     /// Not shown on Windows yet.
     pub fn update_unread(&self, _count: u32) {}
 
+    /// Not shown on Windows yet.
+    pub fn update_visits(&self, _visits: Vec<(String, &'static str)>) {}
+
     pub fn update(&self, connected: bool, peer_count: usize) {
         // Worker may have exited (e.g. tray init failed and we never started
         // the loop); a dropped update is harmless — there's nothing to refresh.

@@ -3,7 +3,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: biglace\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-11-20 07:04-0300\n"
+"POT-Creation-Date: 2026-11-23 00:11-0300\n"
 "PO-Revision-Date: 2026-05-01 15:37\n"
 "Last-Translator: Translation Automator <auto@translator.ai>\n"
 "Language-Team: Japanese <ja@li.org>\n"
@@ -1682,25 +1682,6 @@ msgstr "URL、ユーザー名、パスワードを入力してください。"
 msgid "Signed in. Press Connect to join the network."
 msgstr "サインイン済み。「接続」を押してネットワークに参加してください。"
 
-msgid "Rename this device"
-msgstr "このデバイスの名前を変更"
-
-msgid ""
-"The name this device shows to other peers on the VPN. Lowercase letters, "
-"digits and hyphens. Example: tales-laptop."
-msgstr ""
-"このデバイスがVPN上の他のピアに表示される名前。小文字、数字、ハイフンのみ使用"
-"可能。例：tales-laptop。"
-
-msgid "Save & apply"
-msgstr "保存して適用"
-
-msgid "Saved. The new name will take effect the next time you connect."
-msgstr "保存しました。新しい名前は次回接続時に有効になります。"
-
-msgid "Device renamed."
-msgstr "デバイス名を変更しました。"
-
 #, rust-format
 msgid "Rename failed: {error}"
 msgstr "名前の変更に失敗しました：{error}"
@@ -2533,9 +2514,6 @@ msgstr ""
 "相手の画面はロックされており、GNOME はロックされた画面へのリモートアクセスを"
 "許可しません — ロックを解除するよう依頼してください"
 
-msgid "access to the camera was refused"
-msgstr "カメラへのアクセスが拒否されました"
-
 msgid "Mute or unmute the microphone in a BigLace room"
 msgstr "BigLace ルームでマイクをミュートまたはミュート解除"
 
@@ -2558,123 +2536,8 @@ msgstr "保存された事前認証キーを読み取れませんでした: {err
 msgid "the screen capture ended"
 msgstr "画面のキャプチャが終了しました"
 
-#~ msgid "Panel credentials"
-#~ msgstr "パネル認証情報"
-
-#~ msgid "Username"
-#~ msgstr "ユーザー名"
-
-#~ msgid "Sign in to connect"
-#~ msgstr "サインインして接続する"
-
-#~ msgid "Use the panel on the left to sign in or paste a pre-auth key."
-#~ msgstr ""
-#~ "左側のパネルを使用してサインインするか、事前認証キーを貼り付けてください。"
-
-#~ msgid "Connect via panel account"
-#~ msgstr "パネルアカウントで接続"
-
-#~ msgid ""
-#~ "Sign in with your BigScale panel username and password. A device identity "
-#~ "will be created on the network automatically — no manual key needed."
-#~ msgstr ""
-#~ "BigScaleパネルのユーザー名とパスワードでサインインします。デバイスIDが自動"
-#~ "的にネットワーク上に作成されます — 手動でのキーは不要です。"
-
-#~ msgid "Connected ·"
-#~ msgstr "接続済み ·"
-
-#~ msgid "Device name"
-#~ msgstr "デバイス名"
-
-#~ msgid "Save the server and key above"
-#~ msgstr "上記のサーバーとキーを保存する"
-
-#~ msgid "Network identifier (will be created if new)"
-#~ msgstr "ネットワーク識別子（新規の場合は作成されます）"
-
-#~ msgid ""
-#~ "Use your BigScale panel username and password to generate a key "
-#~ "automatically."
-#~ msgstr ""
-#~ "BigScaleパネルのユーザー名とパスワードを使用して、キーを自動生成します。"
-
-#~ msgid "Network user identifier"
-#~ msgstr "ネットワークユーザー識別子"
-
-#~ msgid "Switch account"
-#~ msgstr "アカウントを切り替える"
-
-#~ msgid "Use a pre-auth key"
-#~ msgstr "事前認証キーを使用する"
-
-#~ msgid "Paste the key your administrator sent you"
-#~ msgstr "管理者から送られたキーを貼り付けてください"
-
-#~ msgid "Sign in with your BigScale panel account"
-#~ msgstr "BigScaleパネルのアカウントでサインインする"
-
-#~ msgid "Refresh list"
-#~ msgstr "リストを更新"
-
-#~ msgid "Files"
-#~ msgstr "ファイル"
-
-#~ msgid "Terminal"
-#~ msgstr "ターミナル"
-
-#~ msgid "Key generated successfully."
-#~ msgstr "キーが正常に生成されました。"
-
-#~ msgid "Service not found"
-#~ msgstr "サービスが見つかりません"
-
-#~ msgid ""
-#~ "The tailscaled service is not running.\n"
-#~ "Click below to start it."
-#~ msgstr ""
-#~ "tailscaledサービスが実行されていません。\n"
-#~ "以下をクリックして起動してください。"
-
-#~ msgid "Server"
-#~ msgstr "サーバー"
-
-#~ msgid "Address of your BigScale/Headscale server."
-#~ msgstr "BigScale/Headscaleサーバーのアドレス。"
-
-#~ msgid "Your identity on the network"
-#~ msgstr "ネットワーク上のあなたの識別情報"
-
-#~ msgid ""
-#~ "Personal key generated for you in the BigScale panel (\"New key\" in "
-#~ "Users). Each person uses their own — this is not the server's key."
-#~ msgstr ""
-#~ "BigScaleパネルで発行された個人用キー（ユーザー画面の「新しいキー」）。各"
-#~ "ユーザーが個別に使用するもので、サーバーのキーではありません。"
-
-#~ msgid "Pre-auth key (yours)"
-#~ msgstr "事前認証キー（あなたのもの）"
-
-#~ msgid "Name shown to other devices on the network."
-#~ msgstr "ネットワーク上の他のデバイスに表示される名前です。"
-
-#~ msgid "Options"
-#~ msgstr "オプション"
-
-#~ msgid "Connect automatically on startup"
-#~ msgstr "起動時に自動的に接続する"
-
-#~ msgid "Please wait..."
-#~ msgstr "お待ちください..."
-
-#~ msgid "Connected to the network"
-#~ msgstr "ネットワークに接続しました"
-
-#~ msgid "Your IP address"
-#~ msgstr "あなたのIPアドレス"
-
-#~ msgid "No other devices found."
-#~ msgstr "他のデバイスは見つかりませんでした。"
+msgid "Username"
+msgstr "ユーザー名"
 
 msgid "Change the group's photo"
 msgstr "グループの写真を変更"
@@ -2719,7 +2582,9 @@ msgid "Sign in with my phone"
 msgstr "スマートフォンでサインイン"
 
 msgid "Your phone is already on the network with BigLace: scan a code with it."
-msgstr "スマートフォンはすでに BigLace でネットワークにつながっています。それでコードを読み取ってください。"
+msgstr ""
+"スマートフォンはすでに BigLace でネットワークにつながっています。それでコード"
+"を読み取ってください。"
 
 msgid "Rename group"
 msgstr "グループ名を変更"
@@ -2727,7 +2592,8 @@ msgstr "グループ名を変更"
 msgid "Rename {group}"
 msgstr "{group} の名前を変更"
 
-msgid "Its members, conversation, room and photo keep going under the new name."
+msgid ""
+"Its members, conversation, room and photo keep going under the new name."
 msgstr "メンバー、会話、ルーム、写真は新しい名前で続きます。"
 
 msgid "Rename"
@@ -2736,8 +2602,12 @@ msgstr "名前を変更"
 msgid "The group is called {group} now."
 msgstr "グループの名前は {group} になりました。"
 
-msgid "Your phone must already be on the network, with BigLace. This computer joins the same account."
-msgstr "スマートフォンがすでに BigLace でネットワークにつながっている必要があります。このコンピューターは同じアカウントに参加します。"
+msgid ""
+"Your phone must already be on the network, with BigLace. This computer joins "
+"the same account."
+msgstr ""
+"スマートフォンがすでに BigLace でネットワークにつながっている必要があります。"
+"このコンピューターは同じアカウントに参加します。"
 
 msgid "Network address"
 msgstr "ネットワークのアドレス"
@@ -2745,8 +2615,12 @@ msgstr "ネットワークのアドレス"
 msgid "Show the code"
 msgstr "コードを表示"
 
-msgid "On the phone, open BigLace, tap “Scan QR code” and point it at this code. Then confirm on the phone."
-msgstr "スマートフォンで BigLace を開き、「QR コードをスキャン」をタップしてこのコードに向けます。その後スマートフォンで確認してください。"
+msgid ""
+"On the phone, open BigLace, tap “Scan QR code” and point it at this code. "
+"Then confirm on the phone."
+msgstr ""
+"スマートフォンで BigLace を開き、「QR コードをスキャン」をタップしてこのコー"
+"ドに向けます。その後スマートフォンで確認してください。"
 
 msgid "Type the network address, e.g. vpn.example.org."
 msgstr "ネットワークのアドレスを入力してください（例: vpn.example.org）。"
@@ -2921,8 +2795,11 @@ msgid "BigLace extension for GNOME"
 msgstr "GNOME 用 BigLace 拡張機能"
 
 #: src/window/sidebar.rs:427
-msgid "Needed for the phone to get what you copy while BigLace is in the background"
-msgstr "BigLace がバックグラウンドのときにコピーしたものをスマートフォンに届けるために必要です"
+msgid ""
+"Needed for the phone to get what you copy while BigLace is in the background"
+msgstr ""
+"BigLace がバックグラウンドのときにコピーしたものをスマートフォンに届けるため"
+"に必要です"
 
 #: src/window/sidebar.rs:431
 msgid "Turn on"
@@ -2964,12 +2841,14 @@ msgid "Could not turn on the local network: {error}"
 msgstr "ローカルネットワークをオンにできませんでした: {error}"
 
 #: src/window/lan_ui.rs:86
-msgid "No BigLace nearby. The other device needs the local network turned on, on this same network. Guest Wi-Fi and some routers keep devices apart: use the main network."
-msgstr "近くに BigLace がありません。相手のデバイスでも、同じネットワークでローカルネットワークをオンにする必要があります。ゲスト用 Wi-Fi や一部のルーターはデバイス同士を隔離します: メインのネットワークを使ってください。"
-
-#: src/window/lan_ui.rs:100
-msgid "Paired"
-msgstr "ペアリング済み"
+msgid ""
+"No BigLace nearby. The other device needs the local network turned on, on "
+"this same network. Guest Wi-Fi and some routers keep devices apart: use the "
+"main network."
+msgstr ""
+"近くに BigLace がありません。相手のデバイスでも、同じネットワークでローカル"
+"ネットワークをオンにする必要があります。ゲスト用 Wi-Fi や一部のルーターはデバ"
+"イス同士を隔離します: メインのネットワークを使ってください。"
 
 #: src/window/lan_ui.rs:104 src/window/lan_ui.rs:148
 msgid "Pair"
@@ -3007,12 +2886,229 @@ msgstr "ペアリング済み・近くにありません"
 
 #: src/window/lan_ui.rs:151
 msgid "Or scan this code with BigLace on the phone (Settings, Local network)"
-msgstr "または、スマートフォンの BigLace でこのコードを読み取ります(設定、ローカルネットワーク)"
+msgstr ""
+"または、スマートフォンの BigLace でこのコードを読み取ります(設定、ローカル"
+"ネットワーク)"
 
 #: src/chat/files.rs
 msgid "the local network is off"
 msgstr "ローカルネットワークはオフです"
 
 #: src/chat/files.rs
-msgid "{name} can't be reached on the local network — try again when it's nearby"
-msgstr "ローカルネットワークで {name} に接続できません — 近くにあるときに再試行してください"
+msgid ""
+"{name} can't be reached on the local network — try again when it's nearby"
+msgstr ""
+"ローカルネットワークで {name} に接続できません — 近くにあるときに再試行してく"
+"ださい"
+
+msgid "End remote access"
+msgstr "リモートアクセスを終了"
+
+msgid "How everyone sees you in conversations."
+msgstr "会話でみんなに表示される名前です。"
+
+msgid "How this computer appears in the device list."
+msgstr "デバイス一覧でのこのコンピューターの表示名です。"
+
+msgid "Your names"
+msgstr "あなたの名前"
+
+msgid "Checking…"
+msgstr "確認中…"
+
+#, rust-format
+msgid "{name} is free."
+msgstr "{name} は使用できます。"
+
+#, rust-format
+msgid "{name} is already taken. Choose another name."
+msgstr "{name} はすでに使われています。別の名前を選んでください。"
+
+msgid "Couldn't check the name with the panel. Try again in a moment."
+msgstr ""
+"パネルで名前を確認できませんでした。しばらくしてからもう一度お試しください。"
+
+msgid "Names saved."
+msgstr "名前を保存しました。"
+
+msgid "Someone just took that name. Choose another name."
+msgstr "その名前はたった今ほかの人に使われました。別の名前を選んでください。"
+
+msgid "You changed your name a moment ago. Wait a minute and try again."
+msgstr ""
+"少し前に名前を変更したばかりです。1 分待ってからもう一度お試しください。"
+
+msgid ""
+"Changing names needs a newer BigScale server. Ask your administrator to "
+"update it."
+msgstr ""
+"名前を変更するには新しい BigScale サーバーが必要です。管理者に更新を依頼して"
+"ください。"
+
+msgid "Opened a terminal"
+msgstr "ターミナルを開きました"
+
+msgid "Browsed the files"
+msgstr "ファイルを閲覧しました"
+
+#, rust-format
+msgid "{user} opened a terminal on this computer"
+msgstr "{user} がこのコンピューターでターミナルを開きました"
+
+#, rust-format
+msgid "{user} is browsing the files on this computer"
+msgstr "{user} がこのコンピューターのファイルを閲覧しています"
+
+msgid "It goes on until they close it, or until you end it."
+msgstr "相手が閉じるか、あなたが終了するまで続きます。"
+
+msgid "Couldn't end the access"
+msgstr "アクセスを終了できませんでした"
+
+#, rust-format
+msgid "{user} · terminal"
+msgstr "{user} · ターミナル"
+
+#, rust-format
+msgid "{user} · files"
+msgstr "{user} · ファイル"
+
+#~ msgid "Rename this device"
+#~ msgstr "このデバイスの名前を変更"
+
+#~ msgid ""
+#~ "The name this device shows to other peers on the VPN. Lowercase letters, "
+#~ "digits and hyphens. Example: tales-laptop."
+#~ msgstr ""
+#~ "このデバイスがVPN上の他のピアに表示される名前。小文字、数字、ハイフンのみ"
+#~ "使用可能。例：tales-laptop。"
+
+#~ msgid "Save & apply"
+#~ msgstr "保存して適用"
+
+#~ msgid "Saved. The new name will take effect the next time you connect."
+#~ msgstr "保存しました。新しい名前は次回接続時に有効になります。"
+
+#~ msgid "Device renamed."
+#~ msgstr "デバイス名を変更しました。"
+
+#~ msgid "access to the camera was refused"
+#~ msgstr "カメラへのアクセスが拒否されました"
+
+#~ msgid "Panel credentials"
+#~ msgstr "パネル認証情報"
+
+#~ msgid "Sign in to connect"
+#~ msgstr "サインインして接続する"
+
+#~ msgid "Use the panel on the left to sign in or paste a pre-auth key."
+#~ msgstr ""
+#~ "左側のパネルを使用してサインインするか、事前認証キーを貼り付けてください。"
+
+#~ msgid "Connect via panel account"
+#~ msgstr "パネルアカウントで接続"
+
+#~ msgid ""
+#~ "Sign in with your BigScale panel username and password. A device identity "
+#~ "will be created on the network automatically — no manual key needed."
+#~ msgstr ""
+#~ "BigScaleパネルのユーザー名とパスワードでサインインします。デバイスIDが自動"
+#~ "的にネットワーク上に作成されます — 手動でのキーは不要です。"
+
+#~ msgid "Connected ·"
+#~ msgstr "接続済み ·"
+
+#~ msgid "Device name"
+#~ msgstr "デバイス名"
+
+#~ msgid "Save the server and key above"
+#~ msgstr "上記のサーバーとキーを保存する"
+
+#~ msgid "Network identifier (will be created if new)"
+#~ msgstr "ネットワーク識別子（新規の場合は作成されます）"
+
+#~ msgid ""
+#~ "Use your BigScale panel username and password to generate a key "
+#~ "automatically."
+#~ msgstr ""
+#~ "BigScaleパネルのユーザー名とパスワードを使用して、キーを自動生成します。"
+
+#~ msgid "Network user identifier"
+#~ msgstr "ネットワークユーザー識別子"
+
+#~ msgid "Switch account"
+#~ msgstr "アカウントを切り替える"
+
+#~ msgid "Use a pre-auth key"
+#~ msgstr "事前認証キーを使用する"
+
+#~ msgid "Paste the key your administrator sent you"
+#~ msgstr "管理者から送られたキーを貼り付けてください"
+
+#~ msgid "Sign in with your BigScale panel account"
+#~ msgstr "BigScaleパネルのアカウントでサインインする"
+
+#~ msgid "Refresh list"
+#~ msgstr "リストを更新"
+
+#~ msgid "Files"
+#~ msgstr "ファイル"
+
+#~ msgid "Terminal"
+#~ msgstr "ターミナル"
+
+#~ msgid "Key generated successfully."
+#~ msgstr "キーが正常に生成されました。"
+
+#~ msgid "Service not found"
+#~ msgstr "サービスが見つかりません"
+
+#~ msgid ""
+#~ "The tailscaled service is not running.\n"
+#~ "Click below to start it."
+#~ msgstr ""
+#~ "tailscaledサービスが実行されていません。\n"
+#~ "以下をクリックして起動してください。"
+
+#~ msgid "Server"
+#~ msgstr "サーバー"
+
+#~ msgid "Address of your BigScale/Headscale server."
+#~ msgstr "BigScale/Headscaleサーバーのアドレス。"
+
+#~ msgid "Your identity on the network"
+#~ msgstr "ネットワーク上のあなたの識別情報"
+
+#~ msgid ""
+#~ "Personal key generated for you in the BigScale panel (\"New key\" in "
+#~ "Users). Each person uses their own — this is not the server's key."
+#~ msgstr ""
+#~ "BigScaleパネルで発行された個人用キー（ユーザー画面の「新しいキー」）。各"
+#~ "ユーザーが個別に使用するもので、サーバーのキーではありません。"
+
+#~ msgid "Pre-auth key (yours)"
+#~ msgstr "事前認証キー（あなたのもの）"
+
+#~ msgid "Name shown to other devices on the network."
+#~ msgstr "ネットワーク上の他のデバイスに表示される名前です。"
+
+#~ msgid "Options"
+#~ msgstr "オプション"
+
+#~ msgid "Connect automatically on startup"
+#~ msgstr "起動時に自動的に接続する"
+
+#~ msgid "Please wait..."
+#~ msgstr "お待ちください..."
+
+#~ msgid "Connected to the network"
+#~ msgstr "ネットワークに接続しました"
+
+#~ msgid "Your IP address"
+#~ msgstr "あなたのIPアドレス"
+
+#~ msgid "No other devices found."
+#~ msgstr "他のデバイスは見つかりませんでした。"
+
+#~ msgid "Paired"
+#~ msgstr "ペアリング済み"

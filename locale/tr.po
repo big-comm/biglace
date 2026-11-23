@@ -3,7 +3,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: biglace\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-11-20 07:04-0300\n"
+"POT-Creation-Date: 2026-11-23 00:11-0300\n"
 "PO-Revision-Date: 2026-05-01 15:43\n"
 "Last-Translator: Translation Automator <auto@translator.ai>\n"
 "Language-Team: Turkish <tr@li.org>\n"
@@ -1671,25 +1671,6 @@ msgstr "URL, kullanıcı adı ve şifreyi doldurun."
 msgid "Signed in. Press Connect to join the network."
 msgstr "Oturum açıldı. Ağa katılmak için Bağlan'a basın."
 
-msgid "Rename this device"
-msgstr "Bu cihazı yeniden adlandır"
-
-msgid ""
-"The name this device shows to other peers on the VPN. Lowercase letters, "
-"digits and hyphens. Example: tales-laptop."
-msgstr ""
-"Bu cihazın VPN'deki diğer eşlere gösterdiği ad. Küçük harfler, rakamlar ve "
-"tireler. Örnek: tales-laptop."
-
-msgid "Save & apply"
-msgstr "Kaydet ve uygula"
-
-msgid "Saved. The new name will take effect the next time you connect."
-msgstr "Kaydedildi. Yeni ad, bir sonraki bağlantınızda geçerli olacak."
-
-msgid "Device renamed."
-msgstr "Cihaz yeniden adlandırıldı."
-
 #, rust-format
 msgid "Rename failed: {error}"
 msgstr "Yeniden adlandırma başarısız: {error}"
@@ -2522,9 +2503,6 @@ msgstr ""
 "oradaki ekran kilitli ve GNOME kilitli bir ekrana uzaktan erişime izin "
 "vermiyor — kişiden kilidi açmasını isteyin"
 
-msgid "access to the camera was refused"
-msgstr "kameraya erişim reddedildi"
-
 msgid "Mute or unmute the microphone in a BigLace room"
 msgstr "BigLace odasında mikrofonu kapat veya aç"
 
@@ -2547,126 +2525,8 @@ msgstr "Kayıtlı ön yetkilendirme anahtarı okunamadı: {error}"
 msgid "the screen capture ended"
 msgstr "ekran yakalama sona erdi"
 
-#~ msgid "Panel credentials"
-#~ msgstr "Panel kimlik bilgileri"
-
-#~ msgid "Username"
-#~ msgstr "Kullanıcı adı"
-
-#~ msgid "Sign in to connect"
-#~ msgstr "Bağlanmak için oturum açın"
-
-#~ msgid "Use the panel on the left to sign in or paste a pre-auth key."
-#~ msgstr ""
-#~ "Bağlanmak için soldaki paneli kullanarak oturum açın veya ön "
-#~ "yetkilendirme anahtarı yapıştırın."
-
-#~ msgid "Connect via panel account"
-#~ msgstr "Panel hesabıyla bağlan"
-
-#~ msgid ""
-#~ "Sign in with your BigScale panel username and password. A device identity "
-#~ "will be created on the network automatically — no manual key needed."
-#~ msgstr ""
-#~ "BigScale panel kullanıcı adınız ve parolanızla oturum açın. Ağda otomatik "
-#~ "olarak bir cihaz kimliği oluşturulacaktır — manuel anahtar gerekmez."
-
-#~ msgid "Connected ·"
-#~ msgstr "Bağlandı ·"
-
-#~ msgid "Device name"
-#~ msgstr "Cihaz adı"
-
-#~ msgid "Save the server and key above"
-#~ msgstr "Yukarıdaki sunucuyu ve anahtarı kaydet"
-
-#~ msgid "Network identifier (will be created if new)"
-#~ msgstr "Ağ tanımlayıcısı (yoksa oluşturulacak)"
-
-#~ msgid ""
-#~ "Use your BigScale panel username and password to generate a key "
-#~ "automatically."
-#~ msgstr ""
-#~ "Anahtarı otomatik oluşturmak için BigScale panel kullanıcı adınızı ve "
-#~ "şifrenizi kullanın."
-
-#~ msgid "Network user identifier"
-#~ msgstr "Ağ kullanıcı tanımlayıcısı"
-
-#~ msgid "Switch account"
-#~ msgstr "Hesap değiştir"
-
-#~ msgid "Use a pre-auth key"
-#~ msgstr "Ön yetkilendirme anahtarı kullan"
-
-#~ msgid "Paste the key your administrator sent you"
-#~ msgstr "Yöneticinizin size gönderdiği anahtarı yapıştırın"
-
-#~ msgid "Sign in with your BigScale panel account"
-#~ msgstr "BigScale panel hesabınızla oturum açın"
-
-#~ msgid "Refresh list"
-#~ msgstr "Listeyi Yenile"
-
-#~ msgid "Files"
-#~ msgstr "Dosyalar"
-
-#~ msgid "Terminal"
-#~ msgstr "Terminal"
-
-#~ msgid "Key generated successfully."
-#~ msgstr "Anahtar başarıyla oluşturuldu."
-
-#~ msgid "Service not found"
-#~ msgstr "Hizmet bulunamadı"
-
-#~ msgid ""
-#~ "The tailscaled service is not running.\n"
-#~ "Click below to start it."
-#~ msgstr ""
-#~ "tailscaled hizmeti çalışmıyor.\n"
-#~ "Başlatmak için aşağıya tıklayın."
-
-#~ msgid "Server"
-#~ msgstr "Sunucu"
-
-#~ msgid "Address of your BigScale/Headscale server."
-#~ msgstr "BigScale/Headscale sunucunuzun adresi."
-
-#~ msgid "Your identity on the network"
-#~ msgstr "Ağdaki kimliğiniz"
-
-#~ msgid ""
-#~ "Personal key generated for you in the BigScale panel (\"New key\" in "
-#~ "Users). Each person uses their own — this is not the server's key."
-#~ msgstr ""
-#~ "BigScale panelinde sizin için oluşturulan kişisel anahtar (Kullanıcılar "
-#~ "bölümünde \"Yeni anahtar\"). Herkes kendi anahtarını kullanır — bu "
-#~ "sunucunun anahtarı değildir."
-
-#~ msgid "Pre-auth key (yours)"
-#~ msgstr "Ön yetkilendirme anahtarı (size ait)"
-
-#~ msgid "Name shown to other devices on the network."
-#~ msgstr "Ağdaki diğer cihazlara gösterilen ad."
-
-#~ msgid "Options"
-#~ msgstr "Seçenekler"
-
-#~ msgid "Connect automatically on startup"
-#~ msgstr "Başlangıçta otomatik bağlan"
-
-#~ msgid "Please wait..."
-#~ msgstr "Lütfen bekleyin..."
-
-#~ msgid "Connected to the network"
-#~ msgstr "Ağa bağlandı"
-
-#~ msgid "Your IP address"
-#~ msgstr "IP adresiniz"
-
-#~ msgid "No other devices found."
-#~ msgstr "Başka cihaz bulunamadı."
+msgid "Username"
+msgstr "Kullanıcı adı"
 
 msgid "Change the group's photo"
 msgstr "Grup fotoğrafını değiştir"
@@ -2719,7 +2579,8 @@ msgstr "Grubu yeniden adlandır"
 msgid "Rename {group}"
 msgstr "{group} grubunu yeniden adlandır"
 
-msgid "Its members, conversation, room and photo keep going under the new name."
+msgid ""
+"Its members, conversation, room and photo keep going under the new name."
 msgstr "Üyeler, sohbet, oda ve fotoğraf yeni adla devam eder."
 
 msgid "Rename"
@@ -2728,8 +2589,11 @@ msgstr "Yeniden adlandır"
 msgid "The group is called {group} now."
 msgstr "Grubun adı artık {group}."
 
-msgid "Your phone must already be on the network, with BigLace. This computer joins the same account."
-msgstr "Telefonunuz BigLace ile zaten ağda olmalı. Bu bilgisayar aynı hesaba katılır."
+msgid ""
+"Your phone must already be on the network, with BigLace. This computer joins "
+"the same account."
+msgstr ""
+"Telefonunuz BigLace ile zaten ağda olmalı. Bu bilgisayar aynı hesaba katılır."
 
 msgid "Network address"
 msgstr "Ağ adresi"
@@ -2737,8 +2601,12 @@ msgstr "Ağ adresi"
 msgid "Show the code"
 msgstr "Kodu göster"
 
-msgid "On the phone, open BigLace, tap “Scan QR code” and point it at this code. Then confirm on the phone."
-msgstr "Telefonda BigLace’i açın, “QR kodunu tara”ya dokunun ve bu koda doğrultun. Sonra telefonda onaylayın."
+msgid ""
+"On the phone, open BigLace, tap “Scan QR code” and point it at this code. "
+"Then confirm on the phone."
+msgstr ""
+"Telefonda BigLace’i açın, “QR kodunu tara”ya dokunun ve bu koda doğrultun. "
+"Sonra telefonda onaylayın."
 
 msgid "Type the network address, e.g. vpn.example.org."
 msgstr "Ağ adresini yazın, ör. vpn.example.org."
@@ -2913,8 +2781,10 @@ msgid "BigLace extension for GNOME"
 msgstr "GNOME için BigLace uzantısı"
 
 #: src/window/sidebar.rs:427
-msgid "Needed for the phone to get what you copy while BigLace is in the background"
-msgstr "BigLace arka plandayken kopyaladıklarınızın telefona gitmesi için gerekli"
+msgid ""
+"Needed for the phone to get what you copy while BigLace is in the background"
+msgstr ""
+"BigLace arka plandayken kopyaladıklarınızın telefona gitmesi için gerekli"
 
 #: src/window/sidebar.rs:431
 msgid "Turn on"
@@ -2956,12 +2826,14 @@ msgid "Could not turn on the local network: {error}"
 msgstr "Yerel ağ açılamadı: {error}"
 
 #: src/window/lan_ui.rs:86
-msgid "No BigLace nearby. The other device needs the local network turned on, on this same network. Guest Wi-Fi and some routers keep devices apart: use the main network."
-msgstr "Yakında BigLace yok. Diğer cihazda da aynı ağda yerel ağın açık olması gerekir. Misafir Wi-Fi ağları ve bazı yönlendiriciler cihazları birbirinden ayırır: ana ağı kullanın."
-
-#: src/window/lan_ui.rs:100
-msgid "Paired"
-msgstr "Eşleşildi"
+msgid ""
+"No BigLace nearby. The other device needs the local network turned on, on "
+"this same network. Guest Wi-Fi and some routers keep devices apart: use the "
+"main network."
+msgstr ""
+"Yakında BigLace yok. Diğer cihazda da aynı ağda yerel ağın açık olması "
+"gerekir. Misafir Wi-Fi ağları ve bazı yönlendiriciler cihazları birbirinden "
+"ayırır: ana ağı kullanın."
 
 #: src/window/lan_ui.rs:104 src/window/lan_ui.rs:148
 msgid "Pair"
@@ -3006,5 +2878,219 @@ msgid "the local network is off"
 msgstr "yerel ağ kapalı"
 
 #: src/chat/files.rs
-msgid "{name} can't be reached on the local network — try again when it's nearby"
+msgid ""
+"{name} can't be reached on the local network — try again when it's nearby"
 msgstr "{name} yerel ağda bulunamıyor — yakındayken yeniden deneyin"
+
+msgid "End remote access"
+msgstr "Uzaktan erişimi sonlandır"
+
+msgid "How everyone sees you in conversations."
+msgstr "Sohbetlerde herkesin sizi nasıl gördüğü."
+
+msgid "How this computer appears in the device list."
+msgstr "Bu bilgisayarın cihaz listesinde nasıl göründüğü."
+
+msgid "Your names"
+msgstr "Adlarınız"
+
+msgid "Checking…"
+msgstr "Denetleniyor…"
+
+#, rust-format
+msgid "{name} is free."
+msgstr "{name} kullanılabilir."
+
+#, rust-format
+msgid "{name} is already taken. Choose another name."
+msgstr "{name} zaten alınmış. Başka bir ad seçin."
+
+msgid "Couldn't check the name with the panel. Try again in a moment."
+msgstr "Ad panelde denetlenemedi. Birazdan tekrar deneyin."
+
+msgid "Names saved."
+msgstr "Adlar kaydedildi."
+
+msgid "Someone just took that name. Choose another name."
+msgstr "Biri bu adı az önce aldı. Başka bir ad seçin."
+
+msgid "You changed your name a moment ago. Wait a minute and try again."
+msgstr "Adınızı az önce değiştirdiniz. Bir dakika bekleyip tekrar deneyin."
+
+msgid ""
+"Changing names needs a newer BigScale server. Ask your administrator to "
+"update it."
+msgstr ""
+"Adları değiştirmek için daha yeni bir BigScale sunucusu gerekir. "
+"Yöneticinizden sunucuyu güncellemesini isteyin."
+
+msgid "Opened a terminal"
+msgstr "Bir terminal açtı"
+
+msgid "Browsed the files"
+msgstr "Dosyalara göz attı"
+
+#, rust-format
+msgid "{user} opened a terminal on this computer"
+msgstr "{user} bu bilgisayarda bir terminal açtı"
+
+#, rust-format
+msgid "{user} is browsing the files on this computer"
+msgstr "{user} bu bilgisayardaki dosyalara göz atıyor"
+
+msgid "It goes on until they close it, or until you end it."
+msgstr "Karşı taraf kapatana veya siz sonlandırana kadar sürer."
+
+msgid "Couldn't end the access"
+msgstr "Erişim sonlandırılamadı"
+
+#, rust-format
+msgid "{user} · terminal"
+msgstr "{user} · terminal"
+
+#, rust-format
+msgid "{user} · files"
+msgstr "{user} · dosyalar"
+
+#~ msgid "Rename this device"
+#~ msgstr "Bu cihazı yeniden adlandır"
+
+#~ msgid ""
+#~ "The name this device shows to other peers on the VPN. Lowercase letters, "
+#~ "digits and hyphens. Example: tales-laptop."
+#~ msgstr ""
+#~ "Bu cihazın VPN'deki diğer eşlere gösterdiği ad. Küçük harfler, rakamlar "
+#~ "ve tireler. Örnek: tales-laptop."
+
+#~ msgid "Save & apply"
+#~ msgstr "Kaydet ve uygula"
+
+#~ msgid "Saved. The new name will take effect the next time you connect."
+#~ msgstr "Kaydedildi. Yeni ad, bir sonraki bağlantınızda geçerli olacak."
+
+#~ msgid "Device renamed."
+#~ msgstr "Cihaz yeniden adlandırıldı."
+
+#~ msgid "access to the camera was refused"
+#~ msgstr "kameraya erişim reddedildi"
+
+#~ msgid "Panel credentials"
+#~ msgstr "Panel kimlik bilgileri"
+
+#~ msgid "Sign in to connect"
+#~ msgstr "Bağlanmak için oturum açın"
+
+#~ msgid "Use the panel on the left to sign in or paste a pre-auth key."
+#~ msgstr ""
+#~ "Bağlanmak için soldaki paneli kullanarak oturum açın veya ön "
+#~ "yetkilendirme anahtarı yapıştırın."
+
+#~ msgid "Connect via panel account"
+#~ msgstr "Panel hesabıyla bağlan"
+
+#~ msgid ""
+#~ "Sign in with your BigScale panel username and password. A device identity "
+#~ "will be created on the network automatically — no manual key needed."
+#~ msgstr ""
+#~ "BigScale panel kullanıcı adınız ve parolanızla oturum açın. Ağda otomatik "
+#~ "olarak bir cihaz kimliği oluşturulacaktır — manuel anahtar gerekmez."
+
+#~ msgid "Connected ·"
+#~ msgstr "Bağlandı ·"
+
+#~ msgid "Device name"
+#~ msgstr "Cihaz adı"
+
+#~ msgid "Save the server and key above"
+#~ msgstr "Yukarıdaki sunucuyu ve anahtarı kaydet"
+
+#~ msgid "Network identifier (will be created if new)"
+#~ msgstr "Ağ tanımlayıcısı (yoksa oluşturulacak)"
+
+#~ msgid ""
+#~ "Use your BigScale panel username and password to generate a key "
+#~ "automatically."
+#~ msgstr ""
+#~ "Anahtarı otomatik oluşturmak için BigScale panel kullanıcı adınızı ve "
+#~ "şifrenizi kullanın."
+
+#~ msgid "Network user identifier"
+#~ msgstr "Ağ kullanıcı tanımlayıcısı"
+
+#~ msgid "Switch account"
+#~ msgstr "Hesap değiştir"
+
+#~ msgid "Use a pre-auth key"
+#~ msgstr "Ön yetkilendirme anahtarı kullan"
+
+#~ msgid "Paste the key your administrator sent you"
+#~ msgstr "Yöneticinizin size gönderdiği anahtarı yapıştırın"
+
+#~ msgid "Sign in with your BigScale panel account"
+#~ msgstr "BigScale panel hesabınızla oturum açın"
+
+#~ msgid "Refresh list"
+#~ msgstr "Listeyi Yenile"
+
+#~ msgid "Files"
+#~ msgstr "Dosyalar"
+
+#~ msgid "Terminal"
+#~ msgstr "Terminal"
+
+#~ msgid "Key generated successfully."
+#~ msgstr "Anahtar başarıyla oluşturuldu."
+
+#~ msgid "Service not found"
+#~ msgstr "Hizmet bulunamadı"
+
+#~ msgid ""
+#~ "The tailscaled service is not running.\n"
+#~ "Click below to start it."
+#~ msgstr ""
+#~ "tailscaled hizmeti çalışmıyor.\n"
+#~ "Başlatmak için aşağıya tıklayın."
+
+#~ msgid "Server"
+#~ msgstr "Sunucu"
+
+#~ msgid "Address of your BigScale/Headscale server."
+#~ msgstr "BigScale/Headscale sunucunuzun adresi."
+
+#~ msgid "Your identity on the network"
+#~ msgstr "Ağdaki kimliğiniz"
+
+#~ msgid ""
+#~ "Personal key generated for you in the BigScale panel (\"New key\" in "
+#~ "Users). Each person uses their own — this is not the server's key."
+#~ msgstr ""
+#~ "BigScale panelinde sizin için oluşturulan kişisel anahtar (Kullanıcılar "
+#~ "bölümünde \"Yeni anahtar\"). Herkes kendi anahtarını kullanır — bu "
+#~ "sunucunun anahtarı değildir."
+
+#~ msgid "Pre-auth key (yours)"
+#~ msgstr "Ön yetkilendirme anahtarı (size ait)"
+
+#~ msgid "Name shown to other devices on the network."
+#~ msgstr "Ağdaki diğer cihazlara gösterilen ad."
+
+#~ msgid "Options"
+#~ msgstr "Seçenekler"
+
+#~ msgid "Connect automatically on startup"
+#~ msgstr "Başlangıçta otomatik bağlan"
+
+#~ msgid "Please wait..."
+#~ msgstr "Lütfen bekleyin..."
+
+#~ msgid "Connected to the network"
+#~ msgstr "Ağa bağlandı"
+
+#~ msgid "Your IP address"
+#~ msgstr "IP adresiniz"
+
+#~ msgid "No other devices found."
+#~ msgstr "Başka cihaz bulunamadı."
+
+#~ msgid "Paired"
+#~ msgstr "Eşleşildi"
