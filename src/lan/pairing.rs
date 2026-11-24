@@ -152,7 +152,11 @@ fn incoming(tcp: TcpStream, server: &tls::Server) {
             peers::seen_at(&peer.key, &address);
             let _ = s.get_ref().set_read_timeout(Some(READ_WAIT));
             let _ = s.get_ref().set_write_timeout(Some(STALL));
-            talk(&mut s, &peer);
+            if let Some(ask) = talk(&mut s, &peer) {
+                // The name the person saw when pairing, not the one it gives now.
+                let name = peers::list().into_iter().find(|p| p.key == peer.key).map_or(peer.name, |p| p.name);
+                crate::remote::host::serve_lan(s, &name, &address, &ask);
+            }
         }
     }
 }
@@ -194,26 +198,27 @@ struct PhotoAnswer {
 
 const GONE: &str = "gone";
 
-/// Messages from a paired device, each acknowledged once kept, or one file or our photo it asks for.
-fn talk(s: &mut (impl Read + Write), peer: &Peer) {
+/// Messages from a paired device, each acknowledged once kept, or one file or our photo it asks for;
+/// or it asks for the screen, which takes the connection over.
+fn talk(s: &mut (impl Read + Write), peer: &Peer) -> Option<crate::remote::host::LanAsk> {
     loop {
         match read_frame(s) {
             Ok((Kind::Chat, payload)) => {
-                let Some(id) = crate::chat::accept_lan(&peer.key, &payload) else { break };
+                let id = crate::chat::accept_lan(&peer.key, &payload)?;
                 let ack = serde_json::to_vec(&[id]).unwrap_or_default();
-                if write_frame(s, Kind::ChatAck, &ack).is_err() {
-                    break;
-                }
+                write_frame(s, Kind::ChatAck, &ack).ok()?;
             }
             Ok((Kind::Lan, payload)) => {
                 if let Ok(ask) = serde_json::from_slice::<FileAsk>(&payload) {
                     send_file(s, &peer.key, &ask);
                 } else if let Ok(ask) = serde_json::from_slice::<PhotoAsk>(&payload) {
                     send_photo(s, &ask);
+                } else if let Ok(ask) = serde_json::from_slice::<crate::remote::host::LanAsk>(&payload) {
+                    return Some(ask);
                 }
-                break;
+                return None;
             }
-            _ => break,
+            _ => return None,
         }
     }
 }
@@ -305,6 +310,27 @@ pub(crate) fn fetch_photo(key: &str, have: &str, max: u64) -> Result<Option<Phot
         None => None,
     };
     Ok(Some(Photo { version, bytes }))
+}
+
+/// Why the screen of a paired device didn't open.
+pub(crate) enum ScreenError {
+    Lan(LanError),
+    /// Its answer: `denied` or `unavailable`.
+    Refused(String),
+}
+
+/// Ask the paired device `key` for its screen, waiting while the person
+/// there answers; on yes, the connection, as a plain socket (see `super::bridge`).
+pub(crate) fn open_screen(key: &str, ask: &crate::remote::host::LanAsk) -> Result<TcpStream, ScreenError> {
+    use crate::remote::host::LanAnswer;
+    let mut s = talk_to(key).map_err(ScreenError::Lan)?;
+    let lost = |_| ScreenError::Lan(LanError::Unreachable);
+    handshake::send(&mut s, ask).map_err(lost)?;
+    let answer: LanAnswer = handshake::recv(&mut s).map_err(lost)?;
+    if !answer.ok {
+        return Err(ScreenError::Refused(answer.error.unwrap_or_default()));
+    }
+    super::bridge::bridge(s).map_err(lost)
 }
 
 /// A proven TLS connection to the paired device `key`, at its announced

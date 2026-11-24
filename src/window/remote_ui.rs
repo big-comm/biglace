@@ -26,7 +26,7 @@ pub fn start_host_listener(win: &libadwaita::ApplicationWindow, banner: &libadwa
         std::mem::forget(_rx);
         let w = win.clone();
         glib::timeout_add_seconds_local_once(1, move || {
-            ask_consent(&w, remote::ConsentRequest { who: "bruna".into(), device: "notebook-bruna".into(), reply: tx });
+            ask_consent(&w, remote::ConsentRequest { who: "bruna".into(), device: "notebook-bruna".into(), rememberable: true, reply: tx });
         });
     }
     let rx = remote::host_events();
@@ -64,15 +64,19 @@ pub fn start_host_listener(win: &libadwaita::ApplicationWindow, banner: &libadwa
                 HostEvent::Consent(req) => ask_consent(&win, req),
                 HostEvent::Started(session) => {
                     notify_started(&win, &session);
+                    #[cfg(target_os = "linux")]
+                    super::visits_ui::screen_started(session.clone());
                     sessions.borrow_mut().push(session);
                     refresh();
                 }
                 HostEvent::Ended(stop) => {
-                    sessions.borrow_mut().retain(|s| !s.stop.same(&stop));
-                    refresh();
-                    if let Some(app) = win.application() {
-                        app.withdraw_notification("biglace-remote-access");
+                    #[cfg(target_os = "linux")]
+                    super::visits_ui::screen_ended(&stop);
+                    let ended = sessions.borrow().iter().position(|s| s.stop.same(&stop));
+                    if let Some(session) = ended.map(|i| sessions.borrow_mut().remove(i)) {
+                        notify_ended(&win, &session);
                     }
+                    refresh();
                 }
             }
         }
@@ -92,6 +96,18 @@ fn notify_started(win: &libadwaita::ApplicationWindow, session: &remote::HostSes
     app.send_notification(Some("biglace-remote-access"), &n);
 }
 
+/// Replaces the notification that said it started.
+fn notify_ended(win: &libadwaita::ApplicationWindow, session: &remote::HostSession) {
+    let Some(app) = win.application() else { return };
+    let n = gtk4::gio::Notification::new(&tr!("Remote access ended"));
+    n.set_body(Some(&trf!(
+        "{user} ({device}) no longer sees this screen.",
+        "user" => session.who,
+        "device" => session.device
+    )));
+    app.send_notification(Some("biglace-remote-access"), &n);
+}
+
 fn ask_consent(win: &libadwaita::ApplicationWindow, req: remote::ConsentRequest) {
     // Bring BigLace forward: the question must not wait behind other windows.
     win.present();
@@ -102,7 +118,9 @@ fn ask_consent(win: &libadwaita::ApplicationWindow, req: remote::ConsentRequest)
         .label(trf!("Always allow {user} (no more asking)", "user" => req.who))
         .halign(gtk4::Align::Center)
         .build();
-    body.append(&remember);
+    if req.rememberable {
+        body.append(&remember);
+    }
     dlg.set_extra_child(Some(&body));
     dlg.add_response("deny", &tr!("Deny"));
     dlg.add_response("allow", &tr!("Allow access"));
@@ -267,8 +285,26 @@ pub struct HostCaps {
     pub resize: bool,
 }
 
+/// Where a viewer window gets its screen.
+#[derive(Clone)]
+enum Dial {
+    /// The computer at this tailnet address.
+    Screen(String),
+    /// What the computer at `ip` shares with the voice room of `group`.
+    Stage { ip: String, group: String },
+    /// The paired device with this key on the local network.
+    #[cfg(target_os = "linux")]
+    Lan(String),
+}
+
 pub fn open_viewer(ip: &str, name: &str, toast: &libadwaita::ToastOverlay, caps: HostCaps) {
-    open_viewer_as(ip, name, toast, None, caps);
+    open_viewer_as(Dial::Screen(ip.to_string()), name, toast, caps);
+}
+
+/// The screen of the paired device `key` on the local network.
+#[cfg(target_os = "linux")]
+pub fn open_lan_viewer(key: &str, name: &str, toast: &libadwaita::ToastOverlay, caps: HostCaps) {
+    open_viewer_as(Dial::Lan(key.to_string()), name, toast, caps);
 }
 
 /// How long a restarted computer has to come back.
@@ -314,12 +350,12 @@ fn confirm_power(win: &libadwaita::Window, action: &'static str, name: &str, ses
 /// Watch the screen `name` shows to the voice room of `group` (view only,
 /// with "Request control").
 pub fn open_stage_viewer(ip: &str, name: &str, group: &str, toast: &libadwaita::ToastOverlay) {
-    open_viewer_as(ip, name, toast, Some(group.to_string()), HostCaps::default());
+    open_viewer_as(Dial::Stage { ip: ip.to_string(), group: group.to_string() }, name, toast, HostCaps::default());
 }
 
-fn open_viewer_as(ip: &str, name: &str, toast: &libadwaita::ToastOverlay, stage: Option<String>, caps: HostCaps) {
+fn open_viewer_as(dial: Dial, name: &str, toast: &libadwaita::ToastOverlay, caps: HostCaps) {
     let power = caps.power;
-    let watching = stage.is_some();
+    let watching = matches!(dial, Dial::Stage { .. });
     let win = libadwaita::Window::builder()
         .title(trf!("Screen of {name}", "name" => name))
         .default_width(1100)
@@ -432,15 +468,17 @@ fn open_viewer_as(ip: &str, name: &str, toast: &libadwaita::ToastOverlay, stage:
     // Opens a connection on a thread: (its outcome, its events). Called
     // again to come back after a restart.
     let connect = {
-        let (ip, stage) = (ip.to_string(), stage.clone());
+        let name = name.to_string();
         move || {
             let (tx, rx) = async_channel::bounded::<client::Event>(4);
             let (open_tx, open_rx) = async_channel::bounded::<Result<client::Session, client::OpenError>>(1);
-            let (ip, stage) = (ip.clone(), stage.clone());
+            let (dial, name) = (dial.clone(), name.clone());
             std::thread::spawn(move || {
-                let opened = match &stage {
-                    Some(group) => client::open_stage(&ip, group, tx),
-                    None => client::open(&ip, tx),
+                let opened = match &dial {
+                    Dial::Screen(ip) => client::open(ip, tx),
+                    Dial::Stage { ip, group } => client::open_stage(ip, group, tx),
+                    #[cfg(target_os = "linux")]
+                    Dial::Lan(key) => client::open_lan(key, &name, tx),
                 };
                 let _ = open_tx.send_blocking(opened);
             });

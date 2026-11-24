@@ -3,6 +3,7 @@
 //! key pinned at pairing. People on a BigScale network keep using the
 //! tailnet, which already goes straight across the local network.
 
+pub mod bridge;
 pub mod discovery;
 pub mod handshake;
 pub mod peers;

@@ -237,6 +237,8 @@ pub struct ConsentRequest {
     pub who: String,
     /// Their device (e.g. `tales-notebook`).
     pub device: String,
+    /// "Always allow" can be offered: the person is a BigScale account.
+    pub rememberable: bool,
     /// (allowed, remember: always allow this person).
     pub reply: std::sync::mpsc::Sender<(bool, bool)>,
 }

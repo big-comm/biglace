@@ -74,11 +74,11 @@ pub struct Peer {
     pub name: String,
 }
 
-pub(super) fn send<T: Serialize>(w: &mut impl Write, step: &T) -> io::Result<()> {
+pub(crate) fn send<T: Serialize>(w: &mut impl Write, step: &T) -> io::Result<()> {
     write_frame(w, Kind::Lan, &serde_json::to_vec(step)?)
 }
 
-pub(super) fn recv<T: DeserializeOwned>(r: &mut impl Read) -> io::Result<T> {
+pub(crate) fn recv<T: DeserializeOwned>(r: &mut impl Read) -> io::Result<T> {
     let mut head = [0u8; 5];
     r.read_exact(&mut head)?;
     let len = u32::from_be_bytes([head[1], head[2], head[3], head[4]]) as usize;

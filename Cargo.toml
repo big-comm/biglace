@@ -1,6 +1,6 @@
 [package]
 name = "biglace"
-version = "1.74.16"
+version = "1.74.17"
 edition = "2021"
 authors = ["BigCommunity"]
 description = "Mesh VPN client with a graphical interface for Headscale/Tailscale"
@@ -81,7 +81,7 @@ reis = { version = "0.7", features = ["async-io"] }
 xkbcommon = { version = "0.9", default-features = false }
 futures-util = { version = "0.3", default-features = false, features = ["std"] }
 async-io = "2"
-rustix = { version = "1", default-features = false, features = ["time"] }
+rustix = { version = "1", default-features = false, features = ["time", "event"] }
 
 [target.'cfg(target_os = "windows")'.dependencies]
 keyring = { version = "3", default-features = false, features = ["windows-native"] }

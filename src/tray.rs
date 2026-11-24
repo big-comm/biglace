@@ -45,7 +45,7 @@ pub enum Command {
     ToggleMute,
     /// Leave the voice room.
     LeaveRoom,
-    /// End everyone's SSH access to this computer.
+    /// End everyone's access to this computer (terminal, files, screen).
     EndVisits,
 }
 
@@ -68,7 +68,7 @@ impl Handle {
         self.inner.update_room(room);
     }
 
-    /// People in this computer over SSH: a line each, and the icon for the first.
+    /// People in this computer (terminal, files, screen): a line each, with its icon.
     pub fn update_visits(&self, visits: Vec<(String, &'static str)>) {
         self.inner.update_visits(visits);
     }

@@ -27,7 +27,19 @@ pub struct Nearby {
     pub login: Option<String>,
     /// It takes files sent outside a conversation (see `crate::transfer`).
     pub takes_files: bool,
+    /// It shares its screen, and whether it fits its resolution to the viewer's window.
+    pub screen: Option<Screen>,
 }
+
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum Screen {
+    Shared,
+    Fits,
+}
+
+/// TXT `screen=` values.
+const SCREEN_SHARED: &str = "shared";
+const SCREEN_FITS: &str = "fits";
 
 /// Our announcement, up while this is held: Avahi drops the group with the connection.
 pub struct Announcement {
@@ -44,6 +56,10 @@ pub async fn announce(key: &str, name: &str) -> zbus::Result<Announcement> {
         txt.push(format!("login={login}").into_bytes());
     }
     txt.push(format!("send={}", crate::transfer::CAPABILITY).into_bytes());
+    if crate::remote::can_host() {
+        let screen = if crate::remote::display::available() { SCREEN_FITS } else { SCREEN_SHARED };
+        txt.push(format!("screen={screen}").into_bytes());
+    }
     let instance = format!("BigLace {}", key.get(..8).unwrap_or(key));
     let entry = Some("org.freedesktop.Avahi.EntryGroup");
     conn.call_method(Some(AVAHI), &group, entry, "AddService", &(IF_UNSPEC, PROTO_INET, 0u32, instance, SERVICE, "", "", super::PORT, txt))
@@ -60,6 +76,7 @@ struct Txt {
     name: String,
     login: Option<String>,
     takes_files: bool,
+    screen: Option<Screen>,
 }
 
 fn parse_txt(txt: &[Vec<u8>]) -> Option<Txt> {
@@ -67,6 +84,7 @@ fn parse_txt(txt: &[Vec<u8>]) -> Option<Txt> {
     let mut name = None;
     let mut login = None;
     let mut takes_files = false;
+    let mut screen = None;
     for entry in txt {
         let entry = std::str::from_utf8(entry).ok()?;
         if let Some(v) = entry.strip_prefix("key=") {
@@ -77,9 +95,15 @@ fn parse_txt(txt: &[Vec<u8>]) -> Option<Txt> {
             login = Some(v.to_string()).filter(|l| login_ok(l));
         } else if let Some(v) = entry.strip_prefix("send=") {
             takes_files = v == crate::transfer::CAPABILITY;
+        } else if let Some(v) = entry.strip_prefix("screen=") {
+            screen = match v {
+                SCREEN_SHARED => Some(Screen::Shared),
+                SCREEN_FITS => Some(Screen::Fits),
+                _ => None,
+            };
         }
     }
-    Some(Txt { key: key?, name: name?, login, takes_files })
+    Some(Txt { key: key?, name: name?, login, takes_files, screen })
 }
 
 /// A system account name as `useradd` takes it: it goes into an SSH command line.
@@ -129,11 +153,11 @@ pub async fn browse(own_key: &str, seen: impl Fn(Vec<Nearby>)) -> zbus::Result<(
                 let Ok(reply) = resolved else { continue };
                 type Resolved = (i32, i32, String, String, String, String, i32, String, u16, Vec<Vec<u8>>, u32);
                 let Ok((.., address, port, txt, _)) = reply.body().deserialize::<Resolved>() else { continue };
-                let Some(Txt { key, name, login, takes_files }) = parse_txt(&txt) else { continue };
+                let Some(Txt { key, name, login, takes_files, screen }) = parse_txt(&txt) else { continue };
                 if key == own_key || port == 0 || !on_this_network(&address) {
                     continue;
                 }
-                found.insert(instance, Nearby { key, name, address, port, login, takes_files });
+                found.insert(instance, Nearby { key, name, address, port, login, takes_files, screen });
             }
             "ItemRemove" => {
                 found.remove(&instance);
@@ -155,10 +179,13 @@ mod tests {
     #[test]
     fn txt_needs_key_and_name() {
         let txt = |items: &[&str]| items.iter().map(|s| s.as_bytes().to_vec()).collect::<Vec<_>>();
-        let maria = |login: Option<&str>, takes_files| Some(Txt { key: "abc".into(), name: "Maria".into(), login: login.map(Into::into), takes_files });
+        let maria = |login: Option<&str>, takes_files| Some(Txt { key: "abc".into(), name: "Maria".into(), login: login.map(Into::into), takes_files, screen: None });
         assert_eq!(parse_txt(&txt(&["key=abc", "name=Maria"])), maria(None, false));
         assert_eq!(parse_txt(&txt(&["key=abc", "name=Maria", "login=maria", "send=send1"])), maria(Some("maria"), true));
         assert_eq!(parse_txt(&txt(&["key=abc", "name=Maria", "login=-oX", "send=send9"])), maria(None, false));
+        assert_eq!(parse_txt(&txt(&["key=abc", "name=Maria", "screen=fits"])).and_then(|t| t.screen), Some(Screen::Fits));
+        assert_eq!(parse_txt(&txt(&["key=abc", "name=Maria", "screen=shared"])).and_then(|t| t.screen), Some(Screen::Shared));
+        assert_eq!(parse_txt(&txt(&["key=abc", "name=Maria", "screen=later"])).and_then(|t| t.screen), None);
         assert_eq!(parse_txt(&txt(&["name=Maria"])), None);
         assert_eq!(parse_txt(&[vec![0xff, 0xfe]]), None, "not UTF-8");
     }

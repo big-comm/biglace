@@ -232,6 +232,9 @@ fn fill(list: &gtk4::ListBox, shared: &Rc<RefCell<Vec<Nearby>>>, toast: &libadwa
             if device.takes_files {
                 add_send_button(&row, device, toast);
             }
+            if let Some(screen) = device.screen {
+                add_screen_button(&row, device, screen, toast);
+            }
             forget(&row, &device.key);
             list.append(&row);
             continue;
@@ -287,6 +290,22 @@ fn add_ssh_buttons(row: &libadwaita::ActionRow, address: &str, login: &str, toas
         });
         row.add_suffix(&button);
     }
+}
+
+/// See and control a paired computer's screen; the person there is asked each time.
+fn add_screen_button(row: &libadwaita::ActionRow, device: &Nearby, screen: crate::lan::discovery::Screen, toast: &libadwaita::ToastOverlay) {
+    let label = tr!("See and control the screen");
+    let button = gtk4::Button::builder()
+        .icon_name("video-display-symbolic")
+        .css_classes(["flat"])
+        .valign(gtk4::Align::Center)
+        .tooltip_text(&label)
+        .build();
+    button.update_property(&[gtk4::accessible::Property::Label(&label)]);
+    let caps = super::remote_ui::HostCaps { power: false, resize: screen == crate::lan::discovery::Screen::Fits };
+    let (key, name, toast) = (device.key.clone(), device.name.clone(), toast.clone());
+    button.connect_clicked(move |_| super::remote_ui::open_lan_viewer(&key, &name, &toast, caps));
+    row.add_suffix(&button);
 }
 
 /// Send files to a paired device: it accepts or declines them, as on the tailnet.

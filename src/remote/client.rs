@@ -221,6 +221,27 @@ pub fn open(ip: &str, events: async_channel::Sender<Event>) -> Result<Session, O
     start_session(stream, reader, events, true)
 }
 
+/// Ask the paired device `key` on the local network, called `name`, for its
+/// screen (see [`open`]).
+#[cfg(target_os = "linux")]
+pub fn open_lan(key: &str, name: &str, events: async_channel::Sender<Event>) -> Result<Session, OpenError> {
+    use crate::lan::pairing::{LanError, ScreenError};
+    let ask = super::host::LanAsk { screen: super::SCREEN_PROTOCOL.parse().unwrap_or(4), chroma: None };
+    let stream = crate::lan::pairing::open_screen(key, &ask).map_err(|e| match e {
+        ScreenError::Refused(why) if why == "denied" => OpenError::Denied,
+        ScreenError::Refused(why) if why == "unavailable" => OpenError::Unavailable,
+        ScreenError::Refused(why) => OpenError::Other(why),
+        ScreenError::Lan(LanError::Off) => OpenError::Other(crate::tr!("the local network is off")),
+        ScreenError::Lan(_) => OpenError::Other(crate::trf!(
+            "{name} can't be reached on the local network — try again when it's nearby",
+            "name" => name
+        )),
+    })?;
+    let _ = stream.set_nodelay(true);
+    let reader = BufReader::new(stream.try_clone().map_err(|e| OpenError::Other(e.to_string()))?);
+    start_session(stream, reader, events, true)
+}
+
 /// Watch what `ip` shares with the voice room of `group` (view only until
 /// they give us control).
 pub fn open_stage(ip: &str, group: &str, events: async_channel::Sender<Event>) -> Result<Session, OpenError> {

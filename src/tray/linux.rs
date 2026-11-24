@@ -41,7 +41,7 @@ pub struct BigLaceTray {
     pub peer_count: usize,
     /// In a voice room: its group and whether we're muted.
     pub room: Option<(String, bool)>,
-    /// People in this computer over SSH: a line each, and the icon for it.
+    /// People in this computer (terminal, files, screen): a line each, and the icon for it.
     visits: Vec<(String, &'static str)>,
     /// The new-message animation's frame on show, if it plays.
     frame: Option<&'static str>,

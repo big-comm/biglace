@@ -199,11 +199,12 @@ pub(crate) fn verify_caller(
 
 /// Ask the person at this screen. False on deny, timeout or no UI.
 /// (allowed, remember the answer).
-fn ask(identity: &Identity) -> (bool, bool) {
+fn ask(identity: &Identity, rememberable: bool) -> (bool, bool) {
     let (tx, rx) = std::sync::mpsc::channel();
     let request = ConsentRequest {
         who: identity.login.clone(),
         device: identity.device.clone(),
+        rememberable,
         reply: tx,
     };
     if !emit(HostEvent::Consent(request)) {
@@ -240,7 +241,7 @@ pub fn serve(stream: TcpStream, peer: IpAddr, headers: &HashMap<String, String>,
         match crate::access::rule(who) {
             crate::access::Rule::Never => "blocked",
             crate::access::Rule::Always => "remembered",
-            crate::access::Rule::Ask => match ask(&identity) {
+            crate::access::Rule::Ask => match ask(&identity, true) {
                 (true, true) => {
                     crate::access::set_rule(who, crate::access::Rule::Always);
                     "allowed"
@@ -259,6 +260,63 @@ pub fn serve(stream: TcpStream, peer: IpAddr, headers: &HashMap<String, String>,
         &stream,
         "HTTP/1.1 200 OK\r\nContent-Type: application/x-biglace-screen\r\nConnection: keep-alive\r\n\r\n"
     );
+    // What the viewer understands: 2 = timestamps + ping, 3 = also sound.
+    let protocol: u32 = headers.get("x-biglace-screen").and_then(|v| v.parse().ok()).unwrap_or(1);
+    let only_420 = headers.get("x-biglace-chroma").is_some_and(|v| v == "420");
+    share(stream, protocol, only_420, &identity);
+}
+
+/// What a paired device on the local network asks for (see `crate::lan`):
+/// the screen protocol it speaks and whether it decodes only 4:2:0.
+#[cfg(target_os = "linux")]
+#[derive(serde::Serialize, serde::Deserialize)]
+pub struct LanAsk {
+    pub screen: u32,
+    #[serde(default)]
+    pub chroma: Option<String>,
+}
+
+/// The answer before the frames: `ok`, or why not (`denied`, `unavailable`).
+#[cfg(target_os = "linux")]
+#[derive(serde::Serialize, serde::Deserialize)]
+pub struct LanAnswer {
+    #[serde(default)]
+    pub ok: bool,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub error: Option<String>,
+}
+
+/// A paired device on the local network asks for the screen. Who it is was
+/// proven by the pairing; it has no BigScale account to remember an answer
+/// for, so the person here is asked each time.
+#[cfg(target_os = "linux")]
+pub fn serve_lan(mut tls: openssl::ssl::SslStream<TcpStream>, name: &str, address: &str, ask_for: &LanAsk) {
+    let refuse = |tls: &mut openssl::ssl::SslStream<TcpStream>, why: &str| {
+        let _ = crate::lan::handshake::send(tls, &LanAnswer { ok: false, error: Some(why.into()) });
+    };
+    if !super::can_host() {
+        return refuse(&mut tls, "unavailable");
+    }
+    let identity = Identity { login: name.to_string(), display_name: name.to_string(), device: address.to_string() };
+    // The person has a minute to answer; the viewer waits as long.
+    let _ = tls.get_ref().set_read_timeout(None);
+    let allowed = ask(&identity, false).0;
+    crate::access::log(name, address, "screen", if allowed { "allowed" } else { "denied" });
+    if !allowed {
+        return refuse(&mut tls, "denied");
+    }
+    if crate::lan::handshake::send(&mut tls, &LanAnswer { ok: true, error: None }).is_err() {
+        return;
+    }
+    super::limit_send_queue(tls.get_ref());
+    match crate::lan::bridge::bridge(tls) {
+        Ok(stream) => share(stream, ask_for.screen, ask_for.chroma.as_deref() == Some("420"), &identity),
+        Err(e) => tailscale::dbg(&format!("remote: no local bridge: {e}")),
+    }
+}
+
+/// Share the screen with the viewer at the other end of `stream`, already allowed.
+fn share(stream: TcpStream, protocol: u32, only_420: bool, identity: &Identity) {
     let stop = StopHandle::new(&stream);
     emit(HostEvent::Started(HostSession {
         who: identity.login.clone(),
@@ -267,10 +325,8 @@ pub fn serve(stream: TcpStream, peer: IpAddr, headers: &HashMap<String, String>,
     }));
     tailscale::dbg(&format!("remote: session started for {}@{}", identity.login, identity.device));
     crate::power::session_started(&identity.login, &identity.device);
-    // What the viewer understands: 2 = timestamps + ping, 3 = also sound.
-    let protocol: u32 = headers.get("x-biglace-screen").and_then(|v| v.parse().ok()).unwrap_or(1);
-    ONLY_420.with(|c| c.set(headers.get("x-biglace-chroma").is_some_and(|v| v == "420")));
-    run_session(stream, &stop, protocol, &identity);
+    ONLY_420.with(|c| c.set(only_420));
+    run_session(stream, &stop, protocol, identity);
     stop.stop();
     emit(HostEvent::Ended(stop));
     crate::access::log(&identity.login, &identity.device, "screen", "ended");

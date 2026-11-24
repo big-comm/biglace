@@ -1,12 +1,14 @@
-//! People in this computer over SSH (see `crate::ssh_watch`): a notification
-//! with End access when someone comes in, the tray while they stay, and the
-//! access history.
+//! People in this computer: over SSH (see `crate::ssh_watch`) a notification
+//! with End access when someone comes in and another when they leave, and the
+//! access history; seeing the screen ([`screen_started`]); all of them on the
+//! tray while they stay.
 
 use std::cell::RefCell;
 use std::collections::BTreeMap;
 
 use gtk4::{gio, glib, prelude::*};
 
+use crate::remote::HostSession;
 use crate::ssh_watch::{self, Event, Kind, Visit};
 use crate::{tr, trf};
 
@@ -16,6 +18,9 @@ const END: &str = "ssh-end";
 thread_local! {
     /// Who is in now, by session id (main thread).
     static VISITS: RefCell<BTreeMap<String, Visit>> = RefCell::default();
+    /// Who sees and controls the screen now (main thread).
+    static SCREENS: RefCell<Vec<HostSession>> = RefCell::default();
+    static TRAY: RefCell<Option<super::TrayHandle>> = RefCell::default();
 }
 
 fn notification_id(id: &str) -> String {
@@ -48,6 +53,7 @@ pub fn wire(win: &libadwaita::ApplicationWindow, tray: super::TrayHandle) {
         }
     });
     app.add_action(&end);
+    TRAY.set(Some(tray));
 
     let (tx, rx) = async_channel::unbounded();
     ssh_watch::watch(move |event| {
@@ -61,9 +67,20 @@ pub fn wire(win: &libadwaita::ApplicationWindow, tray: super::TrayHandle) {
                 Event::Started(v) => started(&app, v),
                 Event::Ended(id) => ended(&app, &id),
             }
-            show_on_tray(&tray);
+            show_on_tray();
         }
     });
+}
+
+/// `session` sees and controls this screen, until [`screen_ended`].
+pub fn screen_started(session: HostSession) {
+    SCREENS.with_borrow_mut(|s| s.push(session));
+    show_on_tray();
+}
+
+pub fn screen_ended(stop: &crate::remote::host::StopHandle) {
+    SCREENS.with_borrow_mut(|s| s.retain(|session| !session.stop.same(stop)));
+    show_on_tray();
 }
 
 fn started(app: &gtk4::Application, v: Visit) {
@@ -82,9 +99,17 @@ fn started(app: &gtk4::Application, v: Visit) {
     VISITS.with(|m| m.borrow_mut().insert(v.id.clone(), v));
 }
 
+/// The notification that said they came in now says they left.
 fn ended(app: &gtk4::Application, id: &str) {
     let Some(v) = VISITS.with(|m| m.borrow_mut().remove(id)) else { return };
-    app.withdraw_notification(&notification_id(id));
+    let who = person(&v);
+    let title = match v.kind {
+        Kind::Terminal => trf!("{user} closed the terminal on this computer", "user" => who),
+        Kind::Files => trf!("{user} stopped browsing the files on this computer", "user" => who),
+    };
+    let n = gio::Notification::new(&title);
+    n.set_icon(&gio::ThemedIcon::new(icon(v.kind)));
+    app.send_notification(Some(&notification_id(id)), &n);
     crate::access::log(&v.who, &v.device, v.kind.what(), "ended");
 }
 
@@ -107,10 +132,11 @@ pub fn end_all(app: &gtk4::Application) {
     for id in VISITS.with(|m| m.borrow().keys().cloned().collect::<Vec<_>>()) {
         end_visit(app, id);
     }
+    SCREENS.with_borrow(|s| s.iter().for_each(|session| session.stop.stop()));
 }
 
-fn show_on_tray(tray: &super::TrayHandle) {
-    let lines = VISITS.with(|m| {
+fn show_on_tray() {
+    let mut lines: Vec<(String, &'static str)> = VISITS.with(|m| {
         m.borrow()
             .values()
             .map(|v| {
@@ -122,7 +148,16 @@ fn show_on_tray(tray: &super::TrayHandle) {
             })
             .collect()
     });
-    if let Some(h) = tray.borrow().as_ref() {
-        h.update_visits(lines);
-    }
+    SCREENS.with_borrow(|s| {
+        for session in s {
+            let who = trf!("{user} ({device})", "user" => session.who, "device" => session.device);
+            lines.push((trf!("{user} · screen", "user" => who), "video-display-symbolic"));
+        }
+    });
+    TRAY.with_borrow(|tray| {
+        let Some(tray) = tray else { return };
+        if let Some(h) = tray.borrow().as_ref() {
+            h.update_visits(lines);
+        }
+    });
 }
