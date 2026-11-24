@@ -4,7 +4,10 @@
 
 use gtk4::{gdk, gio, glib, prelude::*};
 use std::cell::RefCell;
+use std::path::PathBuf;
 use std::rc::Rc;
+use std::sync::atomic::{AtomicBool, Ordering};
+use std::sync::{Arc, Condvar, Mutex, OnceLock, PoisonError};
 
 use crate::chat::{files, voice, ConvId, FileKind, Message};
 use crate::tr;
@@ -113,6 +116,64 @@ fn on_click(widget: &impl IsA<gtk4::Widget>, f: impl Fn() + 'static) {
     widget.set_cursor_from_name(Some("pointer"));
 }
 
+/// A picture waiting to be decoded: gone from the screen (`wanted` false), it's skipped.
+struct Decode {
+    path: PathBuf,
+    size: (i32, i32),
+    wanted: Arc<AtomicBool>,
+    texture: async_channel::Sender<Option<gdk::Texture>>,
+}
+
+/// Where a picture handed to [`decode_later`] comes back.
+struct Decoding {
+    wanted: Arc<AtomicBool>,
+    texture: async_channel::Receiver<Option<gdk::Texture>>,
+}
+
+/// Pictures to decode, one at a time: a conversation full of large ones
+/// would hold each full-size bitmap at once if they all decoded together.
+fn decode_queue() -> &'static (Mutex<Vec<Decode>>, Condvar) {
+    static QUEUE: OnceLock<(Mutex<Vec<Decode>>, Condvar)> = OnceLock::new();
+    QUEUE.get_or_init(|| {
+        let _ = std::thread::Builder::new().name("biglace-pictures".into()).spawn(|| {
+            let (queue, wake) = decode_queue();
+            loop {
+                let job = {
+                    let mut jobs = queue.lock().unwrap_or_else(PoisonError::into_inner);
+                    loop {
+                        // The newest first: they're rendered last, at the bottom, where the conversation opens.
+                        if let Some(job) = jobs.pop() {
+                            break job;
+                        }
+                        jobs = wake.wait(jobs).unwrap_or_else(PoisonError::into_inner);
+                    }
+                };
+                let texture = job
+                    .wanted
+                    .load(Ordering::Relaxed)
+                    .then(|| gtk4::gdk_pixbuf::Pixbuf::from_file_at_scale(&job.path, job.size.0, job.size.1, true).ok())
+                    .flatten()
+                    .map(|pb| gdk::Texture::for_pixbuf(&pb));
+                let _ = job.texture.send_blocking(texture);
+            }
+        });
+        (Mutex::new(Vec::new()), Condvar::new())
+    })
+}
+
+/// Decode the picture at `path` to fit `size`, off the main loop.
+fn decode_later(path: &std::path::Path, size: (i32, i32)) -> Decoding {
+    let (tx, rx) = async_channel::bounded(1);
+    let wanted = Arc::new(AtomicBool::new(true));
+    let (queue, wake) = decode_queue();
+    queue
+        .lock()
+        .unwrap_or_else(PoisonError::into_inner)
+        .push(Decode { path: path.to_path_buf(), size, wanted: wanted.clone(), texture: tx });
+    wake.notify_one();
+    Decoding { wanted, texture: rx }
+}
+
 /// Display size keeping the picture's shape.
 fn fit(w: u32, h: u32) -> (i32, i32) {
     if w == 0 || h == 0 {
@@ -135,15 +196,11 @@ fn media(
     let f = m.file.as_ref().expect("file");
     let video = f.offer.kind == FileKind::Video;
     let (w, h) = fit(f.offer.width, f.offer.height);
-    let texture = match local {
-        Some(p) if !video => gtk4::gdk_pixbuf::Pixbuf::from_file_at_scale(p, w * 2, h * 2, true)
-            .ok()
-            .map(|pb| gdk::Texture::for_pixbuf(&pb)),
-        _ => None,
-    }
-    .or_else(|| f.offer.thumb_bytes().and_then(|b| gdk::Texture::from_bytes(&glib::Bytes::from_owned(b)).ok()));
+    // The small preview now; the picture itself once decoded off the main loop.
+    let texture = f.offer.thumb_bytes().and_then(|b| gdk::Texture::from_bytes(&glib::Bytes::from_owned(b)).ok());
     let picture = gtk4::Picture::new();
     picture.set_paintable(texture.as_ref());
+    let decoding = local.filter(|_| !video);
     picture.set_content_fit(gtk4::ContentFit::Cover);
     picture.set_size_request(w, h);
     picture.set_can_shrink(true);
@@ -160,8 +217,26 @@ fn media(
         frame.add_overlay(&veil);
     }
     frame.set_halign(gtk4::Align::Start);
-    if texture.is_none() {
-        frame.add_css_class("no-preview");
+    match decoding {
+        Some(path) => {
+            let job = decode_later(path, (w * 2, h * 2));
+            picture.connect_destroy({
+                let wanted = job.wanted.clone();
+                move |_| wanted.store(false, Ordering::Relaxed)
+            });
+            let (picture, frame, preview) = (picture.downgrade(), frame.downgrade(), texture.is_some());
+            glib::spawn_future_local(async move {
+                let decoded = job.texture.recv().await.ok().flatten();
+                let (Some(picture), Some(frame)) = (picture.upgrade(), frame.upgrade()) else { return };
+                match decoded {
+                    Some(t) => picture.set_paintable(Some(&t)),
+                    None if !preview => frame.add_css_class("no-preview"),
+                    None => {}
+                }
+            });
+        }
+        None if texture.is_none() => frame.add_css_class("no-preview"),
+        None => {}
     }
 
     // Middle: play / download / progress.

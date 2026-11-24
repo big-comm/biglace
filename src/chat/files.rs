@@ -531,7 +531,7 @@ pub(crate) fn unique_path(dir: &Path, name: &str) -> PathBuf {
 
 /// Where the file of message `id` is on disk, fetched first when it isn't there.
 pub(super) fn fetch(conv: &ConvId, id: &str) -> Result<PathBuf, String> {
-    let message = super::messages(conv).into_iter().find(|m| m.id == id).ok_or("message not found")?;
+    let message = super::message(conv, id).ok_or("message not found")?;
     let file = message.file.clone().ok_or("no file in that message")?;
     if let Some(path) = file.local() {
         return Ok(path);
@@ -556,13 +556,12 @@ pub(super) fn fetch(conv: &ConvId, id: &str) -> Result<PathBuf, String> {
     let fin = unique_path(&dir, &file.offer.name);
     std::fs::rename(&part, &fin).map_err(|e| e.to_string())?;
     if let Ok(mut s) = store().lock() {
-        if let Some(m) = s.message_mut(conv, id) {
-            if let Some(f) = m.file.as_mut() {
-                f.path = Some(fin.to_string_lossy().into_owned());
-                f.state = FileState::Done;
-            }
-        }
-        s.save(conv);
+        s.update_message(conv, id, |m| {
+            let Some(f) = m.file.as_mut() else { return false };
+            f.path = Some(fin.to_string_lossy().into_owned());
+            f.state = FileState::Done;
+            true
+        });
     }
     Ok(fin)
 }

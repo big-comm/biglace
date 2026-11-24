@@ -15,6 +15,11 @@ use crate::trf;
 
 /// Messages closer than this from the same person form one block.
 const BLOCK_GAP_MS: u64 = 5 * 60 * 1000;
+/// Messages drawn when a conversation opens, and each time the older ones are reached:
+/// the cost of opening stays the same however long the history is.
+const PAGE: usize = 50;
+/// Older messages are drawn while fewer screens than this are left above.
+const PRELOAD_SCREENS: f64 = 3.0;
 
 thread_local! {
     /// The conversation a room's chat shows right now (no notification for it).
@@ -100,6 +105,12 @@ struct State {
     rendered: RefCell<HashMap<String, Rendered>>,
     /// Last rendered message (to group blocks and day separators).
     last: RefCell<Option<Message>>,
+    /// Older messages aren't drawn now: drawing them, or the conversation just
+    /// opened and isn't at its end yet.
+    older_held: Cell<bool>,
+    /// The oldest message drawn: the history is read from it on, and pages
+    /// before it come as the person scrolls up.
+    first: RefCell<Option<String>>,
     /// The section is on screen.
     visible: Cell<bool>,
     /// Who's on the network, as last listed (to redraw only on a change).
@@ -755,6 +766,15 @@ impl ChatPage {
                 }
             });
         }
+        // Older messages as the person scrolls up to them (or the first page
+        // doesn't fill the view).
+        {
+            let adj = page.scroll.vadjustment();
+            let p = page.clone();
+            adj.connect_value_changed(move |_| p.preload_older());
+            let p = page.clone();
+            adj.connect_changed(move |_| p.preload_older());
+        }
         // Read once the person scrolls down to the newest message.
         {
             let (page, scroll) = (page.clone(), page.scroll.clone());
@@ -889,6 +909,9 @@ impl ChatPage {
     }
 
     fn open_conv(&self, id: &ConvId) {
+        // Already in the list (not one of the people without a conversation): only its row gets selected.
+        let listed = chat::conversations().iter().any(|c| c.id == *id)
+            || (id.is_group() && !chat::local_only() && chat::my_groups().contains(&id.name));
         chat::open(id);
         *self.state.current.borrow_mut() = Some(id.clone());
         self.state.rendered.borrow_mut().clear();
@@ -921,15 +944,14 @@ impl ChatPage {
             crate::avatars::bind(&self.conv_avatar, &id.name);
         }
         self.conv_subtitle.set_text(&subtitle(id));
-        for m in chat::messages(id) {
-            // Pictures and voice messages that didn't come down yet.
-            // (Not our own: what we sent and is gone here was moved or
-            // deleted — there's nowhere to fetch it from.)
-            if !m.mine && m.file.as_ref().is_some_and(|f| f.offer.fetch_by_itself() && f.local().is_none()) {
-                files::download(id, &m.id);
-            }
-            self.render(&m, false);
+        let page = chat::recent(id, PAGE);
+        *self.state.first.borrow_mut() = page.first().map(|m| m.id.clone());
+        for m in &page {
+            fetch_missing(id, m);
+            self.render(m, false);
         }
+        // Older pages wait until the opening scroll to the end is done.
+        self.hold_older_a_moment();
         if self.state.recorder.borrow().is_some() {
             self.stop_recording(false);
         }
@@ -941,8 +963,30 @@ impl ChatPage {
         self.stack.set_visible_child_name("conv");
         self.scroll_to_end();
         self.mark_current_read();
-        self.refresh_list();
+        if listed {
+            self.select_listed(id);
+        } else {
+            self.refresh_list();
+        }
         self.composer.view.grab_focus();
+    }
+
+    /// Select `id`'s row, leaving the list as it is.
+    fn select_listed(&self, id: &ConvId) {
+        if let Some(row) = self.listed_row(id) {
+            self.list.select_row(Some(&row));
+        }
+    }
+
+    fn listed_row(&self, id: &ConvId) -> Option<gtk4::ListBoxRow> {
+        let mut child = self.list.first_child();
+        while let Some(widget) = child {
+            if let Some(row) = widget.downcast_ref::<gtk4::ListBoxRow>().filter(|r| row_conv(r).as_ref() == Some(id)) {
+                return Some(row.clone());
+            }
+            child = widget.next_sibling();
+        }
+        None
     }
 
     fn mark_current_read(&self) {
@@ -957,7 +1001,17 @@ impl ChatPage {
             app.withdraw_notification(&notification_id(&id));
         }
         self.update_badge();
-        self.refresh_list();
+        // Only its row changed (its unread count went): the rest of the list stays.
+        let summary = chat::conversations().into_iter().find(|c| c.id == id);
+        match (self.listed_row(&id), summary) {
+            (Some(old), Some(summary)) => {
+                let row = conv_row(&summary, None);
+                self.list.insert(&row, old.index());
+                self.list.remove(&old);
+                self.list.select_row(Some(&row));
+            }
+            _ => self.refresh_list(),
+        }
     }
 
     fn send_typed(&self) {
@@ -1005,7 +1059,7 @@ impl ChatPage {
                 if self.state.current.borrow().as_ref() != Some(&conv) {
                     return;
                 }
-                let msg = chat::messages(&conv).into_iter().find(|m| m.id == id);
+                let msg = chat::message(&conv, &id);
                 let view = self.state.rendered.borrow().get(&id).and_then(|r| r.file.clone());
                 if let (Some(view), Some(m)) = (view, msg) {
                     chat_media::refresh(&view, &m, &conv);
@@ -1014,7 +1068,7 @@ impl ChatPage {
             }
             ChatEvent::TransferFailed { conv, id, reason } => {
                 if self.state.current.borrow().as_ref() == Some(&conv) {
-                    let msg = chat::messages(&conv).into_iter().find(|m| m.id == id);
+                    let msg = chat::message(&conv, &id);
                     let view = self.state.rendered.borrow().get(&id).and_then(|r| r.file.clone());
                     if let (Some(view), Some(m)) = (view, msg) {
                         chat_media::refresh(&view, &m, &conv);
@@ -1070,7 +1124,14 @@ impl ChatPage {
             adj.upper() - adj.page_size() - adj.value() < 80.0
         };
         let mut added = false;
-        let all = chat::messages(&id);
+        // From the oldest drawn on (all of it while fewer than a page are drawn); when that
+        // one went, as many of the newest as are drawn.
+        let first = self.state.first.borrow().clone();
+        let mut all = first.as_deref().map(|f| chat::since(&id, f)).unwrap_or_default();
+        if all.is_empty() {
+            all = chat::recent(&id, self.state.rendered.borrow().len().max(PAGE));
+        }
+        *self.state.first.borrow_mut() = all.first().map(|m| m.id.clone());
         // Deleted here ("for me"): their bubbles go.
         {
             let present: HashSet<&str> = all.iter().map(|m| m.id.as_str()).collect();
@@ -1146,13 +1207,10 @@ impl ChatPage {
     fn render(&self, m: &Message, animate: bool) {
         let prev = self.state.last.borrow().clone();
         let group = self.state.current.borrow().as_ref().is_some_and(ConvId::is_group);
-        if prev.as_ref().is_none_or(|p| day_of(p.at) != day_of(m.at)) {
+        let (look, new_day) = placement(prev.as_ref(), m, group);
+        if new_day {
             self.messages.append(&day_separator(m.at));
         }
-        let continues = prev
-            .as_ref()
-            .is_some_and(|p| p.from == m.from && p.mine == m.mine && m.at.saturating_sub(p.at) < BLOCK_GAP_MS && day_of(p.at) == day_of(m.at));
-        let look = (group && !m.mine && !continues, continues, group && !m.mine);
         let holder = gtk4::Box::new(gtk4::Orientation::Vertical, 0);
         holder.add_css_class("msg-row");
         let (tick, file) = self.fill_bubble(&holder, m, look);
@@ -1172,6 +1230,87 @@ impl ChatPage {
             .borrow_mut()
             .insert(m.id.clone(), Rendered { holder, sig: signature(m), look, tick, file });
         *self.state.last.borrow_mut() = Some(m.clone());
+    }
+
+    /// Draw the page of messages before the first one drawn, above it, the view
+    /// staying where it is. False when there's nothing older.
+    fn load_older(&self) -> bool {
+        let Some(id) = self.current() else { return false };
+        let Some(first) = self.state.first.borrow().clone() else { return false };
+        let older = chat::before(&id, &first, PAGE);
+        if older.is_empty() {
+            return false;
+        }
+        let adj = self.scroll.vadjustment();
+        let (upper, value) = (adj.upper(), adj.value());
+        self.draw_above(&id, &older);
+        once_changed(&adj, move |adj| adj.set_value(value + adj.upper() - upper));
+        true
+    }
+
+    /// Draw `older` (oldest first, ending just before the first one drawn) above
+    /// what's drawn.
+    fn draw_above(&self, id: &ConvId, older: &[Message]) {
+        let Some(first) = self.state.first.borrow().clone() else { return };
+        let group = id.is_group();
+        let mut above: Option<gtk4::Widget> = None;
+        let mut prev: Option<&Message> = None;
+        for m in older {
+            fetch_missing(id, m);
+            let (look, new_day) = placement(prev, m, group);
+            if new_day {
+                let separator = day_separator(m.at);
+                self.messages.insert_child_after(&separator, above.as_ref());
+                above = Some(separator);
+            }
+            let holder = gtk4::Box::new(gtk4::Orientation::Vertical, 0);
+            holder.add_css_class("msg-row");
+            let (tick, file) = self.fill_bubble(&holder, m, look);
+            self.messages.insert_child_after(&holder, above.as_ref());
+            above = Some(holder.clone().upcast());
+            self.state.rendered.borrow_mut().insert(m.id.clone(), Rendered { holder, sig: signature(m), look, tick, file });
+            prev = Some(m);
+        }
+        *self.state.first.borrow_mut() = older.first().map(|m| m.id.clone());
+        // What was first now follows these: on the same day its separator goes, and its block may go on.
+        let Some(was_first) = chat::message(id, &first) else { return };
+        let (look, new_day) = placement(prev, &was_first, group);
+        if !new_day {
+            if let Some(separator) = above.as_ref().and_then(WidgetExt::next_sibling).filter(|w| w.has_css_class("day-pill")) {
+                self.messages.remove(&separator);
+            }
+        }
+        let holder = self.state.rendered.borrow().get(&first).filter(|r| r.look != look).map(|r| r.holder.clone());
+        if let Some(holder) = holder {
+            let (tick, file) = self.fill_bubble(&holder, &was_first, look);
+            if let Some(r) = self.state.rendered.borrow_mut().get_mut(&first) {
+                (r.look, r.tick, r.file) = (look, tick, file);
+            }
+        }
+    }
+
+    /// No older page while the view moves somewhere on its own (it would move it again).
+    fn hold_older_a_moment(&self) {
+        self.state.older_held.set(true);
+        let page = self.clone();
+        glib::timeout_add_local_once(std::time::Duration::from_millis(300), move || {
+            page.state.older_held.set(false);
+            page.preload_older();
+        });
+    }
+
+    /// Few screens left above: draw the older page, once the view settled.
+    fn preload_older(&self) {
+        let adj = self.scroll.vadjustment();
+        if self.state.older_held.get() || adj.page_size() <= 0.0 || adj.value() >= PRELOAD_SCREENS * adj.page_size() {
+            return;
+        }
+        self.state.older_held.set(true);
+        let page = self.clone();
+        glib::idle_add_local_once(move || {
+            page.load_older();
+            page.state.older_held.set(false);
+        });
     }
 
     fn notify(&self, conv: &ConvId, m: &Message) {
@@ -1582,6 +1721,40 @@ fn set_tick(t: &gtk4::Label, m: &Message, _group: bool) {
     } else {
         t.remove_css_class("delivered");
     }
+}
+
+/// How `m` sits after `prev`: its look (sender's name, continues a block,
+/// someone else's in a group) and whether a new day starts at it.
+fn placement(prev: Option<&Message>, m: &Message, group: bool) -> ((bool, bool, bool), bool) {
+    let new_day = prev.is_none_or(|p| day_of(p.at) != day_of(m.at));
+    let continues = prev.is_some_and(|p| p.from == m.from && p.mine == m.mine && m.at.saturating_sub(p.at) < BLOCK_GAP_MS && !new_day);
+    ((group && !m.mine && !continues, continues, group && !m.mine), new_day)
+}
+
+/// Pictures and voice messages that didn't come down yet. (Not our own: what we
+/// sent and is gone here was moved or deleted, so there's nowhere to fetch it from.)
+fn fetch_missing(id: &ConvId, m: &Message) {
+    if !m.mine && m.file.as_ref().is_some_and(|f| f.offer.fetch_by_itself() && f.local().is_none()) {
+        files::download(id, &m.id);
+    }
+}
+
+/// Run `f` once, the next time `adj` changes (the content was laid out again).
+fn once_changed(adj: &gtk4::Adjustment, f: impl FnOnce(&gtk4::Adjustment) + 'static) {
+    let f = Cell::new(Some(f));
+    let handler: Rc<Cell<Option<glib::SignalHandlerId>>> = Rc::default();
+    let id = adj.connect_changed({
+        let handler = handler.clone();
+        move |adj| {
+            if let Some(f) = f.take() {
+                f(adj);
+            }
+            if let Some(id) = handler.take() {
+                adj.disconnect(id);
+            }
+        }
+    });
+    handler.set(Some(id));
 }
 
 fn day_separator(at_ms: u64) -> gtk4::Widget {
@@ -2058,8 +2231,7 @@ impl ChatPage {
     /// The text of messages `ids` to the clipboard (several: "who: text").
     fn copy_messages(&self, ids: &[String]) {
         let Some(conv) = self.current() else { return };
-        let all = chat::messages(&conv);
-        let picked: Vec<&Message> = ids.iter().filter_map(|id| all.iter().find(|m| &m.id == id && !m.deleted)).collect();
+        let picked: Vec<Message> = ids.iter().filter_map(|id| chat::message(&conv, id).filter(|m| !m.deleted)).collect();
         let text = if picked.len() == 1 {
             markdown::plain_text(&picked[0].text)
         } else {
@@ -2105,8 +2277,7 @@ impl ChatPage {
         if ids.is_empty() {
             return;
         }
-        let all = chat::messages(&conv);
-        let ours = ids.iter().all(|id| all.iter().any(|m| &m.id == id && m.mine && !m.deleted));
+        let ours = ids.iter().all(|id| chat::message(&conv, id).is_some_and(|m| m.mine && !m.deleted));
         let heading = if ids.len() == 1 {
             tr!("Delete the message?")
         } else {
@@ -2206,21 +2377,46 @@ impl ChatPage {
     fn selected_in_order(&self) -> Vec<String> {
         let Some(conv) = self.current() else { return vec![] };
         let sel = self.state.selected.borrow();
-        chat::messages(&conv).into_iter().filter(|m| sel.contains(&m.id)).map(|m| m.id).collect()
+        chat::in_order(&conv, &sel.iter().cloned().collect::<Vec<_>>())
     }
 
     /// Bring message `id` into view and make it flash.
     fn scroll_to_message(&self, id: &str) {
+        // Older than what's drawn: draw from it down to what's drawn first.
+        let mut drew = false;
+        let drawn = self.state.rendered.borrow().contains_key(id);
+        let first = self.state.first.borrow().clone();
+        if let (false, Some(conv), Some(first)) = (drawn, self.current(), first) {
+            let older: Vec<Message> = chat::since(&conv, id).into_iter().take_while(|m| m.id != first).collect();
+            if !older.is_empty() {
+                self.draw_above(&conv, &older);
+                drew = true;
+            }
+        }
         let Some(holder) = self.state.rendered.borrow().get(id).map(|r| r.holder.clone()) else {
             super::show_toast(&self.toast, &tr!("That message isn't here anymore."), 3);
             return;
         };
-        if let Some(p) = holder.compute_point(&self.messages, &gtk4::graphene::Point::new(0.0, 0.0)) {
-            let adj = self.scroll.vadjustment();
-            adj.set_value((f64::from(p.y()) - adj.page_size() / 3.0).max(0.0));
+        if drew {
+            // No older page moves the view while it goes there.
+            self.hold_older_a_moment();
         }
-        holder.add_css_class("flash");
-        glib::timeout_add_local_once(std::time::Duration::from_millis(1600), move || holder.remove_css_class("flash"));
+        // Where it is once laid out: the same place two frames in a row.
+        let (messages, adj) = (self.messages.clone(), self.scroll.vadjustment());
+        let last = Cell::new(None);
+        holder.add_tick_callback(move |holder, _| {
+            let y = holder.compute_point(&messages, &gtk4::graphene::Point::new(0.0, 0.0)).map(|p| p.y());
+            if y.is_none() || last.replace(y) != y {
+                return glib::ControlFlow::Continue;
+            }
+            if let Some(y) = y {
+                adj.set_value((f64::from(y) - adj.page_size() / 3.0).max(0.0));
+            }
+            holder.add_css_class("flash");
+            let holder = holder.clone();
+            glib::timeout_add_local_once(std::time::Duration::from_millis(1600), move || holder.remove_css_class("flash"));
+            glib::ControlFlow::Break
+        });
     }
 
     fn clear_search(&self) {
@@ -2237,11 +2433,7 @@ impl ChatPage {
             self.clear_search();
             return;
         }
-        let hits: Vec<String> = chat::messages(&conv)
-            .into_iter()
-            .filter(|m| !m.deleted && super::emoji_picker::fold(&markdown::plain_text(&m.text)).contains(&q))
-            .map(|m| m.id)
-            .collect();
+        let hits = chat::find(&conv, |m| !m.deleted && super::emoji_picker::fold(&markdown::plain_text(&m.text)).contains(&q));
         let n = hits.len();
         *self.state.search_hits.borrow_mut() = hits;
         if n == 0 {

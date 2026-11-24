@@ -13,6 +13,7 @@
 //! - History lives on each computer (one JSON file per conversation, 0600).
 
 pub mod files;
+mod history;
 pub mod markdown;
 pub mod voice;
 
@@ -35,8 +36,6 @@ use crate::tailscale::{self, Identity};
 pub const PATH: &str = "/v1/chat";
 /// Longest message accepted (bytes of text).
 pub const MAX_TEXT: usize = 16 * 1024;
-/// Messages kept per conversation (the oldest go first).
-const KEEP: usize = 5000;
 /// Incoming messages accepted per sender and minute.
 const RATE_PER_MINUTE: usize = 120;
 /// How often the outbox is retried (sooner when kicked).
@@ -207,17 +206,6 @@ fn emoji_ok(e: &str) -> bool {
     !e.is_empty() && e.len() <= 32 && !e.chars().any(|c| c.is_whitespace() || c.is_control() || c.is_ascii_alphanumeric())
 }
 
-#[derive(Debug, Clone, Default, Serialize, Deserialize)]
-struct Conversation {
-    messages: Vec<Message>,
-    /// Messages received and not seen yet.
-    #[serde(default)]
-    unread: u32,
-    /// The pinned message.
-    #[serde(default, skip_serializing_if = "Option::is_none")]
-    pinned: Option<String>,
-}
-
 /// What travels between devices.
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 struct Wire {
@@ -289,64 +277,30 @@ pub enum ChatEvent {
 /// The history and the outbox, on disk under `dir`.
 struct Store {
     dir: PathBuf,
-    convs: HashMap<ConvId, Conversation>,
+    history: history::History,
     outbox: Vec<Pending>,
 }
 
 impl Store {
     fn open(dir: &Path) -> Self {
-        let mut convs = HashMap::new();
-        if let Ok(entries) = std::fs::read_dir(dir) {
-            for e in entries.flatten() {
-                let name = e.file_name().to_string_lossy().to_string();
-                let Some(stem) = name.strip_suffix(".json") else { continue };
-                let Some((kind, conv_name)) = stem.split_once('-') else { continue };
-                let id = ConvId { kind: kind.into(), name: conv_name.into() };
-                if !id.valid() {
-                    continue;
-                }
-                if let Ok(Ok(c)) = std::fs::read(e.path()).map(|b| serde_json::from_slice::<Conversation>(&b)) {
-                    convs.insert(id, c);
-                }
-            }
-        }
+        let history = history::History::open(dir).unwrap_or_else(|e| {
+            // allow-noisy-log: without its history file the chat still works this session, and says why.
+            eprintln!("[biglace] chat history: can't open {}: {e}; this session's messages aren't kept", dir.display());
+            history::History::in_memory()
+        });
         let outbox = std::fs::read(dir.join("outbox"))
             .ok()
             .and_then(|b| serde_json::from_slice(&b).ok())
             .unwrap_or_default();
-        Self { dir: dir.to_path_buf(), convs, outbox }
+        Self { dir: dir.to_path_buf(), history, outbox }
     }
 
-    fn save(&self, id: &ConvId) {
-        let Some(c) = self.convs.get(id) else { return };
-        if let Ok(json) = serde_json::to_vec(c) {
-            write_private(&self.dir.join(format!("{}.json", id.key())), &json);
-        }
-    }
-
-    /// Group `from` is called `to` now: its history and outbox move over
-    /// (merged, without repeats, when both already exist). True if anything moved.
     /// Conversation `old` is called `new` now: its history merges into any
     /// `new` already holds, its outbox follows. False when there was no `old`.
     fn rename_conv(&mut self, old: &ConvId, new: &ConvId) -> bool {
-        let Some(moved) = self.convs.remove(old) else { return false };
-        match self.convs.get_mut(new) {
-            Some(kept) => {
-                for m in moved.messages {
-                    if !kept.messages.iter().any(|k| k.id == m.id) {
-                        kept.messages.push(m);
-                    }
-                }
-                kept.messages.sort_by_key(|m| m.at);
-                kept.unread = kept.unread.saturating_add(moved.unread);
-                kept.pinned = kept.pinned.take().or(moved.pinned);
-            }
-            None => {
-                self.convs.insert(new.clone(), moved);
-            }
+        if !self.history.rename(old, new) {
+            return false;
         }
-        self.save(new);
-        let _ = std::fs::remove_file(self.dir.join(format!("{}.json", old.key())));
         let mut outbox_changed = false;
         for p in self.outbox.iter_mut().filter(|p| p.wire.conv == *old) {
             p.wire.conv = new.clone();
@@ -366,128 +320,109 @@ impl Store {
 
     /// Add `m` to `id` unless it's already there. True if added.
     fn add(&mut self, id: &ConvId, m: Message, count_unread: bool) -> bool {
-        let c = self.convs.entry(id.clone()).or_default();
-        if c.messages.iter().any(|x| x.id == m.id) {
-            return false;
-        }
-        // Keep the order by time (a late copy may arrive after newer ones).
-        let pos = c.messages.iter().rposition(|x| x.at <= m.at).map_or(0, |p| p + 1);
-        c.messages.insert(pos, m);
-        if c.messages.len() > KEEP {
-            let extra = c.messages.len() - KEEP;
-            c.messages.drain(..extra);
-        }
-        if count_unread {
-            c.unread += 1;
-        }
-        self.save(id);
-        true
+        self.history.add(id, &m, count_unread)
     }
 
     fn summaries(&self) -> Vec<Summary> {
         let mut out: Vec<Summary> = self
-            .convs
-            .iter()
-            .map(|(id, c)| Summary { id: id.clone(), last: c.messages.last().cloned(), unread: c.unread })
+            .history
+            .conversations()
+            .into_iter()
+            .map(|(id, unread)| Summary { last: self.history.last(&id), id, unread })
             .collect();
         out.sort_by(|a, b| b.last.as_ref().map(|m| m.at).cmp(&a.last.as_ref().map(|m| m.at)).then(a.id.cmp(&b.id)));
         out
     }
 
-    /// `sender` did `op` in `conv`. True when something changed.
     /// Read up to `at` on another of our devices: what came later stays
     /// unread. True when that changed the count.
     fn read_until(&mut self, conv: &ConvId, at: u64) -> bool {
-        let Some(c) = self.convs.get_mut(conv) else { return false };
-        let later = c.messages.iter().filter(|m| !m.mine && m.at > at).count();
-        let unread = u32::try_from(later).unwrap_or(u32::MAX).min(c.unread);
-        if unread == c.unread {
+        let before = self.history.unread(conv);
+        let unread = self.history.received_after(conv, at).min(before);
+        if unread == before {
             return false;
         }
-        c.unread = unread;
-        self.save(conv);
+        self.history.set_unread(conv, unread);
         true
     }
 
+    /// `sender` did `op` in `conv`. True when something changed.
     fn apply_op(&mut self, conv: &ConvId, sender: &str, op: &Op) -> bool {
-        let Some(c) = self.convs.get_mut(conv) else { return false };
-        let find = |c: &mut Conversation, id: &str| c.messages.iter().position(|m| m.id == id);
-        let changed = match op {
+        match op {
             Op::React { target, emoji, on } => {
                 if !emoji_ok(emoji) {
                     return false;
                 }
-                let Some(i) = find(c, target) else { return false };
-                let m = &mut c.messages[i];
-                if m.deleted {
-                    return false;
-                }
-                let who = m.reactions.entry(emoji.clone()).or_default();
-                let had = who.iter().any(|u| u == sender);
-                if *on && !had {
-                    who.push(sender.to_string());
-                } else if !*on && had {
-                    who.retain(|u| u != sender);
-                }
-                m.reactions.retain(|_, users| !users.is_empty());
-                *on != had
+                self.update_message(conv, target, |m| {
+                    if m.deleted {
+                        return false;
+                    }
+                    let who = m.reactions.entry(emoji.clone()).or_default();
+                    let had = who.iter().any(|u| u == sender);
+                    if *on && !had {
+                        who.push(sender.to_string());
+                    } else if !*on && had {
+                        who.retain(|u| u != sender);
+                    }
+                    m.reactions.retain(|_, users| !users.is_empty());
+                    *on != had
+                })
             }
-            Op::Edit { target, text } => {
-                let Some(i) = find(c, target) else { return false };
-                let m = &mut c.messages[i];
+            Op::Edit { target, text } => self.update_message(conv, target, |m| {
                 if m.from != sender || m.deleted || text.trim().is_empty() || text.len() > MAX_TEXT || m.text == *text {
                     return false;
                 }
                 m.text = text.clone();
                 m.edited_at = now_ms();
                 true
-            }
+            }),
             Op::Delete { target } => {
-                let Some(i) = find(c, target) else { return false };
-                let m = &mut c.messages[i];
-                if m.from != sender || m.deleted {
-                    return false;
+                let deleted = self.update_message(conv, target, |m| {
+                    if m.from != sender || m.deleted {
+                        return false;
+                    }
+                    m.deleted = true;
+                    m.text.clear();
+                    m.file = None;
+                    m.reply_to = None;
+                    m.reactions.clear();
+                    true
+                });
+                if deleted && self.history.pinned(conv).as_deref() == Some(target.as_str()) {
+                    self.history.set_pinned(conv, None);
                 }
-                m.deleted = true;
-                m.text.clear();
-                m.file = None;
-                m.reply_to = None;
-                m.reactions.clear();
-                if c.pinned.as_deref() == Some(target.as_str()) {
-                    c.pinned = None;
-                }
-                true
+                deleted
             }
             Op::Pin { target } => {
-                if target.as_ref().is_some_and(|t| find(c, t).is_none()) || c.pinned == *target {
+                if target.as_ref().is_some_and(|t| self.history.message(conv, t).is_none()) || self.history.pinned(conv) == *target {
                     return false;
                 }
-                c.pinned = target.clone();
+                self.history.set_pinned(conv, target.as_deref());
                 true
             }
             Op::Typing | Op::Call { .. } | Op::Send { .. } | Op::Read { .. } => false,
-        };
-        if changed {
-            self.save(conv);
         }
-        changed
     }
 
-    /// The message `id` of `conv`, to change it (saved by the caller).
-    fn message_mut(&mut self, conv: &ConvId, id: &str) -> Option<&mut Message> {
-        self.convs.get_mut(conv)?.messages.iter_mut().find(|m| m.id == id)
+    /// Change message `id` of `conv` with `change`, which says whether it did; kept when it did.
+    fn update_message(&mut self, conv: &ConvId, id: &str, change: impl FnOnce(&mut Message) -> bool) -> bool {
+        let Some(mut m) = self.history.message(conv, id) else { return false };
+        if !change(&mut m) {
+            return false;
+        }
+        self.history.put(conv, &m);
+        true
     }
 
     /// `user`'s device stored message `id` of `conv` (key of the sender's view).
     fn delivered(&mut self, conv: &ConvId, id: &str, user: &str) -> bool {
-        let Some(c) = self.convs.get_mut(conv) else { return false };
-        let Some(m) = c.messages.iter_mut().find(|m| m.id == id) else { return false };
-        if m.delivered.iter().any(|u| u == user) {
-            return false;
-        }
-        m.delivered.push(user.to_string());
-        self.save(conv);
-        true
+        self.update_message(conv, id, |m| {
+            if m.delivered.iter().any(|u| u == user) {
+                return false;
+            }
+            m.delivered.push(user.to_string());
+            true
+        })
     }
 }
 
@@ -773,9 +708,7 @@ pub fn seed_preview() -> Option<ConvId> {
         for msg in [reply, edited, gone, fwd] {
             s.add(&dm, msg, false);
         }
-        if let Some(c) = s.convs.get_mut(&dm) {
-            c.pinned = Some("x2".into());
-        }
+        s.history.set_pinned(&dm, Some("x2"));
     }
     for msg in [
         m("g1", "bruno", false, "Bom dia, família! ☀️", now - 7_200_000, &[]),
@@ -839,8 +772,43 @@ pub fn shown(conv: &ConvId) -> bool {
     conv.is_lan() == local_only()
 }
 
-pub fn messages(id: &ConvId) -> Vec<Message> {
-    store().lock().ok().and_then(|s| s.convs.get(id).map(|c| c.messages.clone())).unwrap_or_default()
+/// The newest `n` messages of `id`, oldest first.
+pub fn recent(id: &ConvId, n: usize) -> Vec<Message> {
+    store().lock().map(|s| s.history.recent(id, n)).unwrap_or_default()
+}
+
+/// The `n` messages of `id` just before message `anchor`, oldest first.
+pub fn before(id: &ConvId, anchor: &str, n: usize) -> Vec<Message> {
+    store().lock().map(|s| s.history.before(id, anchor, n)).unwrap_or_default()
+}
+
+/// Message `anchor` of `id` and every one after it, oldest first (none when
+/// `anchor` isn't there).
+pub fn since(id: &ConvId, anchor: &str) -> Vec<Message> {
+    store().lock().map(|s| s.history.since(id, anchor)).unwrap_or_default()
+}
+
+/// Message `msg` of `id`.
+pub fn message(id: &ConvId, msg: &str) -> Option<Message> {
+    store().lock().ok()?.history.message(id, msg)
+}
+
+/// The ids of `id`'s messages that `keep` takes, oldest first.
+pub fn find(id: &ConvId, mut keep: impl FnMut(&Message) -> bool) -> Vec<String> {
+    let mut found = Vec::new();
+    if let Ok(s) = store().lock() {
+        s.history.each(id, |m| {
+            if keep(m) {
+                found.push(m.id.clone());
+            }
+        });
+    }
+    found
+}
+
+/// `ids` of `id`'s messages in the conversation's order.
+pub fn in_order(id: &ConvId, ids: &[String]) -> Vec<String> {
+    store().lock().map(|s| s.history.in_order(id, ids)).unwrap_or_default()
 }
 
 /// The conversation is on screen: nothing unread in it anymore, here and
@@ -850,14 +818,11 @@ pub fn messages(id: &ConvId) -> Vec<Message> {
 pub fn mark_read(id: &ConvId) -> bool {
     let mut read_up_to = None;
     let mut was_unread = false;
-    if let Ok(mut s) = store().lock() {
-        if let Some(c) = s.convs.get_mut(id) {
-            if c.unread > 0 {
-                was_unread = true;
-                c.unread = 0;
-                read_up_to = c.messages.iter().filter(|m| !m.mine).map(|m| m.at).max();
-                s.save(id);
-            }
+    if let Ok(s) = store().lock() {
+        if s.history.unread(id) > 0 {
+            was_unread = true;
+            s.history.set_unread(id, 0);
+            read_up_to = s.history.last_received_at(id);
         }
     }
     if let Some(at) = read_up_to.filter(|_| !id.is_lan()) {
@@ -947,13 +912,13 @@ fn author_of(wire: &Wire, caller: &str, caller_device: &str, me: &str) -> (Strin
 }
 
 pub fn unread_total() -> u32 {
-    store().lock().map(|s| s.convs.iter().filter(|(id, _)| shown(id)).map(|(_, c)| c.unread).sum()).unwrap_or(0)
+    store().lock().map(|s| s.history.conversations().into_iter().filter(|(id, _)| shown(id)).map(|(_, unread)| unread).sum()).unwrap_or(0)
 }
 
 /// Make sure a conversation exists (an empty one shows in the list).
 pub fn open(id: &ConvId) {
-    if let Ok(mut s) = store().lock() {
-        s.convs.entry(id.clone()).or_default();
+    if let Ok(s) = store().lock() {
+        s.history.ensure(id);
     }
 }
 
@@ -980,7 +945,7 @@ pub fn send_reply(conv: &ConvId, text: &str, reply_to: Option<&str>) -> Result<(
 
 /// What a reply to message `id` of `conv` shows.
 fn reply_ref(conv: &ConvId, id: &str) -> Option<ReplyRef> {
-    let m = messages(conv).into_iter().find(|m| m.id == id && !m.deleted)?;
+    let m = message(conv, id).filter(|m| !m.deleted)?;
     Some(ReplyRef { id: m.id.clone(), from: m.from.clone(), preview: preview_line(&m) })
 }
 
@@ -1401,7 +1366,7 @@ pub fn react(conv: &ConvId, target: &str, emoji: &str) -> Result<(), String> {
         return Err("not an emoji".into());
     }
     let me = my_user().unwrap_or_default();
-    let m = messages(conv).into_iter().find(|m| m.id == target).ok_or("message not found")?;
+    let m = message(conv, target).ok_or("message not found")?;
     let on = !m.reactions.get(emoji).is_some_and(|who| who.contains(&me));
     let fallback = crate::trf!("{emoji} (reaction to: {text})", "emoji" => emoji, "text" => preview_line(&m));
     send_op(conv, Op::React { target: target.into(), emoji: emoji.into(), on }, fallback)
@@ -1427,21 +1392,15 @@ pub fn delete_for_all(conv: &ConvId, targets: &[String]) -> Result<(), String> {
 
 /// Remove messages from this computer only.
 pub fn delete_for_me(conv: &ConvId, targets: &[String]) {
-    if let Ok(mut s) = store().lock() {
-        if let Some(c) = s.convs.get_mut(conv) {
-            c.messages.retain(|m| !targets.contains(&m.id));
-            if c.pinned.as_ref().is_some_and(|p| targets.contains(p)) {
-                c.pinned = None;
-            }
-        }
-        s.save(conv);
+    if let Ok(s) = store().lock() {
+        s.history.remove(conv, targets);
     }
     emit(ChatEvent::Changed(conv.clone()));
 }
 
 /// Pin message `target` to the top of `conv` (None: unpin).
 pub fn pin(conv: &ConvId, target: Option<&str>) -> Result<(), String> {
-    let fallback = match target.and_then(|t| messages(conv).into_iter().find(|m| m.id == t)) {
+    let fallback = match target.and_then(|t| message(conv, t)) {
         Some(m) => crate::trf!("📌 (pinned: {text})", "text" => preview_line(&m)),
         None => crate::tr!("📌 (unpinned the message)"),
     };
@@ -1451,16 +1410,14 @@ pub fn pin(conv: &ConvId, target: Option<&str>) -> Result<(), String> {
 /// The pinned message of `conv`.
 pub fn pinned(conv: &ConvId) -> Option<Message> {
     let s = store().lock().ok()?;
-    let c = s.convs.get(conv)?;
-    let id = c.pinned.as_ref()?;
-    c.messages.iter().find(|m| &m.id == id).cloned()
+    let id = s.history.pinned(conv)?;
+    s.history.message(conv, &id)
 }
 
 /// Send messages `ids` of `from` to the conversation `to`.
 pub fn forward(to: &ConvId, from: &ConvId, ids: &[String]) -> Result<(), String> {
-    let all = messages(from);
     for id in ids {
-        let Some(m) = all.iter().find(|m| &m.id == id && !m.deleted) else { continue };
+        let Some(m) = message(from, id).filter(|m| !m.deleted) else { continue };
         let extra = Extra { forwarded_from: Some(m.forwarded_from.clone().unwrap_or_else(|| m.from.clone())), ..Extra::default() };
         let Some(file) = &m.file else {
             if !m.text.trim().is_empty() {
@@ -1877,6 +1834,86 @@ mod tests {
         assert_eq!(place(&big, "bruna", &me), None);
     }
 
+    /// Every message of `conv`, by id, in order.
+    fn ids_of(s: &Store, conv: &ConvId) -> Vec<String> {
+        s.history.recent(conv, usize::MAX).into_iter().map(|m| m.id).collect()
+    }
+
+    fn plain(id: &str, at: u64) -> Message {
+        Message {
+            id: id.into(),
+            from: "bruna".into(),
+            device: String::new(),
+            text: id.into(),
+            at,
+            mine: false,
+            delivered: vec![],
+            file: None,
+            reply_to: None,
+            forwarded_from: None,
+            reactions: BTreeMap::new(),
+            edited_at: 0,
+            deleted: false,
+            call: None,
+        }
+    }
+
+    /// A conversation of the JSON files the history was kept in comes over whole,
+    /// once: the file goes aside (kept), and opening again adds nothing.
+    #[test]
+    fn json_history_moves_into_the_database() {
+        let dir = std::env::temp_dir().join(format!("biglace-chat-migrate-{}", new_id()));
+        std::fs::create_dir_all(&dir).unwrap();
+        let conv = ConvId::direct("bruna");
+        let old = serde_json::json!({
+            "messages": [plain("a", 10), plain("b", 10), plain("c", 5)],
+            "unread": 2,
+            "pinned": "b",
+        });
+        std::fs::write(dir.join("dm-bruna.json"), old.to_string()).unwrap();
+        std::fs::write(dir.join("group-bad name.json"), "{}").unwrap();
+        std::fs::write(dir.join("dm-maria.json"), "{ not json").unwrap();
+        let s = Store::open(&dir);
+        // The file's order stays for equal times; a later time sorts by itself.
+        assert_eq!(ids_of(&s, &conv), ["c", "a", "b"]);
+        assert_eq!(s.history.unread(&conv), 2);
+        assert_eq!(s.history.pinned(&conv).as_deref(), Some("b"));
+        assert!(!dir.join("dm-bruna.json").exists());
+        assert!(dir.join("json-before-history/dm-bruna.json").exists());
+        assert!(dir.join("group-bad name.json").exists(), "not a conversation: left alone");
+        assert!(dir.join("dm-maria.json").exists(), "unreadable: left where it is");
+        drop(s);
+        std::fs::copy(dir.join("json-before-history/dm-bruna.json"), dir.join("dm-bruna.json")).unwrap();
+        let again = Store::open(&dir);
+        assert_eq!(ids_of(&again, &conv).len(), 3, "copied again: nothing doubles");
+        assert_eq!(again.history.unread(&conv), 2);
+        assert!(dir.join("json-before-history/dm-bruna.json").exists(), "the first copy kept");
+        assert!(dir.join("json-before-history/dm-bruna.json.1").exists());
+        let _ = std::fs::remove_dir_all(&dir);
+    }
+
+    /// Pages follow the conversation's order, across messages written at the same time.
+    #[test]
+    fn history_reads_in_pages() {
+        let dir = std::env::temp_dir().join(format!("biglace-chat-pages-{}", new_id()));
+        let conv = ConvId::direct("bruna");
+        let mut s = Store::open(&dir);
+        for (i, at) in [1, 2, 2, 2, 3, 4].into_iter().enumerate() {
+            assert!(s.add(&conv, plain(&format!("m{i}"), at), false));
+        }
+        let ids = |page: Vec<Message>| page.into_iter().map(|m| m.id).collect::<Vec<_>>();
+        assert_eq!(ids(s.history.recent(&conv, 2)), ["m4", "m5"]);
+        assert_eq!(ids(s.history.before(&conv, "m4", 2)), ["m2", "m3"]);
+        assert_eq!(ids(s.history.before(&conv, "m2", 5)), ["m0", "m1"]);
+        assert!(s.history.before(&conv, "m0", 5).is_empty());
+        assert_eq!(ids(s.history.since(&conv, "m3")), ["m3", "m4", "m5"]);
+        assert!(s.history.since(&conv, "gone").is_empty());
+        assert_eq!(s.history.in_order(&conv, &["m5".into(), "x".into(), "m1".into()]), ["m1", "m5"]);
+        s.history.remove(&conv, &["m4".into()]);
+        assert_eq!(ids(s.history.recent(&conv, 2)), ["m3", "m5"]);
+        let _ = std::fs::remove_dir_all(&dir);
+    }
+
     /// A renamed group keeps its history, merged without repeats, and its outbox.
     #[test]
     fn renamed_group_keeps_history() {
@@ -1905,17 +1942,15 @@ mod tests {
         s.add(&new, msg("m3", 3), false);
         let wire = Wire { id: "w".into(), conv: old.clone(), text: "x".into(), at: 4, file: None, reply_to: None, forwarded_from: None, op: None, relayed: None };
         s.outbox.push(Pending { wire, to_user: "bruna".into(), node: "n".into() });
-        s.save(&old);
 
         assert!(s.rename_conv(&old, &new));
-        assert!(!s.convs.contains_key(&old));
-        let ids: Vec<_> = s.convs[&new].messages.iter().map(|m| m.id.as_str()).collect();
-        assert_eq!(ids, ["m1", "m2", "m3"]);
-        assert_eq!(s.convs[&new].unread, 2);
+        assert!(!s.history.conversations().iter().any(|(id, _)| *id == old));
+        assert!(s.history.recent(&old, 10).is_empty());
+        assert_eq!(ids_of(&s, &new), ["m1", "m2", "m3"]);
+        assert_eq!(s.history.unread(&new), 2);
         assert_eq!(s.outbox[0].wire.conv, new);
-        assert!(!dir.join("group-familia.json").exists());
         let again = Store::open(&dir);
-        assert_eq!(again.convs[&new].messages.len(), 3);
+        assert_eq!(ids_of(&again, &new).len(), 3);
         assert!(!s.rename_conv(&old, &new), "nothing left to move");
         let _ = std::fs::remove_dir_all(&dir);
     }
@@ -1948,27 +1983,28 @@ mod tests {
         assert!(s.apply_op(&conv, "tales", &react("❤️", true)));
         assert!(!s.apply_op(&conv, "tales", &react("❤️", true)), "already there");
         assert!(s.apply_op(&conv, "bruna", &react("❤️", true)));
-        assert_eq!(s.convs[&conv].messages[0].reactions["❤️"], ["tales", "bruna"]);
+        let m1 = |s: &Store| s.history.message(&conv, "m1").unwrap();
+        assert_eq!(m1(&s).reactions["❤️"], ["tales", "bruna"]);
         assert!(s.apply_op(&conv, "tales", &react("❤️", false)));
-        assert_eq!(s.convs[&conv].messages[0].reactions["❤️"], ["bruna"]);
+        assert_eq!(m1(&s).reactions["❤️"], ["bruna"]);
         assert!(!s.apply_op(&conv, "tales", &react("abc", true)), "not an emoji");
         // Only Bruna edits or deletes her message.
         let edit = Op::Edit { target: "m1".into(), text: "olá".into() };
         assert!(!s.apply_op(&conv, "tales", &edit));
         assert!(s.apply_op(&conv, "bruna", &edit));
-        assert_eq!(s.convs[&conv].messages[0].text, "olá");
-        assert!(s.convs[&conv].messages[0].edited_at > 0);
+        assert_eq!(m1(&s).text, "olá");
+        assert!(m1(&s).edited_at > 0);
         assert!(s.apply_op(&conv, "tales", &Op::Pin { target: Some("m1".into()) }));
         assert!(!s.apply_op(&conv, "tales", &Op::Pin { target: Some("nope".into()) }), "unknown message");
         let del = Op::Delete { target: "m1".into() };
         assert!(!s.apply_op(&conv, "tales", &del));
         assert!(s.apply_op(&conv, "bruna", &del));
-        let m = &s.convs[&conv].messages[0];
+        let m = m1(&s);
         assert!(m.deleted && m.text.is_empty() && m.reactions.is_empty());
-        assert_eq!(s.convs[&conv].pinned, None, "a deleted message isn't pinned");
+        assert_eq!(s.history.pinned(&conv), None, "a deleted message isn't pinned");
         // Saved: reopened, the same.
         let again = Store::open(&dir);
-        assert!(again.convs[&conv].messages[0].deleted);
+        assert!(m1(&again).deleted);
         let _ = std::fs::remove_dir_all(&dir);
     }
 
@@ -2028,16 +2064,17 @@ mod tests {
         }
         // Reopened from disk: same history, same outbox, files private.
         let s = Store::open(&dir);
-        let ids: Vec<&str> = s.convs[&conv].messages.iter().map(|m| m.id.as_str()).collect();
-        assert_eq!(ids, ["a", "b", "c"]);
-        assert_eq!(s.convs[&conv].unread, 3);
-        assert_eq!(s.convs[&conv].messages[2].delivered, ["bruna"]);
+        assert_eq!(ids_of(&s, &conv), ["a", "b", "c"]);
+        assert_eq!(s.history.unread(&conv), 3);
+        assert_eq!(s.history.message(&conv, "c").unwrap().delivered, ["bruna"]);
         assert_eq!(s.outbox.len(), 1);
         let summaries = s.summaries();
         assert_eq!(summaries[0].last.as_ref().map(|m| m.id.as_str()), Some("c"));
         use std::os::unix::fs::PermissionsExt;
-        let mode = std::fs::metadata(dir.join("dm-bruna.json")).unwrap().permissions().mode();
-        assert_eq!(mode & 0o777, 0o600);
+        for file in ["history.db", "outbox"] {
+            let mode = std::fs::metadata(dir.join(file)).unwrap().permissions().mode();
+            assert_eq!(mode & 0o777, 0o600, "{file}");
+        }
         let _ = std::fs::remove_dir_all(&dir);
     }
 
@@ -2068,11 +2105,11 @@ mod tests {
             assert!(s.add(&conv, m, true));
         }
         assert!(s.read_until(&conv, 20), "read up to b on the phone: c, later, stays unread");
-        assert_eq!(s.convs[&conv].unread, 1);
+        assert_eq!(s.history.unread(&conv), 1);
         assert!(!s.read_until(&conv, 20), "nothing new");
         assert!(!s.read_until(&conv, 5), "an older read never adds unread messages back");
         assert!(!s.read_until(&ConvId::direct("nobody"), 30));
-        assert_eq!(Store::open(&dir).convs[&conv].unread, 1, "saved");
+        assert_eq!(Store::open(&dir).history.unread(&conv), 1, "saved");
         let _ = std::fs::remove_dir_all(&dir);
     }
 
