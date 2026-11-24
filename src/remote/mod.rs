@@ -287,21 +287,40 @@ pub fn wayland_session() -> bool {
 pub fn can_host() -> bool {
     #[cfg(target_os = "linux")]
     {
-        static OK: OnceLock<bool> = OnceLock::new();
-        *OK.get_or_init(|| {
+        use std::sync::atomic::{AtomicBool, AtomicU64, Ordering};
+        /// The portal answers only once the session started it; asked again this often until it does.
+        const PORTAL_RETRY_S: u64 = 60;
+        static PIECES: OnceLock<bool> = OnceLock::new();
+        static PORTAL_OK: AtomicBool = AtomicBool::new(false);
+        static PORTAL_ASKED_AT: AtomicU64 = AtomicU64::new(0);
+        let pieces = *PIECES.get_or_init(|| {
             // Presence only: test-encoding loads hardware drivers (CUDA for
             // NVENC), which waits for the first share.
             if gstreamer::init().is_err() || !host::Encoder::ALL.iter().any(|e| gstreamer::ElementFactory::find(e.element()).is_some()) {
                 return false;
             }
             if wayland_session() {
-                // The portal must really work here (some setups point it at
-                // another desktop's backends, which offer nothing).
-                gstreamer::ElementFactory::find("pipewiresrc").is_some() && portal::available()
+                gstreamer::ElementFactory::find("pipewiresrc").is_some()
             } else {
                 std::env::var_os("DISPLAY").is_some() && gstreamer::ElementFactory::find("ximagesrc").is_some()
             }
-        })
+        });
+        if !pieces || !wayland_session() || PORTAL_OK.load(Ordering::Acquire) {
+            return pieces;
+        }
+        // The portal must really work here (some setups point it at another
+        // desktop's backends, which offer nothing). Started with the session,
+        // BigLace may ask before it's up: a no is asked again later, by one caller.
+        let now = now_us() / 1_000_000;
+        let asked = PORTAL_ASKED_AT.load(Ordering::Acquire);
+        if (asked != 0 && now.saturating_sub(asked) < PORTAL_RETRY_S)
+            || PORTAL_ASKED_AT.compare_exchange(asked, now, Ordering::AcqRel, Ordering::Acquire).is_err()
+        {
+            return false;
+        }
+        let ok = portal::available();
+        PORTAL_OK.store(ok, Ordering::Release);
+        ok
     }
     #[cfg(not(target_os = "linux"))]
     {
