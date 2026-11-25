@@ -262,6 +262,13 @@ pub fn build(peer: &Peer, ctx: &PeerCtx) -> libadwaita::ExpanderRow {
 
     // The row shows its suffixes in the reverse order they're added: added
     // screen, terminal, files, send, they read send, files, terminal, screen.
+    // One of our phones as this computer's webcam.
+    if peer.online
+        && peer.agent.as_ref().is_some_and(|a| a.supports(crate::webcam::CAPABILITY))
+        && crate::chat::my_user().is_some_and(|me| me == peer.user)
+    {
+        row.add_suffix(&super::webcam_ui::button(&peer.ipv4, &peer.display_name(), &ctx.toast));
+    }
     // Remote desktop, when the peer's BigLace can share its screen.
     if peer.online && peer.agent.as_ref().is_some_and(|a| a.supports(crate::remote::CAPABILITY)) {
         let btn_screen = gtk4::Button::builder()

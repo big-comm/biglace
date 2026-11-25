@@ -328,7 +328,7 @@ pub struct Status {
     pub dns_broken: bool,
 }
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, Default)]
 pub struct Peer {
     /// Stable node identity (the node's public key). Use this — not
     /// `hostname` — to tell peers apart: hostnames aren't unique on a tailnet
@@ -924,10 +924,6 @@ fn build_peers(ts: &TsStatus) -> Vec<Peer> {
                 .find(|i| i.contains(':'))
                 .cloned()
                 .unwrap_or_default();
-            // A device that reaches us for support is none we may reach (see crate::support).
-            if ips.iter().any(|i| crate::support::hides(i, n.online.unwrap_or(false))) {
-                return None;
-            }
             let ip = ips.first().cloned().unwrap_or_default();
             let tags: Vec<String> = n
                 .tags

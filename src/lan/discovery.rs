@@ -31,6 +31,8 @@ pub struct Nearby {
     pub screen: Option<Screen>,
     /// It takes calls (see `crate::call`).
     pub calls: bool,
+    /// A phone that can be our webcam (see `crate::webcam`).
+    pub webcam: bool,
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
@@ -83,6 +85,7 @@ struct Txt {
     takes_files: bool,
     screen: Option<Screen>,
     calls: bool,
+    webcam: bool,
 }
 
 fn parse_txt(txt: &[Vec<u8>]) -> Option<Txt> {
@@ -92,6 +95,7 @@ fn parse_txt(txt: &[Vec<u8>]) -> Option<Txt> {
     let mut takes_files = false;
     let mut screen = None;
     let mut calls = false;
+    let mut webcam = false;
     for entry in txt {
         let entry = std::str::from_utf8(entry).ok()?;
         if let Some(v) = entry.strip_prefix("key=") {
@@ -110,9 +114,11 @@ fn parse_txt(txt: &[Vec<u8>]) -> Option<Txt> {
             };
         } else if let Some(v) = entry.strip_prefix("call=") {
             calls = v == crate::call::CAPABILITY;
+        } else if let Some(v) = entry.strip_prefix("webcam=") {
+            webcam = v == crate::webcam::CAPABILITY;
         }
     }
-    Some(Txt { key: key?, name: name?, login, takes_files, screen, calls })
+    Some(Txt { key: key?, name: name?, login, takes_files, screen, calls, webcam })
 }
 
 /// A system account name as `useradd` takes it: it goes into an SSH command line.
@@ -162,11 +168,11 @@ pub async fn browse(own_key: &str, seen: impl Fn(Vec<Nearby>)) -> zbus::Result<(
                 let Ok(reply) = resolved else { continue };
                 type Resolved = (i32, i32, String, String, String, String, i32, String, u16, Vec<Vec<u8>>, u32);
                 let Ok((.., address, port, txt, _)) = reply.body().deserialize::<Resolved>() else { continue };
-                let Some(Txt { key, name, login, takes_files, screen, calls }) = parse_txt(&txt) else { continue };
+                let Some(Txt { key, name, login, takes_files, screen, calls, webcam }) = parse_txt(&txt) else { continue };
                 if key == own_key || port == 0 || !on_this_network(&address) {
                     continue;
                 }
-                found.insert(instance, Nearby { key, name, address, port, login, takes_files, screen, calls });
+                found.insert(instance, Nearby { key, name, address, port, login, takes_files, screen, calls, webcam });
             }
             "ItemRemove" => {
                 found.remove(&instance);
@@ -188,7 +194,7 @@ mod tests {
     #[test]
     fn txt_needs_key_and_name() {
         let txt = |items: &[&str]| items.iter().map(|s| s.as_bytes().to_vec()).collect::<Vec<_>>();
-        let maria = |login: Option<&str>, takes_files| Some(Txt { key: "abc".into(), name: "Maria".into(), login: login.map(Into::into), takes_files, screen: None, calls: false });
+        let maria = |login: Option<&str>, takes_files| Some(Txt { key: "abc".into(), name: "Maria".into(), login: login.map(Into::into), takes_files, screen: None, calls: false, webcam: false });
         assert_eq!(parse_txt(&txt(&["key=abc", "name=Maria"])), maria(None, false));
         assert_eq!(parse_txt(&txt(&["key=abc", "name=Maria", "login=maria", "send=send1"])), maria(Some("maria"), true));
         assert_eq!(parse_txt(&txt(&["key=abc", "name=Maria", "login=-oX", "send=send9"])), maria(None, false));
@@ -196,6 +202,7 @@ mod tests {
         assert_eq!(parse_txt(&txt(&["key=abc", "name=Maria", "screen=shared"])).and_then(|t| t.screen), Some(Screen::Shared));
         assert_eq!(parse_txt(&txt(&["key=abc", "name=Maria", "screen=later"])).and_then(|t| t.screen), None);
         assert!(parse_txt(&txt(&["key=abc", "name=Maria", &format!("call={}", crate::call::CAPABILITY)])).is_some_and(|t| t.calls));
+        assert!(parse_txt(&txt(&["key=abc", "name=Maria", &format!("webcam={}", crate::webcam::CAPABILITY)])).is_some_and(|t| t.webcam));
         assert_eq!(parse_txt(&txt(&["name=Maria"])), None);
         assert_eq!(parse_txt(&[vec![0xff, 0xfe]]), None, "not UTF-8");
     }

@@ -3279,3 +3279,81 @@ msgstr "1 週間、{user} はあなたのデバイスに接続できます。あ
 #: src/window/groups.rs
 msgid "Done. The banner at the top shows the access and lets you end it."
 msgstr "完了しました。上部のバナーにアクセスが表示され、そこから終了できます。"
+
+#: src/window/chat.rs
+msgid "Remove conversation"
+msgstr "会話を削除"
+
+#: src/window/chat.rs
+#, rust-format
+msgid "Remove the conversation with {name}?"
+msgstr "{name} との会話を削除しますか？"
+
+#: src/window/chat.rs
+msgid "Its messages are deleted from this device. If a new message arrives, the conversation comes back."
+msgstr "メッセージはこのデバイスから削除されます。新しいメッセージが届くと、会話は再び表示されます。"
+
+#: src/webcam.rs
+msgid "The phone isn't reachable on the local network."
+msgstr "ローカルネットワークでスマートフォンに接続できません。"
+
+#: src/webcam.rs
+#, rust-format
+msgid "{name} (camera)"
+msgstr "{name} (カメラ)"
+
+#: src/webcam.rs
+#, rust-format
+msgid "{name} (microphone)"
+msgstr "{name} (マイク)"
+
+#: src/window/webcam_ui.rs
+msgid "Use as webcam"
+msgstr "Webカメラとして使用"
+
+#: src/window/webcam_ui.rs
+#, rust-format
+msgid "Use {name} as a webcam?"
+msgstr "{name} をWebカメラとして使用しますか？"
+
+#: src/window/webcam_ui.rs
+msgid "Pick what this computer gets. The phone asks before it starts, and either side can stop it."
+msgstr "このコンピューターが受け取るものを選んでください。開始前にスマートフォンで確認され、どちらの側からでも停止できます。"
+
+#: src/window/webcam_ui.rs
+msgid "Camera"
+msgstr "カメラ"
+
+#: src/window/webcam_ui.rs
+msgid "Microphone"
+msgstr "マイク"
+
+#: src/window/webcam_ui.rs
+msgid "Start"
+msgstr "開始"
+
+#: src/window/webcam_ui.rs
+msgid "Confirm on the phone to start."
+msgstr "開始するにはスマートフォンで確認してください。"
+
+#: src/window/webcam_ui.rs
+#, rust-format
+msgid "The webcam didn't start: {error}"
+msgstr "Webカメラを開始できませんでした: {error}"
+
+#: src/window/webcam_ui.rs
+msgid "Webcam connected. Pick it in the app that uses the camera or microphone."
+msgstr "Webカメラが接続されました。カメラやマイクを使うアプリで選択してください。"
+
+#: src/window/webcam_ui.rs
+#, rust-format
+msgid "The webcam ended: {error}"
+msgstr "Webカメラが終了しました: {error}"
+
+#: src/window/webcam_ui.rs
+msgid "Webcam ended."
+msgstr "Webカメラが終了しました。"
+
+#: src/webcam.rs
+msgid "The phone couldn't confirm this computer. Make sure both run an up-to-date BigLace."
+msgstr "スマートフォンはこのコンピューターを確認できませんでした。両方で最新の BigLace を実行していることを確認してください。"

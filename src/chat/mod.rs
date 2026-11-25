@@ -243,7 +243,8 @@ struct Pending {
     wire: Wire,
     /// Account behind the device (ours for the copies to our devices).
     to_user: String,
-    /// The device: tailnet node id (stable even if its address changes).
+    /// The device: tailnet node id (stable even if its address changes). Empty while
+    /// none of `to_user`'s devices is known yet: delivery places it once one shows up.
     node: String,
 }
 
@@ -272,6 +273,8 @@ pub enum ChatEvent {
     ReadElsewhere(ConvId),
     /// The local network went on or off: other conversations show (see [`shown`]).
     ShownChanged,
+    /// Removed from our list (see [`remove_conversation`]).
+    Removed(ConvId),
 }
 
 /// The history and the outbox, on disk under `dir`.
@@ -293,6 +296,36 @@ impl Store {
             .and_then(|b| serde_json::from_slice(&b).ok())
             .unwrap_or_default();
         Self { dir: dir.to_path_buf(), history, outbox }
+    }
+
+    /// Messages that wait for a person none of whose devices was known go to each device of theirs in `peers`.
+    fn place_unplaced(&mut self, peers: &[tailscale::Peer]) {
+        let mut placed = Vec::new();
+        self.outbox.retain(|p| {
+            if !p.node.is_empty() {
+                return true;
+            }
+            let theirs: Vec<_> = peers.iter().filter(|d| d.user == p.to_user && !d.id.is_empty()).collect();
+            placed.extend(theirs.iter().map(|d| Pending { node: d.id.clone(), ..p.clone() }));
+            theirs.is_empty()
+        });
+        if !placed.is_empty() {
+            self.outbox.extend(placed);
+            self.save_outbox();
+        }
+    }
+
+    /// `items` were for a device missing from `peers`: the ones for a person with no other device
+    /// in sight wait for them again, the rest are dropped (their other devices have their own).
+    fn unplace(&mut self, items: &[Pending], peers: &[tailscale::Peer]) {
+        for p in items {
+            self.outbox.retain(|x| !(x.node == p.node && x.wire.id == p.wire.id));
+            let waiting = self.outbox.iter().any(|x| x.node.is_empty() && x.wire.id == p.wire.id && x.to_user == p.to_user);
+            if !waiting && !peers.iter().any(|d| d.user == p.to_user) {
+                self.outbox.push(Pending { node: String::new(), ..p.clone() });
+            }
+        }
+        self.save_outbox();
     }
 
     /// Conversation `old` is called `new` now: its history merges into any
@@ -860,12 +893,18 @@ fn recipients(conv: &ConvId, me: &Me) -> Option<Vec<String>> {
 }
 
 /// `wire` for every device of `users`, and for our own other devices when `ours`.
+/// A person with no device in sight yet gets one unplaced entry, so the message waits for them.
 fn pending_for(wire: &Wire, users: &[String], me: &str, ours: bool) -> Vec<Pending> {
-    tailscale::get_peers()
+    let peers = tailscale::get_peers();
+    let mut pending: Vec<Pending> = peers
         .iter()
         .filter(|p| !p.user.is_empty() && !p.id.is_empty() && (users.contains(&p.user) || (ours && p.user == me)))
         .map(|p| Pending { wire: wire.clone(), to_user: p.user.clone(), node: p.id.clone() })
-        .collect()
+        .collect();
+    for user in users.iter().filter(|u| u.as_str() != me && !peers.iter().any(|p| &p.user == *u)) {
+        pending.push(Pending { wire: wire.clone(), to_user: user.clone(), node: String::new() });
+    }
+    pending
 }
 
 /// Put `wire` in the outbox for `users` (and our own devices when `ours`).
@@ -1426,6 +1465,15 @@ pub fn delete_for_me(conv: &ConvId, targets: &[String]) {
     emit(ChatEvent::Changed(conv.clone()));
 }
 
+/// Take `conv` out of our list, with its history on this device; a new
+/// message brings it back. Others keep theirs.
+pub fn remove_conversation(conv: &ConvId) {
+    if let Ok(mut s) = store().lock() {
+        s.history.drop_conversation(conv);
+    }
+    emit(ChatEvent::Removed(conv.clone()));
+}
+
 /// Pin message `target` to the top of `conv` (None: unpin).
 pub fn pin(conv: &ConvId, target: Option<&str>) -> Result<(), String> {
     let fallback = match target.and_then(|t| message(conv, t)) {
@@ -1543,13 +1591,16 @@ pub fn start() {
 }
 
 fn deliver_pending() {
-    let outbox = store().lock().map(|s| s.outbox.clone()).unwrap_or_default();
-    if outbox.is_empty() {
-        return;
-    }
     let peers = tailscale::get_peers();
+    let outbox = store()
+        .lock()
+        .map(|mut s| {
+            s.place_unplaced(&peers);
+            s.outbox.clone()
+        })
+        .unwrap_or_default();
     let mut by_node: HashMap<String, Vec<Pending>> = HashMap::new();
-    for p in outbox {
+    for p in outbox.into_iter().filter(|p| !p.node.is_empty()) {
         by_node.entry(p.node.clone()).or_default().push(p);
     }
     // Each device on its own thread: one out of reach doesn't hold up the others.
@@ -1568,9 +1619,11 @@ fn deliver_node(node: &str, items: Vec<Pending>, peers: &[tailscale::Peer]) {
         return;
     }
     let Some(peer) = peers.iter().find(|p| p.id == node) else {
-        // That device left the network: nothing will ever reach it.
+        // That device is out of sight: gone for good, or its access was taken away for now.
         if !peers.is_empty() {
-            drop_pending(&items);
+            if let Ok(mut s) = store().lock() {
+                s.unplace(&items, peers);
+            }
         }
         return;
     };
@@ -1939,6 +1992,43 @@ mod tests {
         assert_eq!(s.history.in_order(&conv, &["m5".into(), "x".into(), "m1".into()]), ["m1", "m5"]);
         s.history.remove(&conv, &["m4".into()]);
         assert_eq!(ids(s.history.recent(&conv, 2)), ["m3", "m5"]);
+        let _ = std::fs::remove_dir_all(&dir);
+    }
+
+    /// A removed conversation leaves the list with its messages; a new one starts it again.
+    #[test]
+    fn removed_conversation_comes_back_empty() {
+        let dir = std::env::temp_dir().join(format!("biglace-chat-remove-{}", new_id()));
+        let (gone, kept) = (ConvId::direct("thiago"), ConvId::direct("bruna"));
+        let mut s = Store::open(&dir);
+        assert!(s.add(&gone, plain("old", 1), true));
+        assert!(s.add(&kept, plain("stays", 1), false));
+        s.history.drop_conversation(&gone);
+        let listed = |s: &Store| s.history.conversations().into_iter().map(|(c, _)| c).collect::<Vec<_>>();
+        assert_eq!(listed(&s), std::slice::from_ref(&kept));
+        assert!(s.add(&gone, plain("new", 2), true));
+        assert_eq!(s.history.recent(&gone, 5).into_iter().map(|m| m.id).collect::<Vec<_>>(), ["new"]);
+        assert_eq!(s.history.unread(&gone), 1);
+        let _ = std::fs::remove_dir_all(&dir);
+    }
+
+    /// A message to someone with no device in sight waits, then goes to each of theirs once they show up.
+    #[test]
+    fn unplaced_message_waits_for_devices() {
+        let dir = std::env::temp_dir().join(format!("biglace-chat-unplaced-{}", new_id()));
+        let mut s = Store::open(&dir);
+        let wire = Wire { id: "w".into(), conv: ConvId::direct("tales"), text: "x".into(), at: 1, file: None, reply_to: None, forwarded_from: None, op: None, relayed: None };
+        s.outbox.push(Pending { wire, to_user: "tales".into(), node: String::new() });
+        let device = |id: &str, user: &str| tailscale::Peer { id: id.into(), user: user.into(), ..Default::default() };
+        s.place_unplaced(&[device("other", "bruna")]);
+        assert_eq!(s.outbox.iter().map(|p| p.node.as_str()).collect::<Vec<_>>(), [""]);
+        s.place_unplaced(&[device("pc", "tales"), device("phone", "tales"), device("other", "bruna")]);
+        assert_eq!(s.outbox.iter().map(|p| p.node.as_str()).collect::<Vec<_>>(), ["pc", "phone"]);
+        assert_eq!(Store::open(&dir).outbox.len(), 2);
+        // Both devices drop out of sight while another person's stays: it waits for them again, once.
+        let items = s.outbox.clone();
+        s.unplace(&items, &[device("other", "bruna")]);
+        assert_eq!(s.outbox.iter().map(|p| p.node.as_str()).collect::<Vec<_>>(), [""]);
         let _ = std::fs::remove_dir_all(&dir);
     }
 

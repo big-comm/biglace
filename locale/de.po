@@ -3332,3 +3332,81 @@ msgstr "1 Woche lang erreicht {user} deine Geräte. Du siehst und erreichst die 
 #: src/window/groups.rs
 msgid "Done. The banner at the top shows the access and lets you end it."
 msgstr "Fertig. Das Banner oben zeigt den Zugriff, dort kannst du ihn beenden."
+
+#: src/window/chat.rs
+msgid "Remove conversation"
+msgstr "Unterhaltung entfernen"
+
+#: src/window/chat.rs
+#, rust-format
+msgid "Remove the conversation with {name}?"
+msgstr "Unterhaltung mit {name} entfernen?"
+
+#: src/window/chat.rs
+msgid "Its messages are deleted from this device. If a new message arrives, the conversation comes back."
+msgstr "Die Nachrichten werden von diesem Gerät gelöscht. Kommt eine neue Nachricht an, ist die Unterhaltung wieder da."
+
+#: src/webcam.rs
+msgid "The phone isn't reachable on the local network."
+msgstr "Das Telefon ist im lokalen Netzwerk nicht erreichbar."
+
+#: src/webcam.rs
+#, rust-format
+msgid "{name} (camera)"
+msgstr "{name} (Kamera)"
+
+#: src/webcam.rs
+#, rust-format
+msgid "{name} (microphone)"
+msgstr "{name} (Mikrofon)"
+
+#: src/window/webcam_ui.rs
+msgid "Use as webcam"
+msgstr "Als Webcam verwenden"
+
+#: src/window/webcam_ui.rs
+#, rust-format
+msgid "Use {name} as a webcam?"
+msgstr "{name} als Webcam verwenden?"
+
+#: src/window/webcam_ui.rs
+msgid "Pick what this computer gets. The phone asks before it starts, and either side can stop it."
+msgstr "Wähle, was dieser Computer verwenden darf. Das Telefon fragt vor dem Start, und beide Seiten können es beenden."
+
+#: src/window/webcam_ui.rs
+msgid "Camera"
+msgstr "Kamera"
+
+#: src/window/webcam_ui.rs
+msgid "Microphone"
+msgstr "Mikrofon"
+
+#: src/window/webcam_ui.rs
+msgid "Start"
+msgstr "Starten"
+
+#: src/window/webcam_ui.rs
+msgid "Confirm on the phone to start."
+msgstr "Bestätige auf dem Telefon, um zu starten."
+
+#: src/window/webcam_ui.rs
+#, rust-format
+msgid "The webcam didn't start: {error}"
+msgstr "Die Webcam ist nicht gestartet: {error}"
+
+#: src/window/webcam_ui.rs
+msgid "Webcam connected. Pick it in the app that uses the camera or microphone."
+msgstr "Webcam verbunden. Wähle sie in der App aus, die die Kamera oder das Mikrofon verwendet."
+
+#: src/window/webcam_ui.rs
+#, rust-format
+msgid "The webcam ended: {error}"
+msgstr "Die Webcam wurde beendet: {error}"
+
+#: src/window/webcam_ui.rs
+msgid "Webcam ended."
+msgstr "Webcam beendet."
+
+#: src/webcam.rs
+msgid "The phone couldn't confirm this computer. Make sure both run an up-to-date BigLace."
+msgstr "Das Telefon konnte diesen Computer nicht bestätigen. Stelle sicher, dass auf beiden ein aktuelles BigLace läuft."

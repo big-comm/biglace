@@ -373,6 +373,18 @@ impl History {
         }
     }
 
+    /// Forget `conv` and its messages; a new message starts it again.
+    pub fn drop_conversation(&mut self, conv: &ConvId) {
+        logged("remove a conversation", self.try_drop(conv));
+    }
+
+    fn try_drop(&mut self, conv: &ConvId) -> rusqlite::Result<()> {
+        let tx = self.db.transaction()?;
+        tx.execute("DELETE FROM message WHERE kind = ?1 AND name = ?2", params![conv.kind, conv.name])?;
+        tx.execute("DELETE FROM conversation WHERE kind = ?1 AND name = ?2", params![conv.kind, conv.name])?;
+        tx.commit()
+    }
+
     /// Conversation `old` is called `new` now: its messages join any `new`
     /// already has (without repeats), with its unread count and pin. False
     /// when there was no `old`.

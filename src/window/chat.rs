@@ -743,6 +743,18 @@ impl ChatPage {
                 }
             });
         }
+        // A conversation's own menu: right click, or a long press on touch.
+        {
+            let menu_click = gtk4::GestureClick::builder().button(gtk4::gdk::BUTTON_SECONDARY).build();
+            let page_w = page.clone();
+            menu_click.connect_pressed(move |_, _, x, y| page_w.conv_menu(x, y));
+            page.list.add_controller(menu_click);
+            let press = gtk4::GestureLongPress::new();
+            press.set_touch_only(true);
+            let page_w = page.clone();
+            press.connect_pressed(move |_, x, y| page_w.conv_menu(x, y));
+            page.list.add_controller(press);
+        }
         // People coming online (or leaving): the list follows.
         {
             let page = page.clone();
@@ -906,6 +918,29 @@ impl ChatPage {
             }
         }
         self.update_badge();
+    }
+
+    /// The menu of the conversation at (`x`, `y`) in the list: remove it from our list.
+    fn conv_menu(&self, x: f64, y: f64) {
+        let Some(row) = self.list.row_at_y(y as i32) else { return };
+        let Some(id) = row_conv(&row) else { return };
+        // A group we're in always shows; people without a conversation have nothing to remove.
+        if id.is_group() || !chat::conversations().iter().any(|c| c.id == id) {
+            return;
+        }
+        let remove = gtk4::Button::builder().label(tr!("Remove conversation")).css_classes(["flat", "error"]).build();
+        let pop = gtk4::Popover::builder().child(&remove).has_arrow(true).build();
+        pop.set_parent(&self.list);
+        pop.set_pointing_to(Some(&gtk4::gdk::Rectangle::new(x as i32, y as i32, 1, 1)));
+        pop.connect_closed(|p| p.unparent());
+        let (pop_w, win) = (pop.downgrade(), self.win.clone());
+        remove.connect_clicked(move |_| {
+            if let Some(p) = pop_w.upgrade() {
+                p.popdown();
+            }
+            confirm_remove(&win, &id);
+        });
+        pop.popup();
     }
 
     fn open_conv(&self, id: &ConvId) {
@@ -1078,6 +1113,14 @@ impl ChatPage {
                 }
             }
             ChatEvent::Typing { conv, user } => self.show_typing(&conv, &user),
+            ChatEvent::Removed(conv) => {
+                if self.state.current.borrow().as_ref() == Some(&conv) {
+                    *self.state.current.borrow_mut() = None;
+                    self.stack.set_visible_child_name("none");
+                }
+                self.refresh_list();
+                self.update_badge();
+            }
             ChatEvent::ShownChanged => {
                 let hidden = self.state.current.borrow().as_ref().is_some_and(|c| !chat::shown(c));
                 if hidden {
@@ -1526,7 +1569,7 @@ impl ChatPage {
                 let me = chat::my_groups_refresh();
                 let mut people: Vec<(String, bool)> = Vec::new();
                 for p in crate::tailscale::get_peers() {
-                    if p.user.is_empty() || Some(&p.user) == me.as_ref() || p.user.starts_with('_') || p.user == "tagged-devices" {
+                    if p.user.is_empty() || Some(&p.user) == me.as_ref() || p.user.starts_with('_') || p.user == "tagged-devices" || crate::support::hides(&p.ip, p.online) {
                         continue;
                     }
                     match people.iter_mut().find(|(u, _)| *u == p.user) {
@@ -1607,6 +1650,29 @@ fn row_conv(row: &gtk4::ListBoxRow) -> Option<ConvId> {
     Some(ConvId { kind: kind.to_string(), name: n.to_string() })
 }
 
+/// Ask before taking `id` out of the list with its history.
+fn confirm_remove(win: &libadwaita::ApplicationWindow, id: &ConvId) {
+    let name = chat::title(id);
+    let dlg = libadwaita::MessageDialog::new(
+        Some(win),
+        Some(&trf!("Remove the conversation with {name}?", "name" => name)),
+        Some(&tr!("Its messages are deleted from this device. If a new message arrives, the conversation comes back.")),
+    );
+    dlg.add_response("cancel", &tr!("Cancel"));
+    dlg.add_response("remove", &tr!("Remove"));
+    dlg.set_response_appearance("remove", libadwaita::ResponseAppearance::Destructive);
+    dlg.set_default_response(Some("cancel"));
+    dlg.set_close_response("cancel");
+    let id = id.clone();
+    dlg.connect_response(None, move |d, r| {
+        d.close();
+        if r == "remove" {
+            chat::remove_conversation(&id);
+        }
+    });
+    dlg.present();
+}
+
 /// One line of the conversation list: avatar, name, last message, time,
 /// unread count.
 /// People on the network we have no conversation with (online first).
@@ -1614,7 +1680,7 @@ fn people_to_list(convs: &[chat::Summary]) -> Vec<(String, bool)> {
     let me = chat::my_user();
     let mut people: Vec<(String, bool)> = Vec::new();
     for p in crate::tailscale::get_peers() {
-        if p.user.is_empty() || Some(&p.user) == me.as_ref() || p.user.starts_with('_') || p.user == "tagged-devices" {
+        if p.user.is_empty() || Some(&p.user) == me.as_ref() || p.user.starts_with('_') || p.user == "tagged-devices" || crate::support::hides(&p.ip, p.online) {
             continue;
         }
         if convs.iter().any(|c| !c.id.is_group() && c.id.name == p.user) {

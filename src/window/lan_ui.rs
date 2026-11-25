@@ -20,9 +20,6 @@ pub fn wire(
     cfg: &Rc<RefCell<config::Config>>,
     refresh: async_channel::Sender<()>,
 ) {
-    for paired in crate::lan::peers::paired() {
-        crate::chat::open(&crate::chat::ConvId::lan(&paired.key));
-    }
     // Before the network starts: its first list of devices nearby would be lost.
     let events = pairing::events();
     let on = cfg.borrow().lan_enabled;
@@ -276,6 +273,9 @@ fn add_paired_actions(row: &libadwaita::ActionRow, device: &Nearby, toast: &liba
     }
     if device.login.is_none() {
         add_mine_check(row, &device.key);
+    }
+    if device.webcam {
+        row.add_suffix(&super::webcam_ui::button(&crate::chat::lan_address(&device.key), &device.name, toast));
     }
 }
 

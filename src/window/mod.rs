@@ -27,6 +27,7 @@ mod clipboard_ui;
 mod lan_ui;
 #[cfg(target_os = "linux")]
 mod visits_ui;
+mod webcam_ui;
 mod style;
 
 use gtk4::{glib, prelude::*};
@@ -517,6 +518,7 @@ pub fn build(app: &libadwaita::Application, start_hidden: bool) {
     wire_notification_clicks(&ctx.ui);
     phone_link::wire(&ctx.ui.win, &ctx.ui.toast, ctx.refresh_tx.clone());
     transfer_ui::wire(&ctx.ui.win);
+    webcam_ui::wire(&ctx.ui.toast);
     clipboard_ui::wire(&ctx.ui.win, &ctx.ui.toast, &ctx.ui.sidebar, &ctx.cfg);
     #[cfg(target_os = "linux")]
     lan_ui::wire(&ctx.ui.win, &ctx.ui.toast, &ctx.ui.sidebar, &ctx.ui.content, &ctx.cfg, ctx.refresh_tx.clone());
@@ -2239,11 +2241,11 @@ fn refresh_state(ctx: &Ctx) {
                 if !status.online {
                     peers.clear();
                 }
-                // A helper's device showing up: learn it, then leave it out.
+                // A helper's device showing up: learn it, then leave it out of the list.
                 let ips: Vec<&str> = peers.iter().map(|p| p.ip.as_str()).collect();
-                if crate::support::refresh(&ips) {
-                    peers.retain(|p| !crate::support::hides(&p.ip, p.online));
-                }
+                crate::support::refresh(&ips);
+                // A node the network lists without an address is one it is dropping: nothing to act on.
+                peers.retain(|p| !p.ip.is_empty() && !crate::support::hides(&p.ip, p.online));
                 if let Ok(meta) = device_meta.lock() {
                     for p in peers.iter_mut() {
                         if let Some(u) = meta.get(&p.hostname) {
@@ -2256,6 +2258,12 @@ fn refresh_state(ctx: &Ctx) {
                 // for another refresh, which picks the new value up here.
                 for p in peers.iter_mut().filter(|p| p.online) {
                     p.agent = agent::client::cached(&p.ipv4);
+                }
+                // A phone offers itself as a webcam only to its own account: learn ours before the rows are built.
+                if crate::chat::my_user().is_none()
+                    && peers.iter().any(|p| p.agent.as_ref().is_some_and(|a| a.supports(crate::webcam::CAPABILITY)))
+                {
+                    crate::chat::my_groups_refresh();
                 }
                 let tx = refresh_tx.clone();
                 agent::client::refresh(&peers, move || {

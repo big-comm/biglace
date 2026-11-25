@@ -18,6 +18,7 @@
 //! - `chat`, `room`: messages and voice rooms between people.
 //! - `call`: one-to-one voice and video calls (ringing, answering, the history).
 //! - `transfer`: sending files to a device, accepted or declined there.
+//! - `webcam`: one of our phones as this computer's camera and microphone (PipeWire).
 //! - `listeners`: events every part of the window hears.
 //! - `secrets`: the OS credential store.
 //! - `support`: someone's device reaching ours for a while to help (hidden from our lists).
@@ -51,6 +52,7 @@ mod secrets;
 mod support;
 mod tailscale;
 mod transfer;
+mod webcam;
 // Cross-platform façade: ksni (StatusNotifierItem / D-Bus) on Linux,
 // Shell_NotifyIcon on Windows, no-op stub elsewhere. The submodule that
 // actually compiles is selected inside `tray.rs` via `#[cfg(target_os = …)]`,
