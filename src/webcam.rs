@@ -143,22 +143,26 @@ fn loopback_device() -> Option<std::path::PathBuf> {
     })
 }
 
+/// H.264 from the phone to the PipeWire node and, when loaded, the loopback camera.
+fn video_pipeline() -> String {
+    // Browsers and most programs only list /dev/video cameras: feed the package's loopback one too.
+    let loopback = loopback_device()
+        .map(|dev| format!(" t. ! queue leaky=downstream ! v4l2sink device={} sync=false", dev.display()))
+        .unwrap_or_default();
+    format!(
+        "appsrc name=src is-live=true format=time do-timestamp=true \
+           caps=video/x-h264,stream-format=byte-stream,alignment=au \
+         ! h264parse ! {} ! videoconvert ! video/x-raw,format=YUY2 ! tee name=t \
+         t. ! queue leaky=downstream ! pipewiresink name=sink mode=provide{loopback}",
+        crate::remote::client::decoder()
+    )
+}
+
 /// Feed the phone's frames into the PipeWire nodes until the connection ends.
 fn receive(mut reader: BufReader<TcpStream>, name: &str, video: bool, audio: bool) -> Result<(), String> {
     gst::init().map_err(|e| e.to_string())?;
     let camera = if video {
-        // Browsers and most programs only list /dev/video cameras: feed the package's loopback one too.
-        let loopback = loopback_device()
-            .map(|dev| format!(" t. ! queue leaky=downstream ! v4l2sink device={} sync=false", dev.display()))
-            .unwrap_or_default();
-        let desc = format!(
-            "appsrc name=src is-live=true format=time do-timestamp=true \
-               caps=video/x-h264,stream-format=byte-stream,alignment=au \
-             ! h264parse ! {} ! videoconvert ! video/x-raw,format=YUY2 ! tee name=t \
-             t. ! queue leaky=downstream ! pipewiresink name=sink mode=provide{loopback}",
-            crate::remote::client::decoder()
-        );
-        Some(source(&desc, "Video/Source", &crate::trf!("{name} (camera)", "name" => name))?)
+        Some(source(&video_pipeline(), "Video/Source", &crate::trf!("{name} (camera)", "name" => name))?)
     } else {
         None
     };
