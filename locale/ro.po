@@ -472,10 +472,10 @@ msgstr "grupul {group}"
 msgid "Cancel this invite: the link stops working"
 msgstr "Anulați această invitație: linkul nu va mai funcționa"
 
-msgid "The person you invite will reach your devices, and you theirs."
-msgstr ""
-"Persoana pe care o invitați va ajunge la dispozitivele dvs., iar dvs. la ale "
-"ei."
+#~ msgid "The person you invite will reach your devices, and you theirs."
+#~ msgstr ""
+#~ "Persoana pe care o invitați va ajunge la dispozitivele dvs., iar dvs. la ale "
+#~ "ei."
 
 msgid "Who is it for? (optional)"
 msgstr "Pentru cine este? (opțional)"
@@ -3215,3 +3215,93 @@ msgstr "Telefonul meu"
 #: src/window/lan_ui.rs
 msgid "Share notifications, battery and clipboard with this phone"
 msgstr "Partajează notificările, bateria și clipboardul cu acest telefon"
+
+#: src/window/invites.rs
+msgid "Only I reach them, to help"
+msgstr "Doar eu ajung la dispozitivele persoanei, pentru a ajuta"
+
+#: src/window/invites.rs
+msgid "This computer reaches their devices for a while. They don't see or reach yours, and can end it any time"
+msgstr "Acest computer ajunge la dispozitivele persoanei pentru o vreme. Persoana nu vede și nu ajunge la ale dvs. și poate încheia oricând"
+
+#: src/window/invites.rs
+msgid "For how long"
+msgstr "Pentru cât timp"
+
+#: src/window/invites.rs
+msgid "1 hour"
+msgstr "1 oră"
+
+#: src/window/invites.rs
+msgid "1 day"
+msgstr "1 zi"
+
+#: src/window/invites.rs
+msgid "1 week"
+msgstr "1 săptămână"
+
+#: src/window/invites.rs
+msgid "Support access"
+msgstr "Acces de asistență"
+
+#: src/window/invites.rs
+#, rust-format
+msgid "{device} reaches their devices until {time}"
+msgstr "{device} ajunge la dispozitivele persoanei până la {time}"
+
+#: src/window/invites.rs
+msgid "End"
+msgstr "Încheie"
+
+#: src/window/invites.rs
+msgid "End this access now"
+msgstr "Încheie acum acest acces"
+
+#: src/window/invites.rs
+msgid "to help, for 1 hour"
+msgstr "pentru a ajuta, timp de 1 oră"
+
+#: src/window/invites.rs
+msgid "to help, for 1 day"
+msgstr "pentru a ajuta, timp de 1 zi"
+
+#: src/window/invites.rs
+msgid "to help, for 1 week"
+msgstr "pentru a ajuta, timp de 1 săptămână"
+
+#: src/window/support_ui.rs
+msgid "End now"
+msgstr "Încheie acum"
+
+#: src/window/support_ui.rs
+msgid "Access ended."
+msgstr "Accesul s-a încheiat."
+
+#: src/window/support_ui.rs
+#, rust-format
+msgid "{user} can reach your devices until {time}, to help you"
+msgstr "{user} poate ajunge la dispozitivele dvs. până la {time}, pentru a vă ajuta"
+
+#: src/window/groups.rs
+#, rust-format
+msgid "Let {user} help you?"
+msgstr "Permiteți ca {user} să vă ajute?"
+
+#: src/window/groups.rs
+#, rust-format
+msgid "For 1 hour, {user}'s computer will reach your devices. You won't see or reach theirs, and you can end it any time."
+msgstr "Timp de 1 oră, {user} va ajunge de pe computerul său la dispozitivele dvs. Nu veți vedea și nu veți ajunge la dispozitivele acestei persoane și puteți încheia oricând."
+
+#: src/window/groups.rs
+#, rust-format
+msgid "For 1 day, {user}'s computer will reach your devices. You won't see or reach theirs, and you can end it any time."
+msgstr "Timp de 1 zi, {user} va ajunge de pe computerul său la dispozitivele dvs. Nu veți vedea și nu veți ajunge la dispozitivele acestei persoane și puteți încheia oricând."
+
+#: src/window/groups.rs
+#, rust-format
+msgid "For 1 week, {user}'s computer will reach your devices. You won't see or reach theirs, and you can end it any time."
+msgstr "Timp de 1 săptămână, {user} va ajunge de pe computerul său la dispozitivele dvs. Nu veți vedea și nu veți ajunge la dispozitivele acestei persoane și puteți încheia oricând."
+
+#: src/window/groups.rs
+msgid "Done. The banner at the top shows the access and lets you end it."
+msgstr "Gata. Bannerul de sus arată accesul și vă permite să-l încheiați."

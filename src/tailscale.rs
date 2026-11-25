@@ -924,6 +924,10 @@ fn build_peers(ts: &TsStatus) -> Vec<Peer> {
                 .find(|i| i.contains(':'))
                 .cloned()
                 .unwrap_or_default();
+            // A device that reaches us for support is none we may reach (see crate::support).
+            if ips.iter().any(|i| crate::support::hides(i)) {
+                return None;
+            }
             let ip = ips.first().cloned().unwrap_or_default();
             let tags: Vec<String> = n
                 .tags

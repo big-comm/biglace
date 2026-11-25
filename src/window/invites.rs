@@ -172,7 +172,7 @@ fn watch_for_new_device(dlg: &libadwaita::Window, toast: &libadwaita::ToastOverl
 }
 
 /// Sentence for a member-API failure.
-fn explain(err: &MemberError) -> String {
+pub(super) fn explain(err: &MemberError) -> String {
     match err {
         MemberError::Unsupported => tr!(
             "Invites from BigLace need a BigScale server that supports them. \
@@ -216,6 +216,9 @@ pub struct InvitesPage {
     pub menu_btn: gtk4::MenuButton,
     stack: gtk4::Stack,
     list: gtk4::ListBox,
+    /// Support access we give (our device reaches someone's), open or just ended.
+    support_title: gtk4::Label,
+    support_list: gtk4::ListBox,
     error_page: libadwaita::StatusPage,
     /// Last answer from the panel; the invite dialog offers its groups.
     state: Rc<RefCell<Option<MyInvites>>>,
@@ -283,6 +286,17 @@ impl InvitesPage {
         list.set_placeholder(Some(&empty));
         body.append(&list);
 
+        let support_title = gtk4::Label::new(Some(&tr!("Support access")));
+        support_title.add_css_class("heading");
+        support_title.set_xalign(0.0);
+        support_title.set_visible(false);
+        let support_list = gtk4::ListBox::new();
+        support_list.add_css_class("boxed-list");
+        support_list.set_selection_mode(gtk4::SelectionMode::None);
+        support_list.set_visible(false);
+        body.append(&support_title);
+        body.append(&support_list);
+
         let clamp = libadwaita::Clamp::builder().maximum_size(720).child(&body).build();
         let scroll = gtk4::ScrolledWindow::builder()
             .hscrollbar_policy(gtk4::PolicyType::Never)
@@ -313,6 +327,8 @@ impl InvitesPage {
             menu_btn,
             stack,
             list,
+            support_title,
+            support_list,
             error_page,
             state: Rc::new(RefCell::new(None)),
             admin: Rc::default(),
@@ -344,9 +360,12 @@ impl InvitesPage {
             self.stack.set_visible_child_name("loading");
         }
         let page = self.clone();
-        super::run_in_background(invite::my_invites, move |result| match result {
+        // An older panel has no support access: no list, not an error.
+        let fetch = || (invite::my_invites(), crate::support::fetch().unwrap_or_default());
+        super::run_in_background(fetch, move |(result, support)| match result {
             Ok(mine) => {
                 page.fill(&mine.invites);
+                page.fill_support(&support.helping);
                 *page.state.borrow_mut() = Some(mine);
                 page.stack.set_visible_child_name("list");
                 done(None);
@@ -395,6 +414,43 @@ impl InvitesPage {
         }
     }
 
+    fn fill_support(&self, grants: &[invite::SupportGrant]) {
+        while let Some(child) = self.support_list.first_child() {
+            self.support_list.remove(&child);
+        }
+        let open: Vec<_> = grants.iter().filter(|g| crate::support::open(g)).collect();
+        self.support_title.set_visible(!open.is_empty());
+        self.support_list.set_visible(!open.is_empty());
+        for g in open {
+            let row = libadwaita::ActionRow::builder()
+                .title(glib::markup_escape_text(&g.guest).as_str())
+                .subtitle(
+                    glib::markup_escape_text(&trf!(
+                        "{device} reaches their devices until {time}",
+                        "device" => g.helper_device,
+                        "time" => super::support_ui::until(&g.ends_at)
+                    ))
+                    .as_str(),
+                )
+                .build();
+            row.add_prefix(&gtk4::Image::from_icon_name("help-browser-symbolic"));
+            let btn = gtk4::Button::builder()
+                .label(tr!("End"))
+                .valign(gtk4::Align::Center)
+                .css_classes(["flat", "error"])
+                .tooltip_text(tr!("End this access now"))
+                .build();
+            let (page, id) = (self.clone(), g.id.clone());
+            btn.connect_clicked(move |b| {
+                b.set_sensitive(false);
+                let (page, id) = (page.clone(), id.clone());
+                super::run_in_background(move || crate::support::end(&id), move |_| page.refresh());
+            });
+            row.add_suffix(&btn);
+            self.support_list.append(&row);
+        }
+    }
+
     fn row(&self, inv: &SentInvite) -> libadwaita::ActionRow {
         let who = inv.uses.first().map(|u| u.user.clone());
         let title = match (&who, inv.note.is_empty()) {
@@ -405,6 +461,12 @@ impl InvitesPage {
         let mut details = vec![status_label(&inv.status)];
         if let Some(g) = &inv.group {
             details.push(trf!("group {group}", "group" => g));
+        }
+        match inv.support.as_ref().map(|s| s.hours) {
+            Some(1) => details.push(tr!("to help, for 1 hour")),
+            Some(24) => details.push(tr!("to help, for 1 day")),
+            Some(168) => details.push(tr!("to help, for 1 week")),
+            _ => {}
         }
         if let Some(date) = inv.created_at.get(..10) {
             details.push(date.to_string());
@@ -460,11 +522,7 @@ pub fn show_dialog(parent: &libadwaita::ApplicationWindow, page: &InvitesPage, p
     // Radio rows instead of a drop-down: every choice gets a full line and
     // a sentence saying what it means, and a screen reader hears both.
     let form = libadwaita::PreferencesPage::new();
-    let grp_note = libadwaita::PreferencesGroup::builder()
-        .description(tr!(
-            "The person you invite will reach your devices, and you theirs."
-        ))
-        .build();
+    let grp_note = libadwaita::PreferencesGroup::new();
     let row_note = libadwaita::EntryRow::builder()
         .title(tr!("Who is it for? (optional)"))
         .build();
@@ -510,9 +568,26 @@ pub fn show_dialog(parent: &libadwaita::ApplicationWindow, page: &InvitesPage, p
             &tr!("No link to you: they see only their own devices and whoever they invite (you're the administrator)"),
         );
     }
-    if !groups.is_empty() || admin {
-        form.add(&grp_access);
+    add_choice(
+        &tr!("Only I reach them, to help"),
+        &tr!("This computer reaches their devices for a while. They don't see or reach yours, and can end it any time"),
+    );
+    let support_choice = radios.len() - 1;
+    // How long, for that last choice: hours the panel accepts.
+    const SUPPORT_HOURS: [u32; 3] = [1, 24, 168];
+    let durations = gtk4::StringList::new(&[&tr!("1 hour"), &tr!("1 day"), &tr!("1 week")]);
+    let row_duration = libadwaita::ComboRow::builder()
+        .title(tr!("For how long"))
+        .model(&durations)
+        .selected(1)
+        .visible(false)
+        .build();
+    grp_access.add(&row_duration);
+    {
+        let row_duration = row_duration.clone();
+        radios[support_choice].connect_toggled(move |c| row_duration.set_visible(c.is_active()));
     }
+    form.add(&grp_access);
     if let Some(i) = preselect.and_then(|p| groups.iter().position(|g| g == p)) {
         radios[i + 1].set_active(true);
     }
@@ -601,8 +676,12 @@ pub fn show_dialog(parent: &libadwaita::ApplicationWindow, page: &InvitesPage, p
         btn_create.connect_clicked(move |btn| {
             lbl_err.set_text("");
             let idx = radios.iter().position(|r| r.is_active()).unwrap_or(0);
+            let support = (idx == support_choice).then(|| {
+                let at = usize::try_from(row_duration.selected()).unwrap_or(1);
+                SUPPORT_HOURS.get(at).copied().unwrap_or(24)
+            });
             let isolated = admin && idx == groups.len() + 1;
-            let group = (idx > 0 && !isolated).then(|| groups.get(idx - 1).cloned()).flatten();
+            let group = (idx > 0 && !isolated && support.is_none()).then(|| groups.get(idx - 1).cloned()).flatten();
             let note = row_note.text().trim().to_string();
             btn.set_sensitive(false);
             let (page, steps, picture, link_label, lbl_err, btn, hint) = (
@@ -615,7 +694,14 @@ pub fn show_dialog(parent: &libadwaita::ApplicationWindow, page: &InvitesPage, p
                 hint.clone(),
             );
             super::run_in_background(
-                move || invite::create(group.as_deref(), &note, isolated),
+                move || {
+                    let kind = match support {
+                        Some(hours) => invite::InviteKind::Support(hours),
+                        None if isolated => invite::InviteKind::Isolated,
+                        None => invite::InviteKind::Mutual(group.as_deref()),
+                    };
+                    invite::create(kind, &note)
+                },
                 move |result| {
                     btn.set_sensitive(true);
                     match result {

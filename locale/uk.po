@@ -467,8 +467,8 @@ msgstr "група {group}"
 msgid "Cancel this invite: the link stops working"
 msgstr "Скасувати це запрошення: посилання перестане працювати"
 
-msgid "The person you invite will reach your devices, and you theirs."
-msgstr "Запрошена людина бачитиме ваші пристрої, а ви — її."
+#~ msgid "The person you invite will reach your devices, and you theirs."
+#~ msgstr "Запрошена людина бачитиме ваші пристрої, а ви — її."
 
 msgid "Who is it for? (optional)"
 msgstr "Для кого це? (необов'язково)"
@@ -3192,3 +3192,93 @@ msgstr "Мій телефон"
 #: src/window/lan_ui.rs
 msgid "Share notifications, battery and clipboard with this phone"
 msgstr "Ділитися сповіщеннями, зарядом батареї та буфером обміну з цим телефоном"
+
+#: src/window/invites.rs
+msgid "Only I reach them, to help"
+msgstr "Доступ лише в мене, щоб допомогти"
+
+#: src/window/invites.rs
+msgid "This computer reaches their devices for a while. They don't see or reach yours, and can end it any time"
+msgstr "Цей комп'ютер на деякий час отримує доступ до пристроїв людини. Вона не бачить ваших пристроїв, не має до них доступу й може завершити це будь-коли"
+
+#: src/window/invites.rs
+msgid "For how long"
+msgstr "На який час"
+
+#: src/window/invites.rs
+msgid "1 hour"
+msgstr "1 година"
+
+#: src/window/invites.rs
+msgid "1 day"
+msgstr "1 день"
+
+#: src/window/invites.rs
+msgid "1 week"
+msgstr "1 тиждень"
+
+#: src/window/invites.rs
+msgid "Support access"
+msgstr "Доступ для допомоги"
+
+#: src/window/invites.rs
+#, rust-format
+msgid "{device} reaches their devices until {time}"
+msgstr "{device} має доступ до пристроїв людини до {time}"
+
+#: src/window/invites.rs
+msgid "End"
+msgstr "Завершити"
+
+#: src/window/invites.rs
+msgid "End this access now"
+msgstr "Завершити цей доступ зараз"
+
+#: src/window/invites.rs
+msgid "to help, for 1 hour"
+msgstr "щоб допомогти, на 1 годину"
+
+#: src/window/invites.rs
+msgid "to help, for 1 day"
+msgstr "щоб допомогти, на 1 день"
+
+#: src/window/invites.rs
+msgid "to help, for 1 week"
+msgstr "щоб допомогти, на 1 тиждень"
+
+#: src/window/support_ui.rs
+msgid "End now"
+msgstr "Завершити зараз"
+
+#: src/window/support_ui.rs
+msgid "Access ended."
+msgstr "Доступ завершено."
+
+#: src/window/support_ui.rs
+#, rust-format
+msgid "{user} can reach your devices until {time}, to help you"
+msgstr "{user} має доступ до ваших пристроїв до {time}, щоб допомогти вам"
+
+#: src/window/groups.rs
+#, rust-format
+msgid "Let {user} help you?"
+msgstr "Дозволити {user} допомогти вам?"
+
+#: src/window/groups.rs
+#, rust-format
+msgid "For 1 hour, {user}'s computer will reach your devices. You won't see or reach theirs, and you can end it any time."
+msgstr "Протягом 1 години комп'ютер {user} матиме доступ до ваших пристроїв. Ви не бачитимете пристроїв цієї людини й не матимете до них доступу, а завершити це можна будь-коли."
+
+#: src/window/groups.rs
+#, rust-format
+msgid "For 1 day, {user}'s computer will reach your devices. You won't see or reach theirs, and you can end it any time."
+msgstr "Протягом 1 дня комп'ютер {user} матиме доступ до ваших пристроїв. Ви не бачитимете пристроїв цієї людини й не матимете до них доступу, а завершити це можна будь-коли."
+
+#: src/window/groups.rs
+#, rust-format
+msgid "For 1 week, {user}'s computer will reach your devices. You won't see or reach theirs, and you can end it any time."
+msgstr "Протягом 1 тижня комп'ютер {user} матиме доступ до ваших пристроїв. Ви не бачитимете пристроїв цієї людини й не матимете до них доступу, а завершити це можна будь-коли."
+
+#: src/window/groups.rs
+msgid "Done. The banner at the top shows the access and lets you end it."
+msgstr "Готово. Банер угорі показує доступ і дає змогу його завершити."

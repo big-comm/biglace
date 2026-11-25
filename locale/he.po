@@ -445,8 +445,8 @@ msgstr "קבוצה {group}"
 msgid "Cancel this invite: the link stops working"
 msgstr "ביטול הזמנה זו: הקישור יפסיק לעבוד"
 
-msgid "The person you invite will reach your devices, and you theirs."
-msgstr "האדם שתזמין יגיע למכשירים שלך, ואתה לשלו."
+#~ msgid "The person you invite will reach your devices, and you theirs."
+#~ msgstr "האדם שתזמין יגיע למכשירים שלך, ואתה לשלו."
 
 msgid "Who is it for? (optional)"
 msgstr "למי היא מיועדת? (אופציונלי)"
@@ -3079,3 +3079,93 @@ msgstr "הטלפון שלי"
 #: src/window/lan_ui.rs
 msgid "Share notifications, battery and clipboard with this phone"
 msgstr "שיתוף התראות, סוללה ולוח העתקה עם הטלפון הזה"
+
+#: src/window/invites.rs
+msgid "Only I reach them, to help"
+msgstr "רק אני מגיע למכשירים, כדי לעזור"
+
+#: src/window/invites.rs
+msgid "This computer reaches their devices for a while. They don't see or reach yours, and can end it any time"
+msgstr "המחשב הזה מגיע למכשירים של האדם לזמן מה. האדם לא רואה את שלך ולא מגיע אליהם, ויכול לסיים זאת בכל עת"
+
+#: src/window/invites.rs
+msgid "For how long"
+msgstr "לכמה זמן"
+
+#: src/window/invites.rs
+msgid "1 hour"
+msgstr "שעה אחת"
+
+#: src/window/invites.rs
+msgid "1 day"
+msgstr "יום אחד"
+
+#: src/window/invites.rs
+msgid "1 week"
+msgstr "שבוע אחד"
+
+#: src/window/invites.rs
+msgid "Support access"
+msgstr "גישת תמיכה"
+
+#: src/window/invites.rs
+#, rust-format
+msgid "{device} reaches their devices until {time}"
+msgstr "{device} מגיע למכשירים של האדם עד {time}"
+
+#: src/window/invites.rs
+msgid "End"
+msgstr "סיום"
+
+#: src/window/invites.rs
+msgid "End this access now"
+msgstr "סיום הגישה הזאת עכשיו"
+
+#: src/window/invites.rs
+msgid "to help, for 1 hour"
+msgstr "כדי לעזור, לשעה אחת"
+
+#: src/window/invites.rs
+msgid "to help, for 1 day"
+msgstr "כדי לעזור, ליום אחד"
+
+#: src/window/invites.rs
+msgid "to help, for 1 week"
+msgstr "כדי לעזור, לשבוע אחד"
+
+#: src/window/support_ui.rs
+msgid "End now"
+msgstr "סיום עכשיו"
+
+#: src/window/support_ui.rs
+msgid "Access ended."
+msgstr "הגישה הסתיימה."
+
+#: src/window/support_ui.rs
+#, rust-format
+msgid "{user} can reach your devices until {time}, to help you"
+msgstr "ל־{user} יש גישה למכשירים שלך עד {time}, כדי לעזור לך"
+
+#: src/window/groups.rs
+#, rust-format
+msgid "Let {user} help you?"
+msgstr "לאפשר ל־{user} לעזור לך?"
+
+#: src/window/groups.rs
+#, rust-format
+msgid "For 1 hour, {user}'s computer will reach your devices. You won't see or reach theirs, and you can end it any time."
+msgstr "במשך שעה אחת, המחשב של {user} יגיע למכשירים שלך. אתה לא תראה את המכשירים של האדם ולא תגיע אליהם, ותוכל לסיים זאת בכל עת."
+
+#: src/window/groups.rs
+#, rust-format
+msgid "For 1 day, {user}'s computer will reach your devices. You won't see or reach theirs, and you can end it any time."
+msgstr "במשך יום אחד, המחשב של {user} יגיע למכשירים שלך. אתה לא תראה את המכשירים של האדם ולא תגיע אליהם, ותוכל לסיים זאת בכל עת."
+
+#: src/window/groups.rs
+#, rust-format
+msgid "For 1 week, {user}'s computer will reach your devices. You won't see or reach theirs, and you can end it any time."
+msgstr "במשך שבוע אחד, המחשב של {user} יגיע למכשירים שלך. אתה לא תראה את המכשירים של האדם ולא תגיע אליהם, ותוכל לסיים זאת בכל עת."
+
+#: src/window/groups.rs
+msgid "Done. The banner at the top shows the access and lets you end it."
+msgstr "זהו. הפס בראש מציג את הגישה ומאפשר לסיים אותה."

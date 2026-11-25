@@ -466,8 +466,8 @@ msgstr "grupa {group}"
 msgid "Cancel this invite: the link stops working"
 msgstr "Otkaži ovu pozivnicu: poveznica prestaje raditi"
 
-msgid "The person you invite will reach your devices, and you theirs."
-msgstr "Osoba koju pozovete dopirat će do vaših uređaja, a vi do njezinih."
+#~ msgid "The person you invite will reach your devices, and you theirs."
+#~ msgstr "Osoba koju pozovete dopirat će do vaših uređaja, a vi do njezinih."
 
 msgid "Who is it for? (optional)"
 msgstr "Za koga je? (neobavezno)"
@@ -3180,3 +3180,93 @@ msgstr "Moj telefon"
 #: src/window/lan_ui.rs
 msgid "Share notifications, battery and clipboard with this phone"
 msgstr "Dijeli obavijesti, bateriju i međuspremnik s ovim telefonom"
+
+#: src/window/invites.rs
+msgid "Only I reach them, to help"
+msgstr "Pristup samo za mene, radi pomoći"
+
+#: src/window/invites.rs
+msgid "This computer reaches their devices for a while. They don't see or reach yours, and can end it any time"
+msgstr "Ovo računalo neko vrijeme dopire do uređaja te osobe. Ona ne vidi vaše niti dopire do njih i može to završiti u bilo kojem trenutku"
+
+#: src/window/invites.rs
+msgid "For how long"
+msgstr "Koliko dugo"
+
+#: src/window/invites.rs
+msgid "1 hour"
+msgstr "1 sat"
+
+#: src/window/invites.rs
+msgid "1 day"
+msgstr "1 dan"
+
+#: src/window/invites.rs
+msgid "1 week"
+msgstr "1 tjedan"
+
+#: src/window/invites.rs
+msgid "Support access"
+msgstr "Pristup za pomoć"
+
+#: src/window/invites.rs
+#, rust-format
+msgid "{device} reaches their devices until {time}"
+msgstr "{device} dopire do uređaja te osobe do {time}"
+
+#: src/window/invites.rs
+msgid "End"
+msgstr "Završi"
+
+#: src/window/invites.rs
+msgid "End this access now"
+msgstr "Završi ovaj pristup sada"
+
+#: src/window/invites.rs
+msgid "to help, for 1 hour"
+msgstr "radi pomoći, na 1 sat"
+
+#: src/window/invites.rs
+msgid "to help, for 1 day"
+msgstr "radi pomoći, na 1 dan"
+
+#: src/window/invites.rs
+msgid "to help, for 1 week"
+msgstr "radi pomoći, na 1 tjedan"
+
+#: src/window/support_ui.rs
+msgid "End now"
+msgstr "Završi sada"
+
+#: src/window/support_ui.rs
+msgid "Access ended."
+msgstr "Pristup je završen."
+
+#: src/window/support_ui.rs
+#, rust-format
+msgid "{user} can reach your devices until {time}, to help you"
+msgstr "{user} može dopirati do vaših uređaja sve do {time}, radi pomoći"
+
+#: src/window/groups.rs
+#, rust-format
+msgid "Let {user} help you?"
+msgstr "Prihvatiti pomoć od {user}?"
+
+#: src/window/groups.rs
+#, rust-format
+msgid "For 1 hour, {user}'s computer will reach your devices. You won't see or reach theirs, and you can end it any time."
+msgstr "Tijekom 1 sata {user} će sa svojeg računala dopirati do vaših uređaja. Vi nećete vidjeti uređaje te osobe niti dopirati do njih i možete to završiti u bilo kojem trenutku."
+
+#: src/window/groups.rs
+#, rust-format
+msgid "For 1 day, {user}'s computer will reach your devices. You won't see or reach theirs, and you can end it any time."
+msgstr "Tijekom 1 dana {user} će sa svojeg računala dopirati do vaših uređaja. Vi nećete vidjeti uređaje te osobe niti dopirati do njih i možete to završiti u bilo kojem trenutku."
+
+#: src/window/groups.rs
+#, rust-format
+msgid "For 1 week, {user}'s computer will reach your devices. You won't see or reach theirs, and you can end it any time."
+msgstr "Tijekom 1 tjedna {user} će sa svojeg računala dopirati do vaših uređaja. Vi nećete vidjeti uređaje te osobe niti dopirati do njih i možete to završiti u bilo kojem trenutku."
+
+#: src/window/groups.rs
+msgid "Done. The banner at the top shows the access and lets you end it."
+msgstr "Gotovo. Traka na vrhu prikazuje pristup i omogućuje da ga završite."

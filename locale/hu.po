@@ -467,8 +467,8 @@ msgstr "{group} csoport"
 msgid "Cancel this invite: the link stops working"
 msgstr "Meghívó visszavonása: a hivatkozás nem fog működni"
 
-msgid "The person you invite will reach your devices, and you theirs."
-msgstr "Akit meghívsz, eléri az eszközeidet, te pedig az övéit."
+#~ msgid "The person you invite will reach your devices, and you theirs."
+#~ msgstr "Akit meghívsz, eléri az eszközeidet, te pedig az övéit."
 
 msgid "Who is it for? (optional)"
 msgstr "Kinek szól? (nem kötelező)"
@@ -3206,3 +3206,93 @@ msgstr "Saját telefon"
 #: src/window/lan_ui.rs
 msgid "Share notifications, battery and clipboard with this phone"
 msgstr "Értesítések, akkumulátor és vágólap megosztása ezzel a telefonnal"
+
+#: src/window/invites.rs
+msgid "Only I reach them, to help"
+msgstr "Csak én érem el az eszközeit, hogy segítsek"
+
+#: src/window/invites.rs
+msgid "This computer reaches their devices for a while. They don't see or reach yours, and can end it any time"
+msgstr "Ez a számítógép egy ideig eléri az eszközeit. Ő nem látja és nem éri el a tieidet, és bármikor befejezheti"
+
+#: src/window/invites.rs
+msgid "For how long"
+msgstr "Mennyi időre"
+
+#: src/window/invites.rs
+msgid "1 hour"
+msgstr "1 óra"
+
+#: src/window/invites.rs
+msgid "1 day"
+msgstr "1 nap"
+
+#: src/window/invites.rs
+msgid "1 week"
+msgstr "1 hét"
+
+#: src/window/invites.rs
+msgid "Support access"
+msgstr "Támogatói hozzáférés"
+
+#: src/window/invites.rs
+#, rust-format
+msgid "{device} reaches their devices until {time}"
+msgstr "{device} eléri az eszközeit (eddig: {time})"
+
+#: src/window/invites.rs
+msgid "End"
+msgstr "Befejezés"
+
+#: src/window/invites.rs
+msgid "End this access now"
+msgstr "Hozzáférés befejezése most"
+
+#: src/window/invites.rs
+msgid "to help, for 1 hour"
+msgstr "segítségnyújtásra, 1 órára"
+
+#: src/window/invites.rs
+msgid "to help, for 1 day"
+msgstr "segítségnyújtásra, 1 napra"
+
+#: src/window/invites.rs
+msgid "to help, for 1 week"
+msgstr "segítségnyújtásra, 1 hétre"
+
+#: src/window/support_ui.rs
+msgid "End now"
+msgstr "Befejezés most"
+
+#: src/window/support_ui.rs
+msgid "Access ended."
+msgstr "A hozzáférés véget ért."
+
+#: src/window/support_ui.rs
+#, rust-format
+msgid "{user} can reach your devices until {time}, to help you"
+msgstr "{user} elérheti az eszközeidet, hogy segítsen (eddig: {time})"
+
+#: src/window/groups.rs
+#, rust-format
+msgid "Let {user} help you?"
+msgstr "Engeded, hogy {user} segítsen?"
+
+#: src/window/groups.rs
+#, rust-format
+msgid "For 1 hour, {user}'s computer will reach your devices. You won't see or reach theirs, and you can end it any time."
+msgstr "1 órán át {user} számítógépe eléri az eszközeidet. Te nem látod és nem éred el az övéit, és bármikor befejezheted."
+
+#: src/window/groups.rs
+#, rust-format
+msgid "For 1 day, {user}'s computer will reach your devices. You won't see or reach theirs, and you can end it any time."
+msgstr "1 napon át {user} számítógépe eléri az eszközeidet. Te nem látod és nem éred el az övéit, és bármikor befejezheted."
+
+#: src/window/groups.rs
+#, rust-format
+msgid "For 1 week, {user}'s computer will reach your devices. You won't see or reach theirs, and you can end it any time."
+msgstr "1 héten át {user} számítógépe eléri az eszközeidet. Te nem látod és nem éred el az övéit, és bármikor befejezheted."
+
+#: src/window/groups.rs
+msgid "Done. The banner at the top shows the access and lets you end it."
+msgstr "Kész. A felső sáv mutatja a hozzáférést, és ott be is fejezheted."

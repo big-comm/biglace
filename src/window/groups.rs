@@ -632,6 +632,14 @@ impl GroupsPage {
                 Err(e) => return super::show_toast(&page.toast, &explain(&e), 8),
             };
             let (heading, body) = match (&link.group, &link.invited_by) {
+                (_, Some(u)) if link.support_hours.is_some() => (
+                    trf!("Let {user} help you?", "user" => u),
+                    match link.support_hours {
+                        Some(1) => trf!("For 1 hour, {user}'s computer will reach your devices. You won't see or reach theirs, and you can end it any time.", "user" => u),
+                        Some(168) => trf!("For 1 week, {user}'s computer will reach your devices. You won't see or reach theirs, and you can end it any time.", "user" => u),
+                        _ => trf!("For 1 day, {user}'s computer will reach your devices. You won't see or reach theirs, and you can end it any time.", "user" => u),
+                    },
+                ),
                 (Some(g), Some(u)) => (
                     trf!("Join {group}?", "group" => g),
                     trf!("{user} invited you. You and the group's members will reach each other's devices.", "user" => u),
@@ -659,11 +667,19 @@ impl GroupsPage {
                     return;
                 }
                 let inv = inv.clone();
-                let done = match &link.group {
-                    Some(g) => trf!("You joined {group}.", "group" => g),
-                    None => tr!("Done. You can now reach each other's devices."),
+                let done = match (&link.group, link.support_hours) {
+                    (_, Some(_)) => tr!("Done. The banner at the top shows the access and lets you end it."),
+                    (Some(g), None) => trf!("You joined {group}.", "group" => g),
+                    (None, None) => tr!("Done. You can now reach each other's devices."),
                 };
-                page2.run(move || invite::redeem_as_member(&inv, false).map(|_| ()), done);
+                page2.run(
+                    move || {
+                        invite::redeem_as_member(&inv, false)?;
+                        // A support access starts now: its banner shouldn't wait for a new peer.
+                        crate::support::fetch().map(|_| ())
+                    },
+                    done,
+                );
             });
             page.win.present();
             dlg.present();

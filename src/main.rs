@@ -20,6 +20,7 @@
 //! - `transfer`: sending files to a device, accepted or declined there.
 //! - `listeners`: events every part of the window hears.
 //! - `secrets`: the OS credential store.
+//! - `support`: someone's device reaching ours for a while to help (hidden from our lists).
 //! - `tailscale`: the tailscaled daemon and its state.
 //! - `tray`, `window`: the tray indicator and the main window.
 
@@ -47,6 +48,7 @@ mod remote;
 mod chat;
 mod room;
 mod secrets;
+mod support;
 mod tailscale;
 mod transfer;
 // Cross-platform façade: ksni (StatusNotifierItem / D-Bus) on Linux,
@@ -86,7 +88,7 @@ pub static MALLOC_CONF: &[u8] = b"background_thread:true,dirty_decay_ms:1000,muz
 /// creates (feat → minor, fix/perf/docs/… → patch, breaking → major) by
 /// rewriting this assignment. Reading it from `CARGO_PKG_VERSION` hid it from
 /// gitrepo, which is how the version sat at 1.0.0 through dozens of releases.
-pub const APP_VERSION: &str = "1.75.0";
+pub const APP_VERSION: &str = "1.76.0";
 pub const APP_ID: &str = "org.communitybig.biglace";
 
 /// Date-based build stamp (`YY.MM.DD-HHMM`) — the scheme the GitHub release

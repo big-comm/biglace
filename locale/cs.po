@@ -461,8 +461,8 @@ msgstr "skupina {group}"
 msgid "Cancel this invite: the link stops working"
 msgstr "Zrušit tuto pozvánku: odkaz přestane fungovat"
 
-msgid "The person you invite will reach your devices, and you theirs."
-msgstr "Pozvaná osoba se dostane k vašim zařízením a vy k jejím."
+#~ msgid "The person you invite will reach your devices, and you theirs."
+#~ msgstr "Pozvaná osoba se dostane k vašim zařízením a vy k jejím."
 
 msgid "Who is it for? (optional)"
 msgstr "Pro koho je? (volitelné)"
@@ -3160,3 +3160,93 @@ msgstr "Můj telefon"
 #: src/window/lan_ui.rs
 msgid "Share notifications, battery and clipboard with this phone"
 msgstr "Sdílet s tímto telefonem oznámení, baterii a schránku"
+
+#: src/window/invites.rs
+msgid "Only I reach them, to help"
+msgstr "Přístup jen pro mě, kvůli pomoci"
+
+#: src/window/invites.rs
+msgid "This computer reaches their devices for a while. They don't see or reach yours, and can end it any time"
+msgstr "Tento počítač se na čas dostane k zařízením této osoby. Ona vaše nevidí ani se k nim nedostane a může to kdykoli ukončit"
+
+#: src/window/invites.rs
+msgid "For how long"
+msgstr "Na jak dlouho"
+
+#: src/window/invites.rs
+msgid "1 hour"
+msgstr "1 hodina"
+
+#: src/window/invites.rs
+msgid "1 day"
+msgstr "1 den"
+
+#: src/window/invites.rs
+msgid "1 week"
+msgstr "1 týden"
+
+#: src/window/invites.rs
+msgid "Support access"
+msgstr "Přístup pro pomoc"
+
+#: src/window/invites.rs
+#, rust-format
+msgid "{device} reaches their devices until {time}"
+msgstr "{device} se dostane k zařízením této osoby do {time}"
+
+#: src/window/invites.rs
+msgid "End"
+msgstr "Ukončit"
+
+#: src/window/invites.rs
+msgid "End this access now"
+msgstr "Ukončit tento přístup hned"
+
+#: src/window/invites.rs
+msgid "to help, for 1 hour"
+msgstr "kvůli pomoci, na 1 hodinu"
+
+#: src/window/invites.rs
+msgid "to help, for 1 day"
+msgstr "kvůli pomoci, na 1 den"
+
+#: src/window/invites.rs
+msgid "to help, for 1 week"
+msgstr "kvůli pomoci, na 1 týden"
+
+#: src/window/support_ui.rs
+msgid "End now"
+msgstr "Ukončit hned"
+
+#: src/window/support_ui.rs
+msgid "Access ended."
+msgstr "Přístup ukončen."
+
+#: src/window/support_ui.rs
+#, rust-format
+msgid "{user} can reach your devices until {time}, to help you"
+msgstr "{user} se může do {time} dostat k vašim zařízením kvůli pomoci"
+
+#: src/window/groups.rs
+#, rust-format
+msgid "Let {user} help you?"
+msgstr "Přijmout pomoc od {user}?"
+
+#: src/window/groups.rs
+#, rust-format
+msgid "For 1 hour, {user}'s computer will reach your devices. You won't see or reach theirs, and you can end it any time."
+msgstr "Na 1 hodinu získá {user} ze svého počítače přístup k vašim zařízením. Vy neuvidíte zařízení této osoby ani se k nim nedostanete a můžete to kdykoli ukončit."
+
+#: src/window/groups.rs
+#, rust-format
+msgid "For 1 day, {user}'s computer will reach your devices. You won't see or reach theirs, and you can end it any time."
+msgstr "Na 1 den získá {user} ze svého počítače přístup k vašim zařízením. Vy neuvidíte zařízení této osoby ani se k nim nedostanete a můžete to kdykoli ukončit."
+
+#: src/window/groups.rs
+#, rust-format
+msgid "For 1 week, {user}'s computer will reach your devices. You won't see or reach theirs, and you can end it any time."
+msgstr "Na 1 týden získá {user} ze svého počítače přístup k vašim zařízením. Vy neuvidíte zařízení této osoby ani se k nim nedostanete a můžete to kdykoli ukončit."
+
+#: src/window/groups.rs
+msgid "Done. The banner at the top shows the access and lets you end it."
+msgstr "Hotovo. Lišta nahoře zobrazuje přístup a umožňuje ho ukončit."

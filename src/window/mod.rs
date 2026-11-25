@@ -20,6 +20,7 @@ mod remote_ui;
 mod room_stage;
 mod rooms;
 mod sidebar;
+mod support_ui;
 mod transfer_ui;
 mod clipboard_ui;
 #[cfg(target_os = "linux")]
@@ -86,6 +87,7 @@ struct Ui {
     admin_menu: gtk4::gio::Menu,
     /// "Someone is controlling this screen — End access".
     remote_banner: libadwaita::Banner,
+    support_banner: support_ui::SupportBanner,
 }
 
 /// Cross-thread handle to the tray indicator. Wrapped in `Rc<RefCell<Option<…>>>`
@@ -418,8 +420,11 @@ pub fn build(app: &libadwaita::Application, start_hidden: bool) {
     // While someone sees and controls this screen: a banner across the top
     // of the window, with "End access" (see remote_ui).
     let remote_banner = libadwaita::Banner::builder().revealed(false).build();
+    // Someone reaches our devices to help us: who, until when, "End now".
+    let support_banner = support_ui::SupportBanner::build(&toast);
     let shell = gtk4::Box::new(gtk4::Orientation::Vertical, 0);
     shell.append(&remote_banner);
+    shell.append(&support_banner.banner);
     split.set_vexpand(true);
     shell.append(&split);
     toast.set_child(Some(&shell));
@@ -438,6 +443,7 @@ pub fn build(app: &libadwaita::Application, start_hidden: bool) {
         chat: chat_page,
         admin_menu,
         remote_banner,
+        support_banner,
     };
 
     let (refresh_tx, refresh_rx) = async_channel::unbounded::<()>();
@@ -2233,6 +2239,11 @@ fn refresh_state(ctx: &Ctx) {
                 if !status.online {
                     peers.clear();
                 }
+                // A helper's device showing up: learn it, then leave it out.
+                let ips: Vec<&str> = peers.iter().map(|p| p.ip.as_str()).collect();
+                if crate::support::refresh(&ips) {
+                    peers.retain(|p| !crate::support::hides(&p.ip));
+                }
                 if let Ok(meta) = device_meta.lock() {
                     for p in peers.iter_mut() {
                         if let Some(u) = meta.get(&p.hostname) {
@@ -2294,6 +2305,7 @@ fn apply_refresh(ctx: &Ctx, data: RefreshData) {
             } else {
                 AppState::Disconnected
             };
+            ctx.ui.support_banner.update();
             apply_state(ctx, state, &status, &peers);
         }
     }

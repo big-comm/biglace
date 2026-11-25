@@ -468,8 +468,8 @@ msgstr "gruppen {group}"
 msgid "Cancel this invite: the link stops working"
 msgstr "Avbryt den här inbjudan: länken slutar fungera"
 
-msgid "The person you invite will reach your devices, and you theirs."
-msgstr "Personen du bjuder in kommer att nå dina enheter, och du deras."
+#~ msgid "The person you invite will reach your devices, and you theirs."
+#~ msgstr "Personen du bjuder in kommer att nå dina enheter, och du deras."
 
 msgid "Who is it for? (optional)"
 msgstr "Vem är den till? (valfritt)"
@@ -3191,3 +3191,93 @@ msgstr "Min telefon"
 #: src/window/lan_ui.rs
 msgid "Share notifications, battery and clipboard with this phone"
 msgstr "Dela aviseringar, batteri och urklipp med den här telefonen"
+
+#: src/window/invites.rs
+msgid "Only I reach them, to help"
+msgstr "Bara jag når deras enheter, för att hjälpa"
+
+#: src/window/invites.rs
+msgid "This computer reaches their devices for a while. They don't see or reach yours, and can end it any time"
+msgstr "Den här datorn når deras enheter en stund. De varken ser eller når dina och kan avsluta när som helst"
+
+#: src/window/invites.rs
+msgid "For how long"
+msgstr "Hur länge"
+
+#: src/window/invites.rs
+msgid "1 hour"
+msgstr "1 timme"
+
+#: src/window/invites.rs
+msgid "1 day"
+msgstr "1 dag"
+
+#: src/window/invites.rs
+msgid "1 week"
+msgstr "1 vecka"
+
+#: src/window/invites.rs
+msgid "Support access"
+msgstr "Supportåtkomst"
+
+#: src/window/invites.rs
+#, rust-format
+msgid "{device} reaches their devices until {time}"
+msgstr "{device} når deras enheter till {time}"
+
+#: src/window/invites.rs
+msgid "End"
+msgstr "Avsluta"
+
+#: src/window/invites.rs
+msgid "End this access now"
+msgstr "Avsluta den här åtkomsten nu"
+
+#: src/window/invites.rs
+msgid "to help, for 1 hour"
+msgstr "för att hjälpa, i 1 timme"
+
+#: src/window/invites.rs
+msgid "to help, for 1 day"
+msgstr "för att hjälpa, i 1 dag"
+
+#: src/window/invites.rs
+msgid "to help, for 1 week"
+msgstr "för att hjälpa, i 1 vecka"
+
+#: src/window/support_ui.rs
+msgid "End now"
+msgstr "Avsluta nu"
+
+#: src/window/support_ui.rs
+msgid "Access ended."
+msgstr "Åtkomsten avslutades."
+
+#: src/window/support_ui.rs
+#, rust-format
+msgid "{user} can reach your devices until {time}, to help you"
+msgstr "{user} kan nå dina enheter till {time} för att hjälpa dig"
+
+#: src/window/groups.rs
+#, rust-format
+msgid "Let {user} help you?"
+msgstr "Låta {user} hjälpa dig?"
+
+#: src/window/groups.rs
+#, rust-format
+msgid "For 1 hour, {user}'s computer will reach your devices. You won't see or reach theirs, and you can end it any time."
+msgstr "I 1 timme når datorn hos {user} dina enheter. Du varken ser eller når deras, och du kan avsluta när som helst."
+
+#: src/window/groups.rs
+#, rust-format
+msgid "For 1 day, {user}'s computer will reach your devices. You won't see or reach theirs, and you can end it any time."
+msgstr "I 1 dag når datorn hos {user} dina enheter. Du varken ser eller når deras, och du kan avsluta när som helst."
+
+#: src/window/groups.rs
+#, rust-format
+msgid "For 1 week, {user}'s computer will reach your devices. You won't see or reach theirs, and you can end it any time."
+msgstr "I 1 vecka når datorn hos {user} dina enheter. Du varken ser eller når deras, och du kan avsluta när som helst."
+
+#: src/window/groups.rs
+msgid "Done. The banner at the top shows the access and lets you end it."
+msgstr "Klart. Bannern högst upp visar åtkomsten, och där kan du avsluta den."

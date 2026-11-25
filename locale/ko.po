@@ -456,8 +456,8 @@ msgstr "{group} 그룹"
 msgid "Cancel this invite: the link stops working"
 msgstr "이 초대 취소: 링크가 더 이상 작동하지 않습니다"
 
-msgid "The person you invite will reach your devices, and you theirs."
-msgstr "초대한 사람은 내 기기에, 나는 그 사람의 기기에 연결할 수 있습니다."
+#~ msgid "The person you invite will reach your devices, and you theirs."
+#~ msgstr "초대한 사람은 내 기기에, 나는 그 사람의 기기에 연결할 수 있습니다."
 
 msgid "Who is it for? (optional)"
 msgstr "누구를 위한 초대인가요? (선택 사항)"
@@ -3148,3 +3148,93 @@ msgstr "내 휴대폰"
 #: src/window/lan_ui.rs
 msgid "Share notifications, battery and clipboard with this phone"
 msgstr "이 휴대폰과 알림, 배터리, 클립보드 공유"
+
+#: src/window/invites.rs
+msgid "Only I reach them, to help"
+msgstr "도움을 위해 나만 연결"
+
+#: src/window/invites.rs
+msgid "This computer reaches their devices for a while. They don't see or reach yours, and can end it any time"
+msgstr "이 컴퓨터가 일정 시간 상대방의 기기에 연결합니다. 상대방은 내 기기를 보거나 연결할 수 없으며 언제든지 종료할 수 있습니다"
+
+#: src/window/invites.rs
+msgid "For how long"
+msgstr "기간"
+
+#: src/window/invites.rs
+msgid "1 hour"
+msgstr "1시간"
+
+#: src/window/invites.rs
+msgid "1 day"
+msgstr "1일"
+
+#: src/window/invites.rs
+msgid "1 week"
+msgstr "1주"
+
+#: src/window/invites.rs
+msgid "Support access"
+msgstr "지원 접근"
+
+#: src/window/invites.rs
+#, rust-format
+msgid "{device} reaches their devices until {time}"
+msgstr "{device}에서 {time}까지 상대방의 기기에 연결합니다"
+
+#: src/window/invites.rs
+msgid "End"
+msgstr "종료"
+
+#: src/window/invites.rs
+msgid "End this access now"
+msgstr "지금 이 접근 종료"
+
+#: src/window/invites.rs
+msgid "to help, for 1 hour"
+msgstr "도움을 위해, 1시간"
+
+#: src/window/invites.rs
+msgid "to help, for 1 day"
+msgstr "도움을 위해, 1일"
+
+#: src/window/invites.rs
+msgid "to help, for 1 week"
+msgstr "도움을 위해, 1주"
+
+#: src/window/support_ui.rs
+msgid "End now"
+msgstr "지금 종료"
+
+#: src/window/support_ui.rs
+msgid "Access ended."
+msgstr "접근이 종료되었습니다."
+
+#: src/window/support_ui.rs
+#, rust-format
+msgid "{user} can reach your devices until {time}, to help you"
+msgstr "{user}님이 도움을 위해 {time}까지 내 기기에 연결할 수 있습니다"
+
+#: src/window/groups.rs
+#, rust-format
+msgid "Let {user} help you?"
+msgstr "{user}님의 도움을 받으시겠습니까?"
+
+#: src/window/groups.rs
+#, rust-format
+msgid "For 1 hour, {user}'s computer will reach your devices. You won't see or reach theirs, and you can end it any time."
+msgstr "1시간 동안 {user}님의 컴퓨터가 내 기기에 연결합니다. 나는 상대방의 기기를 보거나 연결할 수 없으며, 언제든지 종료할 수 있습니다."
+
+#: src/window/groups.rs
+#, rust-format
+msgid "For 1 day, {user}'s computer will reach your devices. You won't see or reach theirs, and you can end it any time."
+msgstr "1일 동안 {user}님의 컴퓨터가 내 기기에 연결합니다. 나는 상대방의 기기를 보거나 연결할 수 없으며, 언제든지 종료할 수 있습니다."
+
+#: src/window/groups.rs
+#, rust-format
+msgid "For 1 week, {user}'s computer will reach your devices. You won't see or reach theirs, and you can end it any time."
+msgstr "1주 동안 {user}님의 컴퓨터가 내 기기에 연결합니다. 나는 상대방의 기기를 보거나 연결할 수 없으며, 언제든지 종료할 수 있습니다."
+
+#: src/window/groups.rs
+msgid "Done. The banner at the top shows the access and lets you end it."
+msgstr "완료되었습니다. 상단 배너에 접근이 표시되며 거기서 종료할 수 있습니다."

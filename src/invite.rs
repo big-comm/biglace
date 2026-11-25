@@ -473,6 +473,27 @@ mod tests {
         assert!(cancel("../../admin").is_err(), "ids that could reshape the path are refused");
     }
 
+    /// Shapes written by the panel's /api/me/support and support invites (src/routes/api/me/support).
+    #[test]
+    fn support_answers_parse() {
+        let state: SupportState = serde_json::from_str(
+            r#"{"helping":[],"helped_by":[{"id":"5e1a","helper":"tales","helper_device":"lord",
+            "helper_ips":["100.64.0.2","fd7a:115c:a1e0::2"],"guest":"bruna","created_at":"2026-11-25T10:00:00.000Z",
+            "ends_at":"2026-11-26T10:00:00.000Z","ended_at":null}]}"#,
+        )
+        .unwrap();
+        let g = &state.helped_by[0];
+        assert_eq!((g.helper.as_str(), g.helper_ips.len(), g.ended_at.as_deref()), ("tales", 2, None));
+        let sent: SentInvite = serde_json::from_str(
+            r#"{"id":"a1","group":null,"note":"","createdAt":"2026-11-25T10:00:00.000Z","status":"active",
+            "uses":[],"support":{"hours":24}}"#,
+        )
+        .unwrap();
+        assert_eq!(sent.support.map(|s| s.hours), Some(24));
+        let link: GroupLink = serde_json::from_str(r#"{"group":null,"invited_by":"tales","support_hours":1,"support_until":null}"#).unwrap();
+        assert_eq!(link.support_hours, Some(1));
+    }
+
     #[test]
     fn qr_codes_are_square_and_decodable_sized() {
         let m = qr_modules("https://vpn.example.org/join#AbCdEfGhIjKlMnOpQrStUvWxYz0123456789-_abcde").unwrap();
@@ -667,6 +688,14 @@ pub struct SentInvite {
     pub status: String,
     #[serde(default)]
     pub uses: Vec<InviteUse>,
+    /// A support invite: our device reaches theirs for this long, not the other way.
+    #[serde(default)]
+    pub support: Option<SupportHours>,
+}
+
+#[derive(Debug, Clone, Deserialize)]
+pub struct SupportHours {
+    pub hours: u32,
 }
 
 #[derive(Debug, Clone, Deserialize)]
@@ -789,12 +818,59 @@ pub fn my_invites() -> std::result::Result<MyInvites, MemberError> {
     panel::read_json_limited(r).map_err(|e| MemberError::Other(e.to_string()))
 }
 
-/// Create an invite (optionally also into `group`; `isolated`: a network
-/// of their own, administrators only). Blocking.
-pub fn create(group: Option<&str>, note: &str, isolated: bool) -> std::result::Result<CreatedInvite, MemberError> {
-    let body = serde_json::json!({ "group": group, "note": note, "isolated": isolated });
+/// What an invite grants besides reaching each other.
+pub enum InviteKind<'a> {
+    /// Each other's devices, and also `group` when given.
+    Mutual(Option<&'a str>),
+    /// A network of their own (administrators only).
+    Isolated,
+    /// Support: this device reaches theirs for `hours` (1, 24 or 168), never the other way.
+    Support(u32),
+}
+
+/// Create an invite. Blocking.
+pub fn create(kind: InviteKind, note: &str) -> std::result::Result<CreatedInvite, MemberError> {
+    let body = match kind {
+        InviteKind::Mutual(group) => serde_json::json!({ "group": group, "note": note }),
+        InviteKind::Isolated => serde_json::json!({ "note": note, "isolated": true }),
+        InviteKind::Support(hours) => serde_json::json!({ "note": note, "support_hours": hours }),
+    };
     let r = member_call("POST", "/api/me/invites", Some(body))?;
     panel::read_json_limited(r).map_err(|e| MemberError::Other(e.to_string()))
+}
+
+/// One support access: `helper`'s device `helper_device` reaches every device of `guest` until `ends_at`.
+#[derive(Debug, Clone, Deserialize, PartialEq, Eq)]
+pub struct SupportGrant {
+    pub id: String,
+    pub helper: String,
+    pub helper_device: String,
+    pub helper_ips: Vec<String>,
+    pub guest: String,
+    /// RFC 3339.
+    pub ends_at: String,
+    /// Set once it's over (time up, or someone ended it).
+    #[serde(default)]
+    pub ended_at: Option<String>,
+}
+
+#[derive(Debug, Clone, Default, Deserialize, PartialEq, Eq)]
+pub struct SupportState {
+    /// We help: our device reaches theirs.
+    pub helping: Vec<SupportGrant>,
+    /// We're helped: their device reaches ours.
+    pub helped_by: Vec<SupportGrant>,
+}
+
+/// The support access we give and receive. Blocking.
+pub fn support() -> std::result::Result<SupportState, MemberError> {
+    let r = member_call("GET", "/api/me/support", None)?;
+    panel::read_json_limited(r).map_err(|e| MemberError::Other(e.to_string()))
+}
+
+/// End support access `id` now, as its helper or its guest. Blocking.
+pub fn end_support(id: &str) -> std::result::Result<(), MemberError> {
+    member_call("DELETE", &format!("/api/me/support/{}", segment(id)?), None).map(|_| ())
 }
 
 /// A code that adds one more device (a phone) to our own account.
@@ -1139,6 +1215,9 @@ pub fn answer_request(id: &str, accept: bool) -> std::result::Result<(), MemberE
 pub struct GroupLink {
     pub group: Option<String>,
     pub invited_by: Option<String>,
+    /// A support invite: the inviter's device reaches ours this many hours, not the other way.
+    #[serde(default)]
+    pub support_hours: Option<u32>,
 }
 
 /// An invite link opened while already signed in to its network: it brings

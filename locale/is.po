@@ -466,8 +466,8 @@ msgstr "hópur {group}"
 msgid "Cancel this invite: the link stops working"
 msgstr "Afturkalla þetta boð: tengillinn hættir að virka"
 
-msgid "The person you invite will reach your devices, and you theirs."
-msgstr "Sá sem þú býður nær í tækin þín og þú í hans."
+#~ msgid "The person you invite will reach your devices, and you theirs."
+#~ msgstr "Sá sem þú býður nær í tækin þín og þú í hans."
 
 msgid "Who is it for? (optional)"
 msgstr "Fyrir hvern er það? (valfrjálst)"
@@ -3177,3 +3177,93 @@ msgstr "Síminn minn"
 #: src/window/lan_ui.rs
 msgid "Share notifications, battery and clipboard with this phone"
 msgstr "Deila tilkynningum, rafhlöðu og klippiborði með þessum síma"
+
+#: src/window/invites.rs
+msgid "Only I reach them, to help"
+msgstr "Aðeins ég næ í tæki viðkomandi, til að hjálpa"
+
+#: src/window/invites.rs
+msgid "This computer reaches their devices for a while. They don't see or reach yours, and can end it any time"
+msgstr "Þessi tölva nær í tæki viðkomandi um tíma. Viðkomandi hvorki sér né nær í þín og getur lokið því hvenær sem er"
+
+#: src/window/invites.rs
+msgid "For how long"
+msgstr "Hversu lengi"
+
+#: src/window/invites.rs
+msgid "1 hour"
+msgstr "1 klukkustund"
+
+#: src/window/invites.rs
+msgid "1 day"
+msgstr "1 dagur"
+
+#: src/window/invites.rs
+msgid "1 week"
+msgstr "1 vika"
+
+#: src/window/invites.rs
+msgid "Support access"
+msgstr "Hjálparaðgangur"
+
+#: src/window/invites.rs
+#, rust-format
+msgid "{device} reaches their devices until {time}"
+msgstr "{device} nær í tæki viðkomandi til {time}"
+
+#: src/window/invites.rs
+msgid "End"
+msgstr "Ljúka"
+
+#: src/window/invites.rs
+msgid "End this access now"
+msgstr "Ljúka þessum aðgangi núna"
+
+#: src/window/invites.rs
+msgid "to help, for 1 hour"
+msgstr "til að hjálpa, í 1 klukkustund"
+
+#: src/window/invites.rs
+msgid "to help, for 1 day"
+msgstr "til að hjálpa, í 1 dag"
+
+#: src/window/invites.rs
+msgid "to help, for 1 week"
+msgstr "til að hjálpa, í 1 viku"
+
+#: src/window/support_ui.rs
+msgid "End now"
+msgstr "Ljúka núna"
+
+#: src/window/support_ui.rs
+msgid "Access ended."
+msgstr "Aðgangi lokið."
+
+#: src/window/support_ui.rs
+#, rust-format
+msgid "{user} can reach your devices until {time}, to help you"
+msgstr "{user} getur náð í tækin þín til {time} til að hjálpa þér"
+
+#: src/window/groups.rs
+#, rust-format
+msgid "Let {user} help you?"
+msgstr "Leyfa {user} að hjálpa þér?"
+
+#: src/window/groups.rs
+#, rust-format
+msgid "For 1 hour, {user}'s computer will reach your devices. You won't see or reach theirs, and you can end it any time."
+msgstr "Í 1 klukkustund nær tölva {user} í tækin þín. Þú hvorki sérð né nærð í tæki viðkomandi og getur lokið því hvenær sem er."
+
+#: src/window/groups.rs
+#, rust-format
+msgid "For 1 day, {user}'s computer will reach your devices. You won't see or reach theirs, and you can end it any time."
+msgstr "Í 1 dag nær tölva {user} í tækin þín. Þú hvorki sérð né nærð í tæki viðkomandi og getur lokið því hvenær sem er."
+
+#: src/window/groups.rs
+#, rust-format
+msgid "For 1 week, {user}'s computer will reach your devices. You won't see or reach theirs, and you can end it any time."
+msgstr "Í 1 viku nær tölva {user} í tækin þín. Þú hvorki sérð né nærð í tæki viðkomandi og getur lokið því hvenær sem er."
+
+#: src/window/groups.rs
+msgid "Done. The banner at the top shows the access and lets you end it."
+msgstr "Lokið. Borðinn efst sýnir aðganginn og þar geturðu lokið honum."

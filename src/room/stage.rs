@@ -583,9 +583,15 @@ fn watch(stream: TcpStream, stage: &Arc<Stage>, ip: String, identity: &Identity)
         let _ = writer.shutdown(std::net::Shutdown::Both);
     });
 
-    // Reader: pings, keyframe requests, control requests and (when given
-    // control) input.
-    let user = identity.login.clone();
+    read_viewer(stage, id, reader, &tx, &identity.login);
+    drop(tx);
+    stage.remove(id);
+    tailscale::dbg(&format!("stage: {} stopped watching", identity.login));
+}
+
+/// What viewer `id` (`user`) sends until it goes: pings, keyframe requests,
+/// control requests and (when given control) input.
+fn read_viewer(stage: &Stage, id: u64, reader: TcpStream, tx: &mpsc::SyncSender<Out>, user: &str) {
     let mut reader = BufReader::new(reader);
     while !stage.stop.stopped() {
         match read_frame(&mut reader) {
@@ -603,7 +609,7 @@ fn watch(stream: TcpStream, stage: &Arc<Stage>, ip: String, identity: &Identity)
             Ok((Kind::Control, payload)) => {
                 let v: serde_json::Value = serde_json::from_slice(&payload).unwrap_or_default();
                 if v.get("ask").and_then(serde_json::Value::as_bool) == Some(true) {
-                    emit(RoomEvent::ControlRequest { viewer: id, user: user.clone() });
+                    emit(RoomEvent::ControlRequest { viewer: id, user: user.to_string() });
                 } else if v.get("release").and_then(serde_json::Value::as_bool) == Some(true) {
                     let had = stage.controller.lock().ok().is_some_and(|c| *c == Some(id));
                     if had {
@@ -615,9 +621,6 @@ fn watch(stream: TcpStream, stage: &Arc<Stage>, ip: String, identity: &Identity)
             Err(_) => break,
         }
     }
-    drop(tx);
-    stage.remove(id);
-    tailscale::dbg(&format!("stage: {user} stopped watching"));
 }
 
 #[cfg(test)]

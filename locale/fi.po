@@ -463,8 +463,8 @@ msgstr "ryhmä {group}"
 msgid "Cancel this invite: the link stops working"
 msgstr "Peru tämä kutsu: linkki lakkaa toimimasta"
 
-msgid "The person you invite will reach your devices, and you theirs."
-msgstr "Kutsumasi henkilö tavoittaa laitteesi, ja sinä hänen laitteensa."
+#~ msgid "The person you invite will reach your devices, and you theirs."
+#~ msgstr "Kutsumasi henkilö tavoittaa laitteesi, ja sinä hänen laitteensa."
 
 msgid "Who is it for? (optional)"
 msgstr "Kenelle se on? (valinnainen)"
@@ -3179,3 +3179,93 @@ msgstr "Oma puhelin"
 #: src/window/lan_ui.rs
 msgid "Share notifications, battery and clipboard with this phone"
 msgstr "Jaa ilmoitukset, akku ja leikepöytä tämän puhelimen kanssa"
+
+#: src/window/invites.rs
+msgid "Only I reach them, to help"
+msgstr "Vain minä tavoitan hänen laitteensa, auttaakseni"
+
+#: src/window/invites.rs
+msgid "This computer reaches their devices for a while. They don't see or reach yours, and can end it any time"
+msgstr "Tämä tietokone tavoittaa hänen laitteensa hetken ajan. Hän ei näe eikä tavoita sinun laitteitasi ja voi lopettaa milloin tahansa"
+
+#: src/window/invites.rs
+msgid "For how long"
+msgstr "Kuinka pitkäksi aikaa"
+
+#: src/window/invites.rs
+msgid "1 hour"
+msgstr "1 tunti"
+
+#: src/window/invites.rs
+msgid "1 day"
+msgstr "1 päivä"
+
+#: src/window/invites.rs
+msgid "1 week"
+msgstr "1 viikko"
+
+#: src/window/invites.rs
+msgid "Support access"
+msgstr "Tukipääsy"
+
+#: src/window/invites.rs
+#, rust-format
+msgid "{device} reaches their devices until {time}"
+msgstr "{device} tavoittaa hänen laitteensa {time} asti"
+
+#: src/window/invites.rs
+msgid "End"
+msgstr "Lopeta"
+
+#: src/window/invites.rs
+msgid "End this access now"
+msgstr "Lopeta tämä käyttö nyt"
+
+#: src/window/invites.rs
+msgid "to help, for 1 hour"
+msgstr "auttamaan, 1 tunniksi"
+
+#: src/window/invites.rs
+msgid "to help, for 1 day"
+msgstr "auttamaan, 1 päiväksi"
+
+#: src/window/invites.rs
+msgid "to help, for 1 week"
+msgstr "auttamaan, 1 viikoksi"
+
+#: src/window/support_ui.rs
+msgid "End now"
+msgstr "Lopeta nyt"
+
+#: src/window/support_ui.rs
+msgid "Access ended."
+msgstr "Käyttö päättyi."
+
+#: src/window/support_ui.rs
+#, rust-format
+msgid "{user} can reach your devices until {time}, to help you"
+msgstr "{user} voi tavoittaa laitteesi {time} asti auttaakseen sinua"
+
+#: src/window/groups.rs
+#, rust-format
+msgid "Let {user} help you?"
+msgstr "Annatko käyttäjän {user} auttaa sinua?"
+
+#: src/window/groups.rs
+#, rust-format
+msgid "For 1 hour, {user}'s computer will reach your devices. You won't see or reach theirs, and you can end it any time."
+msgstr "1 tunnin ajan käyttäjän {user} tietokone tavoittaa laitteesi. Sinä et näe etkä tavoita hänen laitteitaan, ja voit lopettaa milloin tahansa."
+
+#: src/window/groups.rs
+#, rust-format
+msgid "For 1 day, {user}'s computer will reach your devices. You won't see or reach theirs, and you can end it any time."
+msgstr "1 päivän ajan käyttäjän {user} tietokone tavoittaa laitteesi. Sinä et näe etkä tavoita hänen laitteitaan, ja voit lopettaa milloin tahansa."
+
+#: src/window/groups.rs
+#, rust-format
+msgid "For 1 week, {user}'s computer will reach your devices. You won't see or reach theirs, and you can end it any time."
+msgstr "1 viikon ajan käyttäjän {user} tietokone tavoittaa laitteesi. Sinä et näe etkä tavoita hänen laitteitaan, ja voit lopettaa milloin tahansa."
+
+#: src/window/groups.rs
+msgid "Done. The banner at the top shows the access and lets you end it."
+msgstr "Valmis. Yläreunan palkki näyttää käytön, ja siitä voit lopettaa sen."

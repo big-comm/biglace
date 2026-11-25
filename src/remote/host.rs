@@ -232,14 +232,20 @@ pub fn serve(stream: TcpStream, peer: IpAddr, headers: &HashMap<String, String>,
         return;
     }
     // The viewer that restarted this computer comes back without asking;
-    // otherwise this person's rule decides (ask, always, never).
+    // otherwise this person's rule decides (ask, always, never). Someone here
+    // to help us is asked every time: their access is only for a while.
     let (who, device) = (identity.login.as_str(), identity.device.as_str());
     let returning = crate::power::resume_allows(who, device);
+    let supporting = crate::support::helps_me(who);
     let outcome = if returning {
         "returning"
     } else {
         match crate::access::rule(who) {
             crate::access::Rule::Never => "blocked",
+            _ if supporting => match ask(&identity, false) {
+                (true, _) => "allowed",
+                (false, _) => "denied",
+            },
             crate::access::Rule::Always => "remembered",
             crate::access::Rule::Ask => match ask(&identity, true) {
                 (true, true) => {
