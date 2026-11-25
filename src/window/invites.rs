@@ -580,12 +580,13 @@ pub fn show_dialog(parent: &libadwaita::ApplicationWindow, page: &InvitesPage, p
         .title(tr!("For how long"))
         .model(&durations)
         .selected(1)
-        .visible(false)
+        .sensitive(false)
         .build();
+    // Always there, so the dialog is sized for it; it only counts for that choice.
     grp_access.add(&row_duration);
     {
         let row_duration = row_duration.clone();
-        radios[support_choice].connect_toggled(move |c| row_duration.set_visible(c.is_active()));
+        radios[support_choice].connect_toggled(move |c| row_duration.set_sensitive(c.is_active()));
     }
     form.add(&grp_access);
     if let Some(i) = preselect.and_then(|p| groups.iter().position(|g| g == p)) {

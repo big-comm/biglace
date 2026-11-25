@@ -34,9 +34,10 @@ pub fn state() -> SupportState {
     known().state.clone()
 }
 
-/// The device at `ip` reaches ours for support: it isn't one we may reach.
-pub fn hides(ip: &str) -> bool {
-    known().state.helped_by.iter().any(|g| open(g) && g.helper_ips.iter().any(|a| a == ip))
+/// The device at `ip` reaches ours for support: never one we may reach. After the
+/// access ended the network still lists it offline for a while; hidden then too.
+pub fn hides(ip: &str, online: bool) -> bool {
+    known().state.helped_by.iter().any(|g| (open(g) || !online) && g.helper_ips.iter().any(|a| a == ip))
 }
 
 /// `login` helps us right now (its screen access never gets "always allow").

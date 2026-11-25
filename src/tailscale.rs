@@ -925,7 +925,7 @@ fn build_peers(ts: &TsStatus) -> Vec<Peer> {
                 .cloned()
                 .unwrap_or_default();
             // A device that reaches us for support is none we may reach (see crate::support).
-            if ips.iter().any(|i| crate::support::hides(i)) {
+            if ips.iter().any(|i| crate::support::hides(i, n.online.unwrap_or(false))) {
                 return None;
             }
             let ip = ips.first().cloned().unwrap_or_default();

@@ -635,9 +635,9 @@ impl GroupsPage {
                 (_, Some(u)) if link.support_hours.is_some() => (
                     trf!("Let {user} help you?", "user" => u),
                     match link.support_hours {
-                        Some(1) => trf!("For 1 hour, {user}'s computer will reach your devices. You won't see or reach theirs, and you can end it any time.", "user" => u),
-                        Some(168) => trf!("For 1 week, {user}'s computer will reach your devices. You won't see or reach theirs, and you can end it any time.", "user" => u),
-                        _ => trf!("For 1 day, {user}'s computer will reach your devices. You won't see or reach theirs, and you can end it any time.", "user" => u),
+                        Some(1) => trf!("For 1 hour, {user} will reach your devices. You won't see or reach theirs, and you can end it any time.", "user" => u),
+                        Some(168) => trf!("For 1 week, {user} will reach your devices. You won't see or reach theirs, and you can end it any time.", "user" => u),
+                        _ => trf!("For 1 day, {user} will reach your devices. You won't see or reach theirs, and you can end it any time.", "user" => u),
                     },
                 ),
                 (Some(g), Some(u)) => (

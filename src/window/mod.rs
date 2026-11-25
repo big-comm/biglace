@@ -2242,7 +2242,7 @@ fn refresh_state(ctx: &Ctx) {
                 // A helper's device showing up: learn it, then leave it out.
                 let ips: Vec<&str> = peers.iter().map(|p| p.ip.as_str()).collect();
                 if crate::support::refresh(&ips) {
-                    peers.retain(|p| !crate::support::hides(&p.ip));
+                    peers.retain(|p| !crate::support::hides(&p.ip, p.online));
                 }
                 if let Ok(meta) = device_meta.lock() {
                     for p in peers.iter_mut() {
