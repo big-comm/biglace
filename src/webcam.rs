@@ -15,6 +15,10 @@ use std::time::Duration;
 /// Announced by phones that can be a webcam.
 pub const CAPABILITY: &str = "webcam";
 const PATH: &str = "/v1/webcam";
+/// The webcam's picture, whichever way the phone is held: programs keep one size from start to end,
+/// so an upright phone shows with bars at its sides.
+const FRAME_WIDTH: u32 = 1280;
+const FRAME_HEIGHT: u32 = 720;
 /// `card_label` of the loopback camera, set in the package's modprobe.d/biglace.conf.
 const LOOPBACK_LABEL: &str = "BigLace";
 
@@ -45,6 +49,16 @@ struct WebcamAsk {
 struct Want {
     video: bool,
     audio: bool,
+    camera: &'static str,
+}
+
+/// The `camera` asked for: the phone's back one, or its front one (also when an older phone ignores it).
+fn camera(back: bool) -> &'static str {
+    if back {
+        "back"
+    } else {
+        "front"
+    }
 }
 
 /// The phone at `target` (tailnet address, or a paired device's
@@ -53,11 +67,11 @@ pub fn active() -> Option<String> {
     ACTIVE.lock().unwrap_or_else(PoisonError::into_inner).as_ref().map(|(t, _)| t.clone())
 }
 
-/// Ask `target` (shown as `name`) for its camera (`video`) and/or microphone
-/// (`audio`); the person there starts it. Blocking until the phone answers.
-pub fn start(target: &str, name: &str, video: bool, audio: bool) -> Result<(), String> {
+/// Ask `target` (shown as `name`) for its camera (`video`, the back one when `back`) and/or
+/// microphone (`audio`); the person there starts it. Blocking until the phone answers.
+pub fn start(target: &str, name: &str, video: bool, audio: bool, back: bool) -> Result<(), String> {
     stop();
-    let (stream, reader) = connect(target, name, video, audio)?;
+    let (stream, reader) = connect(target, name, video, audio, back)?;
     let handle = stream.try_clone().map_err(|e| e.to_string())?;
     *ACTIVE.lock().unwrap_or_else(PoisonError::into_inner) = Some((target.to_string(), handle));
     LISTENERS.send(WebcamEvent { on: true, error: None });
@@ -89,15 +103,15 @@ pub fn stop() {
     LISTENERS.send(WebcamEvent { on: false, error: None });
 }
 
-fn connect(target: &str, name: &str, video: bool, audio: bool) -> Result<(TcpStream, BufReader<TcpStream>), String> {
+fn connect(target: &str, name: &str, video: bool, audio: bool, back: bool) -> Result<(TcpStream, BufReader<TcpStream>), String> {
     #[cfg(target_os = "linux")]
     if let Some(key) = crate::chat::lan_key(target) {
-        let ask = WebcamAsk { webcam: Want { video, audio } };
+        let ask = WebcamAsk { webcam: Want { video, audio, camera: camera(back) } };
         let stream = crate::lan::pairing::take_over(key, &ask).map_err(|_| crate::tr!("The phone isn't reachable on the local network."))?;
         let reader = stream.try_clone().map_err(|e| e.to_string())?;
         return Ok((stream, BufReader::new(reader)));
     }
-    let path = format!("{PATH}?video={}&audio={}", u8::from(video), u8::from(audio));
+    let path = format!("{PATH}?video={}&audio={}&camera={}", u8::from(video), u8::from(audio), camera(back));
     let (stream, reader) = crate::remote::client::dial(target, &path, &[], Duration::from_secs(8)).map_err(|e| match e {
         crate::remote::client::OpenError::Denied => crate::trf!("{name} didn't allow the access.", "name" => name),
         crate::remote::client::OpenError::Unverified => {
@@ -152,7 +166,8 @@ fn video_pipeline() -> String {
     format!(
         "appsrc name=src is-live=true format=time do-timestamp=true \
            caps=video/x-h264,stream-format=byte-stream,alignment=au \
-         ! h264parse ! {} ! videoconvert ! video/x-raw,format=YUY2 ! tee name=t \
+         ! h264parse ! {} ! videoconvert ! videoscale add-borders=true \
+         ! video/x-raw,format=YUY2,width={FRAME_WIDTH},height={FRAME_HEIGHT},pixel-aspect-ratio=1/1 ! tee name=t \
          t. ! queue leaky=downstream ! pipewiresink name=sink mode=provide{loopback}",
         crate::remote::client::decoder()
     )
