@@ -38,6 +38,8 @@ enum FromPhone {
     Removed { key: String },
     /// The phone's clipboard: text, or a picture in base64.
     Clip { text: Option<String>, image: Option<String> },
+    /// What it offers on the local network, as its announcement says (which some Wi-Fi routers lose).
+    Offers { capabilities: Vec<String> },
 }
 
 /// What we send a phone.
@@ -95,6 +97,11 @@ type Phones = Mutex<HashMap<String, (Option<PhoneStatus>, Arc<Mutex<TcpStream>>)
 fn phones() -> &'static Phones {
     static P: OnceLock<Phones> = OnceLock::new();
     P.get_or_init(Default::default)
+}
+
+/// The phone at `ip` is linked to us now.
+pub fn connected(ip: &str) -> bool {
+    phones().lock().is_ok_and(|p| p.contains_key(ip))
 }
 
 /// The battery and storage of the phone at `ip`, while it's connected.
@@ -183,6 +190,8 @@ fn serve(stream: TcpStream, ip: String, device: &str) {
     if let Ok(mut p) = phones().lock() {
         p.insert(ip.clone(), (None, writer.clone()));
     }
+    #[cfg(target_os = "linux")]
+    crate::lan::pairing::publish();
     tailscale::dbg(&format!("link: {device} connected"));
     let mut reader = BufReader::new(read_half);
     let mut ringing_paused = Vec::new();
@@ -199,6 +208,8 @@ fn serve(stream: TcpStream, ip: String, device: &str) {
         }
     }
     emit(LinkEvent::Status);
+    #[cfg(target_os = "linux")]
+    crate::lan::pairing::publish();
     tailscale::dbg(&format!("link: {device} left"));
 }
 
@@ -206,6 +217,12 @@ fn serve(stream: TcpStream, ip: String, device: &str) {
 fn handle(msg: FromPhone, ip: &str, device: &str, ringing_paused: &mut Vec<String>) {
     match msg {
         FromPhone::Ping => {}
+        FromPhone::Offers { capabilities } => {
+            #[cfg(target_os = "linux")]
+            if let Some(key) = crate::chat::lan_key(ip) {
+                crate::lan::pairing::offered(key, &capabilities);
+            }
+        }
         FromPhone::Status { battery, charging, storage_free, storage_total } => {
             let s = PhoneStatus { battery: battery.min(100), charging, storage_free, storage_total };
             if let Ok(mut p) = phones().lock() {

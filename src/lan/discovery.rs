@@ -17,7 +17,8 @@ const IF_UNSPEC: i32 = -1;
 const PROTO_INET: i32 = 0;
 
 /// Another BigLace on the network, as it announced itself (not yet proven: see `super::handshake`).
-#[derive(Debug, Clone, PartialEq, Eq)]
+#[derive(Debug, Clone, PartialEq, Eq, Default, serde::Serialize, serde::Deserialize)]
+#[serde(default)]
 pub struct Nearby {
     pub key: String,
     pub name: String,
@@ -35,7 +36,7 @@ pub struct Nearby {
     pub webcam: bool,
 }
 
-#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, serde::Serialize, serde::Deserialize)]
 pub enum Screen {
     Shared,
     Fits,

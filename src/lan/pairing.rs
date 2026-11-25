@@ -65,6 +65,53 @@ fn nearby() -> &'static Mutex<Vec<Nearby>> {
     &NEARBY
 }
 
+/// What mDNS finds now; [`nearby`] adds the paired phones linked to us.
+fn announced() -> &'static Mutex<Vec<Nearby>> {
+    static ANNOUNCED: Mutex<Vec<Nearby>> = Mutex::new(Vec::new());
+    &ANNOUNCED
+}
+
+/// A paired phone linked to us said what it offers: kept as its announcement, which may never reach us.
+pub fn offered(key: &str, capabilities: &[String]) {
+    let Some(p) = peers::paired().into_iter().find(|p| p.key == key) else { return };
+    let has = |c: &str| capabilities.iter().any(|x| x == c);
+    let seen = Nearby {
+        key: p.key,
+        name: p.name,
+        port: super::PORT,
+        takes_files: has(crate::transfer::CAPABILITY),
+        calls: has(crate::call::CAPABILITY),
+        webcam: has(crate::webcam::CAPABILITY),
+        ..Nearby::default()
+    };
+    peers::announced(std::slice::from_ref(&seen));
+    publish();
+}
+
+/// Recompute [`nearby`] and tell the window. A paired phone linked to us is nearby even when its
+/// announcements get lost on the way (some Wi-Fi routers drop part of the multicast), where it last was.
+pub fn publish() {
+    let mut list = announced().lock().map(|a| a.clone()).unwrap_or_default();
+    if current().is_some() {
+        for p in peers::paired() {
+            if list.iter().any(|n| n.key == p.key) || !crate::link::connected(&crate::chat::lan_address(&p.key)) {
+                continue;
+            }
+            let (Some(seen), Some(address)) = (p.announced, p.address) else { continue };
+            let (address, port) = match address.parse::<SocketAddr>() {
+                Ok(at) => (at.ip().to_string(), at.port()),
+                Err(_) => (address, super::PORT),
+            };
+            list.push(Nearby { address, port, ..seen });
+        }
+    }
+    list.sort_by(|a, b| a.name.cmp(&b.name));
+    if let Ok(mut n) = nearby().lock() {
+        n.clone_from(&list);
+    }
+    LISTENERS.send(LanEvent::Nearby(list));
+}
+
 /// Start, once: listen, announce us as `name` and follow the others.
 pub fn start(name: &str) -> anyhow::Result<()> {
     let key = crate::device_key::signing_key().ok_or_else(|| anyhow::anyhow!("no device key"))?;
@@ -96,10 +143,11 @@ pub fn start(name: &str) -> anyhow::Result<()> {
                 .inspect_err(|e| crate::tailscale::dbg(&format!("lan: not announced: {e}")))
                 .ok();
             let browsing = Box::pin(discovery::browse(&public, |list| {
-                if let Ok(mut n) = nearby().lock() {
-                    n.clone_from(&list);
+                peers::announced(&list);
+                if let Ok(mut a) = announced().lock() {
+                    *a = list;
                 }
-                LISTENERS.send(LanEvent::Nearby(list));
+                publish();
                 // Someone may be back with messages waiting for them.
                 crate::chat::kick();
             }));
@@ -118,7 +166,10 @@ pub fn stop() {
     let _ = me.quit.try_send(());
     // The listener only looks at `stopping` when someone comes in.
     let _ = TcpStream::connect_timeout(&SocketAddr::from(([127, 0, 0, 1], super::PORT)), Duration::from_secs(1));
-    LISTENERS.send(LanEvent::Nearby(vec![]));
+    if let Ok(mut a) = announced().lock() {
+        a.clear();
+    }
+    publish();
 }
 
 /// Show `code`, wait for our person's answer, then trade answers with the
@@ -128,7 +179,7 @@ fn settle(s: &mut (impl Read + Write), peer: &Peer, code: String, address: Strin
     LISTENERS.send(LanEvent::Code { name: peer.name.clone(), code, answer });
     let ours = answered.recv_timeout(ANSWER_WAIT).unwrap_or(false);
     let paired = handshake::agree(s, ours).unwrap_or(false);
-    if paired && peers::add(peers::Paired { key: peer.key.clone(), name: peer.name.clone(), since: crate::chat::now_ms() / 1000, forgotten: false, address: Some(address), mine: false }).is_ok() {
+    if paired && peers::add(peers::Paired { key: peer.key.clone(), name: peer.name.clone(), since: crate::chat::now_ms() / 1000, forgotten: false, address: Some(address), mine: false, announced: None }).is_ok() {
         LISTENERS.send(LanEvent::Paired { key: peer.key.clone(), name: peer.name.clone() });
     } else {
         LISTENERS.send(LanEvent::PairFailed { name: peer.name.clone() });

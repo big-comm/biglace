@@ -22,6 +22,9 @@ pub struct Paired {
     /// clipboard; see `crate::link`). Someone else's paired phone doesn't.
     #[serde(default, skip_serializing_if = "std::ops::Not::not")]
     pub mine: bool,
+    /// Its last announcement: what it offers, for when its announcements stop reaching us.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub announced: Option<super::discovery::Nearby>,
 }
 
 pub fn list() -> Vec<Paired> {
@@ -73,6 +76,23 @@ pub fn set_mine(key: &str, mine: bool) {
     }
     if let Err(e) = save(&all) {
         crate::tailscale::dbg(&format!("lan: {FILE} not saved: {e}"));
+    }
+}
+
+/// Remember the last announcement of each paired device in `found` (the file is written only when one differs).
+pub fn announced(found: &[super::discovery::Nearby]) {
+    let mut all = list();
+    let mut changed = false;
+    for p in all.iter_mut() {
+        if let Some(n) = found.iter().find(|n| n.key == p.key && p.announced.as_ref() != Some(n)) {
+            p.announced = Some(n.clone());
+            changed = true;
+        }
+    }
+    if changed {
+        if let Err(e) = save(&all) {
+            crate::tailscale::dbg(&format!("lan: {FILE} not saved: {e}"));
+        }
     }
 }
 
