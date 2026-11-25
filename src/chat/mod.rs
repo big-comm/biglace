@@ -992,11 +992,14 @@ pub fn call_line(c: &CallRecord, outgoing: bool) -> String {
     format!("{kind} · {detail}")
 }
 
-/// Keep a call with `user` in their conversation (this device only). A
-/// missed one counts as unread and is announced like a message.
+/// Keep how a call with `user` (an account, or a paired device's
+/// [`lan_address`]) went in its conversation (this device only). A missed
+/// one counts as unread and is announced like a message.
 pub fn record_call(user: &str, outgoing: bool, record: CallRecord) {
-    let Some(me) = my_user() else { return };
-    let conv = ConvId::direct(user);
+    let conv = conversation_with(user);
+    let me = if conv.is_lan() { crate::device_key::public_key() } else { my_user() };
+    let Some(me) = me else { return };
+    let user = conv.name.as_str();
     let missed = record.outcome == CallOutcome::Missed;
     let message = Message {
         id: new_id(),
@@ -1154,8 +1157,28 @@ fn post_with(conv: &ConvId, text: &str, file: Option<(Offer, PathBuf)>, extra: E
     Ok(wire.id)
 }
 
-/// Outbox node of a device paired on the local network: this, then its key.
-const LAN_NODE: &str = "lan:";
+/// How a device paired on the local network is addressed where a tailnet
+/// address or node goes (outbox, calls, rooms): this, then its key.
+const LAN_ADDRESS: &str = "lan:";
+
+/// The address of the device `key` paired on the local network.
+pub fn lan_address(key: &str) -> String {
+    format!("{LAN_ADDRESS}{key}")
+}
+
+/// The device key in a paired device's [`lan_address`].
+pub fn lan_key(address: &str) -> Option<&str> {
+    address.strip_prefix(LAN_ADDRESS)
+}
+
+/// The conversation with `user` of a call: a paired device's (its
+/// [`lan_address`]) on the local network, or the account's.
+pub fn conversation_with(user: &str) -> ConvId {
+    match lan_key(user) {
+        Some(key) => ConvId::lan(key),
+        None => ConvId::direct(user),
+    }
+}
 
 /// [`post_with`] to a device paired on the local network: no account, no
 /// tailnet; we are our device key.
@@ -1196,7 +1219,7 @@ fn post_lan(conv: &ConvId, text: &str, file: Option<(Offer, PathBuf)>, extra: Ex
                 s.add(conv, message, false);
             }
         }
-        s.outbox.push(Pending { node: format!("{LAN_NODE}{}", conv.name), to_user: conv.name.clone(), wire });
+        s.outbox.push(Pending { node: lan_address(&conv.name), to_user: conv.name.clone(), wire });
         s.save_outbox();
     }
     emit(ChatEvent::Changed(conv.clone()));
@@ -1246,6 +1269,10 @@ pub(crate) fn accept_lan(sender: &str, payload: &[u8]) -> Option<String> {
             }
         }
         Some(Op::Send { send, action, items }) => crate::transfer::received_lan(sender, send, *action, items),
+        Some(Op::Call { call, action, video }) => {
+            let address = lan_address(sender);
+            crate::call::received(&address, "", &address, call, *action, *video);
+        }
         Some(_) => {}
         None => {
             let message = Message {
@@ -1318,18 +1345,19 @@ fn deliver_lan(key: &str, items: &[Pending]) {
 
 /// A device paired on the local network was forgotten: what waited for it never goes.
 pub fn forget_lan(key: &str) {
-    let node = format!("{LAN_NODE}{key}");
+    let node = lan_address(key);
     if let Ok(mut s) = store().lock() {
         s.outbox.retain(|p| p.node != node);
         s.save_outbox();
     }
 }
 
-/// How a name shows: a device paired on the local network by the name it
-/// gave, us as "You", everyone else as is.
+/// How a name shows: a device paired on the local network (its key, or its
+/// [`lan_address`]) by the name it gave, us as "You", everyone else as is.
 pub fn label(name: &str) -> String {
     #[cfg(target_os = "linux")]
     {
+        let name = lan_key(name).unwrap_or(name);
         if crate::device_key::public_key().is_some_and(|own| own == name) {
             return crate::tr!("You");
         }
@@ -1535,7 +1563,7 @@ fn deliver_pending() {
 
 /// Send what waits for the device `node` to it, if it's reachable.
 fn deliver_node(node: &str, items: Vec<Pending>, peers: &[tailscale::Peer]) {
-    if let Some(key) = node.strip_prefix(LAN_NODE) {
+    if let Some(key) = lan_key(node) {
         deliver_lan(key, &items);
         return;
     }
@@ -2142,6 +2170,12 @@ mod tests {
         let json = serde_json::to_value(&w).unwrap();
         assert_eq!(json["relayed"], serde_json::json!({"from": "bruna", "device": "phone"}));
         assert!(serde_json::to_value(wire(ConvId::direct("tales"))).unwrap().get("relayed").is_none(), "absent when not passed on");
+    }
+
+    #[test]
+    fn call_conversation_follows_network() {
+        assert_eq!(conversation_with(&lan_address("abc")), ConvId::lan("abc"));
+        assert_eq!(conversation_with("bruna"), ConvId::direct("bruna"));
     }
 
     #[test]

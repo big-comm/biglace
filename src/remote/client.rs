@@ -225,26 +225,39 @@ pub fn open(ip: &str, events: async_channel::Sender<Event>) -> Result<Session, O
 /// screen (see [`open`]).
 #[cfg(target_os = "linux")]
 pub fn open_lan(key: &str, name: &str, events: async_channel::Sender<Event>) -> Result<Session, OpenError> {
-    use crate::lan::pairing::{LanError, ScreenError};
-    let ask = super::host::LanAsk { screen: super::SCREEN_PROTOCOL.parse().unwrap_or(4), chroma: None };
-    let stream = crate::lan::pairing::open_screen(key, &ask).map_err(|e| match e {
-        ScreenError::Refused(why) if why == "denied" => OpenError::Denied,
-        ScreenError::Refused(why) if why == "unavailable" => OpenError::Unavailable,
-        ScreenError::Refused(why) => OpenError::Other(why),
-        ScreenError::Lan(LanError::Off) => OpenError::Other(crate::tr!("the local network is off")),
-        ScreenError::Lan(_) => OpenError::Other(crate::trf!(
+    let (stream, reader) = take_over_lan(key, name, None)?;
+    start_session(stream, reader, events, true)
+}
+
+/// The screen of the paired device `key`, called `name`: its own, or what it
+/// shows the call or room `stage`.
+#[cfg(target_os = "linux")]
+fn take_over_lan(key: &str, name: &str, stage: Option<&str>) -> Result<(TcpStream, BufReader<TcpStream>), OpenError> {
+    use crate::lan::pairing::{LanError, ScreenAsk, TakeoverError};
+    let ask = ScreenAsk { screen: super::SCREEN_PROTOCOL.parse().unwrap_or(4), chroma: None, stage: stage.map(str::to_string) };
+    let stream = crate::lan::pairing::take_over(key, &ask).map_err(|e| match e {
+        TakeoverError::Refused(why) if why == "denied" => OpenError::Denied,
+        TakeoverError::Refused(why) if why == "unavailable" => OpenError::Unavailable,
+        TakeoverError::Refused(why) => OpenError::Other(why),
+        TakeoverError::Lan(LanError::Off) => OpenError::Other(crate::tr!("the local network is off")),
+        TakeoverError::Lan(_) => OpenError::Other(crate::trf!(
             "{name} can't be reached on the local network — try again when it's nearby",
             "name" => name
         )),
     })?;
     let _ = stream.set_nodelay(true);
     let reader = BufReader::new(stream.try_clone().map_err(|e| OpenError::Other(e.to_string()))?);
-    start_session(stream, reader, events, true)
+    Ok((stream, reader))
 }
 
 /// Watch what `ip` shares with the voice room of `group` (view only until
 /// they give us control).
 pub fn open_stage(ip: &str, group: &str, events: async_channel::Sender<Event>) -> Result<Session, OpenError> {
+    #[cfg(target_os = "linux")]
+    if let Some(key) = crate::chat::lan_key(ip) {
+        let (stream, reader) = take_over_lan(key, &crate::chat::label(key), Some(group))?;
+        return start_session(stream, reader, events, false);
+    }
     let path = format!("{}{group}", crate::room::STAGE_PREFIX);
     let (stream, reader) = dial(ip, &path, &[("X-BigLace-Screen", super::SCREEN_PROTOCOL)], Duration::from_secs(10))?;
     start_session(stream, reader, events, false)

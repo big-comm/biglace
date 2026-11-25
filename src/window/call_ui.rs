@@ -21,7 +21,8 @@ const NOTIFICATION_ID: &str = "biglace-call";
 const RINGTONE: &str = "/usr/share/sounds/freedesktop/stereo/phone-incoming-call.oga";
 const RINGBACK: &str = "/usr/share/sounds/freedesktop/stereo/phone-outgoing-calling.oga";
 
-/// "Voice call" and "Video call" for `user` (the chat header's call button).
+/// "Voice call" and "Video call" for `user`, an account or a paired device's
+/// address (the chat header's call button).
 pub fn call_menu(user: &str) -> gio::Menu {
     let menu = gio::Menu::new();
     for (label, action) in [(tr!("Voice call"), CALL_VOICE), (tr!("Video call"), CALL_VIDEO)] {
@@ -48,7 +49,7 @@ pub fn call_entry(call: &crate::chat::CallRecord, outgoing: bool, user: &str) ->
     let again = gtk4::Button::builder()
         .icon_name(if call.video { "camera-web-symbolic" } else { "call-start-symbolic" })
         .css_classes(["flat", "circular"])
-        .tooltip_text(trf!("Call {user}", "user" => user))
+        .tooltip_text(trf!("Call {user}", "user" => crate::chat::label(user)))
         .action_name(format!("win.{}", if call.video { CALL_VIDEO } else { CALL_VOICE }))
         .action_target(&user.to_variant())
         .build();
@@ -160,6 +161,7 @@ fn notify(win: &libadwaita::ApplicationWindow, view: &CallView) {
         app.withdraw_notification(NOTIFICATION_ID);
         return;
     };
+    let user = crate::chat::label(user);
     let n = gio::Notification::new(&if *video {
         trf!("{user} is video calling you", "user" => user)
     } else {
@@ -228,14 +230,18 @@ impl Bar {
             CallView::Active { user, since, .. } => (user, elapsed(*since)),
         };
         let ringing = matches!(view, CallView::Incoming { .. });
-        self.avatar.set_text(Some(user));
-        crate::avatars::bind(&self.avatar, user);
-        self.title.set_text(user);
+        let name = crate::chat::label(user);
+        self.avatar.set_text(Some(&name.replace(['(', ')'], "")));
+        match crate::chat::lan_key(user) {
+            Some(key) => crate::avatars::bind_lan(&self.avatar, key),
+            None => crate::avatars::bind(&self.avatar, user),
+        }
+        self.title.set_text(&name);
         self.status.set_text(&status);
         self.answer.set_visible(ringing);
         self.decline.set_tooltip_text(Some(&if ringing { tr!("Decline") } else { tr!("Hang up") }));
         self.decline.set_action_name(Some(&format!("app.{}", if ringing { CALL_DECLINE } else { CALL_HANG_UP })));
-        self.root.update_property(&[gtk4::accessible::Property::Label(&format!("{user}: {status}"))]);
+        self.root.update_property(&[gtk4::accessible::Property::Label(&format!("{name}: {status}"))]);
     }
 
     fn tick(&self, since: u64) {

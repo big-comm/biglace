@@ -35,6 +35,17 @@ pub fn wire(
     fill(&content.lan_list, &nearby, toast);
     wire_switch(win, toast, sidebar, &content.lan_qr, cfg, refresh);
     ask_if_both_on(win, sidebar, cfg);
+    // A linked phone's battery, in its row.
+    let linked = crate::link::events();
+    let (list, shared, weak_toast) = (content.lan_list.downgrade(), nearby.clone(), toast.downgrade());
+    glib::spawn_future_local(async move {
+        while let Ok(event) = linked.recv().await {
+            let (Some(list), Some(toast)) = (list.upgrade(), weak_toast.upgrade()) else { break };
+            if matches!(event, crate::link::LinkEvent::Status) {
+                fill(&list, &shared, &toast);
+            }
+        }
+    });
     let (win, toast, list) = (win.downgrade(), toast.clone(), content.lan_list.clone());
     glib::spawn_future_local(async move {
         while let Ok(event) = events.recv().await {
@@ -217,6 +228,7 @@ fn fill(list: &gtk4::ListBox, shared: &Rc<RefCell<Vec<Nearby>>>, toast: &libadwa
         button.connect_clicked(move |_| {
             crate::lan::peers::remove(&key);
             crate::chat::forget_lan(&key);
+            crate::link::disconnect(&crate::chat::lan_address(&key));
             if let Some(list) = list.upgrade() {
                 fill(&list, &nearby, &toast);
             }
@@ -224,17 +236,11 @@ fn fill(list: &gtk4::ListBox, shared: &Rc<RefCell<Vec<Nearby>>>, toast: &libadwa
         row.add_suffix(&button);
     };
     for device in nearby {
-        let row = libadwaita::ActionRow::builder().title(&device.name).subtitle(&device.address).build();
+        let mut subtitle = vec![device.address.clone()];
+        subtitle.extend(super::peer_row::phone_status(&crate::chat::lan_address(&device.key)));
+        let row = libadwaita::ActionRow::builder().title(&device.name).subtitle(subtitle.join("  ·  ")).build();
         if paired.iter().any(|p| p.key == device.key) {
-            if let Some(login) = &device.login {
-                add_ssh_buttons(&row, &device.address, login, toast);
-            }
-            if device.takes_files {
-                add_send_button(&row, device, toast);
-            }
-            if let Some(screen) = device.screen {
-                add_screen_button(&row, device, screen, toast);
-            }
+            add_paired_actions(&row, device, toast);
             forget(&row, &device.key);
             list.append(&row);
             continue;
@@ -254,6 +260,41 @@ fn fill(list: &gtk4::ListBox, shared: &Rc<RefCell<Vec<Nearby>>>, toast: &libadwa
         forget(&row, &device.key);
         list.append(&row);
     }
+}
+
+/// What a paired device nearby offers: a computer its terminal, files and
+/// screen; a phone whether it is ours; both taking files.
+fn add_paired_actions(row: &libadwaita::ActionRow, device: &Nearby, toast: &libadwaita::ToastOverlay) {
+    if let Some(login) = &device.login {
+        add_ssh_buttons(row, &device.address, login, toast);
+    }
+    if device.takes_files {
+        add_send_button(row, device, toast);
+    }
+    if let Some(screen) = device.screen {
+        add_screen_button(row, device, screen, toast);
+    }
+    if device.login.is_none() {
+        add_mine_check(row, &device.key);
+    }
+}
+
+/// Marks a paired phone as ours: only then does it link to this computer.
+fn add_mine_check(row: &libadwaita::ActionRow, key: &str) {
+    let check = gtk4::CheckButton::builder()
+        .label(tr!("My phone"))
+        .tooltip_text(tr!("Share notifications, battery and clipboard with this phone"))
+        .active(crate::lan::peers::is_mine(key))
+        .valign(gtk4::Align::Center)
+        .build();
+    let key = key.to_string();
+    check.connect_toggled(move |c| {
+        crate::lan::peers::set_mine(&key, c.is_active());
+        if !c.is_active() {
+            crate::link::disconnect(&crate::chat::lan_address(&key));
+        }
+    });
+    row.add_suffix(&check);
 }
 
 /// What the list says while no BigLace is in sight, and why that may be.

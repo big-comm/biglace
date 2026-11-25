@@ -3,7 +3,8 @@
 //! (battery and storage, a ringing call, a link to open, its notifications,
 //! its clipboard); the computer answers a notification and sends its own
 //! clipboard through the same connection. Only
-//! devices of our own account get in, each request signed by its device key.
+//! devices of our own account get in, each request signed by its device key;
+//! on the local network, a paired phone marked as ours (see `crate::lan`).
 
 use std::collections::HashMap;
 use std::io::{BufReader, Write};
@@ -77,20 +78,15 @@ pub enum LinkEvent {
     Clip(crate::clipboard::Content),
 }
 
-type Events = (async_channel::Sender<LinkEvent>, async_channel::Receiver<LinkEvent>);
+static LISTENERS: crate::listeners::Listeners<LinkEvent> = crate::listeners::Listeners::new();
 
-fn events_channel() -> &'static Events {
-    static E: OnceLock<Events> = OnceLock::new();
-    E.get_or_init(async_channel::unbounded)
-}
-
-/// Link events, for the window (one listener).
+/// Link events, for the window, from now on.
 pub fn events() -> async_channel::Receiver<LinkEvent> {
-    events_channel().1.clone()
+    LISTENERS.subscribe()
 }
 
 fn emit(e: LinkEvent) {
-    let _ = events_channel().0.try_send(e);
+    LISTENERS.send(e);
 }
 
 /// Connected phones: address → (what it said, the way back to it).
@@ -112,6 +108,15 @@ pub fn reply(ip: &str, key: &str, text: &str) -> Result<(), String> {
     let payload = serde_json::to_vec(&ToPhone::Reply { key, text }).map_err(|e| e.to_string())?;
     let mut w = writer.lock().map_err(|_| "the phone is no longer connected")?;
     write_frame(&mut *w, Kind::Link, &payload).map_err(|e| e.to_string())
+}
+
+/// End the link with the phone at `ip`, if it is connected.
+pub fn disconnect(ip: &str) {
+    let writer = phones().lock().ok().and_then(|p| p.get(ip).map(|(_, w)| w.clone()));
+    let Some(writer) = writer else { return };
+    if let Ok(w) = writer.lock() {
+        let _ = w.shutdown(std::net::Shutdown::Both);
+    };
 }
 
 /// Give every connected phone this computer's clipboard (any thread).
@@ -152,19 +157,38 @@ pub fn accept(stream: TcpStream, peer: IpAddr, headers: &HashMap<String, String>
         return respond(&stream, 403, "Forbidden");
     }
     let _ = write!(&stream, "HTTP/1.1 200 OK\r\nContent-Type: application/x-biglace-link\r\n\r\n");
+    serve(stream, peer.to_string(), &identity.device);
+}
+
+/// A paired phone on the local network links (see `crate::lan`): only one
+/// marked as ours, as on the tailnet only our account's.
+#[cfg(target_os = "linux")]
+pub fn accept_lan(tls: openssl::ssl::SslStream<TcpStream>, key: &str, name: &str) {
+    use crate::lan::pairing::answer;
+    if !crate::lan::peers::is_mine(key) {
+        tailscale::dbg(&format!("link: refused {name}: not marked as our phone"));
+        answer(tls, Some("denied"));
+        return;
+    }
+    if let Some(stream) = answer(tls, None) {
+        serve(stream, crate::chat::lan_address(key), name);
+    }
+}
+
+/// Carry what the phone at `ip` (`device`) says until it goes.
+fn serve(stream: TcpStream, ip: String, device: &str) {
     let _ = stream.set_read_timeout(Some(SILENCE));
     let (Ok(read_half), Ok(write_half)) = (stream.try_clone(), stream.try_clone()) else { return };
-    let ip = peer.to_string();
     let writer = Arc::new(Mutex::new(write_half));
     if let Ok(mut p) = phones().lock() {
         p.insert(ip.clone(), (None, writer.clone()));
     }
-    tailscale::dbg(&format!("link: {}@{} connected", identity.login, identity.device));
+    tailscale::dbg(&format!("link: {device} connected"));
     let mut reader = BufReader::new(read_half);
     let mut ringing_paused = Vec::new();
     while let Ok((Kind::Link, payload)) = read_frame(&mut reader) {
         if let Ok(msg) = serde_json::from_slice::<FromPhone>(&payload) {
-            handle(msg, &ip, &identity.device, &mut ringing_paused);
+            handle(msg, &ip, device, &mut ringing_paused);
         }
     }
     mpris::resume(&ringing_paused);
@@ -175,7 +199,7 @@ pub fn accept(stream: TcpStream, peer: IpAddr, headers: &HashMap<String, String>
         }
     }
     emit(LinkEvent::Status);
-    tailscale::dbg(&format!("link: {}@{} left", identity.login, identity.device));
+    tailscale::dbg(&format!("link: {device} left"));
 }
 
 /// What a phone said, applied here.

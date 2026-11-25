@@ -18,6 +18,10 @@ pub struct Paired {
     /// Where it last reached us or we reached it: for when mDNS can't find it.
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub address: Option<String>,
+    /// Our own phone: it links to this computer (notifications, battery,
+    /// clipboard; see `crate::link`). Someone else's paired phone doesn't.
+    #[serde(default, skip_serializing_if = "std::ops::Not::not")]
+    pub mine: bool,
 }
 
 pub fn list() -> Vec<Paired> {
@@ -50,6 +54,22 @@ pub fn remove(key: &str) {
     let mut all = list();
     for p in all.iter_mut().filter(|p| p.key == key) {
         p.forgotten = true;
+    }
+    if let Err(e) = save(&all) {
+        crate::tailscale::dbg(&format!("lan: {FILE} not saved: {e}"));
+    }
+}
+
+/// Whether the paired device `key` is our own phone.
+pub fn is_mine(key: &str) -> bool {
+    list().iter().any(|p| p.key == key && !p.forgotten && p.mine)
+}
+
+/// Mark the paired device `key` as our own phone, or not.
+pub fn set_mine(key: &str, mine: bool) {
+    let mut all = list();
+    for p in all.iter_mut().filter(|p| p.key == key) {
+        p.mine = mine;
     }
     if let Err(e) = save(&all) {
         crate::tailscale::dbg(&format!("lan: {FILE} not saved: {e}"));

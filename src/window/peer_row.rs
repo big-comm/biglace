@@ -63,21 +63,25 @@ pub fn compose_subtitle(
             tailscale::Link::Idle => {}
         }
     }
-    // One of our phones, linked: its battery and free storage.
-    if let Some(s) = crate::link::status(&peer.ip) {
-        let level = s.battery.to_string();
-        bits.push(if s.charging {
-            trf!("battery {level}%, charging", "level" => level)
-        } else {
-            trf!("battery {level}%", "level" => level)
-        });
-        bits.push(trf!(
-            "{free} free of {total}",
-            "free" => glib::format_size(s.storage_free).to_string(),
-            "total" => glib::format_size(s.storage_total).to_string()
-        ));
-    }
+    bits.extend(phone_status(&peer.ip));
     bits.join("  ·  ")
+}
+
+/// One of our phones, linked at `ip`: its battery and free storage.
+pub(super) fn phone_status(ip: &str) -> Vec<String> {
+    let Some(s) = crate::link::status(ip) else { return Vec::new() };
+    let level = s.battery.to_string();
+    let battery = if s.charging {
+        trf!("battery {level}%, charging", "level" => level)
+    } else {
+        trf!("battery {level}%", "level" => level)
+    };
+    let storage = trf!(
+        "{free} free of {total}",
+        "free" => glib::format_size(s.storage_free).to_string(),
+        "total" => glib::format_size(s.storage_total).to_string()
+    );
+    vec![battery, storage]
 }
 
 pub fn build(peer: &Peer, ctx: &PeerCtx) -> libadwaita::ExpanderRow {

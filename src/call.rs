@@ -109,18 +109,34 @@ fn room_key(id: &str) -> String {
     format!("call-{id}")
 }
 
+/// Send a step of call `id` to `user`'s device at `ip` now: over the tailnet,
+/// or over the pairing when `ip` is a paired device's address.
+fn step(ip: &str, user: &str, id: &str, action: Action, video: bool) -> Result<(), String> {
+    let op = chat::Op::Call { call: id.to_string(), action, video };
+    #[cfg(target_os = "linux")]
+    if let Some(key) = chat::lan_key(ip) {
+        return chat::send_op_lan(key, op);
+    }
+    chat::send_op_now(ip, user, op)
+}
+
 /// Send a step in the background (nobody waits on it).
 fn tell(ip: &str, user: &str, id: &str, action: Action, video: bool) {
     let (ip, user, id) = (ip.to_string(), user.to_string(), id.to_string());
     let _ = std::thread::Builder::new().name("biglace-call-tell".into()).spawn(move || {
-        if let Err(e) = chat::send_op_now(&ip, &user, chat::Op::Call { call: id.clone(), action, video }) {
+        if let Err(e) = step(&ip, &user, &id, action, video) {
             tailscale::dbg(&format!("call: {action:?} to {ip}: {e}"));
         }
     });
 }
 
-/// `user`'s online devices that take calls.
+/// `user`'s online devices that take calls; a paired device (its address) is its own.
 fn devices_of(user: &str) -> Vec<String> {
+    #[cfg(target_os = "linux")]
+    if let Some(key) = chat::lan_key(user) {
+        let takes = crate::lan::pairing::nearby_device(key).is_some_and(|d| d.calls);
+        return if takes { vec![user.to_string()] } else { vec![] };
+    }
     tailscale::get_peers()
         .into_iter()
         .filter(|p| p.online && p.user == user && !p.ipv4.is_empty())
@@ -129,7 +145,8 @@ fn devices_of(user: &str) -> Vec<String> {
         .collect()
 }
 
-/// Call `user`. Blocking (finds and rings their devices): off the UI thread.
+/// Call `user`, an account or a paired device's address. Blocking (finds and
+/// rings their devices): off the UI thread.
 pub fn start(user: &str, video: bool) -> Result<(), String> {
     if lock().is_some() {
         return Err(crate::tr!("You're already in a call."));
@@ -140,13 +157,13 @@ pub fn start(user: &str, video: bool) -> Result<(), String> {
     let id = chat::new_id();
     let mut ringing = Vec::new();
     for ip in devices_of(user) {
-        match chat::send_op_now(&ip, user, chat::Op::Call { call: id.clone(), action: Action::Ring, video }) {
+        match step(&ip, user, &id, Action::Ring, video) {
             Ok(()) => ringing.push(ip),
             Err(e) => tailscale::dbg(&format!("call: can't ring {ip}: {e}")),
         }
     }
     if ringing.is_empty() {
-        return Err(crate::trf!("{user} can't take calls right now.", "user" => user));
+        return Err(crate::trf!("{user} can't take calls right now.", "user" => chat::label(user)));
     }
     {
         let mut cur = lock();
@@ -197,7 +214,7 @@ pub fn accept() -> Result<(), String> {
             _ => return Err(crate::tr!("The call has ended.")),
         }
     };
-    if let Err(e) = chat::send_op_now(&caller_ip, &user, chat::Op::Call { call: id.clone(), action: Action::Accept, video }) {
+    if let Err(e) = step(&caller_ip, &user, &id, Action::Accept, video) {
         tailscale::dbg(&format!("call: accept to {caller_ip}: {e}"));
         finish(&id, CallOutcome::Missed);
         return Err(crate::tr!("The call has ended."));

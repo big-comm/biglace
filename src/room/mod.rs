@@ -273,16 +273,29 @@ impl Room {
             }
             let room = self.clone();
             let _ = std::thread::Builder::new().name("biglace-room-dial".into()).spawn(move || {
-                let path = format!("{PATH_PREFIX}{}", room.group);
-                match crate::remote::client::dial(&ip, &path, &[], Duration::from_secs(8)) {
+                match room.dial(&ip) {
                     Ok((stream, reader)) => room.add_peer(&ip, stream, reader),
-                    Err(e) => tailscale::dbg(&format!("room: can't reach {ip}: {e:?}")),
+                    Err(e) => tailscale::dbg(&format!("room: can't reach {ip}: {e}")),
                 }
                 if let Ok(mut d) = room.dialing.lock() {
                     d.remove(&ip);
                 }
             });
         }
+    }
+
+    /// Connect to the peer at `ip`: over the tailnet, or over the pairing for
+    /// a paired device on the local network.
+    fn dial(&self, ip: &str) -> Result<(TcpStream, BufReader<TcpStream>), String> {
+        #[cfg(target_os = "linux")]
+        if let Some(key) = crate::chat::lan_key(ip) {
+            let ask = crate::lan::pairing::RoomAsk { room: self.group.clone() };
+            let stream = crate::lan::pairing::take_over(key, &ask).map_err(|_| "not reachable on the local network".to_string())?;
+            let reader = stream.try_clone().map_err(|e| e.to_string())?;
+            return Ok((stream, BufReader::new(reader)));
+        }
+        let path = format!("{PATH_PREFIX}{}", self.group);
+        crate::remote::client::dial(ip, &path, &[], Duration::from_secs(8)).map_err(|e| format!("{e:?}"))
     }
 
     /// A connection to `ip` is up (dialed or accepted): read its sound.
@@ -637,18 +650,29 @@ pub fn join_with(group: &str, mic_desc: &str) -> Result<(), String> {
 
 /// Start the sound of call `key` with `peer` (who answered, or whom we
 /// answered). Blocking: call off the UI thread.
-pub fn join_call(key: &str, peer: Participant) -> Result<(), String> {
+pub fn join_call(key: &str, mut peer: Participant) -> Result<(), String> {
     leave();
     let status = tailscale::get_status();
-    let my_ip = status.ip.ok_or("not connected")?;
+    let device = status.hostname.unwrap_or_else(|| gtk4::glib::host_name().to_string());
+    // A paired device on the local network: both sides go by their pairing address.
+    let my_ip = match crate::chat::lan_key(&peer.ip) {
+        Some(_) => crate::chat::lan_address(&crate::device_key::public_key().ok_or("no device key")?),
+        None => status.ip.ok_or("not connected")?,
+    };
+    // The call goes by who it's with: a paired device's address, or the account.
+    let with = if crate::chat::lan_key(&peer.ip).is_some() {
+        peer.user = crate::chat::label(&peer.ip);
+        peer.ip.clone()
+    } else {
+        peer.user.clone()
+    };
     let me = Participant {
-        user: crate::chat::my_user().unwrap_or_default(),
-        device: status.hostname.unwrap_or_default(),
+        user: crate::chat::my_user().unwrap_or_else(|| device.clone()),
+        device,
         ip: my_ip.clone(),
         muted: false,
     };
-    let user = peer.user.clone();
-    enter(key, Some(user), my_ip, vec![me, peer], MIC_DESC);
+    enter(key, Some(with), my_ip, vec![me, peer], MIC_DESC);
     Ok(())
 }
 
@@ -820,6 +844,22 @@ pub fn accept(stream: TcpStream, peer: IpAddr, headers: &HashMap<String, String>
     let _ = stream.set_read_timeout(None);
     let Ok(reader) = stream.try_clone() else { return };
     room.add_peer(&ip, stream, BufReader::new(reader));
+}
+
+/// A paired device on the local network in the call `group` with us connects
+/// (see `crate::lan`): the call's roster names its pairing address.
+#[cfg(target_os = "linux")]
+pub fn accept_lan(tls: openssl::ssl::SslStream<TcpStream>, key: &str, group: &str) {
+    use crate::lan::pairing::answer;
+    let ip = crate::chat::lan_address(key);
+    let Some(room) = room().filter(|r| r.group == group && r.admits(&ip)) else {
+        answer(tls, Some("unavailable"));
+        return;
+    };
+    if let Some(stream) = answer(tls, None) {
+        let Ok(reader) = stream.try_clone() else { return };
+        room.add_peer(&ip, stream, BufReader::new(reader));
+    }
 }
 
 #[cfg(test)]

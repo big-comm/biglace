@@ -503,11 +503,35 @@ pub fn accept(stream: TcpStream, peer: IpAddr, headers: &HashMap<String, String>
     };
     // Only the people in this room may watch.
     let ip = peer.to_string();
-    let in_room = room().is_some_and(|r| r.roster.lock().map(|l| l.iter().any(|p| p.ip == ip)).unwrap_or(false));
-    if !in_room {
+    if !in_room(&ip) {
         return respond(&stream, 403, "Forbidden");
     }
     let _ = write!(&stream, "HTTP/1.1 200 OK\r\nContent-Type: application/x-biglace-screen\r\n\r\n");
+    watch(stream, &stage, ip, identity);
+}
+
+fn in_room(ip: &str) -> bool {
+    room().is_some_and(|r| r.roster.lock().map(|l| l.iter().any(|p| p.ip == ip)).unwrap_or(false))
+}
+
+/// A paired device on the local network in this call or room starts watching (see `crate::lan`).
+#[cfg(target_os = "linux")]
+pub fn accept_lan(tls: openssl::ssl::SslStream<TcpStream>, key: &str, name: &str, group: &str) {
+    use crate::lan::pairing::answer;
+    let ip = crate::chat::lan_address(key);
+    let Some(stage) = stage().filter(|s| s.group == group && in_room(&ip)) else {
+        answer(tls, Some("unavailable"));
+        return;
+    };
+    crate::remote::limit_send_queue(tls.get_ref());
+    if let Some(stream) = answer(tls, None) {
+        let identity = Identity { login: name.to_string(), display_name: name.to_string(), device: name.to_string() };
+        watch(stream, &stage, ip, &identity);
+    }
+}
+
+/// `identity`, at `ip`, watches `stage` over `stream` until either side stops.
+fn watch(stream: TcpStream, stage: &Arc<Stage>, ip: String, identity: &Identity) {
     crate::remote::limit_send_queue(&stream);
     let _ = stream.set_write_timeout(Some(WRITE_TIMEOUT));
     let _ = stream.set_read_timeout(None);

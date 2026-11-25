@@ -266,36 +266,15 @@ pub fn serve(stream: TcpStream, peer: IpAddr, headers: &HashMap<String, String>,
     share(stream, protocol, only_420, &identity);
 }
 
-/// What a paired device on the local network asks for (see `crate::lan`):
-/// the screen protocol it speaks and whether it decodes only 4:2:0.
-#[cfg(target_os = "linux")]
-#[derive(serde::Serialize, serde::Deserialize)]
-pub struct LanAsk {
-    pub screen: u32,
-    #[serde(default)]
-    pub chroma: Option<String>,
-}
-
-/// The answer before the frames: `ok`, or why not (`denied`, `unavailable`).
-#[cfg(target_os = "linux")]
-#[derive(serde::Serialize, serde::Deserialize)]
-pub struct LanAnswer {
-    #[serde(default)]
-    pub ok: bool,
-    #[serde(default, skip_serializing_if = "Option::is_none")]
-    pub error: Option<String>,
-}
-
 /// A paired device on the local network asks for the screen. Who it is was
 /// proven by the pairing; it has no BigScale account to remember an answer
 /// for, so the person here is asked each time.
 #[cfg(target_os = "linux")]
-pub fn serve_lan(mut tls: openssl::ssl::SslStream<TcpStream>, name: &str, address: &str, ask_for: &LanAsk) {
-    let refuse = |tls: &mut openssl::ssl::SslStream<TcpStream>, why: &str| {
-        let _ = crate::lan::handshake::send(tls, &LanAnswer { ok: false, error: Some(why.into()) });
-    };
+pub fn serve_lan(tls: openssl::ssl::SslStream<TcpStream>, name: &str, address: &str, ask_for: &crate::lan::pairing::ScreenAsk) {
+    use crate::lan::pairing::answer;
     if !super::can_host() {
-        return refuse(&mut tls, "unavailable");
+        answer(tls, Some("unavailable"));
+        return;
     }
     let identity = Identity { login: name.to_string(), display_name: name.to_string(), device: address.to_string() };
     // The person has a minute to answer; the viewer waits as long.
@@ -303,15 +282,12 @@ pub fn serve_lan(mut tls: openssl::ssl::SslStream<TcpStream>, name: &str, addres
     let allowed = ask(&identity, false).0;
     crate::access::log(name, address, "screen", if allowed { "allowed" } else { "denied" });
     if !allowed {
-        return refuse(&mut tls, "denied");
-    }
-    if crate::lan::handshake::send(&mut tls, &LanAnswer { ok: true, error: None }).is_err() {
+        answer(tls, Some("denied"));
         return;
     }
     super::limit_send_queue(tls.get_ref());
-    match crate::lan::bridge::bridge(tls) {
-        Ok(stream) => share(stream, ask_for.screen, ask_for.chroma.as_deref() == Some("420"), &identity),
-        Err(e) => tailscale::dbg(&format!("remote: no local bridge: {e}")),
+    if let Some(stream) = answer(tls, None) {
+        share(stream, ask_for.screen, ask_for.chroma.as_deref() == Some("420"), &identity);
     }
 }
 

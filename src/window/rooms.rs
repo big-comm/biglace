@@ -454,6 +454,14 @@ impl RoomsPage {
         if room::active_group().is_some() {
             return;
         }
+        // Rooms live on the panel, which the local network goes without.
+        if crate::chat::local_only() {
+            self.error_page.set_description(Some(&tr!(
+                "Rooms are for BigScale groups. On the local network, call a paired device from its conversation."
+            )));
+            self.stack.set_visible_child_name("error");
+            return;
+        }
         if self.rooms.borrow().is_empty() {
             self.stack.set_visible_child_name("loading");
         }
@@ -577,7 +585,7 @@ impl RoomsPage {
     /// The conversation beside the room: the group's, or the person's in a call.
     fn conversation(&self) -> Option<crate::chat::ConvId> {
         if let Some(user) = self.call_with.borrow().as_deref() {
-            return Some(crate::chat::ConvId::direct(user));
+            return Some(crate::chat::conversation_with(user));
         }
         self.group.borrow().as_deref().map(crate::chat::ConvId::group)
     }
@@ -793,7 +801,7 @@ impl RoomsPage {
 /// "Room familia", or "Call with bruna".
 fn room_title(group: &str, call_with: Option<&str>) -> String {
     match call_with {
-        Some(user) => trf!("Call with {user}", "user" => user),
+        Some(user) => trf!("Call with {user}", "user" => crate::chat::label(user)),
         None => trf!("Room {group}", "group" => group),
     }
 }

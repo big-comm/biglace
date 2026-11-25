@@ -128,7 +128,7 @@ fn settle(s: &mut (impl Read + Write), peer: &Peer, code: String, address: Strin
     LISTENERS.send(LanEvent::Code { name: peer.name.clone(), code, answer });
     let ours = answered.recv_timeout(ANSWER_WAIT).unwrap_or(false);
     let paired = handshake::agree(s, ours).unwrap_or(false);
-    if paired && peers::add(peers::Paired { key: peer.key.clone(), name: peer.name.clone(), since: crate::chat::now_ms() / 1000, forgotten: false, address: Some(address) }).is_ok() {
+    if paired && peers::add(peers::Paired { key: peer.key.clone(), name: peer.name.clone(), since: crate::chat::now_ms() / 1000, forgotten: false, address: Some(address), mine: false }).is_ok() {
         LISTENERS.send(LanEvent::Paired { key: peer.key.clone(), name: peer.name.clone() });
     } else {
         LISTENERS.send(LanEvent::PairFailed { name: peer.name.clone() });
@@ -149,13 +149,20 @@ fn incoming(tcp: TcpStream, server: &tls::Server) {
             Err(_) => LISTENERS.send(LanEvent::PairFailed { name: peer.name }),
         },
         Purpose::Talk => {
-            peers::seen_at(&peer.key, &address);
+            // Where it is on this network (a tunnel's loopback end is no address to come back to).
+            if discovery::on_this_network(&address) {
+                peers::seen_at(&peer.key, &address);
+            }
             let _ = s.get_ref().set_read_timeout(Some(READ_WAIT));
             let _ = s.get_ref().set_write_timeout(Some(STALL));
-            if let Some(ask) = talk(&mut s, &peer) {
-                // The name the person saw when pairing, not the one it gives now.
-                let name = peers::list().into_iter().find(|p| p.key == peer.key).map_or(peer.name, |p| p.name);
-                crate::remote::host::serve_lan(s, &name, &address, &ask);
+            let Some(takeover) = talk(&mut s, &peer) else { return };
+            // The name the person saw when pairing, not the one it gives now.
+            let name = peers::list().into_iter().find(|p| p.key == peer.key).map_or(peer.name, |p| p.name);
+            match takeover {
+                Takeover::Screen(ScreenAsk { stage: Some(room), .. }) => crate::room::stage::accept_lan(s, &peer.key, &name, &room),
+                Takeover::Screen(ask) => crate::remote::host::serve_lan(s, &name, &address, &ask),
+                Takeover::Room(ask) => crate::room::accept_lan(s, &peer.key, &ask.room),
+                Takeover::Link => crate::link::accept_lan(s, &peer.key, &name),
             }
         }
     }
@@ -198,9 +205,61 @@ struct PhotoAnswer {
 
 const GONE: &str = "gone";
 
+/// A paired device asks for a screen: this computer's, or (`stage`) what we
+/// show the call or room of that key. The screen protocol it speaks and
+/// whether it decodes only 4:2:0.
+#[derive(serde::Serialize, serde::Deserialize)]
+pub(crate) struct ScreenAsk {
+    pub screen: u32,
+    #[serde(default)]
+    pub chroma: Option<String>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub stage: Option<String>,
+}
+
+/// A paired device in the call or room `room` with us connects to it.
+#[derive(serde::Serialize, serde::Deserialize)]
+pub(crate) struct RoomAsk {
+    pub room: String,
+}
+
+/// Our own phone links to this computer (see `crate::link`).
+#[derive(serde::Serialize, serde::Deserialize)]
+pub(crate) struct LinkAsk {
+    pub link: bool,
+}
+
+/// The answer before the stream: `ok`, or why not (`denied`, `unavailable`).
+#[derive(serde::Serialize, serde::Deserialize)]
+struct Answer {
+    #[serde(default)]
+    ok: bool,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    error: Option<String>,
+}
+
+/// What a paired device asked for that takes its connection over.
+pub(crate) enum Takeover {
+    Screen(ScreenAsk),
+    Room(RoomAsk),
+    Link,
+}
+
+/// Answer a [`Takeover`]: refused for `why`, or allowed, the connection then
+/// handed over as a plain socket (see `super::bridge`).
+pub(crate) fn answer(mut tls: openssl::ssl::SslStream<TcpStream>, refused: Option<&str>) -> Option<TcpStream> {
+    let sent = handshake::send(&mut tls, &Answer { ok: refused.is_none(), error: refused.map(str::to_string) });
+    if refused.is_some() || sent.is_err() {
+        return None;
+    }
+    // Calls and screens wait on the other side for as long as they last.
+    let _ = tls.get_ref().set_read_timeout(None);
+    super::bridge::bridge(tls).inspect_err(|e| crate::tailscale::dbg(&format!("lan: no bridge: {e}"))).ok()
+}
+
 /// Messages from a paired device, each acknowledged once kept, or one file or our photo it asks for;
-/// or it asks for the screen, which takes the connection over.
-fn talk(s: &mut (impl Read + Write), peer: &Peer) -> Option<crate::remote::host::LanAsk> {
+/// or what takes the connection over.
+fn talk(s: &mut (impl Read + Write), peer: &Peer) -> Option<Takeover> {
     loop {
         match read_frame(s) {
             Ok((Kind::Chat, payload)) => {
@@ -213,8 +272,12 @@ fn talk(s: &mut (impl Read + Write), peer: &Peer) -> Option<crate::remote::host:
                     send_file(s, &peer.key, &ask);
                 } else if let Ok(ask) = serde_json::from_slice::<PhotoAsk>(&payload) {
                     send_photo(s, &ask);
-                } else if let Ok(ask) = serde_json::from_slice::<crate::remote::host::LanAsk>(&payload) {
-                    return Some(ask);
+                } else if let Ok(ask) = serde_json::from_slice::<ScreenAsk>(&payload) {
+                    return Some(Takeover::Screen(ask));
+                } else if let Ok(ask) = serde_json::from_slice::<RoomAsk>(&payload) {
+                    return Some(Takeover::Room(ask));
+                } else if serde_json::from_slice::<LinkAsk>(&payload).is_ok_and(|a| a.link) {
+                    return Some(Takeover::Link);
                 }
                 return None;
             }
@@ -312,25 +375,30 @@ pub(crate) fn fetch_photo(key: &str, have: &str, max: u64) -> Result<Option<Phot
     Ok(Some(Photo { version, bytes }))
 }
 
-/// Why the screen of a paired device didn't open.
-pub(crate) enum ScreenError {
+/// Why a [`Takeover`] asked of a paired device didn't happen.
+pub(crate) enum TakeoverError {
     Lan(LanError),
     /// Its answer: `denied` or `unavailable`.
     Refused(String),
 }
 
-/// Ask the paired device `key` for its screen, waiting while the person
-/// there answers; on yes, the connection, as a plain socket (see `super::bridge`).
-pub(crate) fn open_screen(key: &str, ask: &crate::remote::host::LanAsk) -> Result<TcpStream, ScreenError> {
-    use crate::remote::host::LanAnswer;
-    let mut s = talk_to(key).map_err(ScreenError::Lan)?;
-    let lost = |_| ScreenError::Lan(LanError::Unreachable);
+/// Ask the paired device `key` for a [`Takeover`] (`ask`), waiting while the
+/// person there answers; on yes, the connection, as a plain socket (see `super::bridge`).
+pub(crate) fn take_over(key: &str, ask: &impl serde::Serialize) -> Result<TcpStream, TakeoverError> {
+    let mut s = talk_to(key).map_err(TakeoverError::Lan)?;
+    let lost = |_| TakeoverError::Lan(LanError::Unreachable);
     handshake::send(&mut s, ask).map_err(lost)?;
-    let answer: LanAnswer = handshake::recv(&mut s).map_err(lost)?;
+    let answer: Answer = handshake::recv(&mut s).map_err(lost)?;
     if !answer.ok {
-        return Err(ScreenError::Refused(answer.error.unwrap_or_default()));
+        return Err(TakeoverError::Refused(answer.error.unwrap_or_default()));
     }
+    let _ = s.get_ref().set_read_timeout(None);
     super::bridge::bridge(s).map_err(lost)
+}
+
+/// The paired device `key` as it announces itself on the network now, if it's nearby.
+pub(crate) fn nearby_device(key: &str) -> Option<Nearby> {
+    nearby().lock().ok()?.iter().find(|d| d.key == key).cloned()
 }
 
 /// A proven TLS connection to the paired device `key`, at its announced
@@ -338,7 +406,12 @@ pub(crate) fn open_screen(key: &str, ask: &crate::remote::host::LanAsk) -> Resul
 fn talk_to(key: &str) -> Result<openssl::ssl::SslStream<TcpStream>, LanError> {
     let me = current().ok_or(LanError::Off)?;
     let found = nearby().lock().ok().and_then(|n| n.iter().find(|d| d.key == key).map(|d| format!("{}:{}", d.address, d.port)));
-    let remembered = peers::list().into_iter().find(|p| p.key == key).and_then(|p| p.address).map(|a| format!("{a}:{}", super::PORT));
+    // A remembered address may carry its port ("host:port") when it isn't ours, as the phone keeps it.
+    let remembered = peers::list()
+        .into_iter()
+        .find(|p| p.key == key)
+        .and_then(|p| p.address)
+        .map(|a| if a.parse::<SocketAddr>().is_ok() { a } else { format!("{a}:{}", super::PORT) });
     let mut places: Vec<String> = found.into_iter().chain(remembered).collect();
     places.dedup();
     for place in places {

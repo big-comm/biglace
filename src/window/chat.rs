@@ -921,13 +921,14 @@ impl ChatPage {
         }
         self.conv_title.set_text(&chat::title(id));
         if id.is_lan() {
-            // No account behind it: no calls (they go over the tailnet).
             // "Maria (notebook)": initials from the words, not the parenthesis.
             self.conv_avatar.set_text(Some(&chat::label(&id.name).replace(['(', ')'], "")));
             self.conv_avatar.set_icon_name(None);
             self.conv_avatar.set_show_initials(true);
             crate::avatars::bind_lan_fresh(&self.conv_avatar, &id.name);
-            self.btn_call.set_visible(false);
+            // Calls go over the pairing.
+            self.btn_call.set_menu_model(Some(&super::call_ui::call_menu(&chat::lan_address(&id.name))));
+            self.btn_call.set_visible(true);
         } else if id.is_group() {
             self.conv_avatar.set_text(Some(&id.name));
             self.conv_avatar.set_icon_name(Some("system-users-symbolic"));
@@ -1938,7 +1939,8 @@ impl ChatPage {
             view
         });
         if let Some(call) = &m.call {
-            b.append(&super::call_ui::call_entry(call, m.mine, &conv.name));
+            let peer = if conv.is_lan() { chat::lan_address(&conv.name) } else { conv.name.clone() };
+            b.append(&super::call_ui::call_entry(call, m.mine, &peer));
         }
         let text = gtk4::Label::new(None);
         text.add_css_class("bubble-text");
