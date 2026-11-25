@@ -15,6 +15,8 @@ use std::time::Duration;
 /// Announced by phones that can be a webcam.
 pub const CAPABILITY: &str = "webcam";
 const PATH: &str = "/v1/webcam";
+/// `card_label` of the loopback camera, set in the package's modprobe.d/biglace.conf.
+const LOOPBACK_LABEL: &str = "BigLace";
 
 /// What changed, for the window: the webcam started (`true`) or ended.
 #[derive(Clone, Debug)]
@@ -117,25 +119,43 @@ fn source(desc: &str, class: &str, name: &str) -> Result<(gst::Pipeline, gst_app
         .map_err(|_| "not a pipeline".to_string())?;
     let src = pipeline.by_name("src").and_then(|e| e.downcast::<gst_app::AppSrc>().ok()).ok_or("no appsrc")?;
     let sink = pipeline.by_name("sink").ok_or("no sink")?;
-    let props = gst::Structure::builder("props")
+    let video = class.starts_with("Video");
+    let mut props = gst::Structure::builder("props")
         .field("media.class", class)
         .field("node.description", name)
-        .field("node.name", if class.starts_with("Video") { "biglace-webcam" } else { "biglace-phone-microphone" })
+        .field("node.name", if video { "biglace-webcam" } else { "biglace-phone-microphone" })
         .build();
+    // The camera portal (browsers, Flatpak apps) only offers nodes with this role.
+    if video {
+        props.set("media.role", "Camera");
+    }
     sink.set_property("stream-properties", props);
     pipeline.set_state(gst::State::Playing).map_err(|e| e.to_string())?;
     Ok((pipeline, src))
+}
+
+/// The camera device the package's v4l2loopback configuration creates (`card_label=BigLace`), when loaded.
+fn loopback_device() -> Option<std::path::PathBuf> {
+    let entries = std::fs::read_dir("/sys/class/video4linux").ok()?;
+    entries.flatten().find_map(|e| {
+        let label = std::fs::read_to_string(e.path().join("name")).ok()?;
+        (label.trim() == LOOPBACK_LABEL).then(|| std::path::Path::new("/dev").join(e.file_name()))
+    })
 }
 
 /// Feed the phone's frames into the PipeWire nodes until the connection ends.
 fn receive(mut reader: BufReader<TcpStream>, name: &str, video: bool, audio: bool) -> Result<(), String> {
     gst::init().map_err(|e| e.to_string())?;
     let camera = if video {
+        // Browsers and most programs only list /dev/video cameras: feed the package's loopback one too.
+        let loopback = loopback_device()
+            .map(|dev| format!(" t. ! queue leaky=downstream ! v4l2sink device={} sync=false", dev.display()))
+            .unwrap_or_default();
         let desc = format!(
             "appsrc name=src is-live=true format=time do-timestamp=true \
                caps=video/x-h264,stream-format=byte-stream,alignment=au \
-             ! h264parse ! {} ! videoconvert ! video/x-raw,format=YUY2 \
-             ! pipewiresink name=sink mode=provide",
+             ! h264parse ! {} ! videoconvert ! video/x-raw,format=YUY2 ! tee name=t \
+             t. ! queue leaky=downstream ! pipewiresink name=sink mode=provide{loopback}",
             crate::remote::client::decoder()
         );
         Some(source(&desc, "Video/Source", &crate::trf!("{name} (camera)", "name" => name))?)

@@ -22,6 +22,8 @@ depends=(
     'gst-libav'
     # Screen capture on Wayland and the camera, both through PipeWire.
     'gst-plugin-pipewire'
+    # The phone webcam as a /dev/video camera, which browsers list (usr/lib/modprobe.d/biglace.conf).
+    'V4L2LOOPBACK-MODULE'
     # Ringtone and ringback of calls.
     'sound-theme-freedesktop'
 )

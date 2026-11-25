@@ -66,9 +66,26 @@ setup_sshd_once() {
     : > "${SSHD_STAMP}"
 }
 
+# The phone webcam's camera device (v4l2loopback, options in modprobe.d/biglace.conf) loads at boot;
+# load it now too, so no restart is needed. A module built by DKMS after this script waits for the boot.
+load_camera_module() {
+    [ -d /run/systemd/system ] || return 0
+    if [ -d /sys/module/v4l2loopback ]; then
+        grep -qx BigLace /sys/class/video4linux/*/name 2>/dev/null ||
+            printMsg "v4l2loopback is loaded with other options: the BigLace camera appears after a restart."
+        return 0
+    fi
+    if modprobe v4l2loopback 2>/dev/null; then
+        printMsg "Camera device of the phone webcam ready."
+    else
+        printMsg "The camera device of the phone webcam appears after a restart."
+    fi
+}
+
 # Function executed after package installation
 post_install() {
     setup_sshd_once
+    load_camera_module
 }
 
 # Function executed before package upgrade
@@ -83,6 +100,7 @@ post_install() {
 post_upgrade() {
     # Catch the existing install base once (they never re-run post_install).
     setup_sshd_once
+    load_camera_module
 }
 
 # Function executed before package removal
