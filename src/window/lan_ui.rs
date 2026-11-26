@@ -254,6 +254,10 @@ fn fill(list: &gtk4::ListBox, shared: &Rc<RefCell<Vec<Nearby>>>, toast: &libadwa
     }
     for device in away {
         let row = libadwaita::ActionRow::builder().title(&device.name).subtitle(tr!("Paired, not nearby")).build();
+        // A phone whose announcements never reach us links only once it is ours: let it be marked from here.
+        if device.announced.as_ref().is_none_or(|n| n.login.is_none()) {
+            add_mine_check(&row, &device.key);
+        }
         forget(&row, &device.key);
         list.append(&row);
     }

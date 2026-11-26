@@ -51,23 +51,31 @@ pub struct Announcement {
     _conn: Connection,
 }
 
+/// What this computer offers, as `(TXT key, value)`: announced, and told to our linked phones,
+/// which some Wi-Fi routers keep the announcement from reaching.
+pub fn offers() -> Vec<(&'static str, String)> {
+    let mut offers = Vec::with_capacity(5);
+    // Where a terminal or the files of this computer sign in (SSH).
+    let login = gtk4::glib::user_name().to_string_lossy().into_owned();
+    if login_ok(&login) {
+        offers.push(("login", login));
+    }
+    offers.push(("send", crate::transfer::CAPABILITY.to_string()));
+    if crate::remote::can_host() {
+        let screen = if crate::remote::display::available() { SCREEN_FITS } else { SCREEN_SHARED };
+        offers.push(("screen", screen.to_string()));
+    }
+    offers.push(("call", crate::call::CAPABILITY.to_string()));
+    // Our own phones link to us (see `crate::link`).
+    offers.push(("link", crate::link::CAPABILITY.to_string()));
+    offers
+}
+
 pub async fn announce(key: &str, name: &str) -> zbus::Result<Announcement> {
     let conn = Connection::system().await?;
     let group: OwnedObjectPath = conn.call_method(Some(AVAHI), "/", Some(SERVER), "EntryGroupNew", &()).await?.body().deserialize()?;
     let mut txt = vec![format!("key={key}").into_bytes(), format!("name={name}").into_bytes()];
-    // Where a terminal or the files of this computer sign in (SSH).
-    let login = gtk4::glib::user_name().to_string_lossy().into_owned();
-    if login_ok(&login) {
-        txt.push(format!("login={login}").into_bytes());
-    }
-    txt.push(format!("send={}", crate::transfer::CAPABILITY).into_bytes());
-    if crate::remote::can_host() {
-        let screen = if crate::remote::display::available() { SCREEN_FITS } else { SCREEN_SHARED };
-        txt.push(format!("screen={screen}").into_bytes());
-    }
-    txt.push(format!("call={}", crate::call::CAPABILITY).into_bytes());
-    // Our own phones link to us (see `crate::link`).
-    txt.push(format!("link={}", crate::link::CAPABILITY).into_bytes());
+    txt.extend(offers().into_iter().map(|(k, v)| format!("{k}={v}").into_bytes()));
     let instance = format!("BigLace {}", key.get(..8).unwrap_or(key));
     let entry = Some("org.freedesktop.Avahi.EntryGroup");
     conn.call_method(Some(AVAHI), &group, entry, "AddService", &(IF_UNSPEC, PROTO_INET, 0u32, instance, SERVICE, "", "", super::PORT, txt))

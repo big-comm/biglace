@@ -54,6 +54,8 @@ enum ToPhone<'a> {
         #[serde(skip_serializing_if = "Option::is_none")]
         image: Option<String>,
     },
+    /// What we offer on the local network, as our announcement says (which some Wi-Fi routers lose).
+    Offers { offers: HashMap<&'static str, String> },
 }
 
 /// A phone's battery and storage, as it last said.
@@ -177,7 +179,11 @@ pub fn accept_lan(tls: openssl::ssl::SslStream<TcpStream>, key: &str, name: &str
         answer(tls, Some("denied"));
         return;
     }
-    if let Some(stream) = answer(tls, None) {
+    if let Some(mut stream) = answer(tls, None) {
+        let offers = ToPhone::Offers { offers: crate::lan::discovery::offers().into_iter().collect() };
+        if let Ok(json) = serde_json::to_vec(&offers) {
+            let _ = write_frame(&mut stream, Kind::Link, &json);
+        }
         serve(stream, crate::chat::lan_address(key), name);
     }
 }
@@ -341,6 +347,9 @@ mod tests {
         assert_eq!(m, FromPhone::Clip { text: None, image: Some("iVBO".into()) });
         let clip = serde_json::to_string(&ToPhone::Clip { text: Some("oi"), image: None }).unwrap();
         assert_eq!(clip, r#"{"t":"clip","text":"oi"}"#);
+        // The phone's DesktopLink reads these as its LanDiscovery reads our announcement.
+        let offers = serde_json::to_string(&ToPhone::Offers { offers: HashMap::from([("login", "ana".to_string())]) }).unwrap();
+        assert_eq!(offers, r#"{"t":"offers","offers":{"login":"ana"}}"#);
     }
 
     #[test]
