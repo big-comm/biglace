@@ -2107,13 +2107,6 @@ msgstr "L'accès à l'écran de {name} est terminé : {error}"
 msgid "Give back control"
 msgstr "Rendre le contrôle"
 
-msgid "Connected · 1 peer"
-msgstr "Connecté · 1 pair"
-
-#, rust-format
-msgid "Connected · {n} peers"
-msgstr "Connecté · {n} pairs"
-
 #, rust-format
 msgid "In the room {group} · muted"
 msgstr "Dans le salon {group} · muet"
@@ -3021,19 +3014,6 @@ msgstr "{user} · terminal"
 msgid "{user} · files"
 msgstr "{user} · fichiers"
 
-msgid "Use only the local network?"
-msgstr "Utiliser uniquement le réseau local ?"
-
-msgid ""
-"You leave BigScale while the local network is on, and connect again when you "
-"turn it off."
-msgstr ""
-"Vous quittez BigScale tant que le réseau local est activé, et vous vous "
-"reconnectez quand vous le désactivez."
-
-msgid "Use only the local network"
-msgstr "Utiliser uniquement le réseau local"
-
 msgid "Couldn't reconnect to the network. Try again in a moment."
 msgstr "Impossible de se reconnecter au réseau. Réessayez dans un instant."
 
@@ -3052,14 +3032,6 @@ msgstr "Vers vos autres appareils"
 #: src/window/lan_ui.rs
 msgid "Pair a phone"
 msgstr "Associer un téléphone"
-
-#: src/window/lan_ui.rs
-msgid ""
-"On the phone, turn on Use only the local network, then tap Scan a computer's "
-"code."
-msgstr ""
-"Sur le téléphone, activez « Utiliser uniquement le réseau local », puis "
-"touchez « Scanner le code d'un ordinateur »."
 
 #~ msgid ""
 #~ "Or scan this code with BigLace on the phone (Settings, Local network)"
@@ -3445,3 +3417,44 @@ msgstr "La caméra n'a pas changé : {error}"
 #, rust-format
 msgid "{name} didn't start it."
 msgstr "{name} ne l'a pas démarrée."
+
+#: src/window/sidebar.rs
+msgid "Over the internet"
+msgstr "Par Internet"
+
+#: src/window/sidebar.rs
+msgid "Your devices anywhere, through your network's server"
+msgstr "Vos appareils partout, via le serveur de votre réseau"
+
+#: src/window/sidebar.rs
+msgid "Only devices on this same network, no server"
+msgstr "Uniquement les appareils de ce même réseau, sans serveur"
+
+#: src/tray/linux.rs src/tray/windows.rs src/window/mod.rs
+msgid "Connected over the internet"
+msgstr "Connecté par Internet"
+
+#: src/window/lan_ui.rs
+msgid "Switch to the local network?"
+msgstr "Passer au réseau local ?"
+
+#: src/window/lan_ui.rs
+msgid "While you're on the local network, the connection over the internet stays off. It comes back when you switch to Over the internet."
+msgstr "Tant que vous êtes sur le réseau local, la connexion par Internet reste désactivée. Elle revient lorsque vous repassez à « Par Internet »."
+
+#: src/window/lan_ui.rs
+msgid "Switch"
+msgstr "Basculer"
+
+#: src/tray/linux.rs src/tray/windows.rs
+msgid "Over the internet · 1 peer"
+msgstr "Par Internet · 1 pair"
+
+#: src/tray/linux.rs src/tray/windows.rs
+#, rust-format
+msgid "Over the internet · {n} peers"
+msgstr "Par Internet · {n} pairs"
+
+#: src/window/lan_ui.rs
+msgid "On the phone, choose Local network, then tap Scan a computer's code."
+msgstr "Sur le téléphone, choisissez « Réseau local », puis touchez « Scanner le code d'un ordinateur »."

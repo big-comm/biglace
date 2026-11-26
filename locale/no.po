@@ -2068,13 +2068,6 @@ msgstr "Tilgangen til skjermen til {name} er avsluttet: {error}"
 msgid "Give back control"
 msgstr "Gi tilbake kontrollen"
 
-msgid "Connected · 1 peer"
-msgstr "Tilkoblet · 1 peer"
-
-#, rust-format
-msgid "Connected · {n} peers"
-msgstr "Tilkoblet · {n} peere"
-
 #, rust-format
 msgid "In the room {group} · muted"
 msgstr "I rommet {group} · dempet"
@@ -2970,19 +2963,6 @@ msgstr "{user} · terminal"
 msgid "{user} · files"
 msgstr "{user} · filer"
 
-msgid "Use only the local network?"
-msgstr "Bruke bare det lokale nettverket?"
-
-msgid ""
-"You leave BigScale while the local network is on, and connect again when you "
-"turn it off."
-msgstr ""
-"Du forlater BigScale mens det lokale nettverket er slått på, og kobler til "
-"igjen når du slår det av."
-
-msgid "Use only the local network"
-msgstr "Bruk bare det lokale nettverket"
-
 msgid "Couldn't reconnect to the network. Try again in a moment."
 msgstr "Kunne ikke koble til nettverket på nytt. Prøv igjen om et øyeblikk."
 
@@ -3001,14 +2981,6 @@ msgstr "Til dine andre enheter"
 #: src/window/lan_ui.rs
 msgid "Pair a phone"
 msgstr "Koble sammen med en telefon"
-
-#: src/window/lan_ui.rs
-msgid ""
-"On the phone, turn on Use only the local network, then tap Scan a computer's "
-"code."
-msgstr ""
-"Slå på «Bruk bare det lokale nettverket» på telefonen, og trykk deretter på "
-"«Skann en datamaskins kode»."
 
 #~ msgid ""
 #~ "Or scan this code with BigLace on the phone (Settings, Local network)"
@@ -3391,3 +3363,44 @@ msgstr "Kameraet ble ikke byttet: {error}"
 #, rust-format
 msgid "{name} didn't start it."
 msgstr "{name} startet det ikke."
+
+#: src/window/sidebar.rs
+msgid "Over the internet"
+msgstr "Via internett"
+
+#: src/window/sidebar.rs
+msgid "Your devices anywhere, through your network's server"
+msgstr "Enhetene dine hvor som helst, via serveren til nettverket ditt"
+
+#: src/window/sidebar.rs
+msgid "Only devices on this same network, no server"
+msgstr "Bare enheter på det samme nettverket, ingen server"
+
+#: src/tray/linux.rs src/tray/windows.rs src/window/mod.rs
+msgid "Connected over the internet"
+msgstr "Tilkoblet via internett"
+
+#: src/window/lan_ui.rs
+msgid "Switch to the local network?"
+msgstr "Bytte til det lokale nettverket?"
+
+#: src/window/lan_ui.rs
+msgid "While you're on the local network, the connection over the internet stays off. It comes back when you switch to Over the internet."
+msgstr "Mens du er på det lokale nettverket, er tilkoblingen via internett slått av. Den kommer tilbake når du bytter til «Via internett»."
+
+#: src/window/lan_ui.rs
+msgid "Switch"
+msgstr "Bytt"
+
+#: src/tray/linux.rs src/tray/windows.rs
+msgid "Over the internet · 1 peer"
+msgstr "Via internett · 1 peer"
+
+#: src/tray/linux.rs src/tray/windows.rs
+#, rust-format
+msgid "Over the internet · {n} peers"
+msgstr "Via internett · {n} peere"
+
+#: src/window/lan_ui.rs
+msgid "On the phone, choose Local network, then tap Scan a computer's code."
+msgstr "Velg «Lokalt nettverk» på telefonen, og trykk deretter på «Skann en datamaskins kode»."

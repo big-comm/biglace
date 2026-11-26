@@ -2077,13 +2077,6 @@ msgstr "Adgangen til {name}s skærm er afsluttet: {error}"
 msgid "Give back control"
 msgstr "Giv kontrollen tilbage"
 
-msgid "Connected · 1 peer"
-msgstr "Forbundet · 1 peer"
-
-#, rust-format
-msgid "Connected · {n} peers"
-msgstr "Forbundet · {n} peers"
-
 #, rust-format
 msgid "In the room {group} · muted"
 msgstr "I rummet {group} · lydløs"
@@ -2977,19 +2970,6 @@ msgstr "{user} · terminal"
 msgid "{user} · files"
 msgstr "{user} · filer"
 
-msgid "Use only the local network?"
-msgstr "Brug kun det lokale netværk?"
-
-msgid ""
-"You leave BigScale while the local network is on, and connect again when you "
-"turn it off."
-msgstr ""
-"Du forlader BigScale, mens det lokale netværk er slået til, og opretter "
-"forbindelse igen, når du slår det fra."
-
-msgid "Use only the local network"
-msgstr "Brug kun det lokale netværk"
-
 msgid "Couldn't reconnect to the network. Try again in a moment."
 msgstr "Kunne ikke genforbinde til netværket. Prøv igen om et øjeblik."
 
@@ -3008,14 +2988,6 @@ msgstr "Til dine andre enheder"
 #: src/window/lan_ui.rs
 msgid "Pair a phone"
 msgstr "Par en telefon"
-
-#: src/window/lan_ui.rs
-msgid ""
-"On the phone, turn on Use only the local network, then tap Scan a computer's "
-"code."
-msgstr ""
-"Slå “Brug kun det lokale netværk” til på telefonen, og tryk derefter på "
-"“Scan en computers kode”."
 
 #~ msgid ""
 #~ "Or scan this code with BigLace on the phone (Settings, Local network)"
@@ -3399,3 +3371,44 @@ msgstr "Kameraet skiftede ikke: {error}"
 #, rust-format
 msgid "{name} didn't start it."
 msgstr "{name} startede det ikke."
+
+#: src/window/sidebar.rs
+msgid "Over the internet"
+msgstr "Via internettet"
+
+#: src/window/sidebar.rs
+msgid "Your devices anywhere, through your network's server"
+msgstr "Dine enheder overalt, via dit netværks server"
+
+#: src/window/sidebar.rs
+msgid "Only devices on this same network, no server"
+msgstr "Kun enheder på det samme netværk, ingen server"
+
+#: src/tray/linux.rs src/tray/windows.rs src/window/mod.rs
+msgid "Connected over the internet"
+msgstr "Forbundet via internettet"
+
+#: src/window/lan_ui.rs
+msgid "Switch to the local network?"
+msgstr "Skift til det lokale netværk?"
+
+#: src/window/lan_ui.rs
+msgid "While you're on the local network, the connection over the internet stays off. It comes back when you switch to Over the internet."
+msgstr "Mens du er på det lokale netværk, er forbindelsen via internettet slået fra. Den kommer tilbage, når du skifter til “Via internettet”."
+
+#: src/window/lan_ui.rs
+msgid "Switch"
+msgstr "Skift"
+
+#: src/tray/linux.rs src/tray/windows.rs
+msgid "Over the internet · 1 peer"
+msgstr "Via internettet · 1 peer"
+
+#: src/tray/linux.rs src/tray/windows.rs
+#, rust-format
+msgid "Over the internet · {n} peers"
+msgstr "Via internettet · {n} peers"
+
+#: src/window/lan_ui.rs
+msgid "On the phone, choose Local network, then tap Scan a computer's code."
+msgstr "Vælg “Lokalt netværk” på telefonen, og tryk derefter på “Scan en computers kode”."

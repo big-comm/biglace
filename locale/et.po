@@ -2041,13 +2041,6 @@ msgstr "Juurdepääs kasutaja {name} ekraanile lõppes: {error}"
 msgid "Give back control"
 msgstr "Anna juhtimine tagasi"
 
-msgid "Connected · 1 peer"
-msgstr "Ühendatud · 1 peer"
-
-#, rust-format
-msgid "Connected · {n} peers"
-msgstr "Ühendatud · {n} peeri"
-
 #, rust-format
 msgid "In the room {group} · muted"
 msgstr "Ruumis {group} · vaigistatud"
@@ -2935,19 +2928,6 @@ msgstr "{user} · terminal"
 msgid "{user} · files"
 msgstr "{user} · failid"
 
-msgid "Use only the local network?"
-msgstr "Kas kasutada ainult kohtvõrku?"
-
-msgid ""
-"You leave BigScale while the local network is on, and connect again when you "
-"turn it off."
-msgstr ""
-"Kuni kohtvõrk on sisse lülitatud, olete BigScale'ist lahti ühendatud ja "
-"ühendute uuesti, kui selle välja lülitate."
-
-msgid "Use only the local network"
-msgstr "Kasuta ainult kohtvõrku"
-
 msgid "Couldn't reconnect to the network. Try again in a moment."
 msgstr "Võrguga ei saanud uuesti ühendust. Proovi hetke pärast uuesti."
 
@@ -2966,14 +2946,6 @@ msgstr "Sinu teistesse seadmetesse"
 #: src/window/lan_ui.rs
 msgid "Pair a phone"
 msgstr "Seo telefon"
-
-#: src/window/lan_ui.rs
-msgid ""
-"On the phone, turn on Use only the local network, then tap Scan a computer's "
-"code."
-msgstr ""
-"Lülita telefonis sisse „Kasuta ainult kohtvõrku“ ja puuduta seejärel „Skanni "
-"arvuti kood“."
 
 #~ msgid ""
 #~ "Or scan this code with BigLace on the phone (Settings, Local network)"
@@ -3354,3 +3326,44 @@ msgstr "Kaamerat ei vahetatud: {error}"
 #, rust-format
 msgid "{name} didn't start it."
 msgstr "{name} ei käivitanud seda."
+
+#: src/window/sidebar.rs
+msgid "Over the internet"
+msgstr "Interneti kaudu"
+
+#: src/window/sidebar.rs
+msgid "Your devices anywhere, through your network's server"
+msgstr "Sinu seadmed kõikjal, sinu võrgu serveri kaudu"
+
+#: src/window/sidebar.rs
+msgid "Only devices on this same network, no server"
+msgstr "Ainult samas võrgus olevad seadmed, ilma serverita"
+
+#: src/tray/linux.rs src/tray/windows.rs src/window/mod.rs
+msgid "Connected over the internet"
+msgstr "Ühendatud interneti kaudu"
+
+#: src/window/lan_ui.rs
+msgid "Switch to the local network?"
+msgstr "Kas lülituda kohtvõrgule?"
+
+#: src/window/lan_ui.rs
+msgid "While you're on the local network, the connection over the internet stays off. It comes back when you switch to Over the internet."
+msgstr "Kuni oled kohtvõrgus, on ühendus interneti kaudu välja lülitatud. See taastub, kui lülitud tagasi valikule „Interneti kaudu“."
+
+#: src/window/lan_ui.rs
+msgid "Switch"
+msgstr "Lülitu"
+
+#: src/tray/linux.rs src/tray/windows.rs
+msgid "Over the internet · 1 peer"
+msgstr "Interneti kaudu · 1 peer"
+
+#: src/tray/linux.rs src/tray/windows.rs
+#, rust-format
+msgid "Over the internet · {n} peers"
+msgstr "Interneti kaudu · {n} peeri"
+
+#: src/window/lan_ui.rs
+msgid "On the phone, choose Local network, then tap Scan a computer's code."
+msgstr "Vali telefonis „Kohtvõrk“ ja seejärel puuduta „Skanni arvuti kood“."

@@ -2065,13 +2065,6 @@ msgstr "Достъпът до екрана на {name} приключи: {error}
 msgid "Give back control"
 msgstr "Връщане на управлението"
 
-msgid "Connected · 1 peer"
-msgstr "Свързан · 1 peer"
-
-#, rust-format
-msgid "Connected · {n} peers"
-msgstr "Свързан · {n} peer-а"
-
 #, rust-format
 msgid "In the room {group} · muted"
 msgstr "В стая {group} · заглушен"
@@ -2967,19 +2960,6 @@ msgstr "{user} · терминал"
 msgid "{user} · files"
 msgstr "{user} · файлове"
 
-msgid "Use only the local network?"
-msgstr "Да се използва ли само локалната мрежа?"
-
-msgid ""
-"You leave BigScale while the local network is on, and connect again when you "
-"turn it off."
-msgstr ""
-"Излизате от BigScale, докато локалната мрежа е включена, и се свързвате "
-"отново, когато я изключите."
-
-msgid "Use only the local network"
-msgstr "Използване само на локалната мрежа"
-
 msgid "Couldn't reconnect to the network. Try again in a moment."
 msgstr ""
 "Повторното свързване с мрежата не бе успешно. Опитайте отново след малко."
@@ -2999,14 +2979,6 @@ msgstr "До другите ви устройства"
 #: src/window/lan_ui.rs
 msgid "Pair a phone"
 msgstr "Сдвояване на телефон"
-
-#: src/window/lan_ui.rs
-msgid ""
-"On the phone, turn on Use only the local network, then tap Scan a computer's "
-"code."
-msgstr ""
-"На телефона включете „Използване само на локалната мрежа“, след това "
-"докоснете „Сканиране на кода на компютър“."
 
 #~ msgid ""
 #~ "Or scan this code with BigLace on the phone (Settings, Local network)"
@@ -3388,3 +3360,44 @@ msgstr "Камерата не се смени: {error}"
 #, rust-format
 msgid "{name} didn't start it."
 msgstr "{name} не я стартира."
+
+#: src/window/sidebar.rs
+msgid "Over the internet"
+msgstr "През интернет"
+
+#: src/window/sidebar.rs
+msgid "Your devices anywhere, through your network's server"
+msgstr "Вашите устройства навсякъде, през сървъра на вашата мрежа"
+
+#: src/window/sidebar.rs
+msgid "Only devices on this same network, no server"
+msgstr "Само устройства в същата мрежа, без сървър"
+
+#: src/tray/linux.rs src/tray/windows.rs src/window/mod.rs
+msgid "Connected over the internet"
+msgstr "Свързан през интернет"
+
+#: src/window/lan_ui.rs
+msgid "Switch to the local network?"
+msgstr "Превключване към локалната мрежа?"
+
+#: src/window/lan_ui.rs
+msgid "While you're on the local network, the connection over the internet stays off. It comes back when you switch to Over the internet."
+msgstr "Докато сте в локалната мрежа, връзката през интернет остава изключена. Тя се възстановява, когато превключите на „През интернет“."
+
+#: src/window/lan_ui.rs
+msgid "Switch"
+msgstr "Превключи"
+
+#: src/tray/linux.rs src/tray/windows.rs
+msgid "Over the internet · 1 peer"
+msgstr "През интернет · 1 peer"
+
+#: src/tray/linux.rs src/tray/windows.rs
+#, rust-format
+msgid "Over the internet · {n} peers"
+msgstr "През интернет · {n} peer-а"
+
+#: src/window/lan_ui.rs
+msgid "On the phone, choose Local network, then tap Scan a computer's code."
+msgstr "На телефона изберете „Локална мрежа“, след това докоснете „Сканиране на кода на компютър“."

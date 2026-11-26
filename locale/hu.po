@@ -2069,13 +2069,6 @@ msgstr "A hozzáférés {name} képernyőjéhez befejeződött: {error}"
 msgid "Give back control"
 msgstr "Vezérlés visszaadása"
 
-msgid "Connected · 1 peer"
-msgstr "Csatlakozva · 1 társ"
-
-#, rust-format
-msgid "Connected · {n} peers"
-msgstr "Csatlakozva · {n} társ"
-
 #, rust-format
 msgid "In the room {group} · muted"
 msgstr "A(z) {group} szobában · némítva"
@@ -2977,19 +2970,6 @@ msgstr "{user} · terminál"
 msgid "{user} · files"
 msgstr "{user} · fájlok"
 
-msgid "Use only the local network?"
-msgstr "Csak a helyi hálózatot használja?"
-
-msgid ""
-"You leave BigScale while the local network is on, and connect again when you "
-"turn it off."
-msgstr ""
-"Amíg a helyi hálózat be van kapcsolva, kilép a BigScale-ből, és újra "
-"csatlakozik, amikor kikapcsolja."
-
-msgid "Use only the local network"
-msgstr "Csak a helyi hálózat használata"
-
 msgid "Couldn't reconnect to the network. Try again in a moment."
 msgstr ""
 "Nem sikerült újracsatlakozni a hálózathoz. Próbáld újra egy pillanat múlva."
@@ -3009,14 +2989,6 @@ msgstr "A többi eszközödre"
 #: src/window/lan_ui.rs
 msgid "Pair a phone"
 msgstr "Telefon párosítása"
-
-#: src/window/lan_ui.rs
-msgid ""
-"On the phone, turn on Use only the local network, then tap Scan a computer's "
-"code."
-msgstr ""
-"A telefonon kapcsolja be a „Csak a helyi hálózat használata” beállítást, "
-"majd koppintson a „Számítógép kódjának beolvasása” gombra."
 
 #~ msgid ""
 #~ "Or scan this code with BigLace on the phone (Settings, Local network)"
@@ -3400,3 +3372,44 @@ msgstr "Nem sikerült kamerát váltani: {error}"
 #, rust-format
 msgid "{name} didn't start it."
 msgstr "{name} nem indította el."
+
+#: src/window/sidebar.rs
+msgid "Over the internet"
+msgstr "Az interneten keresztül"
+
+#: src/window/sidebar.rs
+msgid "Your devices anywhere, through your network's server"
+msgstr "Eszközeid bárhol, a hálózatod szerverén keresztül"
+
+#: src/window/sidebar.rs
+msgid "Only devices on this same network, no server"
+msgstr "Csak az ugyanezen a hálózaton lévő eszközök, szerver nélkül"
+
+#: src/tray/linux.rs src/tray/windows.rs src/window/mod.rs
+msgid "Connected over the internet"
+msgstr "Csatlakozva az interneten keresztül"
+
+#: src/window/lan_ui.rs
+msgid "Switch to the local network?"
+msgstr "Átváltasz a helyi hálózatra?"
+
+#: src/window/lan_ui.rs
+msgid "While you're on the local network, the connection over the internet stays off. It comes back when you switch to Over the internet."
+msgstr "Amíg a helyi hálózaton vagy, az interneten keresztüli kapcsolat kikapcsolva marad. Akkor tér vissza, amikor visszaváltasz „Az interneten keresztül” módra."
+
+#: src/window/lan_ui.rs
+msgid "Switch"
+msgstr "Átváltás"
+
+#: src/tray/linux.rs src/tray/windows.rs
+msgid "Over the internet · 1 peer"
+msgstr "Az interneten keresztül · 1 társ"
+
+#: src/tray/linux.rs src/tray/windows.rs
+#, rust-format
+msgid "Over the internet · {n} peers"
+msgstr "Az interneten keresztül · {n} társ"
+
+#: src/window/lan_ui.rs
+msgid "On the phone, choose Local network, then tap Scan a computer's code."
+msgstr "A telefonon válaszd a „Helyi hálózat” lehetőséget, majd koppints a „Számítógép kódjának beolvasása” gombra."

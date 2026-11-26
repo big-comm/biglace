@@ -94,9 +94,9 @@ impl Tray for BigLaceTray {
     fn tool_tip(&self) -> ToolTip {
         let description = if self.connected {
             match self.peer_count {
-                0 => tr!("Connected"),
-                1 => tr!("Connected · 1 peer"),
-                n => trf!("Connected · {n} peers", "n" => n),
+                0 => tr!("Connected over the internet"),
+                1 => tr!("Over the internet · 1 peer"),
+                n => trf!("Over the internet · {n} peers", "n" => n),
             }
         } else if self.local {
             tr!("Local network")

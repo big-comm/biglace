@@ -1955,13 +1955,6 @@ msgstr "对 {name} 屏幕的访问已结束：{error}"
 msgid "Give back control"
 msgstr "交还控制权"
 
-msgid "Connected · 1 peer"
-msgstr "已连接 · 1 个对等点"
-
-#, rust-format
-msgid "Connected · {n} peers"
-msgstr "已连接 · {n} 个对等点"
-
 #, rust-format
 msgid "In the room {group} · muted"
 msgstr "在房间 {group} 中 · 已静音"
@@ -2832,17 +2825,6 @@ msgstr "{user} · 终端"
 msgid "{user} · files"
 msgstr "{user} · 文件"
 
-msgid "Use only the local network?"
-msgstr "仅使用局域网？"
-
-msgid ""
-"You leave BigScale while the local network is on, and connect again when you "
-"turn it off."
-msgstr "局域网开启期间，你将与 BigScale 断开连接；关闭局域网后会重新连接。"
-
-msgid "Use only the local network"
-msgstr "仅使用局域网"
-
 msgid "Couldn't reconnect to the network. Try again in a moment."
 msgstr "无法重新连接到网络。请稍后重试。"
 
@@ -2861,12 +2843,6 @@ msgstr "发送到你的其他设备"
 #: src/window/lan_ui.rs
 msgid "Pair a phone"
 msgstr "配对手机"
-
-#: src/window/lan_ui.rs
-msgid ""
-"On the phone, turn on Use only the local network, then tap Scan a computer's "
-"code."
-msgstr "在手机上打开“仅使用局域网”，然后点按“扫描电脑的代码”。"
 
 #~ msgid ""
 #~ "Or scan this code with BigLace on the phone (Settings, Local network)"
@@ -3242,3 +3218,44 @@ msgstr "未能切换摄像头：{error}"
 #, rust-format
 msgid "{name} didn't start it."
 msgstr "{name} 未启动它。"
+
+#: src/window/sidebar.rs
+msgid "Over the internet"
+msgstr "通过互联网"
+
+#: src/window/sidebar.rs
+msgid "Your devices anywhere, through your network's server"
+msgstr "通过你的网络服务器，随时随地访问你的设备"
+
+#: src/window/sidebar.rs
+msgid "Only devices on this same network, no server"
+msgstr "仅限同一网络中的设备，无需服务器"
+
+#: src/tray/linux.rs src/tray/windows.rs src/window/mod.rs
+msgid "Connected over the internet"
+msgstr "已通过互联网连接"
+
+#: src/window/lan_ui.rs
+msgid "Switch to the local network?"
+msgstr "切换到局域网？"
+
+#: src/window/lan_ui.rs
+msgid "While you're on the local network, the connection over the internet stays off. It comes back when you switch to Over the internet."
+msgstr "使用局域网期间，通过互联网的连接将保持关闭。切换回“通过互联网”后即可恢复。"
+
+#: src/window/lan_ui.rs
+msgid "Switch"
+msgstr "切换"
+
+#: src/tray/linux.rs src/tray/windows.rs
+msgid "Over the internet · 1 peer"
+msgstr "通过互联网 · 1 个对等点"
+
+#: src/tray/linux.rs src/tray/windows.rs
+#, rust-format
+msgid "Over the internet · {n} peers"
+msgstr "通过互联网 · {n} 个对等点"
+
+#: src/window/lan_ui.rs
+msgid "On the phone, choose Local network, then tap Scan a computer's code."
+msgstr "在手机上选择“局域网”，然后点按“扫描电脑的代码”。"

@@ -2053,13 +2053,6 @@ msgstr "Aðgangi að skjá {name} lauk: {error}"
 msgid "Give back control"
 msgstr "Skila stjórn"
 
-msgid "Connected · 1 peer"
-msgstr "Tengt · 1 jafningi"
-
-#, rust-format
-msgid "Connected · {n} peers"
-msgstr "Tengt · {n} jafningar"
-
 #, rust-format
 msgid "In the room {group} · muted"
 msgstr "Í herberginu {group} · þaggað"
@@ -2950,19 +2943,6 @@ msgstr "{user} · skipanalína"
 msgid "{user} · files"
 msgstr "{user} · skrár"
 
-msgid "Use only the local network?"
-msgstr "Nota aðeins staðarnetið?"
-
-msgid ""
-"You leave BigScale while the local network is on, and connect again when you "
-"turn it off."
-msgstr ""
-"Þú ferð af BigScale á meðan kveikt er á staðarnetinu og tengist aftur þegar "
-"þú slekkur á því."
-
-msgid "Use only the local network"
-msgstr "Nota aðeins staðarnetið"
-
 msgid "Couldn't reconnect to the network. Try again in a moment."
 msgstr "Ekki tókst að endurtengjast netinu. Reyndu aftur eftir smástund."
 
@@ -2981,14 +2961,6 @@ msgstr "Til hinna tækjanna þinna"
 #: src/window/lan_ui.rs
 msgid "Pair a phone"
 msgstr "Para síma"
-
-#: src/window/lan_ui.rs
-msgid ""
-"On the phone, turn on Use only the local network, then tap Scan a computer's "
-"code."
-msgstr ""
-"Kveiktu á „Nota aðeins staðarnetið“ í símanum og ýttu svo á „Skanna kóða "
-"tölvu“."
 
 #~ msgid ""
 #~ "Or scan this code with BigLace on the phone (Settings, Local network)"
@@ -3371,3 +3343,44 @@ msgstr "Ekki tókst að skipta um myndavél: {error}"
 #, rust-format
 msgid "{name} didn't start it."
 msgstr "{name} ræsti hana ekki."
+
+#: src/window/sidebar.rs
+msgid "Over the internet"
+msgstr "Í gegnum netið"
+
+#: src/window/sidebar.rs
+msgid "Your devices anywhere, through your network's server"
+msgstr "Tækin þín hvar sem er, í gegnum þjón netsins þíns"
+
+#: src/window/sidebar.rs
+msgid "Only devices on this same network, no server"
+msgstr "Aðeins tæki á sama neti, enginn þjónn"
+
+#: src/tray/linux.rs src/tray/windows.rs src/window/mod.rs
+msgid "Connected over the internet"
+msgstr "Tengt í gegnum netið"
+
+#: src/window/lan_ui.rs
+msgid "Switch to the local network?"
+msgstr "Skipta yfir á staðarnetið?"
+
+#: src/window/lan_ui.rs
+msgid "While you're on the local network, the connection over the internet stays off. It comes back when you switch to Over the internet."
+msgstr "Á meðan þú ert á staðarnetinu er tengingin í gegnum netið óvirk. Hún kemur aftur þegar þú skiptir yfir á „Í gegnum netið“."
+
+#: src/window/lan_ui.rs
+msgid "Switch"
+msgstr "Skipta"
+
+#: src/tray/linux.rs src/tray/windows.rs
+msgid "Over the internet · 1 peer"
+msgstr "Í gegnum netið · 1 jafningi"
+
+#: src/tray/linux.rs src/tray/windows.rs
+#, rust-format
+msgid "Over the internet · {n} peers"
+msgstr "Í gegnum netið · {n} jafningar"
+
+#: src/window/lan_ui.rs
+msgid "On the phone, choose Local network, then tap Scan a computer's code."
+msgstr "Í símanum skaltu velja „Staðarnet“ og ýta svo á „Skanna kóða tölvu“."

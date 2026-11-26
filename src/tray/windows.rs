@@ -188,12 +188,12 @@ fn run_tray_thread(
 fn tooltip_text(connected: bool, peer_count: usize) -> String {
     if connected {
         match peer_count {
-            0 => format!("BigLace — {}", tr!("Connected")),
-            1 => format!("BigLace — {}", tr!("Connected · 1 peer")),
+            0 => format!("BigLace — {}", tr!("Connected over the internet")),
+            1 => format!("BigLace — {}", tr!("Over the internet · 1 peer")),
             // Use the same msgid as the Linux backend so pt-BR (and word
             // orders that differ) translate the whole phrase, not just the
             // prefix with "peers" hardcoded in English.
-            n => format!("BigLace — {}", trf!("Connected · {n} peers", "n" => n)),
+            n => format!("BigLace — {}", trf!("Over the internet · {n} peers", "n" => n)),
         }
     } else {
         format!("BigLace — {}", tr!("Disconnected"))

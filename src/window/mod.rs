@@ -2190,7 +2190,7 @@ fn do_connect(ctx: &Ctx, server: String, authkey: String, hostname: String) {
                     }
                     ctx2.ui.toast.add_toast(
                         libadwaita::Toast::builder()
-                            .title(tr!("Connected"))
+                            .title(tr!("Connected over the internet"))
                             .timeout(2)
                             .build(),
                     );
@@ -2366,7 +2366,7 @@ fn apply_state(ctx: &Ctx, state: AppState, status: &Status, peers: &[Peer]) {
         AppState::NotSignedIn => ("idle", tr!("Not signed in")),
         AppState::Disconnected => ("idle", tr!("Disconnected")),
         AppState::Connecting => ("connecting", tr!("Connecting…")),
-        AppState::Connected => ("connected", tr!("Connected")),
+        AppState::Connected => ("connected", tr!("Connected over the internet")),
     };
     ui.content.status_dot.add_css_class(dot_class);
     ui.content.status_label.set_text(&status_text);

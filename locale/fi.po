@@ -2051,13 +2051,6 @@ msgstr "Käyttäjän {name} näytön käyttö päättyi: {error}"
 msgid "Give back control"
 msgstr "Palauta hallinta"
 
-msgid "Connected · 1 peer"
-msgstr "Yhdistetty · 1 vertaislaite"
-
-#, rust-format
-msgid "Connected · {n} peers"
-msgstr "Yhdistetty · {n} vertaislaitetta"
-
 #, rust-format
 msgid "In the room {group} · muted"
 msgstr "Huoneessa {group} · mykistetty"
@@ -2951,19 +2944,6 @@ msgstr "{user} · pääte"
 msgid "{user} · files"
 msgstr "{user} · tiedostot"
 
-msgid "Use only the local network?"
-msgstr "Käytetäänkö vain lähiverkkoa?"
-
-msgid ""
-"You leave BigScale while the local network is on, and connect again when you "
-"turn it off."
-msgstr ""
-"Poistut BigScalesta, kun lähiverkko on käytössä, ja yhdistät uudelleen, kun "
-"poistat sen käytöstä."
-
-msgid "Use only the local network"
-msgstr "Käytä vain lähiverkkoa"
-
 msgid "Couldn't reconnect to the network. Try again in a moment."
 msgstr "Verkkoon ei voitu yhdistää uudelleen. Yritä hetken kuluttua uudelleen."
 
@@ -2982,14 +2962,6 @@ msgstr "Muille laitteillesi"
 #: src/window/lan_ui.rs
 msgid "Pair a phone"
 msgstr "Muodosta pari puhelimen kanssa"
-
-#: src/window/lan_ui.rs
-msgid ""
-"On the phone, turn on Use only the local network, then tap Scan a computer's "
-"code."
-msgstr ""
-"Ota puhelimessa käyttöön ”Käytä vain lähiverkkoa” ja napauta sitten ”Skannaa "
-"tietokoneen koodi”."
 
 #~ msgid ""
 #~ "Or scan this code with BigLace on the phone (Settings, Local network)"
@@ -3373,3 +3345,44 @@ msgstr "Kameraa ei vaihdettu: {error}"
 #, rust-format
 msgid "{name} didn't start it."
 msgstr "{name} ei käynnistänyt sitä."
+
+#: src/window/sidebar.rs
+msgid "Over the internet"
+msgstr "Internetin kautta"
+
+#: src/window/sidebar.rs
+msgid "Your devices anywhere, through your network's server"
+msgstr "Laitteesi missä tahansa, verkkosi palvelimen kautta"
+
+#: src/window/sidebar.rs
+msgid "Only devices on this same network, no server"
+msgstr "Vain saman verkon laitteet, ei palvelinta"
+
+#: src/tray/linux.rs src/tray/windows.rs src/window/mod.rs
+msgid "Connected over the internet"
+msgstr "Yhdistetty internetin kautta"
+
+#: src/window/lan_ui.rs
+msgid "Switch to the local network?"
+msgstr "Vaihdetaanko lähiverkkoon?"
+
+#: src/window/lan_ui.rs
+msgid "While you're on the local network, the connection over the internet stays off. It comes back when you switch to Over the internet."
+msgstr "Kun olet lähiverkossa, yhteys internetin kautta on pois päältä. Se palaa, kun vaihdat takaisin kohtaan ”Internetin kautta”."
+
+#: src/window/lan_ui.rs
+msgid "Switch"
+msgstr "Vaihda"
+
+#: src/tray/linux.rs src/tray/windows.rs
+msgid "Over the internet · 1 peer"
+msgstr "Internetin kautta · 1 vertaislaite"
+
+#: src/tray/linux.rs src/tray/windows.rs
+#, rust-format
+msgid "Over the internet · {n} peers"
+msgstr "Internetin kautta · {n} vertaislaitetta"
+
+#: src/window/lan_ui.rs
+msgid "On the phone, choose Local network, then tap Scan a computer's code."
+msgstr "Valitse puhelimessa ”Lähiverkko” ja napauta sitten ”Skannaa tietokoneen koodi”."

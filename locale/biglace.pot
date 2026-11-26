@@ -102,17 +102,8 @@ msgstr ""
 msgid "Failed to set tailscale operator."
 msgstr ""
 
-#: src/tray/linux.rs src/tray/windows.rs src/window/mod.rs
+#: src/window/mod.rs
 msgid "Connected"
-msgstr ""
-
-#: src/tray/linux.rs src/tray/windows.rs
-msgid "Connected · 1 peer"
-msgstr ""
-
-#: src/tray/linux.rs src/tray/windows.rs
-#, rust-format
-msgid "Connected · {n} peers"
 msgstr ""
 
 #: src/tray/linux.rs src/tray/windows.rs src/window/mod.rs
@@ -3504,20 +3495,6 @@ msgid "Paired with {name}"
 msgstr ""
 
 #: src/window/lan_ui.rs
-msgid "Use only the local network?"
-msgstr ""
-
-#: src/window/lan_ui.rs
-msgid ""
-"You leave BigScale while the local network is on, and connect again when you "
-"turn it off."
-msgstr ""
-
-#: src/window/lan_ui.rs
-msgid "Use only the local network"
-msgstr ""
-
-#: src/window/lan_ui.rs
 #, rust-format
 msgid "Could not turn on the local network: {error}"
 msgstr ""
@@ -3597,12 +3574,6 @@ msgstr ""
 
 #: src/window/lan_ui.rs
 msgid "Pair a phone"
-msgstr ""
-
-#: src/window/lan_ui.rs
-msgid ""
-"On the phone, turn on Use only the local network, then tap Scan a computer's "
-"code."
 msgstr ""
 
 #: src/window/visits_ui.rs
@@ -3833,4 +3804,45 @@ msgstr ""
 #: src/webcam.rs
 #, rust-format
 msgid "{name} didn't start it."
+msgstr ""
+
+#: src/window/sidebar.rs
+msgid "Over the internet"
+msgstr ""
+
+#: src/window/sidebar.rs
+msgid "Your devices anywhere, through your network's server"
+msgstr ""
+
+#: src/window/sidebar.rs
+msgid "Only devices on this same network, no server"
+msgstr ""
+
+#: src/tray/linux.rs src/tray/windows.rs src/window/mod.rs
+msgid "Connected over the internet"
+msgstr ""
+
+#: src/window/lan_ui.rs
+msgid "Switch to the local network?"
+msgstr ""
+
+#: src/window/lan_ui.rs
+msgid "While you're on the local network, the connection over the internet stays off. It comes back when you switch to Over the internet."
+msgstr ""
+
+#: src/window/lan_ui.rs
+msgid "Switch"
+msgstr ""
+
+#: src/tray/linux.rs src/tray/windows.rs
+msgid "Over the internet · 1 peer"
+msgstr ""
+
+#: src/tray/linux.rs src/tray/windows.rs
+#, rust-format
+msgid "Over the internet · {n} peers"
+msgstr ""
+
+#: src/window/lan_ui.rs
+msgid "On the phone, choose Local network, then tap Scan a computer's code."
 msgstr ""

@@ -1975,13 +1975,6 @@ msgstr "הגישה למסך של {name} הסתיימה: {error}"
 msgid "Give back control"
 msgstr "החזרת השליטה"
 
-msgid "Connected · 1 peer"
-msgstr "מחובר · 1 עמית"
-
-#, rust-format
-msgid "Connected · {n} peers"
-msgstr "מחובר · {n} עמיתים"
-
 #, rust-format
 msgid "In the room {group} · muted"
 msgstr "בחדר {group} · מושתק"
@@ -2860,18 +2853,6 @@ msgstr "{user} · מסוף"
 msgid "{user} · files"
 msgstr "{user} · קבצים"
 
-msgid "Use only the local network?"
-msgstr "להשתמש רק ברשת המקומית?"
-
-msgid ""
-"You leave BigScale while the local network is on, and connect again when you "
-"turn it off."
-msgstr ""
-"יוצאים מ־BigScale כל עוד הרשת המקומית מופעלת, ומתחברים שוב כשמכבים אותה."
-
-msgid "Use only the local network"
-msgstr "שימוש ברשת המקומית בלבד"
-
 msgid "Couldn't reconnect to the network. Try again in a moment."
 msgstr "לא ניתן היה להתחבר מחדש לרשת. יש לנסות שוב בעוד רגע."
 
@@ -2890,13 +2871,6 @@ msgstr "למכשירים האחרים שלך"
 #: src/window/lan_ui.rs
 msgid "Pair a phone"
 msgstr "צימוד טלפון"
-
-#: src/window/lan_ui.rs
-msgid ""
-"On the phone, turn on Use only the local network, then tap Scan a computer's "
-"code."
-msgstr ""
-"בטלפון, הפעל את ״שימוש ברשת המקומית בלבד״ ואז הקש על ״סריקת קוד של מחשב״."
 
 #~ msgid ""
 #~ "Or scan this code with BigLace on the phone (Settings, Local network)"
@@ -3273,3 +3247,44 @@ msgstr "המצלמה לא הוחלפה: {error}"
 #, rust-format
 msgid "{name} didn't start it."
 msgstr "היא לא הופעלה במכשיר {name}."
+
+#: src/window/sidebar.rs
+msgid "Over the internet"
+msgstr "דרך האינטרנט"
+
+#: src/window/sidebar.rs
+msgid "Your devices anywhere, through your network's server"
+msgstr "המכשירים שלך בכל מקום, דרך השרת של הרשת שלך"
+
+#: src/window/sidebar.rs
+msgid "Only devices on this same network, no server"
+msgstr "רק מכשירים באותה רשת, ללא שרת"
+
+#: src/tray/linux.rs src/tray/windows.rs src/window/mod.rs
+msgid "Connected over the internet"
+msgstr "מחובר דרך האינטרנט"
+
+#: src/window/lan_ui.rs
+msgid "Switch to the local network?"
+msgstr "לעבור לרשת המקומית?"
+
+#: src/window/lan_ui.rs
+msgid "While you're on the local network, the connection over the internet stays off. It comes back when you switch to Over the internet."
+msgstr "כל עוד נמצאים ברשת המקומית, החיבור דרך האינטרנט נשאר כבוי. הוא חוזר כשעוברים אל „דרך האינטרנט”."
+
+#: src/window/lan_ui.rs
+msgid "Switch"
+msgstr "מעבר"
+
+#: src/tray/linux.rs src/tray/windows.rs
+msgid "Over the internet · 1 peer"
+msgstr "דרך האינטרנט · 1 עמית"
+
+#: src/tray/linux.rs src/tray/windows.rs
+#, rust-format
+msgid "Over the internet · {n} peers"
+msgstr "דרך האינטרנט · {n} עמיתים"
+
+#: src/window/lan_ui.rs
+msgid "On the phone, choose Local network, then tap Scan a computer's code."
+msgstr "בטלפון, יש לבחור „רשת מקומית” ואז להקיש על „סריקת קוד של מחשב”."

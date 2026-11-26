@@ -460,20 +460,24 @@ pub fn build() -> Sidebar {
              becomes reachable by the other peers in your account."
         ))
         .build();
-    // The local network a click away, above Connect: the two never run
-    // together. It mirrors the switch in Preferences, confirmation included.
-    let quick_lan = gtk4::Box::new(gtk4::Orientation::Horizontal, 8);
-    quick_lan.set_margin_start(12);
-    quick_lan.set_margin_end(12);
-    let quick_icon = gtk4::Image::from_icon_name("network-wired-symbolic");
-    let quick_label = gtk4::Label::builder().label(tr!("Use only the local network")).xalign(0.0).hexpand(true).wrap(true).build();
-    let quick_switch = gtk4::Switch::builder().valign(gtk4::Align::Center).build();
-    quick_switch.update_property(&[gtk4::accessible::Property::Label(&tr!("Use only the local network"))]);
-    switch_lan.bind_property("active", &quick_switch, "active").bidirectional().sync_create().build();
-    quick_lan.append(&quick_icon);
-    quick_lan.append(&quick_label);
-    quick_lan.append(&quick_switch);
-    bottom_full.append(&quick_lan);
+    // How this device connects, a click away above Connect: the two never run
+    // together. Both buttons mirror the switch in Preferences, confirmation included.
+    let mode = gtk4::Box::builder().css_classes(["linked"]).homogeneous(true).margin_start(6).margin_end(6).build();
+    let mode_button = |label: &str, hint: &str| {
+        // Wraps rather than cut: the sidebar is narrow and some languages are long.
+        let text = gtk4::Label::builder().label(label).wrap(true).justify(gtk4::Justification::Center).build();
+        let button = gtk4::ToggleButton::builder().child(&text).tooltip_text(hint).build();
+        button.update_property(&[gtk4::accessible::Property::Label(label), gtk4::accessible::Property::Description(hint)]);
+        mode.append(&button);
+        button
+    };
+    let over_internet = mode_button(&tr!("Over the internet"), &tr!("Your devices anywhere, through your network's server"));
+    let on_lan = mode_button(&tr!("Local network"), &tr!("Only devices on this same network, no server"));
+    // Grouped, a click on the chosen one does nothing; the bindings keep exactly one chosen.
+    on_lan.set_group(Some(&over_internet));
+    switch_lan.bind_property("active", &on_lan, "active").bidirectional().sync_create().build();
+    switch_lan.bind_property("active", &over_internet, "active").bidirectional().invert_boolean().sync_create().build();
+    bottom_full.append(&mode);
     bottom_full.append(&btn_connect);
 
     // The rail keeps only our photo (same menu).

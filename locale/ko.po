@@ -2034,13 +2034,6 @@ msgstr "{name}님의 화면에 대한 접근이 종료되었습니다: {error}"
 msgid "Give back control"
 msgstr "제어권 돌려주기"
 
-msgid "Connected · 1 peer"
-msgstr "연결됨 · 피어 1개"
-
-#, rust-format
-msgid "Connected · {n} peers"
-msgstr "연결됨 · 피어 {n}개"
-
 #, rust-format
 msgid "In the room {group} · muted"
 msgstr "{group} 룸에 있음 · 음소거됨"
@@ -2928,19 +2921,6 @@ msgstr "{user} · 터미널"
 msgid "{user} · files"
 msgstr "{user} · 파일"
 
-msgid "Use only the local network?"
-msgstr "로컬 네트워크만 사용할까요?"
-
-msgid ""
-"You leave BigScale while the local network is on, and connect again when you "
-"turn it off."
-msgstr ""
-"로컬 네트워크가 켜져 있는 동안 BigScale에서 연결 해제되며, 끄면 다시 연결됩니"
-"다."
-
-msgid "Use only the local network"
-msgstr "로컬 네트워크만 사용"
-
 msgid "Couldn't reconnect to the network. Try again in a moment."
 msgstr "네트워크에 다시 연결할 수 없습니다. 잠시 후 다시 시도하세요."
 
@@ -2959,13 +2939,6 @@ msgstr "내 다른 기기로"
 #: src/window/lan_ui.rs
 msgid "Pair a phone"
 msgstr "휴대폰 페어링"
-
-#: src/window/lan_ui.rs
-msgid ""
-"On the phone, turn on Use only the local network, then tap Scan a computer's "
-"code."
-msgstr ""
-"휴대폰에서 ‘로컬 네트워크만 사용’을 켠 다음 ‘컴퓨터 코드 스캔’을 누르세요."
 
 #~ msgid ""
 #~ "Or scan this code with BigLace on the phone (Settings, Local network)"
@@ -3342,3 +3315,44 @@ msgstr "카메라를 전환하지 못했습니다: {error}"
 #, rust-format
 msgid "{name} didn't start it."
 msgstr "{name}에서 시작하지 않았습니다."
+
+#: src/window/sidebar.rs
+msgid "Over the internet"
+msgstr "인터넷을 통해"
+
+#: src/window/sidebar.rs
+msgid "Your devices anywhere, through your network's server"
+msgstr "네트워크 서버를 통해 어디서나 내 기기에 연결"
+
+#: src/window/sidebar.rs
+msgid "Only devices on this same network, no server"
+msgstr "같은 네트워크의 기기만, 서버 없음"
+
+#: src/tray/linux.rs src/tray/windows.rs src/window/mod.rs
+msgid "Connected over the internet"
+msgstr "인터넷을 통해 연결됨"
+
+#: src/window/lan_ui.rs
+msgid "Switch to the local network?"
+msgstr "로컬 네트워크로 전환할까요?"
+
+#: src/window/lan_ui.rs
+msgid "While you're on the local network, the connection over the internet stays off. It comes back when you switch to Over the internet."
+msgstr "로컬 네트워크를 사용하는 동안에는 인터넷을 통한 연결이 꺼진 상태로 유지됩니다. “인터넷을 통해”로 전환하면 다시 켜집니다."
+
+#: src/window/lan_ui.rs
+msgid "Switch"
+msgstr "전환"
+
+#: src/tray/linux.rs src/tray/windows.rs
+msgid "Over the internet · 1 peer"
+msgstr "인터넷을 통해 · 피어 1개"
+
+#: src/tray/linux.rs src/tray/windows.rs
+#, rust-format
+msgid "Over the internet · {n} peers"
+msgstr "인터넷을 통해 · 피어 {n}개"
+
+#: src/window/lan_ui.rs
+msgid "On the phone, choose Local network, then tap Scan a computer's code."
+msgstr "휴대폰에서 “로컬 네트워크”를 선택한 다음 “컴퓨터 코드 스캔”을 탭하세요."

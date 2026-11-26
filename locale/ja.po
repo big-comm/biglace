@@ -2059,13 +2059,6 @@ msgstr "{name} の画面へのアクセスが終了しました: {error}"
 msgid "Give back control"
 msgstr "操作権を返す"
 
-msgid "Connected · 1 peer"
-msgstr "接続済み · 1ピア"
-
-#, rust-format
-msgid "Connected · {n} peers"
-msgstr "接続済み · {n}ピア"
-
 #, rust-format
 msgid "In the room {group} · muted"
 msgstr "ルーム {group} に参加中 · ミュート"
@@ -2963,19 +2956,6 @@ msgstr "{user} · ターミナル"
 msgid "{user} · files"
 msgstr "{user} · ファイル"
 
-msgid "Use only the local network?"
-msgstr "ローカルネットワークのみを使用しますか？"
-
-msgid ""
-"You leave BigScale while the local network is on, and connect again when you "
-"turn it off."
-msgstr ""
-"ローカルネットワークがオンの間は BigScale から切断され、オフにすると再び接続"
-"されます。"
-
-msgid "Use only the local network"
-msgstr "ローカルネットワークのみを使用"
-
 msgid "Couldn't reconnect to the network. Try again in a moment."
 msgstr ""
 "ネットワークに再接続できませんでした。しばらくしてからもう一度お試しくださ"
@@ -2996,14 +2976,6 @@ msgstr "ほかのデバイスへ"
 #: src/window/lan_ui.rs
 msgid "Pair a phone"
 msgstr "スマートフォンをペアリング"
-
-#: src/window/lan_ui.rs
-msgid ""
-"On the phone, turn on Use only the local network, then tap Scan a computer's "
-"code."
-msgstr ""
-"スマートフォンで「ローカルネットワークのみを使用」をオンにしてから、「コン"
-"ピューターのコードを読み取る」をタップしてください。"
 
 #~ msgid ""
 #~ "Or scan this code with BigLace on the phone (Settings, Local network)"
@@ -3383,3 +3355,44 @@ msgstr "カメラを切り替えられませんでした: {error}"
 #, rust-format
 msgid "{name} didn't start it."
 msgstr "{name} で開始されませんでした。"
+
+#: src/window/sidebar.rs
+msgid "Over the internet"
+msgstr "インターネット経由"
+
+#: src/window/sidebar.rs
+msgid "Your devices anywhere, through your network's server"
+msgstr "ネットワークのサーバー経由で、どこからでも自分のデバイスに"
+
+#: src/window/sidebar.rs
+msgid "Only devices on this same network, no server"
+msgstr "同じネットワーク上のデバイスのみ、サーバーなし"
+
+#: src/tray/linux.rs src/tray/windows.rs src/window/mod.rs
+msgid "Connected over the internet"
+msgstr "インターネット経由で接続済み"
+
+#: src/window/lan_ui.rs
+msgid "Switch to the local network?"
+msgstr "ローカルネットワークに切り替えますか？"
+
+#: src/window/lan_ui.rs
+msgid "While you're on the local network, the connection over the internet stays off. It comes back when you switch to Over the internet."
+msgstr "ローカルネットワークを使用している間、インターネット経由の接続はオフのままです。「インターネット経由」に切り替えると元に戻ります。"
+
+#: src/window/lan_ui.rs
+msgid "Switch"
+msgstr "切り替え"
+
+#: src/tray/linux.rs src/tray/windows.rs
+msgid "Over the internet · 1 peer"
+msgstr "インターネット経由 · 1ピア"
+
+#: src/tray/linux.rs src/tray/windows.rs
+#, rust-format
+msgid "Over the internet · {n} peers"
+msgstr "インターネット経由 · {n}ピア"
+
+#: src/window/lan_ui.rs
+msgid "On the phone, choose Local network, then tap Scan a computer's code."
+msgstr "スマートフォンで「ローカルネットワーク」を選び、「コンピューターのコードを読み取る」をタップします。"

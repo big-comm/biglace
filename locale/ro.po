@@ -2079,13 +2079,6 @@ msgstr "Accesul la ecranul lui {name} s-a încheiat: {error}"
 msgid "Give back control"
 msgstr "Predă controlul"
 
-msgid "Connected · 1 peer"
-msgstr "Conectat · 1 peer"
-
-#, rust-format
-msgid "Connected · {n} peers"
-msgstr "Conectat · {n} peeri"
-
 #, rust-format
 msgid "In the room {group} · muted"
 msgstr "În camera {group} · microfon oprit"
@@ -2986,19 +2979,6 @@ msgstr "{user} · terminal"
 msgid "{user} · files"
 msgstr "{user} · fișiere"
 
-msgid "Use only the local network?"
-msgstr "Folosiți doar rețeaua locală?"
-
-msgid ""
-"You leave BigScale while the local network is on, and connect again when you "
-"turn it off."
-msgstr ""
-"Părăsiți BigScale cât timp rețeaua locală este pornită și vă reconectați "
-"când o opriți."
-
-msgid "Use only the local network"
-msgstr "Folosiți doar rețeaua locală"
-
 msgid "Couldn't reconnect to the network. Try again in a moment."
 msgstr ""
 "Nu s-a putut realiza reconectarea la rețea. Încercați din nou peste câteva "
@@ -3019,14 +2999,6 @@ msgstr "Către celelalte dispozitive"
 #: src/window/lan_ui.rs
 msgid "Pair a phone"
 msgstr "Asociază un telefon"
-
-#: src/window/lan_ui.rs
-msgid ""
-"On the phone, turn on Use only the local network, then tap Scan a computer's "
-"code."
-msgstr ""
-"Pe telefon, activați „Folosiți doar rețeaua locală”, apoi atingeți „Scanează "
-"codul unui calculator”."
 
 #~ msgid ""
 #~ "Or scan this code with BigLace on the phone (Settings, Local network)"
@@ -3409,3 +3381,44 @@ msgstr "Camera nu s-a schimbat: {error}"
 #, rust-format
 msgid "{name} didn't start it."
 msgstr "{name} nu l-a pornit."
+
+#: src/window/sidebar.rs
+msgid "Over the internet"
+msgstr "Prin internet"
+
+#: src/window/sidebar.rs
+msgid "Your devices anywhere, through your network's server"
+msgstr "Dispozitivele dvs. oriunde, prin serverul rețelei dvs."
+
+#: src/window/sidebar.rs
+msgid "Only devices on this same network, no server"
+msgstr "Doar dispozitivele din aceeași rețea, fără server"
+
+#: src/tray/linux.rs src/tray/windows.rs src/window/mod.rs
+msgid "Connected over the internet"
+msgstr "Conectat prin internet"
+
+#: src/window/lan_ui.rs
+msgid "Switch to the local network?"
+msgstr "Comutați la rețeaua locală?"
+
+#: src/window/lan_ui.rs
+msgid "While you're on the local network, the connection over the internet stays off. It comes back when you switch to Over the internet."
+msgstr "Cât timp sunteți în rețeaua locală, conexiunea prin internet rămâne oprită. Revine când comutați la „Prin internet”."
+
+#: src/window/lan_ui.rs
+msgid "Switch"
+msgstr "Comută"
+
+#: src/tray/linux.rs src/tray/windows.rs
+msgid "Over the internet · 1 peer"
+msgstr "Prin internet · 1 peer"
+
+#: src/tray/linux.rs src/tray/windows.rs
+#, rust-format
+msgid "Over the internet · {n} peers"
+msgstr "Prin internet · {n} peeri"
+
+#: src/window/lan_ui.rs
+msgid "On the phone, choose Local network, then tap Scan a computer's code."
+msgstr "Pe telefon, alegeți „Rețea locală”, apoi atingeți „Scanează codul unui calculator”."

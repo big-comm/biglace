@@ -146,16 +146,18 @@ fn turn(cfg: &Rc<RefCell<config::Config>>, qr: &gtk4::Box, toast: &libadwaita::T
     }
 }
 
-/// "Use only the local network?": BigScale stays off while it is on.
+/// "Switch to the local network?": BigScale stays off while it is on.
 /// `answer` gets whether the person agreed.
 fn confirm_local_only(win: &libadwaita::ApplicationWindow, answer: impl Fn(bool) + 'static) {
     let dlg = libadwaita::MessageDialog::new(
         Some(win),
-        Some(&tr!("Use only the local network?")),
-        Some(&tr!("You leave BigScale while the local network is on, and connect again when you turn it off.")),
+        Some(&tr!("Switch to the local network?")),
+        Some(&tr!(
+            "While you're on the local network, the connection over the internet stays off. It comes back when you switch to Over the internet."
+        )),
     );
     dlg.add_response("cancel", &tr!("Cancel"));
-    dlg.add_response("local", &tr!("Use only the local network"));
+    dlg.add_response("local", &tr!("Switch"));
     dlg.set_response_appearance("local", libadwaita::ResponseAppearance::Suggested);
     dlg.set_default_response(Some("local"));
     dlg.set_close_response("cancel");
@@ -188,7 +190,7 @@ fn show_pairing_code(from: &gtk4::Button, link: &str) {
     let code = gtk4::Image::from_paintable(Some(&texture));
     code.set_pixel_size(240);
     let how = gtk4::Label::builder()
-        .label(tr!("On the phone, turn on Use only the local network, then tap Scan a computer's code."))
+        .label(tr!("On the phone, choose Local network, then tap Scan a computer's code."))
         .wrap(true)
         .max_width_chars(36)
         .justify(gtk4::Justification::Center)
