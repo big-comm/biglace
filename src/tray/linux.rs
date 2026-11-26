@@ -39,6 +39,8 @@ const BADGE_SIDE: i32 = 32;
 pub struct BigLaceTray {
     pub connected: bool,
     pub peer_count: usize,
+    /// Only the local network is on (BigScale left for it).
+    local: bool,
     /// In a voice room: its group and whether we're muted.
     pub room: Option<(String, bool)>,
     /// People in this computer (terminal, files, screen): a line each, and the icon for it.
@@ -96,6 +98,8 @@ impl Tray for BigLaceTray {
                 1 => tr!("Connected · 1 peer"),
                 n => trf!("Connected · {n} peers", "n" => n),
             }
+        } else if self.local {
+            tr!("Local network")
         } else {
             tr!("Disconnected")
         };
@@ -229,10 +233,11 @@ pub struct HandleImpl {
 }
 
 impl HandleImpl {
-    pub fn update(&self, connected: bool, peer_count: usize) {
+    pub fn update(&self, connected: bool, peer_count: usize, local: bool) {
         self.handle.update(|t| {
             t.connected = connected;
             t.peer_count = peer_count;
+            t.local = local;
         });
     }
 
@@ -331,6 +336,7 @@ pub fn spawn() -> Option<(async_channel::Receiver<Command>, HandleImpl)> {
     let tray = BigLaceTray {
         connected: false,
         peer_count: 0,
+        local: false,
         room: None,
         visits: Vec::new(),
         frame: None,

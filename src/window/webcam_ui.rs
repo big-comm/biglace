@@ -30,7 +30,7 @@ pub fn button(target: &str, name: &str, toast: &libadwaita::ToastOverlay) -> gtk
         .css_classes(["flat"])
         .valign(gtk4::Align::Center)
         .build();
-    mark(&btn, crate::webcam::active().as_deref() == Some(target));
+    mark(&btn, crate::webcam::flowing().is_some_and(|(t, _)| t == target));
     BUTTONS.with_borrow_mut(|b| {
         b.retain(|(w, _)| w.upgrade().is_some());
         b.push((btn.downgrade(), target.to_string()));
@@ -38,6 +38,11 @@ pub fn button(target: &str, name: &str, toast: &libadwaita::ToastOverlay) -> gtk
     let (target, name, toast) = (target.to_string(), name.to_string(), toast.downgrade());
     btn.connect_clicked(move |b| {
         let Some(toast) = toast.upgrade() else { return };
+        // In use: what to do with it. Still waiting for the phone: the click calls it off.
+        if let Some((_, video)) = crate::webcam::flowing().filter(|(t, _)| *t == target) {
+            controls(b, video, &toast);
+            return;
+        }
         if crate::webcam::active().as_deref() == Some(target.as_str()) {
             crate::webcam::stop();
             return;
@@ -47,6 +52,41 @@ pub fn button(target: &str, name: &str, toast: &libadwaita::ToastOverlay) -> gtk
         }
     });
     btn
+}
+
+/// The webcam in use: switch the phone's camera, or stop.
+fn controls(btn: &gtk4::Button, video: bool, toast: &libadwaita::ToastOverlay) {
+    let list = gtk4::Box::new(gtk4::Orientation::Vertical, 2);
+    let popover = gtk4::Popover::builder().child(&list).build();
+    popover.set_parent(btn);
+    popover.connect_closed(|p| {
+        let p = p.clone();
+        gtk4::glib::idle_add_local_once(move || p.unparent());
+    });
+    let item = |label: String| gtk4::Button::builder().label(label).css_classes(["flat"]).build();
+    if video {
+        let switch = item(tr!("Switch camera"));
+        let (popover, toast) = (popover.downgrade(), toast.downgrade());
+        switch.connect_clicked(move |_| {
+            if let Some(p) = popover.upgrade() {
+                p.popdown();
+            }
+            if let (Err(e), Some(toast)) = (crate::webcam::switch_camera(), toast.upgrade()) {
+                super::show_toast(&toast, &trf!("The camera didn't switch: {error}", "error" => e), 6);
+            }
+        });
+        list.append(&switch);
+    }
+    let stop = item(tr!("Stop the webcam"));
+    let popover_weak = popover.downgrade();
+    stop.connect_clicked(move |_| {
+        if let Some(p) = popover_weak.upgrade() {
+            p.popdown();
+        }
+        crate::webcam::stop();
+    });
+    list.append(&stop);
+    popover.popup();
 }
 
 /// What to take from the phone, then ask it.
@@ -111,11 +151,11 @@ pub fn wire(toast: &libadwaita::ToastOverlay) {
     gtk4::glib::spawn_future_local(async move {
         while let Ok(ev) = events.recv().await {
             let Some(toast) = toast.upgrade() else { break };
-            let active = crate::webcam::active();
+            let flowing = crate::webcam::flowing().map(|(t, _)| t);
             BUTTONS.with_borrow_mut(|b| {
                 b.retain(|(w, target)| {
                     let Some(btn) = w.upgrade() else { return false };
-                    mark(&btn, active.as_deref() == Some(target.as_str()));
+                    mark(&btn, flowing.as_deref() == Some(target.as_str()));
                     true
                 });
             });

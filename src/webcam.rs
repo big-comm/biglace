@@ -36,8 +36,16 @@ pub fn events() -> async_channel::Receiver<WebcamEvent> {
     LISTENERS.subscribe()
 }
 
-/// The phone giving us its camera now: its address, and the connection to end it.
-static ACTIVE: Mutex<Option<(String, TcpStream)>> = Mutex::new(None);
+/// The phone asked for its camera: its address, the connection to end it, whether it sends video,
+/// and whether its pictures or sound flow yet (the person there started it).
+struct Active {
+    target: String,
+    stream: TcpStream,
+    video: bool,
+    flowing: bool,
+}
+
+static ACTIVE: Mutex<Option<Active>> = Mutex::new(None);
 
 /// A paired phone on the local network asks it this way (see `crate::lan::pairing`).
 #[derive(serde::Serialize)]
@@ -64,7 +72,27 @@ fn camera(back: bool) -> &'static str {
 /// The phone at `target` (tailnet address, or a paired device's
 /// `crate::chat::lan_address`) whose camera we use now.
 pub fn active() -> Option<String> {
-    ACTIVE.lock().unwrap_or_else(PoisonError::into_inner).as_ref().map(|(t, _)| t.clone())
+    ACTIVE.lock().unwrap_or_else(PoisonError::into_inner).as_ref().map(|a| a.target.clone())
+}
+
+/// The phone at this address sends its camera or microphone now, and whether it sends video.
+pub fn flowing() -> Option<(String, bool)> {
+    ACTIVE.lock().unwrap_or_else(PoisonError::into_inner).as_ref().filter(|a| a.flowing).map(|a| (a.target.clone(), a.video))
+}
+
+/// Ask the phone to turn to its other camera, front or back.
+pub fn switch_camera() -> Result<(), String> {
+    let stream = ACTIVE.lock().unwrap_or_else(PoisonError::into_inner).as_ref().map(|a| a.stream.try_clone());
+    let mut stream = stream.ok_or("no webcam")?.map_err(|e| e.to_string())?;
+    crate::remote::write_frame(&mut stream, Kind::Control, br#"{"switch":true}"#).map_err(|e| e.to_string())
+}
+
+/// The first picture or sound arrived: the person there started it.
+fn started() {
+    if let Some(a) = ACTIVE.lock().unwrap_or_else(PoisonError::into_inner).as_mut() {
+        a.flowing = true;
+    }
+    LISTENERS.send(WebcamEvent { on: true, error: None });
 }
 
 /// Ask `target` (shown as `name`) for its camera (`video`, the back one when `back`) and/or
@@ -73,16 +101,19 @@ pub fn start(target: &str, name: &str, video: bool, audio: bool, back: bool) -> 
     stop();
     let (stream, reader) = connect(target, name, video, audio, back)?;
     let handle = stream.try_clone().map_err(|e| e.to_string())?;
-    *ACTIVE.lock().unwrap_or_else(PoisonError::into_inner) = Some((target.to_string(), handle));
-    LISTENERS.send(WebcamEvent { on: true, error: None });
+    *ACTIVE.lock().unwrap_or_else(PoisonError::into_inner) = Some(Active { target: target.to_string(), stream: handle, video, flowing: false });
     let (target, name) = (target.to_string(), name.to_string());
     std::thread::Builder::new()
         .name("biglace-webcam".into())
         .spawn(move || {
-            let error = receive(reader, &name, video, audio).err();
+            let error = match receive(reader, &name, video, audio) {
+                Ok(true) => None,
+                Ok(false) => Some(crate::trf!("{name} didn't start it.", "name" => name)),
+                Err(e) => Some(e),
+            };
             let mine = {
                 let mut a = ACTIVE.lock().unwrap_or_else(PoisonError::into_inner);
-                let mine = a.as_ref().is_some_and(|(t, _)| *t == target);
+                let mine = a.as_ref().is_some_and(|a| a.target == target);
                 if mine {
                     *a = None;
                 }
@@ -98,8 +129,8 @@ pub fn start(target: &str, name: &str, video: bool, audio: bool, back: bool) -> 
 
 /// End the webcam we use, if any.
 pub fn stop() {
-    let Some((_, stream)) = ACTIVE.lock().unwrap_or_else(PoisonError::into_inner).take() else { return };
-    let _ = stream.shutdown(std::net::Shutdown::Both);
+    let Some(a) = ACTIVE.lock().unwrap_or_else(PoisonError::into_inner).take() else { return };
+    let _ = a.stream.shutdown(std::net::Shutdown::Both);
     LISTENERS.send(WebcamEvent { on: false, error: None });
 }
 
@@ -173,8 +204,8 @@ fn video_pipeline() -> String {
     )
 }
 
-/// Feed the phone's frames into the PipeWire nodes until the connection ends.
-fn receive(mut reader: BufReader<TcpStream>, name: &str, video: bool, audio: bool) -> Result<(), String> {
+/// Feed the phone's frames into the PipeWire nodes until the connection ends. True when any arrived.
+fn receive(mut reader: BufReader<TcpStream>, name: &str, video: bool, audio: bool) -> Result<bool, String> {
     gst::init().map_err(|e| e.to_string())?;
     let camera = if video {
         Some(source(&video_pipeline(), "Video/Source", &crate::trf!("{name} (camera)", "name" => name))?)
@@ -196,8 +227,14 @@ fn receive(mut reader: BufReader<TcpStream>, name: &str, video: bool, audio: boo
             let _ = src.push_buffer(gst::Buffer::from_slice(data.to_vec()));
         }
     };
+    let mut flowed = false;
     let ended = loop {
-        match read_frame(&mut reader) {
+        let frame = read_frame(&mut reader);
+        if !flowed && matches!(frame, Ok((Kind::CamVideo | Kind::Audio, _))) {
+            flowed = true;
+            started();
+        }
+        match frame {
             Ok((Kind::CamVideo, payload)) => {
                 if let Some((_, src)) = &camera {
                     push(src, &payload);
@@ -217,8 +254,8 @@ fn receive(mut reader: BufReader<TcpStream>, name: &str, video: bool, audio: boo
     }
     // The phone stopped, or we did (the connection shut here).
     match ended.kind() {
-        std::io::ErrorKind::UnexpectedEof | std::io::ErrorKind::ConnectionReset | std::io::ErrorKind::NotConnected => Ok(()),
-        _ if active().is_none() => Ok(()),
+        std::io::ErrorKind::UnexpectedEof | std::io::ErrorKind::ConnectionReset | std::io::ErrorKind::NotConnected => Ok(flowed),
+        _ if active().is_none() => Ok(flowed),
         _ => Err(ended.to_string()),
     }
 }

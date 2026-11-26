@@ -187,7 +187,7 @@ struct Ctx {
     /// `Handle::update` calls — each one blocks the GTK loop on a D-Bus
     /// round-trip with the ksni service loop, so we only pay it on a real
     /// change. Main-thread only.
-    tray_state: Rc<RefCell<Option<(bool, usize)>>>,
+    tray_state: Rc<RefCell<Option<(bool, usize, bool)>>>,
     /// Whether the last applied state was Connected. Written by `apply_state`
     /// (which runs on the main thread after a background gather). The reconnect
     /// worker reads this instead of shelling out to `tailscale status` on the
@@ -773,18 +773,18 @@ fn setup_tray(ctx: &Ctx) -> bool {
 
 /// Push the current connection state into the tray indicator (tooltip + the
 /// connect/disconnect menu label flip). No-op when the tray failed to spawn.
-fn update_tray(ctx: &Ctx, connected: bool, peer_count: usize) {
+fn update_tray(ctx: &Ctx, connected: bool, peer_count: usize, local: bool) {
     // Skip when nothing changed. `Handle::update` blocks the GTK loop on a
     // D-Bus round-trip with the ksni service loop; apply_state calls this on
     // every refresh, so gating on a real change keeps a congested session bus
     // (e.g. plasmashell restarting) from stalling the UI on no-op updates.
-    if *ctx.tray_state.borrow() == Some((connected, peer_count)) {
+    if *ctx.tray_state.borrow() == Some((connected, peer_count, local)) {
         return;
     }
     if let Some(h) = ctx.tray.borrow().as_ref() {
-        h.update(connected, peer_count);
+        h.update(connected, peer_count, local);
     }
-    *ctx.tray_state.borrow_mut() = Some((connected, peer_count));
+    *ctx.tray_state.borrow_mut() = Some((connected, peer_count, local));
 }
 
 /// Hijack the window's close button so it hides the window instead of
@@ -2681,7 +2681,7 @@ fn apply_state(ctx: &Ctx, state: AppState, status: &Status, peers: &[Peer]) {
     // ── Tray indicator ──
     let connected = state == AppState::Connected;
     let online_peers = peers.iter().filter(|p| p.online).count();
-    update_tray(ctx, connected, online_peers);
+    update_tray(ctx, connected, online_peers, lan_only);
 }
 
 /// Hash the structural fields of the rendered peer list, in render order.
@@ -2692,6 +2692,8 @@ fn apply_state(ctx: &Ctx, state: AppState, status: &Status, peers: &[Peer]) {
 fn compute_peer_signature(sorted: &[&Peer], cfg: &config::Config) -> u64 {
     let mut h = std::collections::hash_map::DefaultHasher::new();
     sorted.len().hash(&mut h);
+    // Our account decides which rows offer our own phones' webcam, and is learned after the first rows.
+    crate::chat::my_user().hash(&mut h);
     for p in sorted {
         p.id.hash(&mut h);
         p.hostname.hash(&mut h);

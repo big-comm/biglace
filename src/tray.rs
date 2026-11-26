@@ -59,8 +59,8 @@ impl Handle {
     /// Reflect the current connection state on the tray icon. Cheap and
     /// idempotent — call from `refresh_state` regardless of whether
     /// anything actually changed.
-    pub fn update(&self, connected: bool, peer_count: usize) {
-        self.inner.update(connected, peer_count);
+    pub fn update(&self, connected: bool, peer_count: usize, local: bool) {
+        self.inner.update(connected, peer_count, local);
     }
 
     /// In a voice room (its group, muted), or not.
